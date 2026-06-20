@@ -1,0 +1,50 @@
+{
+  "name": "strategy-driven-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "fonts:fetch": "npx tsx scripts/fetch-noto-font.ts",
+    "setup": "npx tsx scripts/setup.ts",
+    "setup:fonts": "npx tsx scripts/setup.ts --fonts-only",
+    "setup:db": "npx tsx scripts/setup.ts --db-only",
+    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts",
+    "test:e2e": "playwright test",
+    "harness": "npx tsx scripts/harness.ts",
+    "harness:full": "npx tsx scripts/harness.ts --full",
+    "harness:ci": "npx tsx scripts/harness.ts --ci",
+    "check": "npm run harness:ci"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "next": "16.2.9",
+    "pdfkit": "^0.19.1",
+    "prisma": "^5.22.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pdfkit": "^0.17.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.4",
+    "typescript": "^5"
+  }
+}

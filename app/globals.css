@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/*
+ * StratOS Brand Tokens v2.0 — Rheem-inspired VI
+ * Typography: Inter (clean industrial sans) + Noto Sans SC
+ * Accent: Rheem Red #e4002b — strategic signal, not decoration
+ * Dark theme preserved; Apple-discipline type scale retained
+ */
+
+:root {
+  /* ── Surfaces ── */
+  /* Ruud canvas: #fff cards on #f5f5f5 page, #eeeeee raised, #ddd borders */
+  --color-bg-deep:    #f5f5f5;   /* page canvas — Ruud body gray */
+  --color-bg-surface: #ffffff;   /* cards / panels */
+  --surface-panel:    #ffffff;
+  --surface-raised:   #fafafa;
+  --surface-elevated: #ffffff;
+  --surface-border:   #e3e5e6;   /* Ruud #ddd family, slate-tinted */
+  --surface-border-strong: #cdd1d2;
+  --surface-overlay: color-mix(in srgb, #ffffff 90%, transparent);
+  --blur-glass: 18px;
+  --space-section: 2rem;
+  --space-card: 1.25rem;
+
+  /* ── Interactive color: authentic Ruud cyan ──
+   * Ruud links/buttons = #50c8e8, hover #3eb5d4. For AA text/icon contrast
+   * on white we anchor the functional token to a deepened member of the same
+   * hue family, and expose the bright cyan for fills / active states. */
+  --color-accent:        #0c8bab;   /* interactive text/icons (AA on white) */
+  --color-accent-bright: #3eb5d4;   /* Ruud secondary cyan — fills, focus */
+  --color-accent-vivid:  #50c8e8;   /* Ruud primary cyan — emphasis only */
+  --color-accent-dim:    rgba(12,139,171,0.10);
+
+  /* ── Signal red: Ruud's own deep red, risk only ── */
+  --color-signal-red: #8b0e04;
+
+  /* legacy alias — was red (alarm everywhere); now Ruud cyan so daily
+   * interaction reads calm and red is reserved for genuine risk. */
+  --color-accent-gold:     #0c8bab;
+  --color-accent-gold-dim: rgba(12,139,171,0.10);
+
+  /* ── Typography ── */
+  /* Ruud slate family: #4d585a headers, #4e5758 body, #979a9c muted */
+  --color-text-primary:   #2c3133;   /* slate-black, Ruud header tone */
+  --color-text-secondary: #4e5758;   /* Ruud body slate */
+  --color-text-muted:     #828c8d;   /* Ruud muted slate */
+
+  /* ── Semantic signals ── */
+  --signal-green:   #1f8a45;
+  --signal-yellow:  #b45309;
+  --signal-red:     #8b0e04;
+  --signal-neutral: #828c8d;
+
+  /* ── BSC dimensions ── */
+  --bsc-financial: #8b0e04;
+  --bsc-customer:  #0c8bab;
+  --bsc-process:   #6344b8;
+  --bsc-learning:  #1f8a45;
+
+  /* ── Three-stack ── */
+  --stack-cap:  #8b0e04;
+  --stack-prod: #1f8a45;
+  --stack-gtm:  #0c8bab;
+
+  /* ── Print ── */
+  --print-ivory: #faf8f5;
+  --print-navy:  #0a1220;
+
+  /* ── Sidebar ── */
+  --sidebar-w: 56px;
+}
+
+[data-theme="print"] {
+  --color-bg-deep:    var(--print-ivory);
+  --color-bg-surface: #ffffff;
+  --color-text-primary: var(--print-navy);
+  --color-text-muted: #828c8d;
+}
+
+@theme inline {
+  --color-background: var(--color-bg-deep);
+  --color-foreground: var(--color-text-primary);
+  --color-surface:    var(--color-bg-surface);
+  --color-gold:       var(--color-accent);
+  --color-muted:      var(--color-text-muted);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  /* System sans (SF Pro/Segoe/Arial) → Noto Sans SC for CJK */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0em;
+}
+
+.stratos-shell-bg {
+  background: var(--color-bg-deep);
+}
+
+.stratos-grid-bg {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Type scale — Ruud engineering-sans: Arial-weight discipline, near-zero
+ * tracking (no aggressive Apple negative kerning) for a flat financial feel. */
+.text-headline {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+}
+.text-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0em;
+  line-height: 1.25;
+}
+.text-callout {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0em;
+  line-height: 1.4;
+}
+.text-caption {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+}
+.text-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.font-data {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surfaces */
+.surface-elevated {
+  background: var(--surface-elevated);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, black 6%, transparent),
+    0 4px 16px color-mix(in srgb, black 8%, transparent);
+  border: 1px solid var(--surface-border);
+}
+
+.surface-glass {
+  background: color-mix(in srgb, var(--surface-overlay) 85%, transparent);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+}
+
+.stratos-section-gap {
+  gap: var(--space-section);
+}
+
+/* Signal dots */
+.signal-dot { display: inline-block; width: 12px; height: 12px; }
+.signal-dot--green  { border-radius: 9999px; background: var(--signal-green); }
+.signal-dot--yellow { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid var(--signal-yellow); }
+.signal-dot--red    { border-radius: 2px; background: var(--signal-red); }
+
+@media print {
+  @page { size: A3 landscape; margin: 12mm; }
+  body { background: white !important; color: var(--print-navy) !important; }
+}

@@ -1,0 +1,63 @@
+/** Canonical route/API inventory for harness drift detection */
+
+export const EXPECTED_PAGES = [
+  "/",
+  "/command",
+  "/strategy",
+  "/execution",
+  "/health",
+  "/finance",
+  "/decode",
+  "/versions",
+  "/rehearsal",
+  "/reports",
+  "/gates",
+  "/brand",
+  "/login",
+  "/print/panorama",
+  "/admin/access",
+] as const;
+
+export const EXPECTED_APIS = [
+  "/api/health",
+  "/api/harness",
+  "/api/print/panorama",
+  "/api/fpa/capital-summary",
+  "/api/fpa/management-summary",
+  "/api/auth/login",
+  "/api/auth/callback",
+  "/api/auth/workos",
+  "/api/auth/workos/webhook",
+  "/api/audit/log",
+  "/api/snapshots/freeze",
+  "/api/diffs/compute",
+  "/api/counterfactual",
+  "/api/strat-sim",
+  "/api/agents/orchestrate",
+  "/api/rehearsal/progress",
+  "/api/reports/parse",
+  "/api/spbp/update",
+] as const;
+
+export const REQUIRED_FILES = [
+  "docker-compose.yml",
+  "Dockerfile",
+  ".dockerignore",
+  "playwright.config.ts",
+  "e2e/smoke.spec.ts",
+  "docs/SETUP.md",
+  "docs/PHASE4.md",
+  "docs/HARNESS.md",
+  "lib/capabilities.ts",
+  "lib/harness/runner.ts",
+  "scripts/setup.ts",
+  "scripts/harness.ts",
+  "public/fonts/NotoSansSC-Regular.otf",
+] as const;
+
+export const MIN_SEED_COUNTS = {
+  users: 4,
+  strategicDiagnosis: 1,
+  investmentCase: 1,
+  healthAssertion: 1,
+} as const;

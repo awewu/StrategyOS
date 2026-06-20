@@ -1,0 +1,1680 @@
+// StratOS MVP+ · Prisma schema
+// Spec: docs/OBJECT_MODEL.md · docs/STRATOS_BLUEPRINT.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ceo
+  vp
+  pm
+  staff
+  observer
+}
+
+enum SnapshotType {
+  H1
+  FY
+  EVENT
+}
+
+enum SnapshotStatus {
+  FROZEN
+  SUPERSEDED
+}
+
+enum WorkingVersionStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  ARCHIVED
+}
+
+enum BottleneckType {
+  capability
+  market
+  organization
+  capital
+}
+
+enum DiagnosisStatus {
+  draft
+  approved
+}
+
+enum BrandCode {
+  RUIMEI
+  HENGRE
+  RUUD
+  TECH_HOME
+}
+
+enum CynefinDomain {
+  clear
+  complicated
+  complex
+  chaotic
+}
+
+enum BetGateStatus {
+  draft
+  review
+  approved
+  rejected
+  killed
+  post_invest
+  deferred
+}
+
+enum FpaToggle {
+  on
+  off
+  deferred
+}
+
+enum Horizon {
+  H1
+  H2
+  H3
+}
+
+enum InvestmentType {
+  strategic
+  capacity
+  technology
+  brand
+  people
+}
+
+enum HealthAssertionType {
+  runway
+  compliance
+  talent
+  brand
+}
+
+enum TrafficLight {
+  green
+  yellow
+  red
+}
+
+enum StrategyFormationType {
+  deliberate
+  emergent
+  unrealized
+  serendipitous
+}
+
+enum DiffSeverity {
+  info
+  warning
+  critical
+}
+
+enum DiffCategory {
+  BSC_TARGET
+  OKR_REPLACE
+  PROJECT_MIGRATE
+  ASSUMPTION_FAILED
+  ASSUMPTION_NEW
+  DOCTRINE_BREACH
+  HEALTH_LIGHT
+  COMMITMENT_DROP
+  SATISFACTION_FAIL
+  RESOURCE_REALLOC
+  COMPETITOR_EVENT
+  INTENT_CHANGE
+  FPA_FORECAST
+  CASH_RUNWAY
+  EMERGENT_PATTERN
+  UNREALIZED
+  SERENDIPITOUS
+  DELIBERATE_RATE_DROP
+  IC_CHANGE
+  CAPSTACK_CHANGE
+  CAPACITY_GAP
+  IC_ROI_DEVIATION
+  ROADMAP_SLIP
+  PRODUCT_BET_CHANGE
+  COMP_GAP_CHANGE
+  PRODUCT_MIX_CHANGE
+  SEGMENT_PRIORITY
+  CHANNEL_CELL_CHANGE
+  COVERAGE_TARGET
+  LTV_CAC_DETERIORATION
+}
+
+enum RiskLevel {
+  none
+  low
+  medium
+  high
+}
+
+enum ProjectStatus {
+  active
+  completed
+  paused
+}
+
+enum AssumptionResult {
+  pending
+  validated
+  failed
+}
+
+enum AssumptionType {
+  general
+  product
+  gtm
+  capital
+}
+
+enum CommitmentStatus {
+  pending
+  in_progress
+  completed
+  overdue
+}
+
+enum ImpactLevel {
+  low
+  medium
+  high
+}
+
+enum DocumentType {
+  strategy
+  financial
+  product
+  competitor
+  other
+}
+
+enum ReportType {
+  MON_RPT
+  QTR_REV
+  SHEET_IMPORT
+}
+
+enum FpaLineType {
+  revenue
+  capex
+  opex
+  rd
+  channel
+}
+
+enum FpaScope {
+  company
+  brand
+}
+
+enum DoctrineTag {
+  invest
+  innovate
+  deliver
+}
+
+enum SegmentPriority {
+  focus
+  explore
+  defer
+}
+
+enum GapAction {
+  invest
+  outsource
+  defer_demand
+}
+
+enum GapStatus {
+  leading
+  parity
+  lagging
+}
+
+enum RoadmapLane {
+  now
+  next
+  later
+}
+
+enum RoadmapStatus {
+  planned
+  in_progress
+  shipped
+  deferred
+}
+
+enum MaDirection {
+  channel
+  tech
+  jv
+  brand
+}
+
+enum MaStage {
+  watch
+  screen
+  dd
+  signed
+  integrating
+}
+
+enum TechSignalDomain {
+  heat_pump
+  controls
+  channel_tech
+  efficiency
+}
+
+enum TechUrgency {
+  watch
+  act
+  invest
+}
+
+enum ReportParseStatus {
+  pending
+  parsed
+  failed
+}
+
+// ─── Users & governance ──────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(50)
+  email     String   @unique @db.VarChar(100)
+  role      UserRole
+  brandTag  String?  @map("brand_tag") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  workingVersionsCreated WorkingVersion[]     @relation("WorkingVersionCreator")
+  snapshotsFrozen        StrategicSnapshot[]  @relation("SnapshotFrozenBy")
+  diagnosesApproved      StrategicDiagnosis[] @relation("DiagnosisApprover")
+  investmentCasesApproved InvestmentCase[]    @relation("IcApprover")
+  ownedProjects          Project[]            @relation("ProjectOwner")
+  commitments            Commitment[]
+  documents              Document[]
+  healthExceptions       HealthAssertion[]    @relation("HealthExceptionBy")
+  usageLogs              UsageLog[]
+  submittedPlans         StrategicPlan[]
+
+  @@map("users")
+}
+
+model UsageLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  userEmail String   @map("user_email") @db.VarChar(100)
+  action    String   @db.VarChar(50)
+  resource  String   @db.VarChar(200)
+  metadata  Json?
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([action])
+  @@map("usage_logs")
+}
+
+// ─── P0 · Version core ───────────────────────────────────────────────────────
+
+model WorkingVersion {
+  id                String               @id @default(uuid())
+  period            String               @db.VarChar(10)
+  label             String               @db.VarChar(200)
+  status            WorkingVersionStatus @default(DRAFT)
+  basedOnSnapshotId String?              @map("based_on_snapshot_id")
+  createdById       String               @map("created_by_id")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+
+  basedOnSnapshot StrategicSnapshot? @relation("WorkingVersionBasedOn", fields: [basedOnSnapshotId], references: [id])
+  createdBy       User               @relation("WorkingVersionCreator", fields: [createdById], references: [id])
+  snapshots       StrategicSnapshot[] @relation("SnapshotFromWorkingVersion")
+
+  diagnoses      StrategicDiagnosis[]
+  brandCards     BrandStrategyCard[]
+  investmentCases InvestmentCase[]
+  productBets    ProductBet[]
+  gtmBets        GtmBet[]
+
+  @@index([period, status])
+  @@map("working_versions")
+}
+
+model StrategicSnapshot {
+  id                 String         @id @default(uuid())
+  code               String         @unique @db.VarChar(30)
+  period             String         @db.VarChar(10)
+  snapshotType       SnapshotType   @map("snapshot_type")
+  status             SnapshotStatus @default(FROZEN)
+  frozenAt           DateTime       @map("frozen_at")
+  frozenById         String         @map("frozen_by_id")
+  workingVersionId   String?        @map("working_version_id")
+  meetingNotes       String?        @map("meeting_notes")
+  diagnosisId        String?        @map("diagnosis_id")
+  capStackPeriodId   String?        @map("cap_stack_period_id")
+  cashPositionId     String?        @map("cash_position_id")
+  healthAssertionIds String[]       @map("health_assertion_ids")
+  bscLightsAtFreeze  Json           @map("bsc_lights_at_freeze")
+  stateJson          Json           @map("state_json")
+  createdAt          DateTime       @default(now()) @map("created_at")
+
+  frozenBy         User                @relation("SnapshotFrozenBy", fields: [frozenById], references: [id])
+  workingVersion   WorkingVersion?     @relation("SnapshotFromWorkingVersion", fields: [workingVersionId], references: [id])
+  diagnosis        StrategicDiagnosis? @relation(fields: [diagnosisId], references: [id])
+  capStackPeriod   CapStackPeriod?     @relation(fields: [capStackPeriodId], references: [id])
+  cashPosition     CashPosition?       @relation(fields: [cashPositionId], references: [id])
+  strategyPattern  StrategyPattern?
+  diffsFrom        DiffRecord[]        @relation("DiffFrom")
+  diffsTo          DiffRecord[]        @relation("DiffTo")
+  workingVersionsBasedOn WorkingVersion[] @relation("WorkingVersionBasedOn")
+  frozenAssertions HealthAssertion[]   @relation("AssertionFrozenIn")
+
+  @@index([period])
+  @@map("strategic_snapshots")
+}
+
+model StrategyPattern {
+  id                        String   @id @default(uuid())
+  snapshotId                String   @unique @map("snapshot_id")
+  deliberateRealizationRate Decimal  @map("deliberate_realization_rate") @db.Decimal(5, 2)
+  emergentPatterns          Json     @map("emergent_patterns")
+  unrealizedItems           Json     @map("unrealized_items")
+  serendipitousItems        Json     @map("serendipitous_items")
+  learningPrompts           String[] @map("learning_prompts")
+  computedAt                DateTime @map("computed_at")
+
+  snapshot StrategicSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("strategy_patterns")
+}
+
+model DiffRecord {
+  id             String                  @id @default(uuid())
+  fromSnapshotId String                  @map("from_snapshot_id")
+  toSnapshotId   String                  @map("to_snapshot_id")
+  category       DiffCategory
+  severity       DiffSeverity            @default(info)
+  title          String                  @db.VarChar(200)
+  detail         String?
+  objectType     String?                 @map("object_type") @db.VarChar(50)
+  objectId       String?                 @map("object_id")
+  beforeJson     Json?                   @map("before_json")
+  afterJson      Json?                   @map("after_json")
+  formationType  StrategyFormationType?  @map("formation_type")
+  createdAt      DateTime                @default(now()) @map("created_at")
+
+  fromSnapshot StrategicSnapshot @relation("DiffFrom", fields: [fromSnapshotId], references: [id])
+  toSnapshot   StrategicSnapshot @relation("DiffTo", fields: [toSnapshotId], references: [id])
+
+  @@index([fromSnapshotId, toSnapshotId])
+  @@map("diff_records")
+}
+
+// ─── P0 · I1 / I3 ────────────────────────────────────────────────────────────
+
+model StrategicDiagnosis {
+  id                   String           @id @default(uuid())
+  period               String           @db.VarChar(10)
+  challengeStatement   String           @map("challenge_statement") @db.VarChar(80)
+  bottleneckType       BottleneckType   @map("bottleneck_type")
+  rootCauses           String[]         @map("root_causes")
+  crux                 String           @db.VarChar(120)
+  linkedAssumptionIds  String[]         @map("linked_assumption_ids")
+  linkedBscMeasureIds  String[]         @map("linked_bsc_measure_ids")
+  fpaRationale         String?          @map("fpa_rationale")
+  validUntil           DateTime         @map("valid_until") @db.Date
+  status               DiagnosisStatus  @default(draft)
+  approvedById         String?          @map("approved_by_id")
+  approvedAt           DateTime?        @map("approved_at")
+  workingVersionId     String?          @map("working_version_id")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  approvedBy       User?                @relation("DiagnosisApprover", fields: [approvedById], references: [id])
+  workingVersion   WorkingVersion?      @relation(fields: [workingVersionId], references: [id])
+  snapshots        StrategicSnapshot[]
+
+  @@index([period, status])
+  @@map("strategic_diagnoses")
+}
+
+model BrandStrategyCard {
+  id                    String    @id @default(uuid())
+  brandCode             BrandCode @map("brand_code")
+  period                String    @db.VarChar(10)
+  winningAspiration     String    @map("winning_aspiration") @db.VarChar(60)
+  whereToPlayJson       Json      @map("where_to_play_json")
+  howToWin              String    @map("how_to_win") @db.VarChar(200)
+  mustHaveCapabilities  String[]  @map("must_have_capabilities")
+  linkedBscDimensionIds String[]  @map("linked_bsc_dimension_ids")
+  linkedObjectiveIds    String[]  @map("linked_objective_ids")
+  fpaAnchor             String?   @map("fpa_anchor")
+  workingVersionId      String?   @map("working_version_id")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  workingVersion WorkingVersion? @relation(fields: [workingVersionId], references: [id])
+
+  @@unique([brandCode, period, workingVersionId])
+  @@map("brand_strategy_cards")
+}
+
+// ─── P0 · HealthAssertion (§16.2) ────────────────────────────────────────────
+
+model HealthAssertion {
+  id                 String              @id @default(uuid())
+  assertionType      HealthAssertionType @map("assertion_type")
+  active             Boolean             @default(true)
+  triggeredAt        DateTime            @map("triggered_at")
+  sourceReportId     String?             @map("source_report_id")
+  sourceImportBatch  String?             @map("source_import_batch") @db.VarChar(50)
+  message            String              @db.VarChar(300)
+  metricValue        Decimal?            @map("metric_value") @db.Decimal(12, 4)
+  thresholdValue     Decimal?            @map("threshold_value") @db.Decimal(12, 4)
+  remedialVxId       String?             @map("remedial_vx_id")
+  clearedAt          DateTime?           @map("cleared_at")
+  clearedByReportId  String?             @map("cleared_by_report_id")
+  ceoExceptionNote   String?             @map("ceo_exception_note")
+  ceoExceptionById   String?             @map("ceo_exception_by_id")
+  ceoExceptionAt     DateTime?             @map("ceo_exception_at")
+  snapshotId         String?             @map("snapshot_id")
+  createdAt          DateTime            @default(now()) @map("created_at")
+
+  sourceReport       Report?             @relation(fields: [sourceReportId], references: [id])
+  ceoExceptionBy     User?               @relation("HealthExceptionBy", fields: [ceoExceptionById], references: [id])
+  frozenInSnapshot   StrategicSnapshot?  @relation("AssertionFrozenIn", fields: [snapshotId], references: [id])
+
+  @@index([active, assertionType])
+  @@map("health_assertions")
+}
+
+model HealthSignal {
+  id         String       @id @default(uuid())
+  period     String       @db.VarChar(10)
+  dimension  String       @db.VarChar(20)
+  signal     TrafficLight
+  kpiName    String?      @map("kpi_name") @db.VarChar(100)
+  kpiValue   String?      @map("kpi_value") @db.VarChar(50)
+  kpiTarget  String?      @map("kpi_target") @db.VarChar(50)
+  recordedAt DateTime     @map("recorded_at")
+
+  @@index([period, dimension])
+  @@map("health_signals")
+}
+
+model Report {
+  id           String     @id @default(uuid())
+  reportType   ReportType @map("report_type")
+  period       String     @db.VarChar(10)
+  title        String     @db.VarChar(200)
+  rawContent   String?    @map("raw_content")
+  parsedJson   Json?      @map("parsed_json")
+  uploadedById String?    @map("uploaded_by_id")
+  uploadedAt   DateTime   @default(now()) @map("uploaded_at")
+
+  healthAssertions HealthAssertion[]
+
+  @@index([period, reportType])
+  @@map("reports")
+}
+
+// ─── P1 · CapStack ───────────────────────────────────────────────────────────
+
+model InvestmentCase {
+  id                   String         @id @default(uuid())
+  code                 String         @unique @db.VarChar(20)
+  title                String         @db.VarChar(200)
+  type                 InvestmentType
+  horizon              Horizon
+  period               String         @db.VarChar(10)
+  linkedVxId           String?        @map("linked_vx_id")
+  linkedAssumptionIds  String[]       @map("linked_assumption_ids")
+  linkedOkrIds         String[]       @map("linked_okr_ids")
+  capexTotal           Decimal?       @map("capex_total") @db.Decimal(14, 2)
+  opexAnnual           Decimal?       @map("opex_annual") @db.Decimal(14, 2)
+  expectedIrr          Decimal?       @map("expected_irr") @db.Decimal(6, 4)
+  paybackMonths        Int?           @map("payback_months")
+  npv                  Decimal?       @db.Decimal(14, 2)
+  strategicFitScore    Int?           @map("strategic_fit_score")
+  gateStatus           BetGateStatus  @default(draft) @map("gate_status")
+  budgetTag            String         @map("budget_tag") @db.VarChar(30)
+  fpaToggle            FpaToggle      @default(off) @map("fpa_toggle")
+  doctrineAuditId      String?        @map("doctrine_audit_id")
+  cynefinDomain        CynefinDomain? @map("cynefin_domain")
+  approvedAt           DateTime?      @map("approved_at")
+  approvedById         String?        @map("approved_by_id")
+  workingVersionId     String?        @map("working_version_id")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  linkedVx         Project?          @relation(fields: [linkedVxId], references: [id])
+  approvedBy       User?             @relation("IcApprover", fields: [approvedById], references: [id])
+  workingVersion   WorkingVersion?   @relation(fields: [workingVersionId], references: [id])
+  fpaBudgetLines   FpaBudgetLine[]
+  capacitySnapshots CapacitySnapshot[]
+  productBetsLinked ProductBet[]
+
+  @@index([period, gateStatus])
+  @@index([budgetTag])
+  @@map("investment_cases")
+}
+
+model CapStackPeriod {
+  id                   String   @id @default(uuid())
+  period               String   @unique @db.VarChar(10)
+  capexBudget          Decimal  @map("capex_budget") @db.Decimal(14, 2)
+  capexCommitted       Decimal  @map("capex_committed") @db.Decimal(14, 2)
+  capexSpent           Decimal  @map("capex_spent") @db.Decimal(14, 2)
+  opexInvestmentBudget Decimal  @map("opex_investment_budget") @db.Decimal(14, 2)
+  byHorizonJson        Json     @map("by_horizon_json")
+  byBrandJson          Json     @map("by_brand_json")
+  byTypeJson           Json     @map("by_type_json")
+  cashPeakMonth        String?  @map("cash_peak_month") @db.VarChar(7)
+  cashPeakAmount       Decimal? @map("cash_peak_amount") @db.Decimal(14, 2)
+  runwayAfterPeak      Decimal? @map("runway_after_peak") @db.Decimal(6, 2)
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  snapshots StrategicSnapshot[]
+
+  @@map("cap_stack_periods")
+}
+
+model CapacitySnapshot {
+  id                   String    @id @default(uuid())
+  period               String    @db.VarChar(10)
+  demandUnits          Decimal   @map("demand_units") @db.Decimal(12, 2)
+  capacityUnits        Decimal   @map("capacity_units") @db.Decimal(12, 2)
+  utilizationPct       Decimal   @map("utilization_pct") @db.Decimal(5, 2)
+  gapUnits             Decimal   @map("gap_units") @db.Decimal(12, 2)
+  gapAction            GapAction @map("gap_action")
+  linkedInvestmentCaseId String? @map("linked_investment_case_id")
+  bottleneckAsset      String?   @map("bottleneck_asset") @db.VarChar(200)
+  recordedAt           DateTime  @map("recorded_at")
+
+  linkedInvestmentCase InvestmentCase? @relation(fields: [linkedInvestmentCaseId], references: [id])
+
+  @@index([period])
+  @@map("capacity_snapshots")
+}
+
+// ─── P1 · ProdStack ──────────────────────────────────────────────────────────
+
+model ProductLine {
+  id               String   @id @default(uuid())
+  code             String   @unique @db.VarChar(20)
+  name             String   @db.VarChar(100)
+  brandCode        BrandCode @map("brand_code")
+  horizon          Horizon?
+  lifecycleStage   String?  @map("lifecycle_stage") @db.VarChar(30)
+  revenueSharePct  Decimal? @map("revenue_share_pct") @db.Decimal(5, 2)
+  linkedBscMeasureId String? @map("linked_bsc_measure_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  jtbdCards  JtbdCard[]
+  roadmapItems ProductRoadmapItem[]
+  gaps       CompetitiveProductGap[]
+  productBets ProductBet[] @relation("ProductBetLines")
+
+  @@map("product_lines")
+}
+
+model JtbdCard {
+  id              String   @id @default(uuid())
+  productLineId   String   @map("product_line_id")
+  statement       String   @db.VarChar(200)
+  primarySegment  String   @map("primary_segment") @db.VarChar(50)
+  outcomeMetrics  String[] @map("outcome_metrics")
+  linkedOkrIds    String[] @map("linked_okr_ids")
+
+  productLine ProductLine @relation(fields: [productLineId], references: [id])
+
+  @@map("jtbd_cards")
+}
+
+model ProductRoadmapItem {
+  id                 String        @id @default(uuid())
+  productLineId      String        @map("product_line_id")
+  lane               RoadmapLane
+  milestone          String        @db.VarChar(200)
+  targetQuarter      String        @map("target_quarter") @db.VarChar(7)
+  status             RoadmapStatus @default(planned)
+  linkedVxId         String?       @map("linked_vx_id")
+  linkedAssumptionIds String[]     @map("linked_assumption_ids")
+  confidence         Decimal?      @db.Decimal(3, 2)
+
+  productLine ProductLine @relation(fields: [productLineId], references: [id])
+  linkedVx    Project?    @relation(fields: [linkedVxId], references: [id])
+
+  @@map("product_roadmap_items")
+}
+
+model CompetitiveProductGap {
+  id            String    @id @default(uuid())
+  productLineId String    @map("product_line_id")
+  competitor    String    @db.VarChar(50)
+  dimension     String    @db.VarChar(50)
+  ourStatus     GapStatus @map("our_status")
+  closureVxId   String?   @map("closure_vx_id")
+  notes         String?
+
+  productLine ProductLine @relation(fields: [productLineId], references: [id])
+  closureVx   Project?    @relation("GapClosureVx", fields: [closureVxId], references: [id])
+
+  @@map("competitive_product_gaps")
+}
+
+model ProductBet {
+  id                      String         @id @default(uuid())
+  title                   String         @db.VarChar(200)
+  period                  String         @db.VarChar(10)
+  horizon                 Horizon
+  linkedDiagnosisCrux     String?        @map("linked_diagnosis_crux") @db.VarChar(120)
+  linkedVxIds             String[]       @map("linked_vx_ids")
+  linkedIcId              String?        @map("linked_ic_id")
+  successCriteria         String[]       @map("success_criteria")
+  killCriteria            String[]       @map("kill_criteria")
+  budgetTag               String?        @map("budget_tag") @db.VarChar(30)
+  fpaToggle               FpaToggle      @default(off) @map("fpa_toggle")
+  gateStatus              BetGateStatus  @default(draft) @map("gate_status")
+  doctrineInnovateAuditId String?        @map("doctrine_innovate_audit_id")
+  cynefinDomain           CynefinDomain? @map("cynefin_domain")
+  workingVersionId        String?        @map("working_version_id")
+  createdAt               DateTime       @default(now()) @map("created_at")
+  updatedAt               DateTime       @updatedAt @map("updated_at")
+
+  linkedIc       InvestmentCase? @relation(fields: [linkedIcId], references: [id])
+  workingVersion WorkingVersion? @relation(fields: [workingVersionId], references: [id])
+  productLines   ProductLine[]   @relation("ProductBetLines")
+  fpaBudgetLines FpaBudgetLine[]
+
+  @@index([period, gateStatus])
+  @@map("product_bets")
+}
+
+// ─── P1 · GtmStack ───────────────────────────────────────────────────────────
+
+model CustomerSegment {
+  id              String          @id @default(uuid())
+  code            String          @unique @db.VarChar(20)
+  name            String          @db.VarChar(100)
+  priority        SegmentPriority @default(explore)
+  horizon         Horizon?
+  jtbdSummary     String?         @map("jtbd_summary") @db.VarChar(200)
+  linkedJtbdIds   String[]        @map("linked_jtbd_ids")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  brandChannelCells BrandChannelCell[]
+  gtmBets           GtmBet[]
+  segmentEconomics  SegmentEconomics[]
+
+  @@map("customer_segments")
+}
+
+model BrandChannelCell {
+  id              String    @id @default(uuid())
+  brandCode       BrandCode @map("brand_code")
+  channelCode     String    @map("channel_code") @db.VarChar(30)
+  segmentId       String?   @map("segment_id")
+  role            String    @db.VarChar(20)
+  priority        String    @db.VarChar(5)
+  targetCoverage  Int?      @map("target_coverage")
+  linkedKrIds     String[]  @map("linked_kr_ids")
+
+  segment CustomerSegment? @relation(fields: [segmentId], references: [id])
+  gtmBets GtmBet[]
+
+  @@unique([brandCode, channelCode, segmentId])
+  @@map("brand_channel_cells")
+}
+
+model GtmBet {
+  id                   String         @id @default(uuid())
+  title                String         @db.VarChar(200)
+  period               String         @db.VarChar(10)
+  segmentId            String?        @map("segment_id")
+  brandChannelCellId   String?        @map("brand_channel_cell_id")
+  successCriteria      String[]       @map("success_criteria")
+  killCriteria         String[]       @map("kill_criteria")
+  linkedAssumptionIds  String[]       @map("linked_assumption_ids")
+  linkedIcId           String?        @map("linked_ic_id")
+  budgetTag            String?        @map("budget_tag") @db.VarChar(30)
+  fpaToggle            FpaToggle      @default(off) @map("fpa_toggle")
+  gateStatus           BetGateStatus  @default(draft) @map("gate_status")
+  doctrineTags         DoctrineTag[]  @map("doctrine_tags")
+  workingVersionId     String?        @map("working_version_id")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  segment          CustomerSegment?  @relation(fields: [segmentId], references: [id])
+  brandChannelCell BrandChannelCell? @relation(fields: [brandChannelCellId], references: [id])
+  workingVersion   WorkingVersion?   @relation(fields: [workingVersionId], references: [id])
+  fpaBudgetLines   FpaBudgetLine[]
+
+  @@index([period, gateStatus])
+  @@map("gtm_bets")
+}
+
+model CoverageSnapshot {
+  id           String   @id @default(uuid())
+  period       String   @db.VarChar(10)
+  segmentCode  String   @map("segment_code") @db.VarChar(20)
+  targetCount  Int      @map("target_count")
+  actualCount  Int      @map("actual_count")
+  forecastCount Int     @map("forecast_count")
+  recordedAt   DateTime @map("recorded_at")
+
+  @@index([period, segmentCode])
+  @@map("coverage_snapshots")
+}
+
+model SegmentEconomics {
+  id           String   @id @default(uuid())
+  segmentId    String   @map("segment_id")
+  period       String   @db.VarChar(10)
+  ltv          Decimal? @db.Decimal(14, 2)
+  cac          Decimal? @db.Decimal(14, 2)
+  ltvCacRatio  Decimal? @map("ltv_cac_ratio") @db.Decimal(6, 2)
+  signal       TrafficLight @default(green)
+
+  segment CustomerSegment @relation(fields: [segmentId], references: [id])
+
+  @@unique([segmentId, period])
+  @@map("segment_economics")
+}
+
+// ─── FPA · B-A-F + budget_tag lines ──────────────────────────────────────────
+
+model FpaPeriod {
+  id                  String       @id @default(uuid())
+  period              String       @db.VarChar(10)
+  scope               FpaScope     @default(company)
+  brandCode           BrandCode?   @map("brand_code")
+  revenueBudget       Decimal      @map("revenue_budget") @db.Decimal(14, 2)
+  revenueActual       Decimal      @map("revenue_actual") @db.Decimal(14, 2)
+  revenueForecast     Decimal      @map("revenue_forecast") @db.Decimal(14, 2)
+  profitBudget        Decimal      @map("profit_budget") @db.Decimal(14, 2)
+  profitActual        Decimal      @map("profit_actual") @db.Decimal(14, 2)
+  profitForecast      Decimal      @map("profit_forecast") @db.Decimal(14, 2)
+  cashBudget          Decimal?     @map("cash_budget") @db.Decimal(14, 2)
+  cashActual          Decimal?     @map("cash_actual") @db.Decimal(14, 2)
+  cashForecast        Decimal?     @map("cash_forecast") @db.Decimal(14, 2)
+  linkedAssumptionIds String[]     @map("linked_assumption_ids")
+  varianceBa          Decimal?     @map("variance_ba") @db.Decimal(8, 4)
+  varianceBf          Decimal?     @map("variance_bf") @db.Decimal(8, 4)
+  financialSignal     TrafficLight @default(green) @map("financial_signal")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  budgetLines FpaBudgetLine[]
+
+  @@unique([period, scope, brandCode])
+  @@map("fpa_periods")
+}
+
+model FpaBudgetLine {
+  id              String      @id @default(uuid())
+  fpaPeriodId     String      @map("fpa_period_id")
+  budgetTag       String      @map("budget_tag") @db.VarChar(30)
+  label           String      @db.VarChar(100)
+  lineType        FpaLineType @map("line_type")
+  amountBudget    Decimal     @map("amount_budget") @db.Decimal(14, 2)
+  amountActual    Decimal     @map("amount_actual") @db.Decimal(14, 2)
+  amountForecast  Decimal     @map("amount_forecast") @db.Decimal(14, 2)
+  fpaToggle       FpaToggle   @default(on) @map("fpa_toggle")
+  ghostForecast   Decimal?    @map("ghost_forecast") @db.Decimal(14, 2)
+  linkedBetType   String?     @map("linked_bet_type") @db.VarChar(30)
+  linkedBetId     String?     @map("linked_bet_id")
+  investmentCaseId String?    @map("investment_case_id")
+  productBetId    String?     @map("product_bet_id")
+  gtmBetId        String?     @map("gtm_bet_id")
+
+  fpaPeriod      FpaPeriod       @relation(fields: [fpaPeriodId], references: [id], onDelete: Cascade)
+  investmentCase InvestmentCase? @relation(fields: [investmentCaseId], references: [id])
+  productBet     ProductBet?     @relation(fields: [productBetId], references: [id])
+  gtmBet         GtmBet?         @relation(fields: [gtmBetId], references: [id])
+
+  @@unique([fpaPeriodId, budgetTag])
+  @@index([budgetTag])
+  @@map("fpa_budget_lines")
+}
+
+model FpaBrandPnl {
+  id           String    @id @default(uuid())
+  period       String    @db.VarChar(10)
+  brandCode    BrandCode @map("brand_code")
+  revenue      Decimal   @db.Decimal(14, 2)
+  grossMargin  Decimal   @map("gross_margin") @db.Decimal(14, 2)
+  opex         Decimal   @db.Decimal(14, 2)
+  netProfit    Decimal   @map("net_profit") @db.Decimal(14, 2)
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([period, brandCode])
+  @@map("fpa_brand_pnls")
+}
+
+model CashPosition {
+  id              String   @id @default(uuid())
+  period          String   @db.VarChar(10)
+  asOfDate        DateTime @map("as_of_date") @db.Date
+  cashBalance     Decimal  @map("cash_balance") @db.Decimal(14, 2)
+  monthlyBurn     Decimal  @map("monthly_burn") @db.Decimal(14, 2)
+  runwayMonths    Decimal  @map("runway_months") @db.Decimal(6, 2)
+  cashPeakMonth   String?  @map("cash_peak_month") @db.VarChar(7)
+  cashPeakAmount  Decimal? @map("cash_peak_amount") @db.Decimal(14, 2)
+  runwayAfterPeak Decimal? @map("runway_after_peak") @db.Decimal(6, 2)
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  snapshots StrategicSnapshot[]
+
+  @@index([period])
+  @@map("cash_positions")
+}
+
+// ─── Execution · Vx / Hx / OKR (extended) ────────────────────────────────────
+
+model Objective {
+  id        String   @id @default(uuid())
+  period    String   @db.VarChar(10)
+  title     String   @db.VarChar(300)
+  ownerId   String?  @map("owner_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  keyResults KeyResult[]
+
+  @@index([period])
+  @@map("objectives")
+}
+
+model KeyResult {
+  id                 String       @id @default(uuid())
+  objectiveId        String       @map("objective_id")
+  period             String       @db.VarChar(10)
+  title              String       @db.VarChar(300)
+  doctrineTag        DoctrineTag? @map("doctrine_tag")
+  budgetTag          String?      @map("budget_tag") @db.VarChar(30)
+  bscMeasureId       String?      @map("bsc_measure_id")
+  projectId          String?      @map("project_id")
+  targetValue        String?      @map("target_value") @db.VarChar(50)
+  currentValue       String?      @map("current_value") @db.VarChar(50)
+  confidence         Decimal?     @db.Decimal(3, 2)
+  isLeadingIndicator Boolean      @default(false) @map("is_leading_indicator")
+
+  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id])
+
+  @@index([budgetTag])
+  @@map("key_results")
+}
+
+model Project {
+  id                String         @id @default(uuid())
+  code              String         @unique @db.VarChar(10)
+  name              String         @db.VarChar(100)
+  period            String         @default("2026-FY") @db.VarChar(10)
+  ownerId           String?        @map("owner_id")
+  cynefinDomain     CynefinDomain  @default(complicated) @map("cynefin_domain")
+  horizon           Horizon?
+  budgetTag         String?        @map("budget_tag") @db.VarChar(30)
+  budgetTotal       Decimal?       @map("budget_total") @db.Decimal(14, 2)
+  budgetSpent       Decimal?       @map("budget_spent") @db.Decimal(14, 2)
+  budgetRemaining   Decimal?       @map("budget_remaining") @db.Decimal(14, 2)
+  currentMilestone  String?        @map("current_milestone") @db.VarChar(200)
+  progressPercent   Decimal?       @map("progress_percent") @db.Decimal(5, 2)
+  riskLevel         RiskLevel      @default(none) @map("risk_level")
+  riskDescription   String?        @map("risk_description")
+  nextAction        String?        @map("next_action")
+  status            ProjectStatus  @default(active)
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  owner              User?                   @relation("ProjectOwner", fields: [ownerId], references: [id])
+  investmentCases    InvestmentCase[]
+  keyResults         KeyResult[]
+  roadmapItems       ProductRoadmapItem[]
+  gapClosures        CompetitiveProductGap[] @relation("GapClosureVx")
+  assumptions        Assumption[]
+
+  @@map("projects")
+}
+
+model Assumption {
+  id               String           @id @default(uuid())
+  code             String           @db.VarChar(10)
+  period           String           @default("2026-FY") @db.VarChar(10)
+  content          String
+  assumptionType   AssumptionType   @default(general) @map("assumption_type")
+  cynefinDomain    CynefinDomain    @default(complex) @map("cynefin_domain")
+  linkedProjectId  String?          @map("linked_project_id")
+  fpaDriver        String?          @map("fpa_driver") @db.VarChar(50)
+  validationMethod String?          @map("validation_method")
+  result           AssumptionResult @default(pending)
+  failureImpact    String?          @map("failure_impact")
+  mitigation       String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  linkedProject Project? @relation(fields: [linkedProjectId], references: [id])
+
+  @@unique([code, period])
+  @@map("assumptions")
+}
+
+model Commitment {
+  id             String           @id @default(uuid())
+  userId         String           @map("user_id")
+  content        String
+  promiseTo      String           @map("promise_to") @db.VarChar(50)
+  deadline       DateTime         @db.Date
+  status         CommitmentStatus @default(pending)
+  completionNote String?          @map("completion_note")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("commitments")
+}
+
+
+
+model Document {
+  id         String       @id @default(uuid())
+  filename   String       @db.VarChar(200)
+  content    String?
+  docType    DocumentType @default(other) @map("doc_type")
+  uploadedBy String?      @map("uploaded_by")
+  uploadedAt DateTime     @default(now()) @map("uploaded_at")
+
+  uploader User? @relation(fields: [uploadedBy], references: [id])
+
+  @@map("documents")
+}
+
+model ExecutionScoreboardConfig {
+  id                String   @id @default(uuid())
+  period            String   @unique @db.VarChar(10)
+  wigObjectiveId    String?  @map("wig_objective_id")
+  leadingKrIds      String[] @map("leading_kr_ids")
+  laggingKrIds      String[] @map("lagging_kr_ids")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("execution_scoreboard_configs")
+}
+
+// ─── Phase 3+ · M&A · SPBP · TechSignal ─────────────────────────────────────
+
+model MaPipelineItem {
+  id                       String      @id @default(uuid())
+  name                     String      @db.VarChar(200)
+  direction                MaDirection
+  stage                    MaStage     @default(watch)
+  synergyThesis            String      @map("synergy_thesis") @db.VarChar(500)
+  valuationRange           String      @map("valuation_range") @db.VarChar(80)
+  linkedAssumptionCodes    String[]    @map("linked_assumption_codes")
+  integrationMilestone100d String?     @map("integration_milestone_100d")
+  period                   String      @default("2026-FY") @db.VarChar(10)
+  updatedAt                DateTime    @updatedAt @map("updated_at")
+
+  @@index([stage])
+  @@map("ma_pipeline_items")
+}
+
+model SpbpScenario {
+  id                    String   @id @default(uuid())
+  code                  String   @unique @db.VarChar(30)
+  name                  String   @db.VarChar(50)
+  probability           Decimal  @db.Decimal(5, 2)
+  drivers               String[]
+  revenueImpact         Decimal  @map("revenue_impact") @db.Decimal(14, 2)
+  profitImpact          Decimal  @map("profit_impact") @db.Decimal(14, 2)
+  runwayMonths          Decimal  @map("runway_months") @db.Decimal(6, 2)
+  linkedAssumptionCodes String[] @map("linked_assumption_codes")
+  period                String   @default("2026-FY") @db.VarChar(10)
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@index([period])
+  @@map("spbp_scenarios")
+}
+
+model TechSignalRecord {
+  id                String           @id @default(uuid())
+  title             String           @db.VarChar(200)
+  domain            TechSignalDomain
+  trl               Int              @default(1)
+  source            String           @db.VarChar(200)
+  horizon           Horizon
+  linkedProjectCode String?          @map("linked_project_code") @db.VarChar(10)
+  urgency           TechUrgency      @default(watch)
+  period            String           @default("2026-FY") @db.VarChar(10)
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  @@index([period, urgency])
+  @@map("tech_signal_records")
+}
+
+// ─── Strategic Plan Input System ─────────────────────────────────────────────
+
+enum OrgLevel {
+  GROUP           // 集团
+  EXECUTIVE       // 高管层 (事业部+职能体系)
+  OPERATING_UNIT  // 执行层 (二级部门)
+}
+
+enum PlanStatus {
+  DRAFT      // 草稿
+  SUBMITTED  // 已提交
+  LOCKED     // 已锁定
+}
+
+enum BscDimension {
+  FINANCIAL  // 财务
+  CUSTOMER   // 客户
+  PROCESS    // 流程
+  LEARNING   // 学习
+}
+
+model OrgUnit {
+  id          String    @id @default(uuid())
+  name        String    @db.VarChar(100)
+  nameEn      String?   @map("name_en") @db.VarChar(100)
+  level       OrgLevel
+  sortOrder   Int       @default(999) @map("sort_order")
+  parentId    String?   @map("parent_id")
+  parent      OrgUnit?  @relation("OrgTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children    OrgUnit[] @relation("OrgTree")
+  plans       StrategicPlan[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  productLinesOwned MktProductLine[]  @relation("ProductLineOwner")
+  salesRegions      SalesRegion[]      @relation("RegionOrgUnit")
+  researchItemsOwned ResearchItem[]    @relation("ResearchItemOwner")
+
+  @@index([level, sortOrder])
+  @@index([parentId])
+  @@map("org_units")
+}
+
+model StrategicPlan {
+  id             String          @id @default(uuid())
+  orgUnitId      String          @map("org_unit_id")
+  orgUnit        OrgUnit         @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  horizonStart   Int             @map("horizon_start")    // 2026
+  horizonEnd     Int             @map("horizon_end")      // 2028
+  intent         String?         @db.Text                 // 战略意图
+  northStar      String?         @map("north_star") @db.VarChar(200)  // 北极星指标
+  status         PlanStatus      @default(DRAFT)
+  objectives     PlanObjective[]
+  initiatives    PlanInitiative[]
+  resourceReqs   ResourceRequest[]
+  assumptions    PlanAssumption[]
+  submittedById  String?         @map("submitted_by_id")
+  submittedBy    User?           @relation(fields: [submittedById], references: [id])
+  submittedAt    DateTime?       @map("submitted_at")
+  lockedAt       DateTime?       @map("locked_at")
+  attachments    PlanAttachment[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@unique([orgUnitId, horizonStart, horizonEnd])
+  @@index([status])
+  @@map("strategic_plans")
+}
+
+model PlanObjective {
+  id          String        @id @default(uuid())
+  planId      String        @map("plan_id")
+  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  dimension   BscDimension
+  objective   String        @db.Text
+  keyResults  PlanKeyResult[]
+  sortOrder   Int           @default(999) @map("sort_order")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@index([planId, dimension])
+  @@map("plan_objectives")
+}
+
+model PlanKeyResult {
+  id           String        @id @default(uuid())
+  objectiveId  String        @map("objective_id")
+  objective    PlanObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  keyResult    String        @db.VarChar(300)
+  target       String?       @db.VarChar(100)
+  sortOrder    Int           @default(999) @map("sort_order")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@index([objectiveId])
+  @@map("plan_key_results")
+}
+
+model PlanInitiative {
+  id             String        @id @default(uuid())
+  planId         String        @map("plan_id")
+  plan           StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  title          String        @db.VarChar(200)
+  description    String?       @db.Text
+  ownerName      String?       @map("owner_name") @db.VarChar(100)
+  q1Milestone    String?       @map("q1_milestone") @db.VarChar(200)
+  q2Milestone    String?       @map("q2_milestone") @db.VarChar(200)
+  q3Milestone    String?       @map("q3_milestone") @db.VarChar(200)
+  q4Milestone    String?       @map("q4_milestone") @db.VarChar(200)
+  sortOrder      Int           @default(999) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  @@index([planId])
+  @@map("plan_initiatives")
+}
+
+model ResourceRequest {
+  id          String        @id @default(uuid())
+  planId      String        @map("plan_id")
+  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  resourceType String       @map("resource_type") @db.VarChar(50)  // capex/opex/headcount
+  amount      Decimal?      @db.Decimal(14, 2)
+  unit        String?       @db.VarChar(20)
+  justification String?     @db.Text
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@index([planId])
+  @@map("resource_requests")
+}
+
+model PlanAssumption {
+  id          String        @id @default(uuid())
+  planId      String        @map("plan_id")
+  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  assumption  String        @db.Text
+  critical    Boolean       @default(false)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@index([planId])
+  @@map("plan_assumptions")
+}
+
+model PlanAttachment {
+  id          String        @id @default(uuid())
+  planId      String        @map("plan_id")
+  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  filename    String        @db.VarChar(255)
+  mimeType    String        @map("mime_type") @db.VarChar(120)
+  sizeBytes   Int           @map("size_bytes")
+  storagePath String        @map("storage_path") @db.VarChar(500)
+  uploadedAt  DateTime      @default(now()) @map("uploaded_at")
+
+  @@index([planId])
+  @@map("plan_attachments")
+}
+
+// ─── Market Intelligence (Hermes) ────────────────────────────────────────────
+
+enum IntelDimension {
+  product
+  gtm
+  brand
+  strategy
+}
+
+enum IntelImpact {
+  threat
+  opportunity
+  neutral
+}
+
+enum IntelSourceKind {
+  official_site
+  press
+  social
+  filing
+  patent
+  channel
+}
+
+enum IntelSourceHealth {
+  active
+  stale
+  empty
+}
+
+model IntelSource {
+  id            String            @id @default(uuid())
+  competitor    String            @db.VarChar(50)
+  kind          IntelSourceKind
+  url           String?           @db.VarChar(500)
+  cadenceDays   Int               @default(7) @map("cadence_days")
+  lastScrapedAt DateTime?         @map("last_scraped_at") @db.Date
+  health        IntelSourceHealth @default(empty)
+  active        Boolean           @default(true)
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  signals IntelSignal[]
+
+  @@index([competitor])
+  @@index([health])
+  @@map("intel_sources")
+}
+
+model IntelSignal {
+  id                    String          @id @default(uuid())
+  sourceId              String          @map("source_id")
+  competitor            String          @db.VarChar(50)
+  dimension             IntelDimension
+  title                 String          @db.VarChar(300)
+  summary               String          @db.Text
+  impact                IntelImpact
+  relevance             Int             @default(50)
+  sourceLabel           String          @map("source_label") @db.VarChar(200)
+  capturedAt            DateTime        @map("captured_at") @db.Date
+  linkedAssumptionCode  String?         @map("linked_assumption_code") @db.VarChar(10)
+  linkedActionCode      String?         @map("linked_action_code") @db.VarChar(10)
+  createdAt             DateTime        @default(now()) @map("created_at")
+
+  source IntelSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([competitor, dimension])
+  @@index([impact, relevance(sort: Desc)])
+  @@index([capturedAt(sort: Desc)])
+  @@map("intel_signals")
+
+  review IntelSignalReview?
+}
+
+model CompetitorTrack {
+  id           String   @id @default(uuid())
+  competitor   String   @unique @db.VarChar(50)
+  product      String?  @db.Text
+  gtm          String?  @db.Text
+  brand        String?  @db.Text
+  strategy     String?  @db.Text
+  momentum     String   @default("flat") @db.VarChar(10)  // up | down | flat
+  momentumNote String?  @map("momentum_note") @db.Text
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("competitor_tracks")
+}
+
+// ─── Market Intelligence · 竞争研究工作台 ────────────────────────────────────
+// 治理原则：事业部主建（产品线/对标/研究基线），大区主战（本地价盘/赢丢单/渠道动向）
+// 大区直接向主品类事业部总裁汇报，orgUnit 贯穿权限路由
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum CompetitorTier {
+  core    // 核心对手
+  watch   // 重点观察
+  fringe  // 边缘
+}
+
+enum ThreatLevel {
+  critical
+  high
+  medium
+  low
+}
+
+enum CompetePosition {
+  lead    // 领先
+  parity  // 持平
+  lag     // 落后
+}
+
+enum ResearchStatus {
+  todo
+  in_progress
+  current    // 已更新/现行
+  stale      // 需复研
+  archived
+}
+
+enum SignalReviewStatus {
+  draft_ai       // Hermes 起草，待确认
+  pending_review // 待人工审核
+  confirmed      // 已采纳
+  rejected       // 已驳回
+}
+
+enum WinLossOutcome {
+  win
+  loss
+  no_decision
+}
+
+enum CompetitorType {
+  existing     // 现有对手
+  new_entrant  // 新进入者
+  substitute   // 替代品
+}
+
+// ── 产品线主表（事业部主建，归属某事业部 OrgUnit）─────────────────────────────
+
+model MktProductLine {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(80)             // 热泵两联供
+  code         String   @unique @db.VarChar(20)      // heat_pump_dual
+  ownerOrgId   String?  @map("owner_org_id")         // 归属事业部（EXECUTIVE级OrgUnit）
+  description  String?  @db.Text
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(999) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ownerOrg        OrgUnit?           @relation("ProductLineOwner", fields: [ownerOrgId], references: [id])
+  cells           CompetitiveCell[]
+  specDimensions  ProductSpecDimension[]
+  ourProducts     CompetitorProduct[]    @relation("OurMktProductLine")
+
+  @@index([ownerOrgId])
+  @@map("mkt_product_lines")
+}
+
+// ── 销售大区（大区主战，可关联 OrgUnit）──────────────────────────────────────
+
+model SalesRegion {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(60)             // 华东大区
+  code         String   @unique @db.VarChar(20)      // east
+  parentId     String?  @map("parent_id")
+  orgUnitId    String?  @map("org_unit_id")          // 对应 OrgUnit（大区团队）
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(999) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  parent    SalesRegion?  @relation("RegionTree", fields: [parentId], references: [id])
+  children  SalesRegion[] @relation("RegionTree")
+  orgUnit   OrgUnit?      @relation("RegionOrgUnit", fields: [orgUnitId], references: [id])
+  cells     CompetitiveCell[]
+  winLoss   WinLossRecord[]
+
+  @@index([parentId])
+  @@map("sales_regions")
+}
+
+// ── 竞品品牌库（可增删，分 existing/new_entrant/substitute）────────────────
+
+model CompetitorBrand {
+  id            String         @id @default(uuid())
+  name          String         @unique @db.VarChar(80)
+  nameEn        String?        @map("name_en") @db.VarChar(80)
+  competitorType CompetitorType @default(existing) @map("competitor_type")
+  tier          CompetitorTier @default(watch)
+  threatLevel   ThreatLevel    @default(medium)
+  hq            String?        @db.VarChar(80)
+  positioning   String?        @db.Text
+  active        Boolean        @default(true)
+  sortOrder     Int            @default(999) @map("sort_order")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  products      CompetitorProduct[]
+  cells         CompetitiveCell[]
+  researchItems ResearchItem[]
+  winLossRecords WinLossRecord[]
+  battlecards   Battlecard[]
+
+  @@index([tier, active])
+  @@map("competitor_brands")
+}
+
+// ── 重点产品库（竞品 + 我方，均挂产品线）────────────────────────────────────
+
+model CompetitorProduct {
+  id             String    @id @default(uuid())
+  brandId        String?   @map("brand_id")         // null = 我方产品
+  productLineId  String?   @map("product_line_id")   // 归属产品线
+  isOurs         Boolean   @default(false) @map("is_ours")
+  name           String    @db.VarChar(120)
+  modelCode      String?   @map("model_code") @db.VarChar(60)
+  priceMin       Decimal?  @map("price_min") @db.Decimal(12, 2)
+  priceMax       Decimal?  @map("price_max") @db.Decimal(12, 2)
+  launchDate     DateTime? @map("launch_date") @db.Date
+  lifecycle      String?   @db.VarChar(30)           // 新品/主力/成熟/EOL
+  tracked        Boolean   @default(true)
+  positioning    String?   @db.Text
+  lastVerifiedAt DateTime? @map("last_verified_at") @db.Date  // 防基准腐烂
+  sortOrder      Int       @default(999) @map("sort_order")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  brand       CompetitorBrand?  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  productLine MktProductLine?      @relation("OurMktProductLine", fields: [productLineId], references: [id])
+  specs       ProductSpecValue[]
+  priceHistory CompetitorMetricPoint[] @relation("ProductPriceHistory")
+
+  @@index([brandId, tracked])
+  @@index([productLineId])
+  @@map("competitor_products")
+}
+
+// ── 产品规格维度定义（事业部配置，可增删）────────────────────────────────────
+
+model ProductSpecDimension {
+  id           String   @id @default(uuid())
+  productLineId String  @map("product_line_id")
+  key          String   @db.VarChar(60)             // cop / capacity / noise
+  label        String   @db.VarChar(80)             // 能效 COP
+  unit         String?  @db.VarChar(30)             // W/W
+  higherBetter Boolean  @default(true) @map("higher_better")
+  weight       Int      @default(1)
+  sortOrder    Int      @default(999) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  productLine MktProductLine       @relation(fields: [productLineId], references: [id], onDelete: Cascade)
+  values      ProductSpecValue[]
+
+  @@unique([productLineId, key])
+  @@index([productLineId, sortOrder])
+  @@map("product_spec_dimensions")
+}
+
+// ── 产品规格值（含 admitalty 可信度 + 人工修订标记）────────────────────────
+
+model ProductSpecValue {
+  id            String           @id @default(uuid())
+  productId     String           @map("product_id")
+  dimensionId   String           @map("dimension_id")
+  valueNum      Decimal?         @map("value_num") @db.Decimal(14, 4)
+  valueText     String?          @map("value_text") @db.VarChar(200)
+  position      CompetePosition?
+  note          String?          @db.VarChar(300)
+  editedManually Boolean         @default(false) @map("edited_manually")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  product   CompetitorProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  dimension ProductSpecDimension @relation(fields: [dimensionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, dimensionId])
+  @@map("product_spec_values")
+}
+
+// ── 时间序列指标（价格/渠道签约数等变化率）────────────────────────────────
+
+model CompetitorMetricPoint {
+  id          String   @id @default(uuid())
+  productId   String?  @map("product_id")           // 挂具体产品（价格）
+  brandId     String?  @map("brand_id")             // 或挂品牌（渠道签约数）
+  regionId    String?  @map("region_id")
+  metricKey   String   @map("metric_key") @db.VarChar(60)  // price / dealer_count
+  value       Decimal  @db.Decimal(14, 4)
+  period      String   @db.VarChar(10)              // 2026-06
+  source      String?  @db.VarChar(200)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  product  CompetitorProduct? @relation("ProductPriceHistory", fields: [productId], references: [id])
+
+  @@index([metricKey, period])
+  @@index([brandId, metricKey])
+  @@map("competitor_metric_points")
+}
+
+// ── 三维竞争单元（产品线 × 大区 × 竞品）─────────────────────────────────────
+// 按需创建，空格子 = 未覆盖战场 = 盲区预警
+
+model CompetitiveCell {
+  id              String          @id @default(uuid())
+  productLineId   String          @map("product_line_id")
+  regionId        String          @map("region_id")
+  competitorId    String          @map("competitor_id")
+  threatLevel     ThreatLevel     @default(medium) @map("threat_level")
+  ourPosition     CompetePosition @default(parity) @map("our_position")
+  marketShareEst  Decimal?        @map("market_share_est") @db.Decimal(5, 2)
+  priceIndexUs    Decimal?        @map("price_index_us") @db.Decimal(6, 2)   // 我方=100
+  dealerCountComp Int?            @map("dealer_count_comp")
+  dealerCountUs   Int?            @map("dealer_count_us")
+  summary         String?         @db.Text          // 该战场一句话结论
+  // 人工修订主轴
+  editedManually  Boolean         @default(false) @map("edited_manually")
+  lastReviewedAt  DateTime?       @map("last_reviewed_at") @db.Date
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  productLine  MktProductLine     @relation(fields: [productLineId], references: [id])
+  region       SalesRegion     @relation(fields: [regionId], references: [id])
+  competitor   CompetitorBrand @relation(fields: [competitorId], references: [id])
+  researchItems ResearchItem[]
+  winLossRecords WinLossRecord[]
+
+  @@unique([productLineId, regionId, competitorId])
+  @@index([productLineId, threatLevel])
+  @@index([regionId])
+  @@map("competitive_cells")
+}
+
+// ── 四维研究画布（事业部主建基线，大区可补充本地洞察）──────────────────────
+
+model ResearchItem {
+  id              String         @id @default(uuid())
+  cellId          String?        @map("cell_id")      // 挂三维单元（可选）
+  brandId         String         @map("brand_id")
+  dimension       IntelDimension
+  subtopic        String         @db.VarChar(80)       // 技术路线/渠道结构/品牌定位/并购战略
+  status          ResearchStatus @default(todo)
+  findings        String?        @db.Text
+  evidence        String?        @db.Text
+  ownerOrgId      String?        @map("owner_org_id")  // 事业部 or 大区
+  ownerName       String?        @map("owner_name") @db.VarChar(60)
+  confidence      Int            @default(50)          // 0-100
+  // Admiralty 双维度可信度
+  sourceReliability String?      @map("source_reliability") @db.VarChar(2) // A-F
+  infoCredibility   Int?         @map("info_credibility")                   // 1-6
+  reviewEveryDays   Int          @default(30) @map("review_every_days")
+  lastReviewedAt    DateTime?    @map("last_reviewed_at") @db.Date
+  // 人工修订主轴
+  origin            String       @default("manual") @db.VarChar(20) // manual/hermes
+  editedManually    Boolean      @default(false) @map("edited_manually")
+  sortOrder         Int          @default(999) @map("sort_order")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  cell     CompetitiveCell? @relation(fields: [cellId], references: [id])
+  brand    CompetitorBrand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  ownerOrg OrgUnit?         @relation("ResearchItemOwner", fields: [ownerOrgId], references: [id])
+
+  @@index([brandId, dimension])
+  @@index([status])
+  @@index([cellId])
+  @@map("research_items")
+}
+
+// ── 赢单/丢单记录（大区录入，挂产品线+大区+竞品）────────────────────────────
+
+model WinLossRecord {
+  id             String         @id @default(uuid())
+  outcome        WinLossOutcome
+  cellId         String?        @map("cell_id")
+  regionId       String         @map("region_id")
+  competitorId   String?        @map("competitor_id")
+  productLineId  String?        @map("product_line_id")  // 冗余方便聚合
+  projectName    String?        @map("project_name") @db.VarChar(200)
+  dealSizeCny    Decimal?       @map("deal_size_cny") @db.Decimal(14, 2)
+  lossReason     String?        @map("loss_reason") @db.Text
+  winReason      String?        @map("win_reason") @db.Text
+  customerType   String?        @map("customer_type") @db.VarChar(60) // 酒店/家装/工程
+  recordedById   String?        @map("recorded_by_id")
+  recordedAt     DateTime       @map("recorded_at") @db.Date
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  cell       CompetitiveCell? @relation(fields: [cellId], references: [id])
+  region     SalesRegion      @relation(fields: [regionId], references: [id])
+  competitor CompetitorBrand? @relation(fields: [competitorId], references: [id])
+
+  @@index([regionId, outcome])
+  @@index([competitorId, outcome])
+  @@index([productLineId])
+  @@map("win_loss_records")
+}
+
+// ── Battlecard（一线销售用，事业部/品类团队维护）────────────────────────────
+
+model Battlecard {
+  id              String   @id @default(uuid())
+  competitorId    String   @map("competitor_id")
+  productLineId   String?  @map("product_line_id")
+  headline        String   @db.VarChar(200)        // 打赢这一单的核心论点
+  ourStrengths    String[] @map("our_strengths")
+  theirWeaknesses String[] @map("their_weaknesses")
+  traps           String[] // 对方常用陷阱
+  responses       String[] // 我方应对话术
+  editedManually  Boolean  @default(true) @map("edited_manually")
+  publishedAt     DateTime? @map("published_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  competitor   CompetitorBrand @relation(fields: [competitorId], references: [id])
+
+  @@unique([competitorId, productLineId])
+  @@map("battlecards")
+}
+
+// ── IntelSignal 评审状态扩展（Hermes 起草 → 人工确认 → 进研究画布）──────────
+// 通过迁移脚本将 review_status 加到 intel_signals 表，此处用独立扩展表
+model IntelSignalReview {
+  id           String            @id @default(uuid())
+  signalId     String            @unique @map("signal_id")
+  status       SignalReviewStatus @default(draft_ai)
+  reviewerName String?           @map("reviewer_name") @db.VarChar(60)
+  reviewNote   String?           @map("review_note") @db.Text
+  reviewedAt   DateTime?         @map("reviewed_at")
+  // 信号影响：是否驱动情景概率
+  linkedScenarioCode String?     @map("linked_scenario_code") @db.VarChar(30)
+  scenarioProbabilityDelta Decimal? @map("scenario_probability_delta") @db.Decimal(5, 3)
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  signal IntelSignal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+
+  @@map("intel_signal_reviews")
+}
+
+// ── IntelReport（态势报告，Hermes 起草，人工确认才发布）──────────────────────
+
+model IntelReport {
+  id            String   @id @default(uuid())
+  title         String   @db.VarChar(200)
+  period        String   @db.VarChar(10)
+  scope         String?  @db.VarChar(200)           // 产品线/大区/全局
+  status        SignalReviewStatus @default(draft_ai)
+  content       String?  @db.Text                   // Hermes 生成的报告草稿
+  editedContent String?  @map("edited_content") @db.Text  // 人工修订后的版本
+  confirmedById String?  @map("confirmed_by_id")
+  confirmedAt   DateTime? @map("confirmed_at")
+  publishedAt   DateTime? @map("published_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([period, status])
+  @@map("intel_reports")
+}

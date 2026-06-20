@@ -1,0 +1,74 @@
+# StratOS Gate 清单 · MVP+ · 输出风险清单非综合分
+# 消费：lib/gates/checklists.ts
+
+invest:
+  doctrine: Invest to Growth
+  items:
+    - id: ic-okr
+      label: 投资案挂 OKR-O 或 Diagnosis.crux
+    - id: ic-hx
+      label: 每条 IC 有 ≥1 条战略假设 Hx
+    - id: ic-irr
+      label: IRR 超门槛或 CEO 例外记录
+    - id: ic-runway
+      label: 不击穿 CapStack 现金波峰后 runway
+    - id: ic-budget-tag
+      label: approved IC 必填 budget_tag
+    - id: ic-vx-owner
+      label: 资本类 Vx 有 Owner
+    - id: ic-wushi
+      label: 五事「将/法」检查通过或风险已列
+
+innovate:
+  doctrine: Innovate to Lead
+  items:
+    - id: pb-jtbd
+      label: 每条 H2/H3 ProductBet 有 JTBD
+    - id: rd-now5
+      label: Roadmap Now 项 ≤5
+    - id: gap-vx
+      label: 每条 lagging Gap 有 Vx 或 defer
+    - id: h3-ratio
+      label: H3 占比 vs 研发/CAPEX 可解释
+    - id: wtp-align
+      label: 与 WTP/HTW 无矛盾
+    - id: crux-align
+      label: 与 Diagnosis.crux 对齐
+    - id: hx-revenue
+      label: 新品收入占比假设 Hx 已绑定
+    - id: kill-criteria
+      label: H3 赌注有 kill_criteria
+
+deliver:
+  doctrine: Deliver on Commitment
+  items:
+    - id: seg-bet
+      label: 每个 focus 段有 GtmBet 或 OKR-KR
+    - id: cell-coverage
+      label: P0 BrandChannelCell 有 coverage 三态
+    - id: bet-hx
+      label: GtmBet 有 ≥1 条 Hx
+    - id: ltv-cac
+      label: 段级 LTV:CAC 非红或已有修正 Vx
+    - id: gtm-now5
+      label: Now 泳道 Gtm 动作 ≤5
+    - id: prod-align
+      label: 与 ProdStack / WTP 无矛盾
+    - id: ic-peak
+      label: 渠道 IC 与 CapStack 现金波峰一致
+    - id: roadmap-deliver
+      label: Deliver 承诺与 GtmRoadmap 一致
+
+wushi:
+  label: 五事七计 · Gate 定性检查
+  items:
+    - id: dao
+      label: 道 — 与使命愿景一致
+    - id: tian
+      label: 天 — 时机与宏观窗口
+    - id: di
+      label: 地 — 市场/区域根基
+    - id: jiang
+      label: 将 — 负责人与能力
+    - id: fa
+      label: 法 — 组织与流程就绪

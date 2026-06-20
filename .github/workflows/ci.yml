@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run fonts:fetch
+
+      - run: npm run harness:ci
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/stratos
+
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/stratos
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: harness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run fonts:fetch
+
+      - run: npx playwright install chromium --with-deps
+
+      - run: npm run test:e2e
+        env:
+          CI: "true"

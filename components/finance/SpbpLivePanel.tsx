@@ -1,0 +1,137 @@
+"use client";
+
+import { useState } from "react";
+import type { Scenario } from "@/lib/types/stratos";
+import { weightedRunway } from "@/lib/stratos/spbp-bayes";
+
+export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario[] }) {
+  const [scenarios, setScenarios] = useState(initialScenarios);
+  const [loading, setLoading] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  async function applyEvidence(type: "optimistic" | "pessimistic" | "reset") {
+    setLoading(true);
+    setNote(null);
+    try {
+      if (type === "reset") {
+        setScenarios(initialScenarios);
+        setNote("已重置为页面加载时概率");
+        return;
+      }
+      const res = await fetch("/api/spbp/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          favorsOptimistic: type === "optimistic",
+          favorsPessimistic: type === "pessimistic",
+          strength: 0.12,
+        }),
+      });
+      const data = (await res.json()) as { scenarios: Scenario[]; source: string };
+      setScenarios(data.scenarios);
+      setNote(`贝叶斯式更新 · 数据源 ${data.source}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const weightedRev = scenarios.reduce(
+    (s, sc) => s + sc.fpaImpact.revenue * (sc.probability / 100),
+    0
+  );
+  const wr = weightedRunway(scenarios);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => applyEvidence("pessimistic")}
+          className="rounded border border-[#8b0e04]/40 px-3 py-1.5 text-xs text-[#8b0e04] hover:bg-[#8b0e04]/10 disabled:opacity-50"
+        >
+          Q2 证据偏悲观
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => applyEvidence("optimistic")}
+          className="rounded border border-emerald-500/40 px-3 py-1.5 text-xs text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50"
+        >
+          Q2 证据偏乐观
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => applyEvidence("reset")}
+          className="rounded border border-black/10 px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04] disabled:opacity-50"
+        >
+          重置
+        </button>
+        {note && <span className="text-xs text-[var(--color-text-muted)]">{note}</span>}
+      </div>
+
+      <section className="rounded-lg border border-[var(--color-accent-gold)]/20 bg-[var(--color-bg-surface)] p-6">
+        <p className="mb-4 text-xs text-[var(--color-text-muted)]">
+          加权期望 · 营收 {Math.round(weightedRev)} 万 · runway {wr.toFixed(1)} 月
+        </p>
+        <div className="flex h-3 overflow-hidden rounded-full">
+          {scenarios.map((sc) => (
+            <div
+              key={sc.id}
+              className="h-full"
+              style={{
+                width: `${sc.probability}%`,
+                backgroundColor:
+                  sc.name === "乐观"
+                    ? "#22c55e"
+                    : sc.name === "悲观"
+                      ? "#8b0e04"
+                      : "var(--color-accent-gold)",
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {scenarios.map((sc) => (
+          <article
+            key={sc.id}
+            className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-5"
+          >
+            <div className="flex items-baseline justify-between">
+              <h4 className="font-medium">{sc.name}</h4>
+              <span className="font-data text-2xl text-[var(--color-accent-gold)]">
+                {sc.probability}%
+              </span>
+            </div>
+            <ul className="mt-3 space-y-1 text-sm text-[var(--color-text-muted)]">
+              {sc.drivers.map((d) => (
+                <li key={d}>· {d}</li>
+              ))}
+            </ul>
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-black/[0.06] pt-3 text-xs">
+              <div>
+                <div className="text-[var(--color-text-muted)]">营收</div>
+                <div className="font-data">{sc.fpaImpact.revenue}</div>
+              </div>
+              <div>
+                <div className="text-[var(--color-text-muted)]">利润</div>
+                <div className="font-data">{sc.fpaImpact.profit}</div>
+              </div>
+              <div>
+                <div className="text-[var(--color-text-muted)]">Runway</div>
+                <div
+                  className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[#8b0e04]" : ""}`}
+                >
+                  {sc.fpaImpact.runwayMonths}月
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
