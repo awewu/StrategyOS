@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildManagementReport } from "@/lib/fpa/management-report";
-import { buildScrSummary, buildTopAlerts } from "./scr";
+import { buildScrSummary, buildTopAlerts, buildImplications, buildDecisionItems, buildIssueTree } from "./scr";
 
 describe("panorama scr", () => {
   const deck = {
@@ -38,6 +38,8 @@ describe("panorama scr", () => {
       capexActual: 9000,
       capexForecast: 9500,
       byHorizon: { H1: 62, H2: 28, H3: 10 },
+      byBrand: {},
+      byType: {},
       cashPeakMonth: "2026-09",
       cashPeakAmount: 3200,
       runwayAfterPeak: 2.8,
@@ -76,7 +78,6 @@ describe("panorama scr", () => {
   });
 
   it("builds implications and decisions from deck", () => {
-    const { buildImplications, buildDecisionItems, buildIssueTree } = require("./scr");
     const implications = buildImplications(deck);
     assert.ok(implications.length >= 1);
     const decisions = buildDecisionItems(deck);

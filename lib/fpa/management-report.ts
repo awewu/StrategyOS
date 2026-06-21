@@ -77,9 +77,9 @@ function buildIncomeStatement(fpa: FpaSummary, period: string): IncomeStatement 
   const opex = (r: number, ratio: number) => Math.round(r * ratio);
   const ebitda = (g: number, o: number) => g - o;
   const da = (r: number) => Math.round(r * daRatio);
-  const ebit = (eb: number, d: number) => eb - d;
+  const _ebit = (eb: number, d: number) => eb - d;
   const interest = (r: number) => Math.round(r * interestRatio);
-  const ebt = (eb: number, i: number) => eb - i;
+  const _ebt = (eb: number, i: number) => eb - i;
   const tax = (e: number) => Math.round(Math.max(0, e) * taxRate);
   const net = (e: number, t: number) => e - t;
 
@@ -92,9 +92,9 @@ function buildIncomeStatement(fpa: FpaSummary, period: string): IncomeStatement 
   const oB = opex(revB, opexRatioB);
   const oA = opex(revA, opexRatioA);
   const oF = opex(revF, opexRatioF);
-  const ebB = ebitda(gB, oB);
-  const ebA = ebitda(gA, oA);
-  const ebF = ebitda(gF, oF);
+  const _ebB = ebitda(gB, oB);
+  const _ebA = ebitda(gA, oA);
+  const _ebF = ebitda(gF, oF);
   const dB = da(revB);
   const dA = da(revA);
   const dF = da(revF);

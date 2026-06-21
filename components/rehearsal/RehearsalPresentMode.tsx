@@ -37,17 +37,13 @@ export function RehearsalPresentMode({
   const [running, setRunning] = useState(true);
   const [segmentElapsed, setSegmentElapsed] = useState(0);
   const [meetingElapsed, setMeetingElapsed] = useState(0);
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [checked, setChecked] = useState<Record<string, boolean>>(loadChecked);
 
   const step = Q3_REHEARSAL_AGENDA[active];
   const segmentBudgetSec = step.durationMin * 60;
   const segmentRemaining = Math.max(0, segmentBudgetSec - segmentElapsed);
   const overtime = segmentElapsed > segmentBudgetSec;
   const meetingBudgetSec = REHEARSAL_TOTAL_MIN * 60;
-
-  useEffect(() => {
-    setChecked(loadChecked());
-  }, []);
 
   const persistCheck = useCallback(
     (key: string, done: boolean) => {
@@ -81,8 +77,9 @@ export function RehearsalPresentMode({
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSegmentElapsed(0);
-  }, [active]);
+  }, [active]); // reset timer on segment change
 
   useEffect(() => {
     if (!running) return;

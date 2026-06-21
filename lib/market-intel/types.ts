@@ -21,7 +21,8 @@ export type SourceKind =
   | "social"
   | "filing"
   | "patent"
-  | "channel";
+  | "channel"
+  | "recruitment";
 
 export interface IntelSource {
   id: string;
@@ -46,6 +47,55 @@ export interface IntelSignal {
   capturedAt: string;
   linkedAssumptionCode?: string;
   linkedActionCode?: string;
+  /** QC grounding verdict assigned by the curator node. */
+  verdict?: SupportVerdict;
+  /** Short evidence snippet (quoted from source text) backing this signal. */
+  evidence?: string;
+}
+
+/**
+ * Anti-hallucination grounding verdict for a single extracted signal.
+ *  - supported   : claim is directly traceable to source text
+ *  - partial     : claim is plausible but evidence is thin / inferred
+ *  - unsupported : claim has no evidence in source text → dropped
+ */
+export type SupportVerdict = "supported" | "partial" | "unsupported";
+
+export const VERDICT_LABEL: Record<SupportVerdict, string> = {
+  supported: "已佐证",
+  partial: "部分佐证",
+  unsupported: "无佐证",
+};
+
+/** A signal the curator dropped, recorded for transparency (not hidden). */
+export interface CurationDrop {
+  competitor: string;
+  dimension: IntelDimension;
+  title: string;
+  reason: string;
+}
+
+/** Result of one full Hermes pipeline run (collect→analyze→qc→decide). */
+export interface HermesPipelineResult {
+  scanId: string;
+  ranAt: string;
+  sourcesScanned: number;
+  sourcesActive: number;
+  /** Signals that passed QC and are kept (supported / partial). */
+  kept: IntelSignal[];
+  /** Signals the curator dropped as unsupported. */
+  drops: CurationDrop[];
+  /** Per-node trace for observability in the UI. */
+  trace: HermesNodeTrace[];
+  /** Number of closed-loop rounds executed (re-collect on low coverage). */
+  rounds: number;
+  llmEngine: "rule" | "llm";
+}
+
+export interface HermesNodeTrace {
+  node: "collect" | "analyze" | "qc" | "decide";
+  competitor: string;
+  detail: string;
 }
 
 export interface CompetitorTrack {
@@ -89,4 +139,39 @@ export const SOURCE_LABEL: Record<SourceKind, string> = {
   filing: "财报公告",
   patent: "专利",
   channel: "渠道情报",
+  recruitment: "招聘信号",
 };
+
+/**
+ * Lead time of an intelligence signal relative to a competitor's market move.
+ *  - leading    : precedes the move by ~6–12 months (recruitment, patents)
+ *  - coincident : surfaces as the move happens (product launch, GTM, brand)
+ *  - lagging    : confirms a move after the fact (financial filings)
+ *
+ * Separating these lets the board see "what's coming" apart from "what already
+ * happened" — the core value of early-warning intelligence.
+ */
+export type LeadTime = "leading" | "coincident" | "lagging";
+
+export const LEAD_TIME_LABEL: Record<LeadTime, string> = {
+  leading: "领先信号",
+  coincident: "同步信号",
+  lagging: "滞后信号",
+};
+
+/**
+ * Map a source kind to its lead time. Recruitment + patents are the earliest
+ * warning (a competitor staffs up / files IP 6–12 months before launch);
+ * filings confirm moves already made.
+ */
+export function leadTimeOf(kind: SourceKind): LeadTime {
+  switch (kind) {
+    case "recruitment":
+    case "patent":
+      return "leading";
+    case "filing":
+      return "lagging";
+    default:
+      return "coincident";
+  }
+}

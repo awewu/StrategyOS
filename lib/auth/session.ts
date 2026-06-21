@@ -37,6 +37,8 @@ export async function resolveUserByEmail(email: string): Promise<SessionPayload 
     email: row.email,
     name: row.name,
     role: row.role as RoleKey,
+    orgUnitId: row.orgUnitId,
+    projectCode: row.projectCode,
   };
 }
 

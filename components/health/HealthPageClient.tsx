@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BscLights } from "@/components/health/BscLights";
 import { BafBar } from "@/components/finance/BafBar";
 import { TwelveDimPanel } from "@/components/health/TwelveDimPanel";
@@ -14,6 +15,7 @@ export function HealthPageClient({
   fpa,
   robustOverall,
   source,
+  hideTitle = false,
 }: {
   bscLights: {
     financial: TrafficLight;
@@ -26,19 +28,53 @@ export function HealthPageClient({
   robustOverall: number;
   robustScore: RobustnessDimensions;
   source: string;
+  hideTitle?: boolean;
 }) {
   const { role } = useRole();
-  const showTwelve = role === "staff" || role === "vp";
+  const showTwelve = role === "ceo" || role === "staff" || role === "vp";
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">看健康</h1>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          四灯独立 · {showTwelve ? "十二维下钻已开启" : "CEO 视图四维+8 KPI"} · 数据源{" "}
-          {source === "database" ? "DB" : "Demo"}
-        </p>
-      </div>
+      {!hideTitle ? (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold">看健康</h1>
+            <p className="text-sm text-[var(--color-text-muted)]">
+              四灯独立 · {showTwelve ? "十二维下钻已开启" : "CEO 视图四维+8 KPI"} · 数据源{" "}
+              {source === "database" ? "DB" : "Demo"}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/finance"
+              className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+            >
+              FPA 管理报表 →
+            </Link>
+            <Link
+              href="/outlook"
+              className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+            >
+              战略展望 →
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Link
+            href="/finance"
+            className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+          >
+            FPA 管理报表 →
+          </Link>
+          <Link
+            href="/outlook"
+            className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+          >
+            战略展望 →
+          </Link>
+        </div>
+      )}
 
       <BscLights lights={bscLights} />
 
@@ -61,8 +97,8 @@ export function HealthPageClient({
             {healthOverview.kpis.map((k) => (
               <tr key={k.name} className="border-t border-black/[0.06]">
                 <td className="py-2">{k.name}</td>
-                <td className="py-2 font-data text-[#828c8d]">{k.target}</td>
-                <td className="py-2 font-data">{k.value}</td>
+                <td className="py-2 text-[#828c8d]">{k.target}</td>
+                <td className="py-2">{k.value}</td>
                 <td className="py-2">
                   <TrafficLightDot signal={k.status as TrafficLight} />
                 </td>
@@ -74,7 +110,15 @@ export function HealthPageClient({
 
       {showTwelve && <TwelveDimPanel />}
 
-      <BafBar fpa={fpa} />
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs text-[var(--color-text-muted)]">B·A·F 与 FPA 联动</span>
+          <Link href="/finance?tab=overview" className="text-sm text-[var(--color-accent-gold)] hover:underline">
+            FPA B-A-F 总览 →
+          </Link>
+        </div>
+        <BafBar fpa={fpa} />
+      </section>
     </div>
   );
 }

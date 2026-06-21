@@ -26,6 +26,7 @@ async function main() {
   const executives = [
     { id: "org-exec-ac", name: "空调事业部", nameEn: "Air Conditioning BU", sortOrder: 10 },
     { id: "org-exec-hw", name: "热水事业部", nameEn: "Hot Water BU", sortOrder: 20 },
+    { id: "org-exec-bd", name: "BD事业部", nameEn: "Business Development BU", sortOrder: 25 },
     { id: "org-exec-brand", name: "品牌事业部", nameEn: "Brand BU", sortOrder: 30 },
     { id: "org-exec-rd", name: "研发中心", nameEn: "R&D Center", sortOrder: 40 },
     { id: "org-exec-mfg", name: "制造事业部", nameEn: "Manufacturing BU", sortOrder: 50 },
@@ -50,6 +51,9 @@ async function main() {
     // 热水事业部下
     { id: "org-op-hw-heatpump", name: "热泵产品部", parentId: "org-exec-hw", sortOrder: 21 },
     { id: "org-op-hw-storage", name: "储水产品部", parentId: "org-exec-hw", sortOrder: 22 },
+    // BD事业部下
+    { id: "org-op-bd-strategic", name: "战略客户部", parentId: "org-exec-bd", sortOrder: 26 },
+    { id: "org-op-bd-channel", name: "渠道拓展部", parentId: "org-exec-bd", sortOrder: 27 },
     // 研发中心下
     { id: "org-op-rd-core", name: "核心技术部", parentId: "org-exec-rd", sortOrder: 41 },
     { id: "org-op-rd-product", name: "产品开发部", parentId: "org-exec-rd", sortOrder: 42 },

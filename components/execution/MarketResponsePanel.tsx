@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { MarketEvidence, CompetitivePosition } from "@/lib/execution/market-response";
 
 const VERDICT_META = {
@@ -9,17 +10,9 @@ const VERDICT_META = {
   empty:            { label: "待录入",     color: "#4e5758", bg: "bg-black/[0.03]",  border: "border-black/10 border-dashed" },
 } as const;
 
-function EmptySlot({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-dashed border-black/12 bg-black/[0.02] px-4 py-3">
-      <span className="h-2 w-2 rounded-full bg-black/15 flex-shrink-0" />
-      <span className="flex-1 text-sm text-[#4e5758]">{label}</span>
-      <span className="rounded bg-black/[0.04] px-2 py-0.5 text-xs text-[#4e5758]">待录入</span>
-    </div>
-  );
-}
+const inputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
-function EvidenceCard({ item }: { item: MarketEvidence }) {
+function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: MarketEvidence) => void }) {
   const meta = VERDICT_META[item.verdict];
   if (item.verdict === "empty") {
     return (
@@ -30,7 +23,7 @@ function EvidenceCard({ item }: { item: MarketEvidence }) {
             <span className="text-sm text-[#828c8d]">{item.actionLabel}</span>
             {item.actionCode && <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-xs text-[#4e5758]">{item.actionCode}</span>}
           </div>
-          <span className="text-xs text-[#4e5758]">待录入</span>
+          <button onClick={() => onEdit(item)} className="text-xs text-[var(--color-accent)] hover:underline">录入反馈</button>
         </div>
         {item.linkedAssumptionCode && (
           <p className="mt-1.5 text-xs text-[#4e5758]">关联假设 {item.linkedAssumptionCode} · 市场反馈缺失，假设有效性无法评估</p>
@@ -52,9 +45,12 @@ function EvidenceCard({ item }: { item: MarketEvidence }) {
             <span className="ml-3.5 text-xs text-[var(--color-text-muted)]">假设 {item.linkedAssumptionCode}</span>
           )}
         </div>
-        <span className="flex-shrink-0 rounded px-2 py-0.5 text-xs font-medium" style={{ color: meta.color, backgroundColor: meta.color + "20" }}>
-          {meta.label}
-        </span>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <span className="rounded px-2 py-0.5 text-xs font-medium" style={{ color: meta.color, backgroundColor: meta.color + "20" }}>
+            {meta.label}
+          </span>
+          <button onClick={() => onEdit(item)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
+        </div>
       </div>
       <p className="text-sm leading-relaxed">{item.evidenceText}</p>
       {item.verdictNote && (
@@ -69,7 +65,143 @@ function EvidenceCard({ item }: { item: MarketEvidence }) {
   );
 }
 
-function CompetitiveTable({ positions }: { positions: CompetitivePosition[] }) {
+function EvidenceModal({ item, onClose, onSaved }: {
+  item: MarketEvidence; onClose: () => void; onSaved: () => void;
+}) {
+  const [form, setForm] = useState<MarketEvidence>({ ...item });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function save() {
+    setSaving(true); setErr("");
+    try {
+      const r = await fetch("/api/execution/market-evidence", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error ?? "保存失败"); return; }
+      onSaved();
+    } catch { setErr("网络错误"); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
+        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">录入市场反馈 · {form.actionLabel}</h3>
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">市场证据</label>
+            <textarea value={form.evidenceText ?? ""} onChange={(e) => setForm({ ...form, evidenceText: e.target.value || null })} rows={3}
+              placeholder="如：Q2 华东新签 62 家，同期史密斯约 300 家，渗透率 3.1%" className={inputCls + " resize-none"} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">执行判定</label>
+            <select value={form.verdict} onChange={(e) => setForm({ ...form, verdict: e.target.value as MarketEvidence["verdict"] })} className={inputCls}>
+              <option value="empty">待录入</option>
+              <option value="effective">执行有效</option>
+              <option value="assumption_failed">假设失效</option>
+              <option value="inconclusive">证据不足</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">判定说明</label>
+            <input value={form.verdictNote ?? ""} onChange={(e) => setForm({ ...form, verdictNote: e.target.value || null })} className={inputCls} placeholder="如：假设 H5 按当前速度无法兑现" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">来源</label>
+              <input value={form.evidenceSource ?? ""} onChange={(e) => setForm({ ...form, evidenceSource: e.target.value || null })} className={inputCls} placeholder="销售周报 2026-06" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">录入人</label>
+              <input value={form.recordedBy ?? ""} onChange={(e) => setForm({ ...form, recordedBy: e.target.value || null })} className={inputCls} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">采集日期</label>
+            <input type="date" value={form.recordedAt ?? ""} onChange={(e) => setForm({ ...form, recordedAt: e.target.value || null })} className={inputCls} />
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-1.5 text-sm hover:bg-black/[0.04]">取消</button>
+          <button onClick={save} disabled={saving} className="rounded-md bg-[var(--color-accent)] px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50">
+            {saving ? "保存中…" : "保存"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PositionModal({ item, onClose, onSaved }: {
+  item: CompetitivePosition; onClose: () => void; onSaved: () => void;
+}) {
+  const [form, setForm] = useState<CompetitivePosition>({ ...item });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function save() {
+    setSaving(true); setErr("");
+    try {
+      const r = await fetch("/api/execution/position", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error ?? "保存失败"); return; }
+      onSaved();
+    } catch { setErr("网络错误"); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
+        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">录入竞争位移 · {form.dimension}</h3>
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">我方值</label>
+              <input value={form.ourValue ?? ""} onChange={(e) => setForm({ ...form, ourValue: e.target.value || null })} className={inputCls} placeholder="62 家" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">竞品值</label>
+              <input value={form.theirValue ?? ""} onChange={(e) => setForm({ ...form, theirValue: e.target.value || null })} className={inputCls} placeholder="约 300 家" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">差距</label>
+            <input value={form.delta ?? ""} onChange={(e) => setForm({ ...form, delta: e.target.value || null })} className={inputCls} placeholder="落后 238 家 (-79%)" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">来源</label>
+              <input value={form.evidenceSource ?? ""} onChange={(e) => setForm({ ...form, evidenceSource: e.target.value || null })} className={inputCls} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">录入人</label>
+              <input value={form.recordedBy ?? ""} onChange={(e) => setForm({ ...form, recordedBy: e.target.value || null })} className={inputCls} />
+            </div>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-1.5 text-sm hover:bg-black/[0.04]">取消</button>
+          <button onClick={save} disabled={saving} className="rounded-md bg-[var(--color-accent)] px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50">
+            {saving ? "保存中…" : "保存"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompetitiveTable({ positions, onEdit }: {
+  positions: CompetitivePosition[]; onEdit: (p: CompetitivePosition) => void;
+}) {
   const filledCount = positions.filter((p) => p.ourValue && p.theirValue).length;
   const missingCount = positions.length - filledCount;
 
@@ -91,6 +223,7 @@ function CompetitiveTable({ positions }: { positions: CompetitivePosition[] }) {
               <th className="px-3 py-2.5 font-normal text-[var(--color-text-muted)]">竞品</th>
               <th className="px-3 py-2.5 font-normal text-[var(--color-text-muted)]">差距</th>
               <th className="px-3 py-2.5 font-normal text-[var(--color-text-muted)]">来源</th>
+              <th className="px-3 py-2.5" />
             </tr>
           </thead>
           <tbody>
@@ -112,6 +245,9 @@ function CompetitiveTable({ positions }: { positions: CompetitivePosition[] }) {
                       ? <span>{p.evidenceSource} · {p.recordedBy}</span>
                       : <span className="italic">无来源</span>}
                   </td>
+                  <td className="px-3 py-2.5">
+                    <button onClick={() => onEdit(p)} className="text-xs text-[var(--color-accent)] hover:underline">{missing ? "录入" : "编辑"}</button>
+                  </td>
                 </tr>
               );
             })}
@@ -128,7 +264,10 @@ export function MarketResponsePanel({
   responses: MarketEvidence[];
   positions: CompetitivePosition[];
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<"response" | "position">("response");
+  const [editEvidence, setEditEvidence] = useState<MarketEvidence | null>(null);
+  const [editPosition, setEditPosition] = useState<CompetitivePosition | null>(null);
 
   const emptyCount     = responses.filter((r) => r.verdict === "empty").length;
   const failedCount    = responses.filter((r) => r.verdict === "assumption_failed").length;
@@ -136,6 +275,12 @@ export function MarketResponsePanel({
   const totalSlots     = responses.length;
 
   const cpMissingCount = positions.filter((p) => !p.ourValue || !p.theirValue).length;
+
+  function refresh() {
+    setEditEvidence(null);
+    setEditPosition(null);
+    router.refresh();
+  }
 
   return (
     <section className="space-y-4">
@@ -189,10 +334,13 @@ export function MarketResponsePanel({
 
       {tab === "response" && (
         <div className="space-y-3">
-          {responses.map((r) => <EvidenceCard key={r.id} item={r} />)}
+          {responses.map((r) => <EvidenceCard key={r.id} item={r} onEdit={setEditEvidence} />)}
         </div>
       )}
-      {tab === "position" && <CompetitiveTable positions={positions} />}
+      {tab === "position" && <CompetitiveTable positions={positions} onEdit={setEditPosition} />}
+
+      {editEvidence && <EvidenceModal item={editEvidence} onClose={() => setEditEvidence(null)} onSaved={refresh} />}
+      {editPosition && <PositionModal item={editPosition} onClose={() => setEditPosition(null)} onSaved={refresh} />}
     </section>
   );
 }

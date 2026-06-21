@@ -1,7 +1,7 @@
 /**
  * Entity-level DB getters — demo fallback when DATABASE_URL unset or empty tables.
  */
-import { dbAvailable, prisma } from "@/lib/db";
+import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import { healthOverview as demoHealthOverview } from "@/lib/demo-data";
 import * as demo from "@/lib/stratos-demo-data";
 import type {
@@ -64,25 +64,26 @@ export async function getGtmBets(): Promise<GtmBet[]> {
 }
 
 export async function getProjects(): Promise<Project[]> {
-  if (!(await dbAvailable())) return demo.projects;
-  const rows = await prisma.project.findMany({
-    where: { period: PERIOD },
-    include: { owner: true },
-  });
-  if (rows.length === 0) return demo.projects;
-  return rows.map((r) => ({
-    id: r.id,
-    code: r.code,
-    name: r.name,
-    cynefinDomain: r.cynefinDomain,
-    horizon: r.horizon ?? undefined,
-    progressPercent: Number(r.progressPercent ?? 0),
-    status: r.status as Project["status"],
-    budgetTotal: Number(r.budgetTotal ?? 0),
-    budgetSpent: Number(r.budgetSpent ?? 0),
-    riskLevel: r.riskLevel as Project["riskLevel"],
-    owner: r.owner?.name,
-  }));
+  return safeDbQuery(async () => {
+    const rows = await prisma.project.findMany({
+      where: { period: PERIOD },
+      include: { owner: { select: { name: true } } },
+    });
+    if (rows.length === 0) return demo.projects;
+    return rows.map((r) => ({
+      id: r.id,
+      code: r.code,
+      name: r.name,
+      cynefinDomain: r.cynefinDomain,
+      horizon: r.horizon ?? undefined,
+      progressPercent: Number(r.progressPercent ?? 0),
+      status: r.status as Project["status"],
+      budgetTotal: Number(r.budgetTotal ?? 0),
+      budgetSpent: Number(r.budgetSpent ?? 0),
+      riskLevel: r.riskLevel as Project["riskLevel"],
+      owner: r.owner?.name,
+    }));
+  }, demo.projects);
 }
 
 export async function getAssumptions(): Promise<Assumption[]> {

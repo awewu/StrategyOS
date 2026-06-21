@@ -1,5 +1,6 @@
 "use client";
 
+import { NavUserIcon } from "@/components/shell/NavIcons";
 import { useRole, roleLabel } from "@/lib/context/role-context";
 import { ROLES, type RoleKey } from "@/lib/constants";
 
@@ -15,25 +16,34 @@ function logRoleSwitch(from: RoleKey, to: RoleKey) {
   }).catch(() => {});
 }
 
-export function RoleSwitcher({ compact }: { compact?: boolean }) {
+export function RoleSwitcher({ compact, hidden }: { compact?: boolean; hidden?: boolean }) {
   const { role, setRole } = useRole();
+
+  if (hidden) return null;
 
   if (compact) {
     return (
-      <select
-        value={role}
-        onChange={(e) => {
-          const next = e.target.value as RoleKey;
-          if (next !== role) { logRoleSwitch(role, next); setRole(next); }
-        }}
-        title={`当前角色：${roleLabel(role)}`}
-        className="h-9 w-9 cursor-pointer appearance-none rounded-md bg-transparent text-center text-[11px] text-[var(--color-text-muted)] hover:bg-black/[0.05] focus:outline-none"
-        aria-label="切换角色"
-      >
-        {(Object.keys(ROLES) as RoleKey[]).map((key) => (
-          <option key={key} value={key}>{roleLabel(key)}</option>
-        ))}
-      </select>
+      <div className="stratos-role-rail" title={`当前角色：${roleLabel(role)}`}>
+        <NavUserIcon className="stratos-nav-item__icon" />
+        <select
+          value={role}
+          onChange={(e) => {
+            const next = e.target.value as RoleKey;
+            if (next !== role) {
+              logRoleSwitch(role, next);
+              setRole(next);
+            }
+          }}
+          className="stratos-role-rail__select"
+          aria-label="切换角色"
+        >
+          {(Object.keys(ROLES) as RoleKey[]).map((key) => (
+            <option key={key} value={key}>
+              {roleLabel(key)}
+            </option>
+          ))}
+        </select>
+      </div>
     );
   }
 

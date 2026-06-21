@@ -147,6 +147,8 @@ export interface CapStackPeriod {
   capexActual: number;
   capexForecast: number;
   byHorizon: Record<Horizon, number>;
+  byBrand: Record<string, number>;
+  byType: Record<string, number>;
   cashPeakMonth: string;
   cashPeakAmount: number;
   runwayAfterPeak: number;

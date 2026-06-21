@@ -2,41 +2,34 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { isAdmin } from "@/lib/auth/permissions";
 import { useRole } from "@/lib/context/role-context";
-import { ROLES, type RoleKey } from "@/lib/constants";
+import { flattenNavLinks } from "@/lib/nav/hubs";
 
-const BASE_LINKS = [
-  { href: "/command", label: "指挥舱" },
-  { href: "/strategy", label: "看战略" },
-  { href: "/execution", label: "看执行" },
-  { href: "/health", label: "看健康" },
-  { href: "/decode", label: "StratDecode · Hoshin" },
-  { href: "/decode?tab=stratsim", label: "StratSim · 反馈环推演" },
-  { href: "/api/print/panorama?lang=zh", label: "下载中文董事会 PDF" },
-  { href: "/finance", label: "FPA 财务" },
-  { href: "/finance?tab=capital", label: "FPA 资本 Tab" },
-  { href: "/finance?tab=forecast", label: "FPA 5 年展望" },
-  { href: "/finance?tab=scenarios", label: "SPBP 情景" },
-  { href: "/finance?tab=ma", label: "M&A 管道" },
-  { href: "/rehearsal", label: "Q3 战略会彩排" },
-  { href: "/api/print/panorama", label: "下载董事会 PDF" },
-  { href: "/versions", label: "版本库 · 反事实" },
-  { href: "/reports", label: "报告中心" },
-  { href: "/gates", label: "Gate 清单" },
-  { href: "/print/panorama", label: "董事会一页纸" },
-  { href: "/brand", label: "Brand Gallery" },
+const EXTRA_LINKS = [
+  { href: "/admin/org", label: "组织架构管理", group: "管理", minLevel: 4 as const, adminOnly: true },
+  { href: "/decode?tab=stratsim", label: "战略解码 · 反馈环", group: "战略解码" },
+  { href: "/finance?tab=capital", label: "FPA · 资本", group: "FPA" },
+  { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "FPA" },
+  { href: "/finance?tab=scenarios", label: "SPBP 情景", group: "FPA" },
+  { href: "/finance?tab=ma", label: "M&A 管道", group: "FPA" },
+  { href: "/api/print/panorama?lang=zh", label: "下载中文董事会 PDF", group: "工具" },
+  { href: "/api/print/panorama", label: "下载董事会 PDF", group: "工具" },
+  { href: "/print/panorama", label: "董事会一页纸", group: "工具" },
+  { href: "/brand", label: "Brand Gallery", group: "工具" },
 ];
 
-export function CommandPalette({ showAccess = false }: { showAccess?: boolean }) {
+export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const router = useRouter();
   const { role } = useRole();
 
   const links = [
-    ...BASE_LINKS,
-    ...(showAccess || role === "ceo" || role === "staff"
-      ? [{ href: "/admin/access", label: "访问管理 · 审计日志" }]
+    ...flattenNavLinks(),
+    ...EXTRA_LINKS.filter((l) => !("adminOnly" in l && l.adminOnly) || isAdmin(role)),
+    ...(isAdmin(role)
+      ? [{ href: "/admin/access", label: "访问管理", group: "管理" }]
       : []),
   ];
 
@@ -57,7 +50,7 @@ export function CommandPalette({ showAccess = false }: { showAccess?: boolean })
   if (!open) return null;
 
   const filtered = links.filter((l) =>
-    l.label.toLowerCase().includes(q.toLowerCase())
+    l.label.toLowerCase().includes(q.toLowerCase()),
   );
 
   return (
@@ -88,6 +81,9 @@ export function CommandPalette({ showAccess = false }: { showAccess?: boolean })
                   setQ("");
                 }}
               >
+                <span className="block text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">
+                  {l.group}
+                </span>
                 {l.label}
               </button>
             </li>

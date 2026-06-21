@@ -14,6 +14,9 @@ export const demoSources: IntelSource[] = [
   { id: "src-carrier-patent", competitor: "开利", kind: "patent", url: null, cadenceDays: 30, lastScrapedAt: null, health: "empty" },
   { id: "src-haier-site", competitor: "海尔", kind: "official_site", url: "https://www.haier.com", cadenceDays: 7, lastScrapedAt: "2026-06-17", health: "active" },
   { id: "src-midea-channel", competitor: "美的", kind: "channel", url: null, cadenceDays: 14, lastScrapedAt: null, health: "empty" },
+  { id: "src-smith-recruit", competitor: "史密斯", kind: "recruitment", url: "https://www.aosmith.com.cn/careers", cadenceDays: 14, lastScrapedAt: "2026-06-16", health: "active" },
+  { id: "src-smith-patent", competitor: "史密斯", kind: "patent", url: null, cadenceDays: 30, lastScrapedAt: "2026-06-10", health: "active" },
+  { id: "src-carrier-recruit", competitor: "开利", kind: "recruitment", url: null, cadenceDays: 14, lastScrapedAt: null, health: "empty" },
 ];
 
 export const demoSignals: IntelSignal[] = [
@@ -94,6 +97,36 @@ export const demoSignals: IntelSignal[] = [
     sourceLabel: "AO Smith 季报 2026-Q1",
     capturedAt: "2026-06-01",
     linkedAssumptionCode: "H2",
+  },
+  {
+    id: "sig-7",
+    competitor: "史密斯",
+    dimension: "product",
+    title: "招聘热泵变频控制工程师 20+ 名",
+    summary: "史密斯华东研发中心密集招聘热泵变频控制、压缩机匹配岗位 20 余名，jd 明确提到「新一代 R290 环保冷媒平台」，技术路线先于产品发布约 9 个月。",
+    impact: "threat",
+    relevance: 84,
+    sourceKind: "recruitment",
+    sourceLabel: "史密斯招聘官网 2026-06-16",
+    capturedAt: "2026-06-16",
+    linkedAssumptionCode: "H2",
+    verdict: "supported",
+    evidence: "新一代 R290 环保冷媒平台",
+  },
+  {
+    id: "sig-8",
+    competitor: "史密斯",
+    dimension: "product",
+    title: "专利公开：R290 微通道换热结构",
+    summary: "史密斯公开一项 R290 微通道换热器专利，指向更高能效与更小充注量，是其下一代热泵平台的核心技术储备。",
+    impact: "threat",
+    relevance: 79,
+    sourceKind: "patent",
+    sourceLabel: "专利检索 2026-06-10",
+    capturedAt: "2026-06-10",
+    linkedAssumptionCode: "H2",
+    verdict: "supported",
+    evidence: "R290 微通道换热器",
   },
 ];
 

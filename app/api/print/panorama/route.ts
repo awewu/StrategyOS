@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { getCommandDeckBundle } from "@/lib/data/strategy-data";
 import { buildPanoramaPdf } from "@/lib/pdf/panorama-pdf";
 import { chineseFontAvailable } from "@/lib/pdf/fonts";

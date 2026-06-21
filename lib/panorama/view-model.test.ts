@@ -30,6 +30,8 @@ describe("panorama view-model", () => {
         capexActual: 9000,
         capexForecast: 9500,
         byHorizon: { H1: 62, H2: 28, H3: 10 },
+        byBrand: {},
+        byType: {},
         cashPeakMonth: "2026-09",
         cashPeakAmount: 3200,
         runwayAfterPeak: 2.8,

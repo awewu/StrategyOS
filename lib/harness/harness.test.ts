@@ -19,6 +19,7 @@ describe("harness runtime", () => {
     assert.ok(report.timestamp);
     assert.ok(report.summary.total >= 4);
     assert.equal(typeof report.exitCode, "number");
+    assert.ok(report.checks.some((c) => c.id === "schema-sync"));
     for (const c of report.checks) {
       assert.ok(["pass", "warn", "fail", "skip"].includes(c.status));
       assert.ok(c.id.length > 0);

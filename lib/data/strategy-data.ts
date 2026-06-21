@@ -1,12 +1,21 @@
 /**
  * Unified data access — DB when available, demo fallback otherwise.
  */
+import { Prisma } from "@prisma/client";
 import { dbAvailable, prisma } from "@/lib/db";
 import * as entities from "@/lib/data/entity-getters";
 import * as demo from "@/lib/stratos-demo-data";
 import { buildManagementReport } from "@/lib/fpa/management-report";
 import type { ManagementReportBundle } from "@/lib/fpa/management-types";
 import { computeRobustOverall } from "@/lib/stratos/robust-score";
+import {
+  demoTensions, demoMaturityPoints, demoCommitments,
+  type TensionItem, type ExecutionMaturityPoint, type CommitmentRecord,
+} from "@/lib/execution/tension-analysis";
+import {
+  demoMarketResponses, demoCompetitivePositions,
+  type MarketEvidence, type CompetitivePosition,
+} from "@/lib/execution/market-response";
 import type {
   CapStackPeriod,
   FpaSummary,
@@ -100,12 +109,16 @@ export async function getCapStack(): Promise<CapStackPeriod> {
   });
   if (!row) return demo.capStack;
   const byHorizon = row.byHorizonJson as Record<"H1" | "H2" | "H3", number>;
+  const byBrand = (row.byBrandJson ?? {}) as Record<string, number>;
+  const byType = (row.byTypeJson ?? {}) as Record<string, number>;
   return {
     period: row.period,
     capexBudget: Number(row.capexBudget),
     capexActual: Number(row.capexSpent),
     capexForecast: Number(row.capexCommitted),
     byHorizon,
+    byBrand,
+    byType,
     cashPeakMonth: row.cashPeakMonth ?? demo.capStack.cashPeakMonth,
     cashPeakAmount: Number(row.cashPeakAmount ?? demo.capStack.cashPeakAmount),
     runwayAfterPeak: Number(row.runwayAfterPeak ?? demo.capStack.runwayAfterPeak),
@@ -229,13 +242,19 @@ export async function getManagementReport(): Promise<ManagementReportBundle> {
 
 /** Execution page bundle */
 export async function getExecutionBundle() {
-  const [diagnosis, techSignals, source, projects, assumptions, leadingKrs] = await Promise.all([
+  const [diagnosis, techSignals, source, projects, assumptions, leadingKrs, tensions, maturityPoints, commitments, marketResponses, competitivePositions, reportSignals] = await Promise.all([
     getDiagnosis(),
     getTechSignals(),
     getDataSource(),
     entities.getProjects(),
     entities.getAssumptions(),
     entities.getLeadingKeyResults(),
+    getExecutionTensions(),
+    getExecutionMaturity(),
+    getCommitmentRecords(),
+    getMarketEvidence(),
+    getCompetitivePositions(),
+    getReportDerivedSignals(),
   ]);
   return {
     source,
@@ -247,7 +266,172 @@ export async function getExecutionBundle() {
     techSignals,
     riceItems: demo.riceItems,
     trlRadar: demo.trlRadar,
+    tensions,
+    maturityPoints,
+    commitments,
+    marketResponses,
+    competitivePositions,
+    reportSignals,
   };
+}
+
+// ── Execution layer (DB-backed, demo fallback) ───────────────────────────────
+
+export async function getExecutionTensions(): Promise<TensionItem[]> {
+  if (!(await dbAvailable())) return demoTensions;
+  const rows = await prisma.executionTension.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { createdAt: "asc" } });
+  if (rows.length === 0) return demoTensions;
+  return rows.map((r) => ({
+    id: r.id, projectCode: r.projectCode, projectName: r.projectName,
+    tensionType: r.tensionType, signal: r.signal, diagnosis: r.diagnosis,
+    recommendation: r.recommendation, severity: r.severity,
+    linkedAssumptionCode: r.linkedAssumptionCode ?? undefined,
+    linkedKr: r.linkedKr ?? undefined,
+  }));
+}
+
+export async function getExecutionMaturity(): Promise<ExecutionMaturityPoint[]> {
+  if (!(await dbAvailable())) return demoMaturityPoints;
+  const rows = await prisma.executionMaturity.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { updatedAt: "asc" } });
+  if (rows.length === 0) return demoMaturityPoints;
+  return rows.map((r) => ({
+    projectCode: r.projectCode, projectName: r.projectName, owner: r.owner,
+    milestoneOnTimeRate: Number(r.milestoneOnTimeRate),
+    assumptionHitRate: Number(r.assumptionHitRate),
+    responseLatencyDays: r.responseLatencyDays,
+    budgetTotal: Number(r.budgetTotal),
+    tensionType: r.tensionType, horizon: r.horizon,
+  }));
+}
+
+export async function getCommitmentRecords(): Promise<CommitmentRecord[]> {
+  if (!(await dbAvailable())) return demoCommitments;
+  const rows = await prisma.commitment.findMany({ orderBy: { deadline: "asc" } });
+  if (rows.length === 0) return demoCommitments;
+  const today = new Date();
+  return rows.map((r) => {
+    const overdue = r.status !== "completed" && r.deadline < today;
+    const daysOverdue = overdue ? Math.floor((today.getTime() - r.deadline.getTime()) / 86400000) : undefined;
+    return {
+      id: r.id, owner: r.ownerName ?? r.promiseTo, department: r.promiseTo,
+      content: r.content, deadline: r.deadline.toISOString().slice(0, 10),
+      status: overdue ? "overdue" : (r.status as CommitmentRecord["status"]),
+      daysOverdue,
+      linkedProjectCode: r.linkedProjectCode ?? undefined,
+      linkedAssumptionCode: r.linkedAssumptionCode ?? undefined,
+    };
+  });
+}
+
+export async function getMarketEvidence(): Promise<MarketEvidence[]> {
+  if (!(await dbAvailable())) return demoMarketResponses;
+  const rows = await prisma.marketEvidence.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { createdAt: "asc" } });
+  if (rows.length === 0) return demoMarketResponses;
+  return rows.map((r) => ({
+    id: r.id, actionLabel: r.actionLabel, actionCode: r.actionCode ?? undefined,
+    linkedAssumptionCode: r.linkedAssumptionCode ?? undefined,
+    evidenceText: r.evidenceText, evidenceSource: r.evidenceSource,
+    recordedBy: r.recordedBy, recordedAt: r.recordedAt ? r.recordedAt.toISOString().slice(0, 10) : null,
+    verdict: r.verdict, verdictNote: r.verdictNote,
+  }));
+}
+
+export async function getCompetitivePositions(): Promise<CompetitivePosition[]> {
+  if (!(await dbAvailable())) return demoCompetitivePositions;
+  const rows = await prisma.competitivePosition.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { createdAt: "asc" } });
+  if (rows.length === 0) return demoCompetitivePositions;
+  return rows.map((r) => ({
+    id: r.id, competitor: r.competitor, dimension: r.dimension,
+    ourValue: r.ourValue, theirValue: r.theirValue,
+    period: r.period, delta: r.delta,
+    evidenceSource: r.evidenceSource, recordedBy: r.recordedBy,
+    recordedAt: r.recordedAt ? r.recordedAt.toISOString().slice(0, 10) : null,
+  }));
+}
+
+// ── Report-derived execution signals (approved reports → execution audit) ────
+
+export interface ReportSignal {
+  reportId: string;
+  reportTitle: string;
+  orgUnitName: string | null;
+  period: string;
+  reportType: string;
+  kind: "assertion" | "pattern";
+  severity: "low" | "medium" | "high";
+  label: string;
+  detail: string;
+  uploadedAt: string;
+}
+
+/**
+ * 已存档（APPROVED）报告解析结果反哺执行审计：
+ * - assertionTriggers → 高危信号（如现金 runway 触发）
+ * - §8 战略模式（emergent/serendipitous）→ 涌现型机会/风险信号
+ * 仅消费经人工确认存档的报告，保证审计输入可信。
+ */
+export async function getReportDerivedSignals(): Promise<ReportSignal[]> {
+  if (!(await dbAvailable())) return [];
+  const rows = await prisma.report.findMany({
+    where: { approvalStatus: "APPROVED", NOT: { parsedJson: { equals: Prisma.DbNull } } },
+    include: { orgUnit: { select: { name: true } } },
+    orderBy: { uploadedAt: "desc" },
+    take: 50,
+  });
+
+  const signals: ReportSignal[] = [];
+  for (const r of rows) {
+    const parsed = r.parsedJson as {
+      assertionTriggers?: string[];
+      patterns?: Array<{ title: string; formationType: string }>;
+    } | null;
+    if (!parsed) continue;
+
+    const base = {
+      reportId: r.id,
+      reportTitle: r.title,
+      orgUnitName: r.orgUnit?.name ?? null,
+      period: r.period,
+      reportType: r.reportType as string,
+      uploadedAt: r.uploadedAt.toISOString().slice(0, 10),
+    };
+
+    for (const trigger of parsed.assertionTriggers ?? []) {
+      signals.push({
+        ...base,
+        kind: "assertion",
+        severity: "high",
+        label: "执行红线触发",
+        detail: trigger,
+      });
+    }
+    for (const pat of parsed.patterns ?? []) {
+      signals.push({
+        ...base,
+        kind: "pattern",
+        severity: pat.formationType === "emergent" ? "medium" : "low",
+        label: pat.formationType === "emergent" ? "涌现型战略信号" : "意外机会信号",
+        detail: pat.title,
+      });
+    }
+  }
+  return signals;
+}
+
+// ── Ops health metrics (DB-backed, generator fallback) ───────────────────────
+
+export async function getOpsHealthSeries(): Promise<import("@/lib/health/ops-metrics").MetricSeries[]> {
+  const { buildSeriesFromActuals, getAllSeries } = await import("@/lib/health/ops-metrics");
+  if (!(await dbAvailable())) return getAllSeries();
+  const rows = await prisma.opsMetricActual.findMany();
+  if (rows.length === 0) return getAllSeries();
+  const byMetric = new Map<string, { month: string; actual: number | null; planned: number }[]>();
+  for (const r of rows) {
+    const arr = byMetric.get(r.metricId) ?? [];
+    arr.push({ month: r.month, actual: r.actual != null ? Number(r.actual) : null, planned: Number(r.planned) });
+    byMetric.set(r.metricId, arr);
+  }
+  return buildSeriesFromActuals(byMetric);
 }
 
 export async function getMaPipeline() {
@@ -312,7 +496,10 @@ export interface ReportListItem {
   patterns: string[];
 }
 
-export async function getReports(): Promise<ReportListItem[]> {
+export async function getReports(orgScope?: string[] | null): Promise<ReportListItem[]> {
+  const scopeFilter =
+    orgScope != null && orgScope.length > 0 ? { orgUnitId: { in: orgScope } } : {};
+
   if (!(await dbAvailable())) {
     return demo.reports.map((r) => ({
       id: r.id,
@@ -323,7 +510,11 @@ export async function getReports(): Promise<ReportListItem[]> {
       patterns: r.patterns,
     }));
   }
-  const rows = await prisma.report.findMany({ orderBy: { uploadedAt: "desc" }, take: 20 });
+  const rows = await prisma.report.findMany({
+    where: scopeFilter,
+    orderBy: { uploadedAt: "desc" },
+    take: 20,
+  });
   if (rows.length === 0) {
     return demo.reports.map((r) => ({
       id: r.id,
@@ -368,13 +559,26 @@ export async function getHealthBundle() {
 
 /** Decode page bundle */
 export async function getDecodeBundle() {
-  const [source, loops] = await Promise.all([getDataSource(), entities.getFeedbackLoops()]);
-  return { source, loops };
+  const { getDecodeBsc, getDecodeHoshin } = await import("@/lib/decode/data-access");
+  const [source, loops, bsc, hoshin] = await Promise.all([
+    getDataSource(),
+    entities.getFeedbackLoops(),
+    getDecodeBsc(),
+    getDecodeHoshin(),
+  ]);
+  const dataSource = bsc.source === "database" || hoshin.source === "database" ? "database" : source;
+  return {
+    source: dataSource,
+    loops,
+    bsc: bsc.rows,
+    hoshinQuadrants: hoshin.quadrants,
+    hoshinFlat: hoshin.flat,
+  };
 }
 
 /** Q3 rehearsal live context */
 export async function getRehearsalBundle() {
-  const [deck, health, versions] = await Promise.all([
+  const [deck, , versions] = await Promise.all([
     getCommandDeckBundle(),
     getHealthBundle(),
     import("@/lib/data/versions-data").then((m) => m.getVersionsBundle()),

@@ -14,11 +14,13 @@ npm run setup    # .env + 字体 + Docker Postgres + seed
 npm run dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000) → 自动进入 **指挥舱**
+访问 [http://localhost:3003](http://localhost:3003) → 自动进入 **指挥舱**（端口 3003，避免与 3000 上其他项目冲突）
 
 **环境配置：** [docs/SETUP.md](./docs/SETUP.md) · **战略导入：** [docs/STRATEGY_IMPORT.md](./docs/STRATEGY_IMPORT.md) · **McKinsey 框架：** [docs/MCKINSEY_STRATEGY_FRAMEWORK.md](./docs/MCKINSEY_STRATEGY_FRAMEWORK.md) · **UI/VI 进化：** [docs/UI_VI_EVOLUTION.md](./docs/UI_VI_EVOLUTION.md)
 
-**能力检查：** [http://localhost:3000/api/health](http://localhost:3000/api/health)
+**能力检查：** [http://localhost:3003/api/health](http://localhost:3003/api/health)
+
+**看战略一页纸：** [http://localhost:3003/strategy](http://localhost:3003/strategy)
 
 ## 页面路由
 

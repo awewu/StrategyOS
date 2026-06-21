@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3003",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3003",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:seed": "npx tsx prisma/seed.ts",
@@ -15,7 +15,7 @@
     "setup": "npx tsx scripts/setup.ts",
     "setup:fonts": "npx tsx scripts/setup.ts --fonts-only",
     "setup:db": "npx tsx scripts/setup.ts --db-only",
-    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts",
+    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts lib/market-intel/*.test.ts lib/health/*.test.ts lib/decode/*.test.ts",
     "test:e2e": "playwright test",
     "harness": "npx tsx scripts/harness.ts",
     "harness:full": "npx tsx scripts/harness.ts --full",
@@ -32,7 +32,8 @@
     "prisma": "^5.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

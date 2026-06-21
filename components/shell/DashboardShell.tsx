@@ -1,29 +1,88 @@
 "use client";
 
+import { Suspense, useEffect } from "react";
 import type { SessionPayload } from "@/lib/auth/config";
 import type { RoleKey } from "@/lib/constants";
-import { RoleProvider } from "@/lib/context/role-context";
+import { RoleProvider, useRole } from "@/lib/context/role-context";
 import { AppNav } from "@/components/shell/AppNav";
+import { AccessDeniedBanner } from "@/components/shell/AccessDeniedBanner";
 import { CommandPalette } from "@/components/shell/CommandPalette";
+import { HubSubNav } from "@/components/shell/HubSubNav";
+
+function DevRoleSync({
+  initialRole,
+  devBypassAuth,
+}: {
+  initialRole: RoleKey;
+  devBypassAuth: boolean;
+}) {
+  const { setRole } = useRole();
+
+  useEffect(() => {
+    if (!devBypassAuth) return;
+    document.cookie = `stratos_role=${initialRole};path=/;max-age=31536000;SameSite=Lax`;
+    setRole(initialRole);
+  }, [devBypassAuth, initialRole, setRole]);
+
+  return null;
+}
+
+function ShellInner({
+  children,
+  initialRole,
+  session,
+  secureMode,
+  devBypassAuth,
+}: {
+  children: React.ReactNode;
+  initialRole: RoleKey;
+  session?: SessionPayload | null;
+  secureMode: boolean;
+  devBypassAuth: boolean;
+}) {
+  return (
+    <>
+      <DevRoleSync initialRole={initialRole} devBypassAuth={devBypassAuth} />
+      <div className="flex min-h-screen">
+        <AppNav session={session} secureMode={secureMode} devBypassAuth={devBypassAuth} />
+        <main className="stratos-shell-bg stratos-grid-bg stratos-shell-main flex-1 px-8 py-8 min-h-screen">
+          <div className="mx-auto max-w-6xl">
+            <Suspense fallback={null}>
+              <AccessDeniedBanner />
+            </Suspense>
+            <HubSubNav />
+            {children}
+          </div>
+        </main>
+        <CommandPalette />
+      </div>
+    </>
+  );
+}
 
 export function DashboardShell({
   children,
   initialRole,
   session,
+  secureMode = false,
+  devBypassAuth = false,
 }: {
   children: React.ReactNode;
   initialRole: RoleKey;
   session?: SessionPayload | null;
+  secureMode?: boolean;
+  devBypassAuth?: boolean;
 }) {
   return (
     <RoleProvider initialRole={initialRole}>
-      <div className="flex min-h-screen">
-        <AppNav session={session} />
-        <main className="stratos-shell-bg stratos-grid-bg ml-14 flex-1 px-8 py-8 min-h-screen">
-          <div className="mx-auto max-w-6xl">{children}</div>
-        </main>
-        <CommandPalette showAccess={initialRole === "ceo" || initialRole === "staff"} />
-      </div>
+      <ShellInner
+        initialRole={initialRole}
+        session={session}
+        secureMode={secureMode}
+        devBypassAuth={devBypassAuth}
+      >
+        {children}
+      </ShellInner>
     </RoleProvider>
   );
 }

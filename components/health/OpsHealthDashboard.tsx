@@ -1,15 +1,27 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ReferenceLine, ResponsiveContainer, Legend,
+  ReferenceLine, ResponsiveContainer,
 } from "recharts";
 import {
-  DOMAINS, getAllSeries, getSignal, getLatestActual,
+  DOMAINS, getSignal,
   ALL_MONTHS, HISTORY_END,
-  type DomainDef, type MetricDef, type MonthPoint,
+  type DomainDef, type MetricDef, type MonthPoint, type MetricSeries,
 } from "@/lib/health/ops-metrics";
+
+function signalFromSeries(series: MetricSeries | undefined, metric: MetricDef): "green" | "yellow" | "red" {
+  const v = latestActualOf(series);
+  return v !== null ? getSignal(v, metric) : "yellow";
+}
+
+function latestActualOf(series: MetricSeries | undefined): number | null {
+  if (!series) return null;
+  const a = series.points.filter((p) => p.actual !== null);
+  return a.length ? (a[a.length - 1].actual as number) : null;
+}
 
 // ─── Signal colours ──────────────────────────────────────────────────────────
 const SIG_COLOR = { green: "#22c55e", yellow: "#eab308", red: "#ef4444" } as const;
@@ -36,11 +48,9 @@ function monthLabel(m: string) {
 }
 
 // ─── Single metric chart ─────────────────────────────────────────────────────
-function MetricChart({ metric, domainColor }: { metric: MetricDef; domainColor: string }) {
-  const series = useMemo(() => {
-    const allSeries = getAllSeries();
-    return allSeries.find((s) => s.metricId === metric.id);
-  }, [metric.id]);
+function MetricChart({ metric, domainColor, series, onEdit }: {
+  metric: MetricDef; domainColor: string; series: MetricSeries | undefined; onEdit: (m: MetricDef) => void;
+}) {
 
   const [mode, setMode] = useState<"3y" | "6m" | "all">("3y");
 
@@ -54,7 +64,7 @@ function MetricChart({ metric, domainColor }: { metric: MetricDef; domainColor: 
     return points.map((p) => ({ ...p, label: monthLabel(p.month) }));
   }, [series, mode]);
 
-  const latestActual = getLatestActual(metric.id);
+  const latestActual = latestActualOf(series);
   const signal = latestActual !== null ? getSignal(latestActual, metric) : "yellow";
   const latestPoint = series?.points.filter((p) => p.actual !== null).at(-1) ?? null;
   const yoyDelta = latestPoint ? deltaPct(latestPoint.actual, latestPoint.yoy) : null;
@@ -96,7 +106,7 @@ function MetricChart({ metric, domainColor }: { metric: MetricDef; domainColor: 
             </div>
           )}
         </div>
-        <div className="flex gap-1 text-xs">
+        <div className="flex items-center gap-1 text-xs">
           {(["3y", "6m", "all"] as const).map((m) => (
             <button
               key={m}
@@ -106,6 +116,13 @@ function MetricChart({ metric, domainColor }: { metric: MetricDef; domainColor: 
               {m === "3y" ? "3年历史" : m === "6m" ? "近6月" : "全部"}
             </button>
           ))}
+          <button
+            onClick={() => onEdit(metric)}
+            className="ml-1 rounded px-2 py-0.5 text-[var(--color-accent)] transition-colors hover:bg-black/[0.06]"
+            title="录入月度实绩"
+          >
+            录入
+          </button>
         </div>
       </div>
 
@@ -137,11 +154,10 @@ function MetricChart({ metric, domainColor }: { metric: MetricDef; domainColor: 
 }
 
 // ─── Domain summary row ───────────────────────────────────────────────────────
-function DomainSummaryRow({ domain, onClick, active }: { domain: DomainDef; onClick: () => void; active: boolean }) {
-  const signals = domain.metrics.map((m) => {
-    const v = getLatestActual(m.id);
-    return v !== null ? getSignal(v, m) : ("yellow" as const);
-  });
+function DomainSummaryRow({ domain, onClick, active, seriesMap }: {
+  domain: DomainDef; onClick: () => void; active: boolean; seriesMap: Map<string, MetricSeries>;
+}) {
+  const signals = domain.metrics.map((m) => signalFromSeries(seriesMap.get(m.id), m));
   const worst = signals.includes("red") ? "red" : signals.includes("yellow") ? "yellow" : "green";
 
   return (
@@ -168,15 +184,16 @@ function DomainSummaryRow({ domain, onClick, active }: { domain: DomainDef; onCl
 }
 
 // ─── Main dashboard ───────────────────────────────────────────────────────────
-export function OpsHealthDashboard() {
+export function OpsHealthDashboard({ series }: { series: MetricSeries[] }) {
+  const router = useRouter();
   const [activeDomain, setActiveDomain] = useState<string>(DOMAINS[0].id);
+  const [editMetric, setEditMetric] = useState<MetricDef | null>(null);
   const domain = DOMAINS.find((d) => d.id === activeDomain)!;
 
+  const seriesMap = useMemo(() => new Map(series.map((s) => [s.metricId, s])), [series]);
+
   const allSignals = DOMAINS.flatMap((d) =>
-    d.metrics.map((m) => {
-      const v = getLatestActual(m.id);
-      return v !== null ? getSignal(v, m) : ("yellow" as const);
-    })
+    d.metrics.map((m) => signalFromSeries(seriesMap.get(m.id), m))
   );
   const redCount    = allSignals.filter((s) => s === "red").length;
   const yellowCount = allSignals.filter((s) => s === "yellow").length;
@@ -208,6 +225,7 @@ export function OpsHealthDashboard() {
               domain={d}
               active={activeDomain === d.id}
               onClick={() => setActiveDomain(d.id)}
+              seriesMap={seriesMap}
             />
           ))}
         </div>
@@ -221,9 +239,93 @@ export function OpsHealthDashboard() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {domain.metrics.map((m) => (
-              <MetricChart key={m.id} metric={m} domainColor={domain.color} />
+              <MetricChart key={m.id} metric={m} domainColor={domain.color} series={seriesMap.get(m.id)} onEdit={setEditMetric} />
             ))}
           </div>
+        </div>
+      </div>
+
+      {editMetric && (
+        <OpsMetricInputModal
+          metric={editMetric}
+          series={seriesMap.get(editMetric.id)}
+          onClose={() => setEditMetric(null)}
+          onSaved={() => { setEditMetric(null); router.refresh(); }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Monthly actual input modal ───────────────────────────────────────────────
+const opsInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+
+function OpsMetricInputModal({ metric, series, onClose, onSaved }: {
+  metric: MetricDef; series: MetricSeries | undefined; onClose: () => void; onSaved: () => void;
+}) {
+  const lastActualPoint = series?.points.filter((p) => p.actual !== null).at(-1);
+  const defaultMonth = lastActualPoint?.month ?? HISTORY_END;
+  const [month, setMonth] = useState(defaultMonth);
+  const existing = series?.points.find((p) => p.month === month);
+  const [actual, setActual] = useState<string>(existing?.actual != null ? String(existing.actual) : "");
+  const [planned, setPlanned] = useState<string>(existing?.planned != null ? String(existing.planned) : "");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  function onMonthChange(m: string) {
+    setMonth(m);
+    const p = series?.points.find((pt) => pt.month === m);
+    setActual(p?.actual != null ? String(p.actual) : "");
+    setPlanned(p?.planned != null ? String(p.planned) : "");
+  }
+
+  async function save() {
+    setSaving(true); setErr("");
+    try {
+      const r = await fetch("/api/health/ops-metric", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          metricId: metric.id, month,
+          actual: actual.trim() === "" ? null : Number(actual),
+          planned: planned.trim() === "" ? null : Number(planned),
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error ?? "保存失败"); return; }
+      onSaved();
+    } catch { setErr("网络错误"); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="w-full max-w-sm rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
+        <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">录入月度实绩 · {metric.name}</h3>
+        <p className="mb-4 text-xs text-[var(--color-text-muted)]">单位 {metric.unit} · 留空实际值表示未来规划月</p>
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">月份</label>
+            <select value={month} onChange={(e) => onMonthChange(e.target.value)} className={opsInputCls}>
+              {ALL_MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">实际值</label>
+              <input type="number" step="any" value={actual} onChange={(e) => setActual(e.target.value)} className={opsInputCls} placeholder="留空=规划月" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">目标值</label>
+              <input type="number" step="any" value={planned} onChange={(e) => setPlanned(e.target.value)} className={opsInputCls} />
+            </div>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-1.5 text-sm hover:bg-black/[0.04]">取消</button>
+          <button onClick={save} disabled={saving} className="rounded-md bg-[var(--color-accent)] px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50">
+            {saving ? "保存中…" : "保存"}
+          </button>
         </div>
       </div>
     </div>

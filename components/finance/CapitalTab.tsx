@@ -101,6 +101,38 @@ export function CapitalTab({
         </div>
       </section>
 
+      {/* Three-stack allocation breakdown */}
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-4">
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[#828c8d]">品牌分配</h3>
+          <div className="space-y-2">
+            {Object.entries(capStack.byBrand ?? {}).map(([brand, pct]) => (
+              <div key={brand} className="flex items-center gap-2">
+                <span className="w-24 shrink-0 text-xs text-[var(--color-text-secondary)]">{brand}</span>
+                <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
+                  <div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="w-8 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{pct}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-4">
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[#828c8d]">投入类型</h3>
+          <div className="space-y-2">
+            {Object.entries(capStack.byType ?? {}).map(([type, pct]) => (
+              <div key={type} className="flex items-center gap-2">
+                <span className="w-24 shrink-0 text-xs text-[var(--color-text-secondary)]">{type}</span>
+                <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
+                  <div className="h-full rounded-full bg-[var(--stack-prod)]" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="w-8 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{pct}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section>
         <h3 className="mb-3 text-sm font-medium text-[#828c8d]">投资管道</h3>
         <div className="flex gap-3 overflow-x-auto pb-2">

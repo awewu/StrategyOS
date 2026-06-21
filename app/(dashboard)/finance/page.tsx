@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { BafBar } from "@/components/finance/BafBar";
 import { CapitalTab } from "@/components/finance/CapitalTab";
 import { FiveYearForecast, SensitivityPanel } from "@/components/finance/FiveYearForecast";
@@ -34,6 +36,7 @@ async function FinanceContent({
 }: {
   tabPromise: Promise<{ tab?: string }>;
 }) {
+  await requireRouteAccess("/finance");
   const { tab } = await tabPromise;
   const activeTab = parseTab(tab);
   const data = await getFinanceBundle();
@@ -41,12 +44,20 @@ async function FinanceContent({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-[var(--color-accent-gold)]">FPA 财务</h1>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          管理报表优先 · ROS / EBITDA / 利润桥 · 财务三张表 · 数据源{" "}
-          {data.source === "database" ? "DB" : "Demo"}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-[var(--color-accent-gold)]">FPA 财务</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            管理报表优先 · ROS / EBITDA / 利润桥 · 财务三张表 · 数据源{" "}
+            {data.source === "database" ? "DB" : "Demo"}
+          </p>
+        </div>
+        <Link
+          href="/health"
+          className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+        >
+          看健康 →
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-2 border-b border-black/10">

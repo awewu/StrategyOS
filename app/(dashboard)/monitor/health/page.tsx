@@ -1,0 +1,28 @@
+import { HealthPageClient } from "@/components/health/HealthPageClient";
+import { OpsHealthDashboard } from "@/components/health/OpsHealthDashboard";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { getHealthBundle, getOpsHealthSeries } from "@/lib/data/strategy-data";
+
+export default async function MonitorHealthPage() {
+  const [data, opsSeries] = await Promise.all([getHealthBundle(), getOpsHealthSeries()]);
+
+  return (
+    <div className="stratos-section-gap flex flex-col">
+      <PageHeader
+        eyebrow="运行监测 · 集团"
+        title="集团健康"
+        subtitle="BSC 四灯 · Robust · 当期 KPI · 十二维下钻（角色）"
+      />
+      <HealthPageClient
+        bscLights={data.bscLights}
+        healthOverview={data.healthOverview}
+        fpa={data.fpa}
+        robustOverall={data.robustOverall}
+        robustScore={data.robustScore}
+        source={data.source}
+        hideTitle
+      />
+      <OpsHealthDashboard series={opsSeries} />
+    </div>
+  );
+}

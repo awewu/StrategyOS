@@ -29,7 +29,7 @@ function apiToFile(route: string): string {
   return `app${route}/route.ts`;
 }
 
-async function timed<T>(
+async function timed(
   id: string,
   group: string,
   name: string,
@@ -179,6 +179,66 @@ function checkRouteManifest(): HarnessCheck {
   });
 }
 
+
+const SCHEMA_CRITICAL_COLUMNS: { table: string; column: string }[] = [
+  { table: "users", column: "org_unit_id" },
+  { table: "users", column: "project_code" },
+  { table: "strategy_mandates", column: "linked_project_code" },
+  { table: "org_units", column: "level" },
+];
+
+async function checkSchemaSync(): Promise<HarnessCheck> {
+  return timed("schema-sync", "data", "Schema ↔ DB column sync", async () => {
+    try {
+      execSync("npx prisma validate", { cwd: ROOT, stdio: "pipe", encoding: "utf8" });
+    } catch (err) {
+      const out =
+        err && typeof err === "object" && "stderr" in err
+          ? String((err as { stderr?: string }).stderr ?? "")
+          : "invalid schema";
+      return { status: "fail", message: "prisma validate failed", meta: { output: out.slice(-400) } };
+    }
+
+    if (!(await dbAvailable())) {
+      return { status: "warn", message: "DB unreachable — validated schema only (no column probe)" };
+    }
+
+    const rows = await prisma.$queryRaw<{ table_name: string; column_name: string }[]>`
+      SELECT table_name, column_name FROM information_schema.columns
+      WHERE table_schema = 'public'
+    `;
+    const present = new Set(rows.map((r) => `${r.table_name}.${r.column_name}`));
+    const missing = SCHEMA_CRITICAL_COLUMNS.filter(
+      (c) => !present.has(`${c.table}.${c.column}`),
+    );
+
+    if (missing.length) {
+      return {
+        status: "fail",
+        message: `Missing columns: ${missing.map((m) => `${m.table}.${m.column}`).join(", ")} — run npx prisma db push`,
+        meta: { missing },
+      };
+    }
+
+    try {
+      execSync(
+        "npx prisma migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datasource prisma/schema.prisma",
+        { cwd: ROOT, stdio: "pipe", encoding: "utf8" },
+      );
+    } catch (err) {
+      const out =
+        err && typeof err === "object" && "stdout" in err
+          ? String((err as { stdout?: string }).stdout ?? "")
+          : "schema drift";
+      if (!out.includes("No difference detected")) {
+        return { status: "fail", message: "Schema drift vs database", meta: { output: out.slice(-600) } };
+      }
+    }
+
+    return { status: "pass", message: `${SCHEMA_CRITICAL_COLUMNS.length} critical columns present · schema matches DB` };
+  });
+}
+
 function checkPrismaClient(): HarnessCheck {
   return syncTimed("prisma", "data", "Prisma client generated", () => {
     const clientPath = path.join(ROOT, "node_modules/.prisma/client/index.js");
@@ -261,7 +321,10 @@ async function checkHttpSmoke(baseUrl: string): Promise<HarnessCheck> {
 
     const failures: string[] = [];
     for (const ep of endpoints) {
-      const res = await fetch(`${baseUrl}${ep.path}`, { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(`${baseUrl}${ep.path}`, {
+        signal: AbortSignal.timeout(8000),
+        headers: { accept: "application/json" },
+      });
       if (!res.ok) {
         failures.push(`${ep.path} → ${res.status}`);
         continue;
@@ -319,6 +382,7 @@ export function formatHarnessReport(report: HarnessReport): string {
 export async function runRuntimeHarness(): Promise<HarnessReport> {
   const checks = await Promise.all([
     checkCapabilities(),
+    checkSchemaSync(),
     checkDatabase(),
     Promise.resolve(checkFonts()),
     Promise.resolve(checkEnvFile()),
@@ -346,6 +410,7 @@ export async function runHarness(options: HarnessOptions = {}): Promise<HarnessR
   checks.push(checkRequiredFiles());
   checks.push(checkRouteManifest());
   checks.push(checkPrismaClient());
+  checks.push(await checkSchemaSync());
   checks.push(await checkDatabase());
 
   if (!options.skipTests) {
@@ -363,7 +428,7 @@ export async function runHarness(options: HarnessOptions = {}): Promise<HarnessR
   const baseUrl =
     options.baseUrl ??
     process.env.STRATOS_HARNESS_BASE_URL ??
-    (profile === "full" ? "http://127.0.0.1:3000" : undefined);
+    (profile === "full" ? "http://127.0.0.1:3003" : undefined);
 
   if (baseUrl) {
     try {

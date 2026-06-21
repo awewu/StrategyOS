@@ -1,10 +1,107 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer, Cell,
 } from "recharts";
-import { TENSION_META, type ExecutionMaturityPoint } from "@/lib/execution/tension-analysis";
+import { TENSION_META, type ExecutionMaturityPoint, type TensionType } from "@/lib/execution/tension-analysis";
+
+const mInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+
+function MaturityModal({ item, onClose, onSaved }: {
+  item: Partial<ExecutionMaturityPoint>; onClose: () => void; onSaved: () => void;
+}) {
+  const [form, setForm] = useState<Partial<ExecutionMaturityPoint>>({ tensionType: "capability", horizon: "H1", ...item });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function save() {
+    setSaving(true); setErr("");
+    try {
+      const r = await fetch("/api/execution/maturity", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const d = await r.json();
+      if (!r.ok) { setErr(d.error ?? "保存失败"); return; }
+      onSaved();
+    } catch { setErr("网络错误"); }
+    finally { setSaving(false); }
+  }
+
+  const pctField = (label: string, key: "milestoneOnTimeRate" | "assumptionHitRate") => (
+    <div className="space-y-1">
+      <label className="text-xs font-medium text-[var(--color-text-secondary)]">{label}（0–100）</label>
+      <input type="number" min={0} max={100}
+        value={form[key] != null ? Math.round((form[key] as number) * 100) : ""}
+        onChange={(e) => setForm({ ...form, [key]: e.target.value === "" ? undefined : Number(e.target.value) / 100 })}
+        className={mInputCls} />
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
+        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">{item.projectCode ? "编辑成熟度" : "新增项目成熟度"}</h3>
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目代号 *</label>
+              <input value={form.projectCode ?? ""} onChange={(e) => setForm({ ...form, projectCode: e.target.value })} className={mInputCls} placeholder="V4" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目名称 *</label>
+              <input value={form.projectName ?? ""} onChange={(e) => setForm({ ...form, projectName: e.target.value })} className={mInputCls} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">负责人</label>
+              <input value={form.owner ?? ""} onChange={(e) => setForm({ ...form, owner: e.target.value })} className={mInputCls} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">层面</label>
+              <select value={form.horizon} onChange={(e) => setForm({ ...form, horizon: e.target.value })} className={mInputCls}>
+                <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {pctField("里程碑准时率", "milestoneOnTimeRate")}
+            {pctField("假设命中率", "assumptionHitRate")}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">响应延迟（天）</label>
+              <input type="number" value={form.responseLatencyDays ?? ""} onChange={(e) => setForm({ ...form, responseLatencyDays: e.target.value === "" ? undefined : Number(e.target.value) })} className={mInputCls} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">预算规模（万）</label>
+              <input type="number" value={form.budgetTotal ?? ""} onChange={(e) => setForm({ ...form, budgetTotal: e.target.value === "" ? undefined : Number(e.target.value) })} className={mInputCls} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">主要张力</label>
+            <select value={form.tensionType} onChange={(e) => setForm({ ...form, tensionType: e.target.value as TensionType })} className={mInputCls}>
+              <option value="capability">能力张力</option>
+              <option value="direction">方向张力</option>
+              <option value="adaptation">适应张力</option>
+              <option value="resource">资源张力</option>
+            </select>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-1.5 text-sm hover:bg-black/[0.04]">取消</button>
+          <button onClick={save} disabled={saving} className="rounded-md bg-[var(--color-accent)] px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50">
+            {saving ? "保存中…" : "保存"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const QUADRANT_LABELS = [
   { x: 15, y: 85, label: "快速学习", sub: "高价值区", color: "#22c55e" },
@@ -50,7 +147,9 @@ function TooltipContent({ active, payload }: { active?: boolean; payload?: Array
 }
 
 export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[] }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<string>("");
+  const [editItem, setEditItem] = useState<Partial<ExecutionMaturityPoint> | null>(null);
 
   const chartData = useMemo(() => points.map((p) => ({
     ...p,
@@ -61,8 +160,8 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
   const selectedPoint = points.find((p) => p.projectCode === selected);
   const meta = selectedPoint ? TENSION_META[selectedPoint.tensionType] : null;
 
-  const avgSpeed = Math.round(points.reduce((s, p) => s + p.milestoneOnTimeRate, 0) / points.length * 100);
-  const avgLearn = Math.round(points.reduce((s, p) => s + p.assumptionHitRate, 0) / points.length * 100);
+  const avgSpeed = points.length ? Math.round(points.reduce((s, p) => s + p.milestoneOnTimeRate, 0) / points.length * 100) : 0;
+  const avgLearn = points.length ? Math.round(points.reduce((s, p) => s + p.assumptionHitRate, 0) / points.length * 100) : 0;
   const highRisk = points.filter((p) => p.milestoneOnTimeRate < 0.5 && p.assumptionHitRate < 0.5);
 
   return (
@@ -74,12 +173,13 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
             X 轴：里程碑准时率（速度）· Y 轴：假设命中率（学习速度）· 气泡大小 = 预算规模
           </p>
         </div>
-        <div className="flex gap-4 text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
           <span>均速 <span className="text-[var(--color-text-primary)]">{avgSpeed}%</span></span>
           <span>均学 <span className="text-[var(--color-text-primary)]">{avgLearn}%</span></span>
           {highRisk.length > 0 && (
             <span className="text-red-400">{highRisk.map((p) => p.projectCode).join("、")} 高风险</span>
           )}
+          <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 录入项目</button>
         </div>
       </div>
 
@@ -116,7 +216,10 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
         <div className="space-y-2">
           {selectedPoint && meta ? (
             <div className={`rounded-lg border p-4 ${meta.bgColor} border-opacity-40`} style={{ borderColor: meta.color + "66" }}>
-              <div className="mb-3 text-sm font-medium">{selectedPoint.projectName}</div>
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium">{selectedPoint.projectName}</span>
+                <button onClick={() => setEditItem(selectedPoint)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
+              </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">负责人</span><span>{selectedPoint.owner}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">层面</span><span>{selectedPoint.horizon}</span></div>
@@ -152,6 +255,10 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
           </div>
         </div>
       </div>
+
+      {editItem && (
+        <MaturityModal item={editItem} onClose={() => setEditItem(null)} onSaved={() => { setEditItem(null); router.refresh(); }} />
+      )}
     </section>
   );
 }

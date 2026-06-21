@@ -206,6 +206,8 @@ export const capStack: CapStackPeriod = {
   capexActual: 9000,
   capexForecast: 11000,
   byHorizon: { H1: 62, H2: 28, H3: 10 },
+  byBrand: { RUUD: 35, HENGRE: 30, RUIMEI: 25, TECH_HOME: 10 },
+  byType: { strategic: 20, capacity: 40, technology: 25, brand: 10, people: 5 },
   cashPeakMonth: "2026-09",
   cashPeakAmount: 3200,
   runwayAfterPeak: 2.8,

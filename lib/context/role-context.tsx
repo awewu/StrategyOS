@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { roleHomePath } from "@/lib/auth/permissions";
 import { ROLES, type RoleKey } from "@/lib/constants";
 
 interface RoleContextValue {
@@ -39,21 +40,7 @@ export function useRole() {
   return ctx;
 }
 
-export function roleHomePath(role: RoleKey): string {
-  switch (role) {
-    case "ceo":
-    case "observer":
-      return "/command";
-    case "vp":
-      return "/strategy";
-    case "pm":
-      return "/execution";
-    case "staff":
-      return "/reports";
-    default:
-      return "/command";
-  }
-}
+export { roleHomePath } from "@/lib/auth/permissions";
 
 export function roleLabel(role: RoleKey): string {
   return ROLES[role].label;

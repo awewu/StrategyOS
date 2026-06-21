@@ -1,20 +1,21 @@
 import { cookies } from "next/headers";
 import { DashboardShell } from "@/components/shell/DashboardShell";
+import { getEffectiveRole } from "@/lib/auth/guard";
+import { isDevBypassAuth } from "@/lib/auth/resolve-role";
 import { getSession } from "@/lib/auth/session";
-import { ROLES, type RoleKey } from "@/lib/constants";
-
-function parseRole(value: string | undefined): RoleKey {
-  if (value && value in ROLES) return value as RoleKey;
-  return "ceo";
-}
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
   const session = await getSession();
-  const initialRole = parseRole(session?.role ?? cookieStore.get("stratos_role")?.value);
+  const initialRole = await getEffectiveRole();
+  const secureMode = process.env.STRATOS_REQUIRE_AUTH === "1";
 
   return (
-    <DashboardShell initialRole={initialRole} session={session}>
+    <DashboardShell
+      initialRole={initialRole}
+      session={session}
+      secureMode={secureMode}
+      devBypassAuth={isDevBypassAuth()}
+    >
       {children}
     </DashboardShell>
   );

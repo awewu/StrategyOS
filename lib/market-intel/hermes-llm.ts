@@ -19,7 +19,7 @@ export function hermesLlmConfigured(): boolean {
   return Boolean(llmKey());
 }
 
-async function fetchPlainText(url: string): Promise<string | null> {
+export async function fetchPlainText(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
@@ -47,9 +47,10 @@ interface RawSignal {
   summary?: unknown;
   impact?: unknown;
   relevance?: unknown;
+  evidence?: unknown;
 }
 
-async function extractWithLlm(
+export async function extractWithLlm(
   competitor: string,
   sourceLabel: string,
   text: string,
@@ -64,6 +65,8 @@ async function extractWithLlm(
     "Extract moves from web page text. Return ONLY a JSON object: { \"signals\": [...] }",
     "Each signal: dimension (product|gtm|brand|strategy), title (Chinese, <=60 chars),",
     "summary (Chinese, 2-3 sentences), impact (threat|opportunity|neutral), relevance 0-100.",
+    "Also include `evidence`: a SHORT verbatim quote (<=160 chars) copied EXACTLY from the source text",
+    "that backs the claim. Do NOT paraphrase the evidence. If you cannot quote source text, omit the signal.",
     "Return { \"signals\": [] } if nothing actionable. No markdown.",
     "Competitor: " + competitor + "  Date: " + capturedAt,
   ].join("\n");
@@ -109,6 +112,7 @@ async function extractWithLlm(
         sourceKind,
         sourceLabel,
         capturedAt,
+        evidence: s.evidence ? String(s.evidence).slice(0, 200) : undefined,
       }));
   } catch {
     return [];

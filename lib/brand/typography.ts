@@ -3,6 +3,8 @@ export const typography = {
   h1:     "text-[1.875rem] font-semibold leading-[1.1] tracking-[-0.025em]",
   h2:     "text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em]",
   h3:     "text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-[var(--color-text-muted)]",
+  /** Page section eyebrow — no uppercase (CJK-safe) */
+  eyebrow:"text-[0.6875rem] font-medium tracking-[0.04em] text-[var(--color-text-muted)]",
   body:   "text-[0.9375rem] leading-[1.6]",
   caption:"text-[0.75rem] leading-relaxed text-[var(--color-text-muted)]",
   data:   "font-data text-[1.125rem] tabular-nums tracking-tight",

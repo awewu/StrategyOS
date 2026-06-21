@@ -3,6 +3,15 @@
 import { useState } from "react";
 import type { HermesScanResult } from "@/lib/market-intel/types";
 
+interface CurationDrop { competitor: string; dimension: string; title: string; reason: string }
+interface Curation {
+  kept: number;
+  drops: number;
+  rounds: number;
+  dropList: CurationDrop[];
+}
+type ScanResponse = HermesScanResult & { curation?: Curation | null };
+
 export function HermesPanel({
   agent,
   lastScan,
@@ -17,12 +26,17 @@ export function HermesPanel({
   const [scan, setScan] = useState<HermesScanResult>(lastScan);
   const [running, setRunning] = useState(false);
   const [open, setOpen] = useState(false);
+  const [curation, setCuration] = useState<Curation | null>(null);
 
   async function runScan() {
     setRunning(true);
     try {
       const res = await fetch("/api/market/scan", { method: "POST" });
-      if (res.ok) setScan((await res.json()) as HermesScanResult);
+      if (res.ok) {
+        const data = (await res.json()) as ScanResponse;
+        setScan(data);
+        setCuration(data.curation ?? null);
+      }
     } finally {
       setRunning(false);
     }
@@ -72,6 +86,28 @@ export function HermesPanel({
             </li>
           ))}
         </ul>
+      )}
+
+      {curation && (
+        <div className="mt-4 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <span className="font-medium text-[var(--color-text-primary)]">QC 反幻觉校验</span>
+            <span className="text-[var(--signal-green)]">保留 {curation.kept}</span>
+            <span className="text-[var(--signal-red)]">丢弃 {curation.drops}</span>
+            <span className="text-[var(--color-text-muted)]">闭环 {curation.rounds} 轮</span>
+            <span className="ml-auto text-[var(--color-text-muted)]">仅保留有原文佐证的信号</span>
+          </div>
+          {curation.dropList.length > 0 && (
+            <ul className="mt-2 space-y-1 border-t border-[var(--surface-border)] pt-2">
+              {curation.dropList.slice(0, 6).map((d, i) => (
+                <li key={i} className="text-xs text-[var(--color-text-muted)]">
+                  <span className="text-[var(--signal-red)]">丢弃</span> · {d.competitor} · {d.title}
+                  <span className="ml-1 italic">（{d.reason}）</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <button

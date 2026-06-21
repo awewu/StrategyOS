@@ -193,6 +193,52 @@ export function getSeries(metricId: string) {
   return getAllSeries().find((s) => s.metricId === metricId);
 }
 
+/**
+ * Build metric series from DB-provided actual/planned rows.
+ * Fills missing months from ALL_MONTHS, recomputes yoy/mom from the actual array.
+ * Metrics absent from the DB map fall back to the generated series.
+ */
+export function buildSeriesFromActuals(
+  byMetric: Map<string, { month: string; actual: number | null; planned: number }[]>
+): MetricSeries[] {
+  const out: MetricSeries[] = [];
+  let seed = 1000;
+  DOMAINS.forEach((d) =>
+    d.metrics.forEach((m) => {
+      const rows = byMetric.get(m.id);
+      if (!rows || rows.length === 0) {
+        out.push(genSeries(m, d.id, seed));
+      } else {
+        const map = new Map(rows.map((r) => [r.month, r]));
+        const fallback = genSeries(m, d.id, seed);
+        const fbByMonth = new Map(fallback.points.map((p) => [p.month, p]));
+        const actualByMonth = new Map<string, number | null>();
+        for (const mo of ALL_MONTHS) {
+          const row = map.get(mo);
+          actualByMonth.set(mo, row ? row.actual : null);
+        }
+        const points: MonthPoint[] = ALL_MONTHS.map((mo) => {
+          const row = map.get(mo);
+          const fb = fbByMonth.get(mo);
+          const [y, mm] = mo.split("-").map(Number);
+          const prevMonth = mm === 1 ? `${y - 1}-12` : `${y}-${String(mm - 1).padStart(2, "0")}`;
+          const yoyMonth = `${y - 1}-${String(mm).padStart(2, "0")}`;
+          return {
+            month: mo,
+            actual: row ? row.actual : null,
+            planned: row ? row.planned : (fb?.planned ?? 0),
+            yoy: actualByMonth.get(yoyMonth) ?? null,
+            mom: actualByMonth.get(prevMonth) ?? null,
+          };
+        });
+        out.push({ metricId: m.id, domainId: d.id, points });
+      }
+      seed += 100;
+    })
+  );
+  return out;
+}
+
 export function getSignal(value: number, def: MetricDef): MetricSignal {
   if (def.higherIsBetter) {
     return value >= def.greenThreshold ? "green" : value >= def.yellowThreshold ? "yellow" : "red";

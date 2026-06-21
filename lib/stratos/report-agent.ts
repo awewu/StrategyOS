@@ -105,7 +105,7 @@ export function parseMcKinseySections(rawContent: string): McKinseySections | un
 export function parseReportContent(
   reportId: string,
   rawContent: string,
-  period: string
+  _period: string
 ): ParsedReport {
   const agentTrace: string[] = [];
   const patterns: ReportPattern[] = [];

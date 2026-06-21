@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { CounterfactualPanel } from "@/components/versions/CounterfactualPanel";
 import { StrategyPatternPanel } from "@/components/versions/StrategyPatternPanel";
 import { SnapshotFreezePanel } from "@/components/versions/SnapshotFreezePanel";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getVersionsBundle } from "@/lib/data/versions-data";
 
 export default async function VersionsPage() {
@@ -15,13 +17,20 @@ export default async function VersionsPage() {
   );
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">版本库</h1>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          StratDiff {stratDiffs.length} 条 · diff 优先于表格 · 快照不可改 · 数据源 {source}
-        </p>
-      </div>
+    <div className="stratos-section-gap flex flex-col">
+      <PageHeader
+        eyebrow="战略制定 · 历史参照"
+        title="历史版本 · 对照"
+        subtitle={`编制前先读 diff — 快照对比、反事实与涌现模式，支撑本版战略更新 · StratDiff ${stratDiffs.length} 条 · 数据源 ${source}`}
+        actions={
+          <Link
+            href="/strategy/input"
+            className="rounded-xl border border-[var(--color-accent-gold)]/35 bg-[var(--color-accent-gold)]/8 px-4 py-2.5 text-sm text-[var(--color-accent-gold)] transition-colors hover:bg-[var(--color-accent-gold)]/15"
+          >
+            去编制战略 →
+          </Link>
+        }
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         {snapshots.map((s) => (

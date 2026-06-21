@@ -1,38 +1,59 @@
 import Link from "next/link";
 import { AgentOrchestrationPanel } from "@/components/reports/AgentOrchestrationPanel";
-import { ReportsCenter } from "@/components/reports/ReportsCenter";
+import { ReportsArchive } from "@/components/reports/ReportsArchive";
+import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { mckinseyCadence } from "@/lib/brand/apple-mckinsey";
-import { getDataSource, getReports } from "@/lib/data/strategy-data";
+import { dbAvailable, prisma } from "@/lib/db";
+import { getEffectiveRole, getEffectiveSession } from "@/lib/auth/guard";
+import { getManagementReport, getFpaSummary } from "@/lib/data/strategy-data";
+import { getOrgScope } from "@/lib/auth/scope";
+
+async function getOrgUnits() {
+  if (!(await dbAvailable())) return [];
+  const units = await prisma.orgUnit.findMany({
+    orderBy: [{ level: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, level: true },
+  });
+  return units;
+}
 
 export default async function ReportsPage() {
-  const [reports, source] = await Promise.all([getReports(), getDataSource()]);
+  const role = await getEffectiveRole();
+  const session = await getEffectiveSession();
+  const orgScope = getOrgScope(role, session);
+  const [orgUnits, mgmt, fpa] = await Promise.all([
+    getOrgUnits(),
+    getManagementReport(),
+    getFpaSummary(),
+  ]);
+  const visibleOrgUnits =
+    orgScope != null && orgScope.length > 0
+      ? orgUnits.filter((u) => orgScope.includes(u.id))
+      : orgUnits;
 
   return (
     <div className="stratos-section-gap flex flex-col">
       <PageHeader
-        eyebrow="McKinsey 预读 · Apple 简洁导入"
-        title="报告中心"
-        subtitle="MON-RPT 七章 + 可选 SCR/MECE 叙事头 → Agent 解析 → 指挥舱 SCR"
+        eyebrow="经营档案 · AI 解析 · 反哺执行审计"
+        title="OPS 运营"
+        subtitle="经营档案 · AI 解析 · 反哺执行审计与指挥舱 · 各部门/体系/事业部月报与会议纪要"
       />
 
-      <nav className="surface-glass flex flex-wrap gap-2 rounded-xl border border-black/[0.06] p-3 text-xs">
-        {Object.values(mckinseyCadence).map((step) => (
-          <Link
-            key={step.route}
-            href={step.route}
-            className="rounded-lg px-3 py-2 text-[var(--color-text-muted)] transition-colors hover:bg-black/[0.03] hover:text-[var(--color-text-primary)]"
-          >
-            {step.labelZh}
-          </Link>
-        ))}
-      </nav>
+      <ReportsArchive orgUnits={visibleOrgUnits} />
 
-      <AgentOrchestrationPanel />
-      <ReportsCenter reports={reports} source={source} />
+      <section className="surface-elevated rounded-2xl border border-black/[0.06] p-6 md:p-8">
+        <h2 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">
+          AI 解析管道与经营全景
+        </h2>
+        <div className="space-y-6">
+          <AgentOrchestrationPanel />
+          <ReportsPanorama fpa={fpa} kpis={mgmt.kpis} />
+        </div>
+      </section>
+
       <div className="flex flex-wrap gap-4 text-sm">
-        <Link href="/rehearsal" className="text-[var(--color-accent-gold)] hover:underline">
-          Q3 战略会彩排 →
+        <Link href="/monitor/bu" className="text-[var(--color-accent)] hover:underline">
+          事业部监测 →
         </Link>
         <Link href="/command" className="text-[var(--color-text-muted)] hover:underline">
           指挥舱 SCR →

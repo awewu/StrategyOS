@@ -1,20 +1,6 @@
-import { HealthPageClient } from "@/components/health/HealthPageClient";
-import { OpsHealthDashboard } from "@/components/health/OpsHealthDashboard";
-import { getHealthBundle } from "@/lib/data/strategy-data";
+import { redirect } from "next/navigation";
 
-export default async function HealthPage() {
-  const data = await getHealthBundle();
-  return (
-    <div className="space-y-10">
-      <HealthPageClient
-        bscLights={data.bscLights}
-        healthOverview={data.healthOverview}
-        fpa={data.fpa}
-        robustOverall={data.robustOverall}
-        robustScore={data.robustScore}
-        source={data.source}
-      />
-      <OpsHealthDashboard />
-    </div>
-  );
+/** Legacy URL — 保留书签与外链，跳转到集团健康 */
+export default function HealthLegacyPage() {
+  redirect("/monitor/health");
 }
