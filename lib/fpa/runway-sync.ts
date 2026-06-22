@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { refreshCompassAudit } from "@/lib/compass/sync-audit";
+import { getActivePeriod } from "@/lib/data/active-period";
 
-const PERIOD = "2026-FY";
 const RUNWAY_THRESHOLD = 3;
 
 /** 从 FPA 公司口径同步 CashPosition，并触发 HealthAssertion + 罗盘审计 */
@@ -10,6 +10,7 @@ export async function syncRunwayFromFpa(opts?: {
   cashBalance?: number;
   monthlyBurn?: number;
 }): Promise<{ runwayMonths: number }> {
+  const PERIOD = await getActivePeriod();
   const fpa = await prisma.fpaPeriod.findFirst({
     where: { period: PERIOD, scope: "company" },
   });

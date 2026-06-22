@@ -14,8 +14,9 @@ import type {
   MarginBridgeItem,
   StatementLine,
 } from "./management-types";
+import { CURRENT_PERIOD } from "@/lib/constants";
 
-const PERIOD = "2026-FY";
+const PERIOD = CURRENT_PERIOD;
 
 export function computeRos(netIncome: number, revenue: number): number {
   if (revenue <= 0) return 0;

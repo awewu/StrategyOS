@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export const runtime = "nodejs";
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     const data = {
       title: title.trim(),
       meetingType: meetingType ?? "TOPIC",
-      period: period?.trim() || "2026-FY",
+      period: period?.trim() || (await getActivePeriod()),
       meetingDate: meetingDate ? new Date(meetingDate) : null,
       status: status ?? "INVITING",
       agenda: agenda?.trim() || null,

@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { DOCTRINES } from "../lib/constants";
+import { DOCTRINES, CURRENT_PERIOD } from "../lib/constants";
 import {
   BEHAVIOR_GUIDELINES,
   CORE_VALUES_INTRO,
@@ -110,6 +110,12 @@ async function main() {
       cashPeakAmount: 3200,
       runwayAfterPeak: 2.8,
     },
+  });
+
+  await prisma.systemSetting.upsert({
+    where: { key: "active_period" },
+    update: {},
+    create: { key: "active_period", value: CURRENT_PERIOD },
   });
 
   const fpaExisting = await prisma.fpaPeriod.findFirst({

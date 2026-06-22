@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import { dbAvailable, prisma } from "@/lib/db";
 import { updateScenarioProbabilities } from "@/lib/stratos/spbp-bayes";
+import { getActivePeriod } from "@/lib/data/active-period";
 import * as demo from "@/lib/stratos-demo-data";
 
 export async function POST(request: Request) {
@@ -11,6 +12,7 @@ export async function POST(request: Request) {
     strength?: number;
   };
 
+  const period = await getActivePeriod();
   const evidence = {
     favorsOptimistic: body.favorsOptimistic,
     favorsPessimistic: body.favorsPessimistic,
@@ -18,7 +20,7 @@ export async function POST(request: Request) {
   };
 
   if (await dbAvailable()) {
-    const rows = await prisma.spbpScenario.findMany({ where: { period: "2026-FY" } });
+    const rows = await prisma.spbpScenario.findMany({ where: { period } });
     if (rows.length > 0) {
       const mapped = rows.map((r) => ({
         id: r.code,
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
       }
       await logUsageEvent({
         action: "spbp_update",
-        resource: "2026-FY",
+        resource: period,
         request,
         metadata: { source: "database", ...evidence },
       });
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
   const updated = updateScenarioProbabilities(demo.spbpScenarios, evidence);
   await logUsageEvent({
     action: "spbp_update",
-    resource: "2026-FY",
+    resource: period,
     request,
     metadata: { source: "demo", ...evidence },
   });

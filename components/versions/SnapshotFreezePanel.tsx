@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function SnapshotFreezePanel() {
+export function SnapshotFreezePanel({ activePeriod }: { activePeriod: string }) {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -16,8 +16,8 @@ export function SnapshotFreezePanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: bypassAssertion ? "2026-FY-STRATEGIC" : "2026-FY-STRATEGIC-BLOCKED",
-          period: "2026-FY",
+          code: bypassAssertion ? `${activePeriod}-STRATEGIC` : `${activePeriod}-STRATEGIC-BLOCKED`,
+          period: activePeriod,
           snapshotType: "FY",
           bypassAssertion,
           meetingNotes: bypassAssertion ? "CEO 例外：runway remedial Vx 已录" : undefined,
@@ -57,7 +57,7 @@ export function SnapshotFreezePanel() {
           onClick={() => handleFreeze(true)}
           className="rounded bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-bg-deep)] disabled:opacity-50"
         >
-          冻结 2026-FY-STRATEGIC（已例外）
+          冻结 {activePeriod}-STRATEGIC（已例外）
         </button>
         <button
           type="button"

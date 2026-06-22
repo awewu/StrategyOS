@@ -9,6 +9,7 @@ import * as entities from "@/lib/data/entity-getters";
 import { autoPersistDiffsForSnapshot } from "@/lib/stratos/persist-diff";
 import { healthAssertion } from "@/lib/stratos-demo-data";
 import { freezeSnapshot } from "@/lib/stratos/freeze-snapshot";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 async function resolveFrozenById(session: Awaited<ReturnType<typeof getSession>>) {
   if (await dbAvailable()) {
@@ -31,8 +32,9 @@ export async function POST(request: NextRequest) {
     bypassAssertion?: boolean;
   };
 
-  const code = body.code ?? "2026-FY-STRATEGIC";
-  const period = body.period ?? "2026-FY";
+  const activePeriod = await getActivePeriod();
+  const code = body.code ?? `${activePeriod}-STRATEGIC`;
+  const period = body.period ?? activePeriod;
   const snapshotType = body.snapshotType ?? "FY";
 
   const session = await getSession();

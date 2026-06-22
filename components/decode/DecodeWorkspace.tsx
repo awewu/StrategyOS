@@ -8,6 +8,8 @@ import { HoshinEditor } from "@/components/decode/HoshinEditor";
 import { StratosTabButtons } from "@/components/ui/StratosTabNav";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { HoshinRowPayload } from "@/lib/decode/data-access";
+import type { SimSeed } from "@/lib/stratos/strat-sim";
+import type { DynamicsState } from "@/lib/stratos/strat-sim-dynamics";
 import type { FeedbackLoop } from "@/lib/types/stratos";
 
 type Tab = "bsc" | "hoshin" | "stratsim";
@@ -17,6 +19,8 @@ type Initial = {
   hoshinFlat: HoshinRowPayload[];
   loops: FeedbackLoop[];
   source: "database" | "demo";
+  simSeed: SimSeed;
+  simInitial: DynamicsState;
 };
 
 export function DecodeWorkspace({
@@ -225,7 +229,12 @@ export function DecodeWorkspace({
       {tab === "stratsim" && (
         <div className="space-y-6">
           <FeedbackLoopEditor initialLoops={initial.loops} source={source} />
-          <StratSimPanel loops={initial.loops} />
+          <StratSimPanel
+            loops={initial.loops}
+            seed={initial.simSeed}
+            initial={initial.simInitial}
+            source={initial.source}
+          />
         </div>
       )}
     </div>

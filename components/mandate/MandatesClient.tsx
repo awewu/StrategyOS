@@ -18,7 +18,7 @@ const HOLDING_STATUS_COLOR: Record<HoldingStatus, string> = {
   HANDED_OVER: "var(--signal-yellow)", MISSED: "var(--signal-red)",
 };
 
-export function MandatesClient({ bundle }: { bundle: MandateBundle }) {
+export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle; activePeriod: string }) {
   const router = useRouter();
   const [tab, setTab] = useState<"mandates" | "meetings">("mandates");
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
@@ -72,7 +72,7 @@ export function MandatesClient({ bundle }: { bundle: MandateBundle }) {
             className="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white">+ 新建职责</button>
         )}
         {tab === "meetings" && (
-          <button onClick={() => setEditMeeting({ meetingType: "TOPIC", status: "INVITING", period: "2026-FY" })}
+          <button onClick={() => setEditMeeting({ meetingType: "TOPIC", status: "INVITING", period: activePeriod })}
             className="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white">+ 新建会议</button>
         )}
       </div>

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { ensureCompassChildren } from "@/lib/compass/seed";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 async function currentRevenueWan(): Promise<number> {
-  const fpa = await prisma.fpaPeriod.findFirst({ where: { period: "2026-FY", scope: "company" } });
+  const fpa = await prisma.fpaPeriod.findFirst({ where: { period: await getActivePeriod(), scope: "company" } });
   return fpa ? Number(fpa.revenueActual) : 5120;
 }
 

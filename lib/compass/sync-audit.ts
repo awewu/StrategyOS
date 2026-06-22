@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import type { AssumptionResult, AssumptionType } from "@prisma/client";
 import { syncPlanAssumptionsToPremises, syncPlanPremisesToAssumptions, normalizePremiseCode, premiseMatchesCode } from "@/lib/data/plan-assumption-sync";
+import { getActivePeriod } from "@/lib/data/active-period";
 
-const PERIOD = "2026-FY";
 const RUNWAY_SAFE_MONTHS = 3;
 
 function assumptionCategory(type: AssumptionType): string {
@@ -50,7 +50,7 @@ function isCapitalPremise(code: string, premise: string): boolean {
 /** 从 assumptions 表 upsert 到 compassPremiseAudit（按 code 对齐，保留 Hermes 联动） */
 export async function syncPremisesFromAssumptions(northStarId: string): Promise<number> {
   const assumptions = await prisma.assumption.findMany({
-    where: { period: PERIOD },
+    where: { period: await getActivePeriod() },
     orderBy: { code: "asc" },
   });
   if (assumptions.length === 0) return 0;
@@ -104,7 +104,7 @@ export async function syncPremisesFromAssumptions(northStarId: string): Promise<
 
 async function loadRunwayMonths(): Promise<number | null> {
   const cash = await prisma.cashPosition.findFirst({
-    where: { period: PERIOD },
+    where: { period: await getActivePeriod() },
     orderBy: { asOfDate: "desc" },
   });
   if (cash) return Number(cash.runwayMonths);
@@ -198,7 +198,7 @@ export async function applyAutoFailSignals(northStarId: string): Promise<number>
   }
 
   const failed = await prisma.assumption.findMany({
-    where: { period: PERIOD, result: "failed" },
+    where: { period: await getActivePeriod(), result: "failed" },
   });
   for (const a of failed) {
     const p = premises.find((row) => row.code === a.code);
@@ -235,7 +235,7 @@ export async function refreshCompassAudit(
 /** Plan-scoped premise sync — mirrors northStar path for StrategicPlan single source. */
 export async function syncPremisesFromAssumptionsToPlan(planId: string): Promise<number> {
   const assumptions = await prisma.assumption.findMany({
-    where: { period: PERIOD },
+    where: { period: await getActivePeriod() },
     orderBy: { code: "asc" },
   });
   if (assumptions.length === 0) return 0;
@@ -349,7 +349,7 @@ export async function applyAutoFailSignalsToPlan(planId: string): Promise<number
   }
 
   const failed = await prisma.assumption.findMany({
-    where: { period: PERIOD, result: "failed" },
+    where: { period: await getActivePeriod(), result: "failed" },
   });
   for (const a of failed) {
     const p = premises.find((row) => premiseMatchesCode(row.code, a.code));

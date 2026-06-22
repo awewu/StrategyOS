@@ -3,6 +3,13 @@ import type {
   FpaSummary,
   SnapshotStatePayload,
 } from "@/lib/types/stratos";
+import {
+  DEFAULT_ELASTICITIES,
+  priceCutImpact,
+  segmentBeatImpact,
+  v4DelayImpact,
+  type DriverElasticities,
+} from "./driver-model";
 
 export type CounterfactualType = "v4_delay" | "hotel_beat" | "price_cut";
 
@@ -24,28 +31,35 @@ export interface CounterfactualResult {
   };
 }
 
-const V4_REVENUE_PER_Q = 200;
-const HOTEL_BASE_REVENUE_M = 1600;
-const RUNWAY_PER_V4_Q = 0.35;
-const RUNWAY_PER_HOTEL_BEAT = 0.08;
+/** Fallback baseline used only when a snapshot carries no FPA summary. */
+const FALLBACK_FPA: FpaSummary = {
+  revenueBudget: 6000,
+  revenueActual: 4200,
+  revenueForecast: 5800,
+  profitBudget: 880,
+  profitActual: 520,
+  profitForecast: 820,
+  cashRunwayMonths: 3.5,
+};
 
 function baselineFpa(state: SnapshotStatePayload): FpaSummary {
-  return (
-    state.fpa ?? {
-      revenueBudget: 6000,
-      revenueActual: 4200,
-      revenueForecast: 5800,
-      profitBudget: 880,
-      profitActual: 520,
-      profitForecast: 820,
-      cashRunwayMonths: 3.5,
-    }
-  );
+  return state.fpa ?? FALLBACK_FPA;
 }
 
+function clampRunway(months: number): number {
+  return Math.max(0.5, months);
+}
+
+/**
+ * Run a counterfactual via the data-anchored driver model. Impacts scale with
+ * the snapshot's actual FPA forecast; elasticities are override-able for
+ * calibration. The model is directional (for facilitated what-if), not a
+ * point forecast — pair with monteCarloForecast for probabilistic ranges.
+ */
 export function runCounterfactual(
   baseline: SnapshotStatePayload,
-  input: CounterfactualInput
+  input: CounterfactualInput,
+  elasticities: DriverElasticities = DEFAULT_ELASTICITIES,
 ): CounterfactualResult {
   const fpa = baselineFpa(baseline);
   const mag = Math.max(0, input.magnitude);
@@ -53,50 +67,49 @@ export function runCounterfactual(
   switch (input.type) {
     case "v4_delay": {
       const q = Math.min(4, mag);
-      const revenueDelta = -V4_REVENUE_PER_Q * q;
-      const runway = Math.max(0.5, fpa.cashRunwayMonths - RUNWAY_PER_V4_Q * q);
+      const impact = v4DelayImpact(fpa, q, elasticities);
+      const runway = clampRunway(fpa.cashRunwayMonths + impact.runwayDeltaMonths);
       return {
         id: `cf-v4-delay-${q}`,
         premise: `若 V4 延迟 ${q} 个季度`,
-        impact: `营收 F ${revenueDelta} 万 · runway ${runway.toFixed(1)} 月 · IC-04 可能进入 deferred`,
+        impact: `营收 F ${impact.revenueDeltaM} 万 · runway ${runway.toFixed(1)} 月 · IC-04 可能进入 deferred`,
         linkedDiff: ["FPA_FORECAST", "ROADMAP_SLIP"],
         metrics: {
-          revenueDeltaM: revenueDelta,
+          revenueDeltaM: impact.revenueDeltaM,
           runwayMonths: runway,
-          profitDeltaM: revenueDelta * 0.15,
+          profitDeltaM: impact.profitDeltaM,
         },
       };
     }
     case "hotel_beat": {
       const pct = Math.min(0.5, mag);
-      const revenueDelta = Math.round(HOTEL_BASE_REVENUE_M * pct);
-      const runway = fpa.cashRunwayMonths + RUNWAY_PER_HOTEL_BEAT * pct * 100;
+      const impact = segmentBeatImpact(fpa, pct, elasticities);
+      const runway = clampRunway(fpa.cashRunwayMonths + impact.runwayDeltaMonths);
       return {
         id: `cf-hotel-beat-${Math.round(pct * 100)}`,
         premise: `若酒店签约超额 ${Math.round(pct * 100)}%`,
-        impact: `营收 F +${revenueDelta} 万 · runway ${runway.toFixed(1)} 月 · 涌现模式写入 deliberate 候选`,
+        impact: `营收 F +${impact.revenueDeltaM} 万 · runway ${runway.toFixed(1)} 月 · 涌现模式写入 deliberate 候选`,
         linkedDiff: ["EMERGENT_PATTERN", "COVERAGE_TARGET"],
         metrics: {
-          revenueDeltaM: revenueDelta,
+          revenueDeltaM: impact.revenueDeltaM,
           runwayMonths: runway,
-          profitDeltaM: revenueDelta * 0.12,
+          profitDeltaM: impact.profitDeltaM,
         },
       };
     }
     case "price_cut": {
       const cut = Math.min(0.4, mag);
-      const revenueDelta = Math.round(-fpa.revenueForecast * cut);
-      const profitDelta = Math.round(-fpa.profitForecast * (cut + 0.1));
-      const runway = Math.max(0.5, fpa.cashRunwayMonths - cut * 2);
+      const impact = priceCutImpact(fpa, cut, elasticities);
+      const runway = clampRunway(fpa.cashRunwayMonths + impact.runwayDeltaMonths);
       return {
         id: `cf-price-cut-${Math.round(cut * 100)}`,
         premise: `若全品类降价 ${Math.round(cut * 100)}%`,
-        impact: `营收 F ${revenueDelta} 万 · 利润 F ${profitDelta} 万 · runway ${runway.toFixed(1)} 月`,
+        impact: `营收 F ${impact.revenueDeltaM} 万 · 利润 F ${impact.profitDeltaM} 万 · runway ${runway.toFixed(1)} 月`,
         linkedDiff: ["FPA_FORECAST", "LTV_CAC_DETERIORATION"],
         metrics: {
-          revenueDeltaM: revenueDelta,
+          revenueDeltaM: impact.revenueDeltaM,
           runwayMonths: runway,
-          profitDeltaM: profitDelta,
+          profitDeltaM: impact.profitDeltaM,
         },
       };
     }

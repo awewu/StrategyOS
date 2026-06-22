@@ -185,6 +185,7 @@ const SCHEMA_CRITICAL_COLUMNS: { table: string; column: string }[] = [
   { table: "users", column: "project_code" },
   { table: "strategy_mandates", column: "linked_project_code" },
   { table: "org_units", column: "level" },
+  { table: "usage_logs", column: "hash" },
 ];
 
 async function checkSchemaSync(): Promise<HarnessCheck> {

@@ -1,42 +1,54 @@
 import type { Scenario } from "@/lib/types/stratos";
+import { bayesianPosterior, toIntegerPercents } from "./bayes";
 
-/** Simple Bayesian-style probability nudge toward evidence-aligned scenarios */
+export interface SpbpEvidence {
+  favorsOptimistic?: boolean;
+  favorsPessimistic?: boolean;
+  /** Evidence strength 0–1; mapped to a likelihood ratio exp(strength). */
+  strength?: number;
+}
+
+/**
+ * Map evidence to a per-scenario likelihood P(E|scenario).
+ *
+ * The likelihood ratio is exp(strength): strength 0 → ratio 1 (uninformative,
+ * prior unchanged); strength 0.2 → ~1.22× more likely under the favored
+ * direction and the reciprocal under the opposed direction. This is a proper
+ * likelihood, so the update below is genuine Bayes, not an additive nudge.
+ */
+function likelihoodFor(name: string, ev: SpbpEvidence): number {
+  const lr = Math.exp(ev.strength ?? 0.15);
+  const isOpt = name.includes("乐观");
+  const isPess = name.includes("悲观");
+
+  if (ev.favorsPessimistic) {
+    if (isPess) return lr;
+    if (isOpt) return 1 / lr;
+  }
+  if (ev.favorsOptimistic) {
+    if (isOpt) return lr;
+    if (isPess) return 1 / lr;
+  }
+  return 1;
+}
+
+/**
+ * Bayesian update of scenario probabilities: posterior ∝ prior × likelihood.
+ * Returns scenarios with integer percent probabilities summing to exactly 100.
+ */
 export function updateScenarioProbabilities(
   scenarios: Scenario[],
-  evidence: { favorsOptimistic?: boolean; favorsPessimistic?: boolean; strength?: number }
+  evidence: SpbpEvidence
 ): Scenario[] {
-  const strength = evidence.strength ?? 0.15;
-  let next = scenarios.map((s) => ({ ...s, probability: s.probability }));
-
-  if (evidence.favorsOptimistic) {
-    next = nudge(next, "乐观", strength);
-    next = nudge(next, "悲观", -strength);
-  }
-  if (evidence.favorsPessimistic) {
-    next = nudge(next, "悲观", strength);
-    next = nudge(next, "乐观", -strength);
-  }
-
-  return normalizeProbabilities(next);
-}
-
-function nudge(scenarios: Scenario[], name: string, deltaPct: number): Scenario[] {
-  return scenarios.map((s) =>
-    s.name === name
-      ? { ...s, probability: Math.max(5, Math.min(80, s.probability + deltaPct * 100)) }
-      : s
-  );
-}
-
-function normalizeProbabilities(scenarios: Scenario[]): Scenario[] {
-  const total = scenarios.reduce((a, s) => a + s.probability, 0);
-  if (total === 0) return scenarios;
-  return scenarios.map((s) => ({
-    ...s,
-    probability: Math.round((s.probability / total) * 100),
-  }));
+  if (scenarios.length === 0) return scenarios;
+  const priors = scenarios.map((s) => s.probability);
+  const likelihoods = scenarios.map((s) => likelihoodFor(s.name, evidence));
+  const posterior = bayesianPosterior(priors, likelihoods);
+  const percents = toIntegerPercents(posterior);
+  return scenarios.map((s, i) => ({ ...s, probability: percents[i] }));
 }
 
 export function weightedRunway(scenarios: Scenario[]): number {
-  return scenarios.reduce((a, s) => a + s.fpaImpact.runwayMonths * (s.probability / 100), 0);
+  const total = scenarios.reduce((a, s) => a + s.probability, 0) || 1;
+  return scenarios.reduce((a, s) => a + s.fpaImpact.runwayMonths * (s.probability / total), 0);
 }

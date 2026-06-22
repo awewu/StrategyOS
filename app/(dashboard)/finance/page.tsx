@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { logUsageEvent } from "@/lib/audit/log-event";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { CapitalConfigEditor } from "@/components/finance/CapitalConfigEditor";
 import { FpaEditor } from "@/components/finance/FpaEditor";
@@ -9,6 +10,7 @@ import { ManagementReportEditor } from "@/components/finance/ManagementReportEdi
 import { CapitalTab } from "@/components/finance/CapitalTab";
 import { SpbpScenarioEditor } from "@/components/finance/SpbpScenarioEditor";
 import { StacksEditor } from "@/components/stacks/StacksEditor";
+import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StratosTabNav } from "@/components/ui/StratosTabNav";
 import { getFinanceBundle } from "@/lib/data/strategy-data";
@@ -39,6 +41,7 @@ async function FinanceContent({
   await requireRouteAccess("/finance");
   const { tab } = await tabPromise;
   const activeTab = parseTab(tab);
+  await logUsageEvent({ action: "fpa_view", resource: `/finance?tab=${activeTab}` });
   const data = await getFinanceBundle();
   const stacks = await getStacksBundle();
   const report = data.managementReport;
@@ -115,6 +118,8 @@ async function FinanceContent({
       {activeTab === "ma" && (
         <MaPipelineEditor initialItems={data.maPipeline} source={data.maSource} />
       )}
+
+      <ConceptGuide ids={["fpa", "spbp"]} />
     </div>
   );
 }

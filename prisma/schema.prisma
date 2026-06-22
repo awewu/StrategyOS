@@ -7,6 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Generic key/value system configuration. Holds the explicit active strategic
+/// period (key = "active_period") so the current period is an authoritative DB
+/// value rather than inferred from FpaPeriod labels.
+model SystemSetting {
+  key       String   @id @db.VarChar(50)
+  value     String   @db.VarChar(200)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
 model User {
   id                      String               @id @default(uuid())
   name                    String               @db.VarChar(50)
@@ -41,6 +52,8 @@ model UsageLog {
   metadata  Json?
   ip        String?  @db.VarChar(45)
   userAgent String?  @map("user_agent") @db.VarChar(500)
+  prevHash  String?  @map("prev_hash") @db.VarChar(64)
+  hash      String?  @db.VarChar(64)
   createdAt DateTime @default(now()) @map("created_at")
   user      User?    @relation(fields: [userId], references: [id])
 

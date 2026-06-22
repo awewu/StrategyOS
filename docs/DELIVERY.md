@@ -85,6 +85,46 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml exec app npx tsx 
 
 ---
 
+## 定量分析层升级（Calibrated Quantitative Engines）
+
+把推演从“启发式硬编码”升级为可校准、可复现、概率化的模型：
+
+| 引擎 | 升级前 | 升级后 |
+|------|--------|--------|
+| 贝叶斯更新 | ±15% 加性 nudge | `lib/stratos/bayes.ts` — 真正后验 `∝ 先验 × 似然`，无信息证据不改先验，似然比 = exp(强度) |
+| 概率预测 | 无 | `lib/stratos/monte-carlo.ts` — 情景混合 + 对数正态噪声，输出 P10/P50/P90 + P(runway<3)，种子固定可复现 |
+| 反事实 | 写死常量（200/季 等） | `lib/stratos/driver-model.ts` — 驱动式弹性，**锚定真实营收预测**，弹性系数可覆盖/校准 |
+| 仿真初值 | 硬编码（signings=820…） | `lib/stratos/calibrate.ts` — `deriveSimSeed` / `deriveDynamicsInitial` 从 FPA 反推；`runStratSim` 接受注入 seed |
+| 历史校准 | 无 | `calibrateForecastBias` 从 B-A-F 历史拟合偏差/MAPE，`applyForecastBias` 去偏 |
+| StratDiff | ~9 类 | 新增 INTENT_CHANGE / ASSUMPTION_NEW / COMMITMENT_DROP / HEALTH_LIGHT / IC_ROI_DEVIATION / CAPSTACK_CHANGE / CAPACITY_GAP / PRODUCT_BET_CHANGE（~16 类） |
+
+**UI**：`/finance?tab=scenarios` 新增「蒙特卡洛概率预测」卡（P10/P50/P90 + 跨安全线概率）；证据按钮走真贝叶斯更新。
+**测试**：`lib/stratos/{bayes,monte-carlo,driver-model,calibrate}.test.ts` + 反事实属性测试（单调性、数据锚定）。
+
+---
+
+## 审计防篡改（Tamper-Evident Audit）
+
+`UsageLog` 为 **SHA-256 哈希链**（append-only）：每条 `hash = SHA-256(prevHash + 不可变字段)`，
+`prevHash` 指向上一条的 `hash`。任何篡改、删除或重排都会断链。
+
+| 能力 | 实现 |
+|------|------|
+| 哈希计算 | `lib/audit/hash.ts`（稳定序列化，metadata 键序无关）|
+| 写入链接 | `lib/audit/log-event.ts` — DB 事务内读 tip → 计算 → 写入；内存链同理 |
+| 不静默丢失 | DB 写失败 `console.error` 并降级到内存链（不再吞异常）|
+| 完整性校验 | `lib/audit/verify-chain.ts` → `verifyAuditChain()`，检出 `content-tampered` / `link-broken` / `missing-hash` |
+| 可视化 | `/admin/access` 顶部 **链完整/链异常** 徽章 + 每条哈希前缀 |
+| 迁移 | `prisma/migrations/20260624120000_audit_hash_chain` · harness 校验 `usage_logs.hash` 列 |
+
+**敏感操作覆盖（埋点）：** 状态变更（freeze / diff / spbp / 登录 / webhook / 市场扫描）+ 敏感**读**：
+`fpa_view`（FPA 财务）· `admin_view`（`/admin/access`、`/admin/org`）· `audit_export`（导出）。
+
+**取证导出：** `GET /api/audit/export?format=csv|json`（`requireApiAdmin` L4）—
+返回全量链 + 完整性校验结果，响应头 `X-Audit-Integrity: verified|broken`；`/admin/access` 提供「导出 CSV / JSON」按钮。CSV 经 `lib/audit/export.ts` RFC-4180 转义。
+
+---
+
 ## 权限（产品决策 · 有意为之）
 
 | 路由 | 最低级别 | 角色 |

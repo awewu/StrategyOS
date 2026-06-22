@@ -34,17 +34,38 @@ export const DEFAULT_SIM_PARAMS: SimParams = {
   training: 0.55,
 };
 
+/** Initial operating state for the simulation. Derive from live FPA via
+ *  `deriveSimSeed(fpa)` (lib/stratos/calibrate) instead of hard-coding. */
+export interface SimSeed {
+  signings: number;
+  reputation: number;
+  profit: number;
+  investment: number;
+  winRate: number;
+  runway: number;
+}
+
+export const DEFAULT_SIM_SEED: SimSeed = {
+  signings: 820,
+  reputation: 68,
+  profit: 720,
+  investment: 100,
+  winRate: 58,
+  runway: 2.1,
+};
+
 export function runStratSim(
   horizonQuarters = 8,
-  params: SimParams = DEFAULT_SIM_PARAMS
+  params: SimParams = DEFAULT_SIM_PARAMS,
+  seed: SimSeed = DEFAULT_SIM_SEED
 ): SimSnapshot[] {
   const results: SimSnapshot[] = [];
-  let signings = 820;
-  let reputation = 68;
-  let profit = 720;
-  let investment = 100;
-  let winRate = 58;
-  let runway = 2.1;
+  let signings = seed.signings;
+  let reputation = seed.reputation;
+  let profit = seed.profit;
+  let investment = seed.investment;
+  let winRate = seed.winRate;
+  let runway = seed.runway;
 
   const trainingQueue: number[] = Array(Math.max(1, params.delayQuarters)).fill(0);
 

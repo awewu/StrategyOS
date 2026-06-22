@@ -4,6 +4,7 @@ import { dbAvailable, prisma } from "@/lib/db";
 import { llmConfigured } from "@/lib/stratos/llm-agent";
 import { runAgentOrchestrationSmart } from "@/lib/stratos/llm-orchestration";
 import { DEMO_SHEET_IMPORT } from "@/lib/stratos/report-agent";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export const runtime = "nodejs";
 
@@ -51,9 +52,10 @@ export async function POST(request: Request) {
         });
       }
     }
+    const period = await getActivePeriod();
     for (const sc of result.spbpScenarios) {
       await prisma.spbpScenario.updateMany({
-        where: { code: sc.id, period: "2026-FY" },
+        where: { code: sc.id, period },
         data: { probability: sc.probability },
       });
     }

@@ -249,6 +249,125 @@ export function computeStratDiff(
     }
   }
 
+  // #1 strategic intent / diagnosis crux change
+  if (from.diagnosis && to.diagnosis) {
+    if (
+      from.diagnosis.crux !== to.diagnosis.crux ||
+      from.diagnosis.challengeStatement !== to.diagnosis.challengeStatement
+    ) {
+      diffs.push({
+        category: "INTENT_CHANGE",
+        severity: "high",
+        title: `战略诊断变更：枢纽 / 核心挑战已更新`,
+        beforeJson: { crux: from.diagnosis.crux, challenge: from.diagnosis.challengeStatement },
+        afterJson: { crux: to.diagnosis.crux, challenge: to.diagnosis.challengeStatement },
+      });
+    }
+  }
+
+  // #5 new assumption introduced
+  for (const hx of to.assumptions ?? []) {
+    const prev = from.assumptions?.find((a) => a.id === hx.id);
+    if (!prev) {
+      diffs.push({
+        category: "ASSUMPTION_NEW",
+        severity: "info",
+        title: `${hx.code} 新增假设`,
+        detail: hx.content,
+      });
+    }
+  }
+
+  // #7 KR confidence drop (commitment risk)
+  for (const kr of to.keyResults ?? []) {
+    const prev = from.keyResults?.find((k) => k.id === kr.id);
+    if (prev && prev.confidence != null && kr.confidence != null) {
+      const drop = prev.confidence - kr.confidence;
+      if (drop >= 0.2) {
+        diffs.push({
+          category: "COMMITMENT_DROP",
+          severity: drop >= 0.4 ? "high" : "warning",
+          title: `${kr.title} 信心 ${(prev.confidence * 100).toFixed(0)}%→${(kr.confidence * 100).toFixed(0)}%`,
+          beforeJson: { confidence: prev.confidence },
+          afterJson: { confidence: kr.confidence },
+        });
+      }
+    }
+  }
+
+  // #8 health assertion newly active (one-vote-veto)
+  for (const ha of to.healthAssertions ?? []) {
+    const prev = from.healthAssertions?.find((h) => h.assertionType === ha.assertionType);
+    if (ha.active && !prev?.active) {
+      diffs.push({
+        category: "HEALTH_LIGHT",
+        severity: "critical",
+        title: `健康一票否决触发：${ha.message}`,
+        detail: ha.assertionType,
+      });
+    }
+  }
+
+  // #20 IC expected IRR deviation
+  for (const ic of to.investmentCases ?? []) {
+    const prev = from.investmentCases?.find((i) => i.id === ic.id);
+    if (prev?.expectedIrr != null && ic.expectedIrr != null) {
+      const dev = prev.expectedIrr - ic.expectedIrr;
+      if (dev >= 0.03) {
+        diffs.push({
+          category: "IC_ROI_DEVIATION",
+          severity: dev >= 0.06 ? "high" : "warning",
+          title: `${ic.code} 预期 IRR ${(prev.expectedIrr * 100).toFixed(0)}%→${(ic.expectedIrr * 100).toFixed(0)}%`,
+          beforeJson: { irr: prev.expectedIrr },
+          afterJson: { irr: ic.expectedIrr },
+        });
+      }
+    }
+  }
+
+  // #21 capital stack forecast vs budget deviation
+  if (from.capStack && to.capStack) {
+    const base = to.capStack.capexBudget || 1;
+    const dev = Math.abs(pctChange(to.capStack.capexBudget, to.capStack.capexForecast));
+    if (dev > 10) {
+      diffs.push({
+        category: "CAPSTACK_CHANGE",
+        severity: dev > 20 ? "high" : "warning",
+        title: `资本栈 CAPEX 预测偏离预算 ${dev.toFixed(0)}%`,
+        beforeJson: { budget: base },
+        afterJson: { forecast: to.capStack.capexForecast },
+      });
+    }
+  }
+
+  // #22 capacity gap opens up
+  if (to.capacity && to.capacity.gapUnits > 0) {
+    const prevGap = from.capacity?.gapUnits ?? 0;
+    if (to.capacity.gapUnits > prevGap) {
+      diffs.push({
+        category: "CAPACITY_GAP",
+        severity: to.capacity.gapUnits > prevGap * 1.5 ? "high" : "medium",
+        title: `产能缺口扩大至 ${to.capacity.gapUnits} 单位`,
+        beforeJson: { gap: prevGap },
+        afterJson: { gap: to.capacity.gapUnits },
+      });
+    }
+  }
+
+  // #23 product bet gate change
+  for (const bet of to.productBets ?? []) {
+    const prev = from.productBets?.find((b) => b.id === bet.id);
+    if (prev && prev.gateStatus !== bet.gateStatus) {
+      diffs.push({
+        category: "PRODUCT_BET_CHANGE",
+        severity: "medium",
+        title: `${bet.title} ${prev.gateStatus}→${bet.gateStatus}`,
+        beforeJson: { gate: prev.gateStatus },
+        afterJson: { gate: bet.gateStatus },
+      });
+    }
+  }
+
   const severityOrder: Record<string, number> = {
     critical: 0,
     high: 1,

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export const runtime = "nodejs";
-const PERIOD = "2026-FY";
 
 export async function GET() {
-  const rows = await prisma.executionTension.findMany({ where: { period: PERIOD }, orderBy: { createdAt: "asc" } });
+  const rows = await prisma.executionTension.findMany({ where: { period: await getActivePeriod() }, orderBy: { createdAt: "asc" } });
   return NextResponse.json(rows);
 }
 
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "projectCode/projectName/tensionType/signal 必填" }, { status: 400 });
     }
     const data = {
-      period: b.period ?? PERIOD,
+      period: b.period ?? (await getActivePeriod()),
       projectCode: b.projectCode, projectName: b.projectName,
       tensionType: b.tensionType, signal: b.signal,
       diagnosis: b.diagnosis ?? "", recommendation: b.recommendation ?? "",

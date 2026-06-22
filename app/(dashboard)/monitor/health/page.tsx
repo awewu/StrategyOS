@@ -1,6 +1,7 @@
 import { BscConfigEditor } from "@/components/health/BscConfigEditor";
 import { HealthPageClient } from "@/components/health/HealthPageClient";
 import { OpsHealthDashboard } from "@/components/health/OpsHealthDashboard";
+import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHealthBundle, getOpsHealthSeries } from "@/lib/data/strategy-data";
 
@@ -29,6 +30,7 @@ export default async function MonitorHealthPage() {
         hideTitle
       />
       <OpsHealthDashboard series={opsSeries} />
+      <ConceptGuide ids={["healthModel", "stratRobust", "vetoGate", "bsc"]} />
     </div>
   );
 }

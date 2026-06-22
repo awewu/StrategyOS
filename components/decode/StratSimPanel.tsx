@@ -3,12 +3,18 @@
 import { useMemo, useState } from "react";
 import {
   DEFAULT_SIM_PARAMS,
+  DEFAULT_SIM_SEED,
   runStratSim,
   simWarnings,
   type SimParams,
+  type SimSeed,
   type SimSnapshot,
 } from "@/lib/stratos/strat-sim";
-import { runStratSimDynamics } from "@/lib/stratos/strat-sim-dynamics";
+import {
+  DEFAULT_DYNAMICS_INITIAL,
+  runStratSimDynamics,
+  type DynamicsState,
+} from "@/lib/stratos/strat-sim-dynamics";
 import type { FeedbackLoop } from "@/lib/types/stratos";
 
 function Slider({
@@ -45,17 +51,29 @@ function Slider({
   );
 }
 
-export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
+export function StratSimPanel({
+  loops,
+  seed = DEFAULT_SIM_SEED,
+  initial = DEFAULT_DYNAMICS_INITIAL,
+  source,
+}: {
+  loops: FeedbackLoop[];
+  /** Discrete-model seed, derived from live FPA (deriveSimSeed). */
+  seed?: SimSeed;
+  /** Stock/flow initial state, derived from live FPA (deriveDynamicsInitial). */
+  initial?: DynamicsState;
+  source?: "database" | "demo";
+}) {
   const [params, setParams] = useState<SimParams>(DEFAULT_SIM_PARAMS);
   const [horizon, setHorizon] = useState(8);
   const [mode, setMode] = useState<"discrete" | "dynamics">("dynamics");
 
   const trail = useMemo((): SimSnapshot[] => {
     if (mode === "dynamics") {
-      return runStratSimDynamics(horizon, params);
+      return runStratSimDynamics(horizon, params, initial);
     }
-    return runStratSim(horizon, params);
-  }, [horizon, params, mode]);
+    return runStratSim(horizon, params, seed);
+  }, [horizon, params, mode, seed, initial]);
   const warnings = useMemo(() => simWarnings(trail), [trail]);
   const maxProfit = Math.max(...trail.map((t) => t.profit), 1);
 
@@ -67,7 +85,8 @@ export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
     <section className="rounded-lg border border-sky-500/30 bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-1 text-sm font-medium text-sky-400">StratSim · 反馈环推演</h2>
       <p className="mb-4 text-xs text-[var(--color-text-muted)]">
-        R 增强环 · B 调节环 · D 延迟环 — {mode === "dynamics" ? "系统动力学 stock/flow" : "离散季度"} · 联动 FPA runway
+        R 增强环 · B 调节环 · D 延迟环 — {mode === "dynamics" ? "系统动力学 stock/flow" : "离散季度"} · 初值锚定{" "}
+        {source === "database" ? "实时 FPA（DB）" : "FPA（Demo）"} runway {seed.runway.toFixed(1)} 月
       </p>
 
       <div className="mb-4 flex gap-2">

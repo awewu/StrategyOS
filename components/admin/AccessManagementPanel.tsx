@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { SessionPayload } from "@/lib/auth/config";
 import { ACTION_LABELS, type UsageLogRecord } from "@/lib/audit/types";
+import type { ChainVerification } from "@/lib/audit/verify-chain";
 import type { AccessUser } from "@/lib/data/access-data";
 import { ROLES, type RoleKey } from "@/lib/constants";
 import { roleLabel } from "@/lib/context/role-context";
@@ -19,14 +20,40 @@ function formatTime(d: Date | string): string {
   });
 }
 
+const SOURCE_LABELS: Record<ChainVerification["source"], string> = {
+  database: "数据库",
+  memory: "内存",
+  empty: "空",
+};
+
+function IntegrityBadge({ integrity }: { integrity: ChainVerification }) {
+  const ok = integrity.ok;
+  const color = ok ? "#1a7f37" : "#b3261e";
+  const label = ok
+    ? `链完整 · 已校验 ${integrity.checked} 条（${SOURCE_LABELS[integrity.source]}）`
+    : `链异常 · 第 ${(integrity.break?.index ?? 0) + 1} 条 ${integrity.break?.reason ?? ""}`;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+      style={{ color, background: `${color}14`, border: `1px solid ${color}33` }}
+      title={ok ? "SHA-256 哈希链校验通过：无篡改、无删除、无重排" : "哈希链校验失败：日志可能被篡改"}
+    >
+      <span style={{ width: 6, height: 6, borderRadius: 9999, background: color }} />
+      {label}
+    </span>
+  );
+}
+
 export function AccessManagementPanel({
   users,
   logs,
+  integrity,
   session,
   effectiveRole,
 }: {
   users: AccessUser[];
   logs: UsageLogRecord[];
+  integrity: ChainVerification;
   session: SessionPayload | null;
   effectiveRole: RoleKey;
 }) {
@@ -114,7 +141,24 @@ export function AccessManagementPanel({
       </section>
 
       <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-        <h2 className="mb-4 text-sm font-medium">使用审计日志</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-medium">使用审计日志</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <IntegrityBadge integrity={integrity} />
+            <a
+              href="/api/audit/export?format=csv"
+              className="rounded border border-[var(--surface-border)] px-2.5 py-1 text-xs hover:bg-black/[0.04]"
+            >
+              导出 CSV
+            </a>
+            <a
+              href="/api/audit/export?format=json"
+              className="rounded border border-[var(--surface-border)] px-2.5 py-1 text-xs hover:bg-black/[0.04]"
+            >
+              导出 JSON
+            </a>
+          </div>
+        </div>
         {logs.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)]">暂无日志记录</p>
         ) : (
@@ -126,7 +170,8 @@ export function AccessManagementPanel({
                   <th className="pb-2 pr-3 font-normal">用户</th>
                   <th className="pb-2 pr-3 font-normal">操作</th>
                   <th className="pb-2 pr-3 font-normal">资源</th>
-                  <th className="pb-2 font-normal">IP</th>
+                  <th className="pb-2 pr-3 font-normal">IP</th>
+                  <th className="pb-2 font-normal">哈希</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,8 +187,14 @@ export function AccessManagementPanel({
                     <td className="py-2 pr-3 max-w-[200px] truncate" title={log.resource}>
                       {log.resource}
                     </td>
-                    <td className="py-2 font-mono text-xs text-[var(--color-text-muted)]">
+                    <td className="py-2 pr-3 font-mono text-xs text-[var(--color-text-muted)]">
                       {log.ip ?? "—"}
+                    </td>
+                    <td
+                      className="py-2 font-mono text-xs text-[var(--color-text-muted)]"
+                      title={log.hash}
+                    >
+                      {log.hash ? log.hash.slice(0, 10) : "—"}
                     </td>
                   </tr>
                 ))}

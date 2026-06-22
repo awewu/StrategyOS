@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
+import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEffectiveRole, getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
 import { getProjectScope } from "@/lib/auth/scope";
@@ -52,6 +53,7 @@ export default async function ExecutionPage({
         }
       />
       <ExecutionDashboard data={filtered} sliceLabel={resolved?.slice.label} />
+      <ConceptGuide ids={["fourDX", "cynefin"]} />
     </div>
   );
 }

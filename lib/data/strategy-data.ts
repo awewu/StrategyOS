@@ -6,6 +6,7 @@ import { dbAvailable, prisma } from "@/lib/db";
 import * as entities from "@/lib/data/entity-getters";
 import * as demo from "@/lib/stratos-demo-data";
 import { buildManagementReport } from "@/lib/fpa/management-report";
+import { getActivePeriod } from "@/lib/data/active-period";
 import { getCapitalConfig } from "@/lib/fpa/capital-config-access";
 import { getExecutionAnalytics } from "@/lib/fpa/execution-analytics-access";
 import { getGrowthAnalytics } from "@/lib/fpa/growth-analytics-access";
@@ -97,11 +98,12 @@ export async function getActiveHealthAssertions(): Promise<HealthAssertion[]> {
 
 export async function getFpaSummary(): Promise<FpaSummary> {
   if (!(await dbAvailable())) return demo.fpa;
+  const period = await getActivePeriod();
   const row = await prisma.fpaPeriod.findFirst({
-    where: { period: demo.CURRENT_PERIOD, scope: "company" },
+    where: { period, scope: "company" },
   });
   const cash = await prisma.cashPosition.findFirst({
-    where: { period: demo.CURRENT_PERIOD },
+    where: { period },
     orderBy: { asOfDate: "desc" },
   });
   if (!row) return demo.fpa;
@@ -295,7 +297,7 @@ export async function getFinanceBundle() {
 
 export async function getManagementReport(): Promise<ManagementReportBundle> {
   const fpa = await getFpaSummary();
-  const base = buildManagementReport(fpa, demo.CURRENT_PERIOD);
+  const base = buildManagementReport(fpa, await getActivePeriod());
   const adj = await getManagementAdjustments();
   return {
     ...base,

@@ -4,6 +4,7 @@ import { dbAvailable, prisma } from "@/lib/db";
 import { llmConfigured, parseReportSmart } from "@/lib/stratos/llm-agent";
 import { DEMO_SHEET_IMPORT, parseReportContent } from "@/lib/stratos/report-agent";
 import { updateScenarioProbabilities } from "@/lib/stratos/spbp-bayes";
+import { getActivePeriod } from "@/lib/data/active-period";
 import * as demo from "@/lib/stratos-demo-data";
 
 export const runtime = "nodejs";
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const rows = await prisma.spbpScenario.findMany({ where: { period: "2026-FY" } });
+    const rows = await prisma.spbpScenario.findMany({ where: { period: await getActivePeriod() } });
     if (rows.length > 0 && parsed.assertionTriggers.length > 0) {
       const mapped = rows.map((r) => ({
         id: r.code,

@@ -5,6 +5,7 @@ import { buildDecisionItems, buildTopAlerts } from "@/lib/panorama/scr";
 import { topDiffs } from "@/lib/stratos";
 import { demoSignals } from "@/lib/market-intel/demo-data";
 import type { IntelSignal } from "@/lib/market-intel/types";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type InboxItem = {
   id: string;
@@ -157,7 +158,7 @@ export async function getPipelineStatus(): Promise<PipelineStatus> {
   ]);
 
   const cash = await prisma.cashPosition.findFirst({
-    where: { period: "2026-FY" },
+    where: { period: await getActivePeriod() },
     orderBy: { asOfDate: "desc" },
   });
 

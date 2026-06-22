@@ -1,5 +1,6 @@
 import { DEMO_USERS } from "@/lib/auth/config";
 import { getMemoryLogs } from "@/lib/audit/log-event";
+import { verifyAuditChain, type ChainVerification } from "@/lib/audit/verify-chain";
 import type { UsageLogRecord } from "@/lib/audit/types";
 import { dbAvailable, prisma } from "@/lib/db";
 import type { RoleKey } from "@/lib/constants";
@@ -61,9 +62,16 @@ export async function getRecentLogs(limit = 50): Promise<UsageLogRecord[]> {
       metadata: (r.metadata as Record<string, unknown> | null) ?? undefined,
       ip: r.ip ?? undefined,
       userAgent: r.userAgent ?? undefined,
+      prevHash: r.prevHash ?? undefined,
+      hash: r.hash ?? undefined,
       createdAt: r.createdAt,
     }));
   } catch {
     return getMemoryLogs(limit);
   }
+}
+
+/** Tamper-evidence status for the audit log, surfaced in the access panel. */
+export async function getAuditIntegrity(): Promise<ChainVerification> {
+  return verifyAuditChain();
 }

@@ -15,8 +15,9 @@ import type {
   StrategicDiagnosis,
 } from "./types/stratos";
 import { computeStratDiff } from "./stratos/strat-diff";
+import { CURRENT_PERIOD } from "@/lib/constants";
 
-export const CURRENT_PERIOD = "2026-FY";
+export { CURRENT_PERIOD };
 
 export const diagnosis: StrategicDiagnosis = {
   id: "diag-fy26",

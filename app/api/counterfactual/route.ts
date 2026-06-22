@@ -5,7 +5,11 @@ import {
   type CounterfactualInput,
   type CounterfactualType,
 } from "@/lib/stratos/counterfactual";
-import { snapshotFY26 } from "@/lib/stratos-demo-data";
+import { applyForecastBias } from "@/lib/stratos/calibrate";
+import { buildWorkingSnapshotState } from "@/lib/data/snapshot-state";
+import { getForecastCalibration } from "@/lib/data/calibration-data";
+import { getDataSource } from "@/lib/data/strategy-data";
+import type { SnapshotStatePayload } from "@/lib/types/stratos";
 
 const VALID_TYPES: CounterfactualType[] = ["v4_delay", "hotel_beat", "price_cut"];
 
@@ -17,14 +21,33 @@ export async function POST(request: NextRequest) {
   }
 
   const magnitude = typeof body.magnitude === "number" ? body.magnitude : 1;
-  const result = runCounterfactual(snapshotFY26, { type: body.type, magnitude });
+
+  // Live baseline (DB-backed) + history-calibrated forecast — no demo hardcode.
+  const [baseline, calibration, source] = await Promise.all([
+    buildWorkingSnapshotState(),
+    getForecastCalibration(),
+    getDataSource(),
+  ]);
+
+  const debiased: SnapshotStatePayload = baseline.fpa
+    ? {
+        ...baseline,
+        fpa: {
+          ...baseline.fpa,
+          revenueForecast: applyForecastBias(baseline.fpa.revenueForecast, calibration),
+          profitForecast: applyForecastBias(baseline.fpa.profitForecast, calibration),
+        },
+      }
+    : baseline;
+
+  const result = runCounterfactual(debiased, { type: body.type, magnitude });
 
   await logUsageEvent({
     action: "counterfactual_run",
     resource: result.id,
-    metadata: { type: body.type, magnitude },
+    metadata: { type: body.type, magnitude, source, biasPct: calibration.biasPct, n: calibration.n },
     request,
   });
 
-  return NextResponse.json(result);
+  return NextResponse.json({ ...result, calibration, source });
 }

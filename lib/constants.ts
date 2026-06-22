@@ -5,6 +5,15 @@ export const PRODUCT = {
   claim: "年中/年底两次战略会 · 三栈资源配置同屏 · Decide with clarity.",
 } as const;
 
+/**
+ * Fallback for the active strategic period.
+ * The authoritative active period is DB-driven via `getActivePeriod()`
+ * (SystemSetting → FpaPeriod heuristic). This constant is only the last-resort
+ * fallback (demo mode / empty DB / client default) and can be overridden with
+ * the STRATOS_DEFAULT_PERIOD env var.
+ */
+export const CURRENT_PERIOD = process.env.STRATOS_DEFAULT_PERIOD || "2026-FY";
+
 export const DOCTRINES = [
   {
     en: "Invest to Growth",

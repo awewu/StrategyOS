@@ -12,6 +12,7 @@ import { scoreMilestones } from "./risk-engine";
 import { ensureCompassChildren } from "./seed";
 import { refreshCompassAudit, refreshPlanCompassAudit } from "./sync-audit";
 import type { CompassBundle, CompassMilestone, NorthStar, PremiseAudit } from "./types";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 const DEMO_NORTH_STAR: NorthStar = {
   id: "demo-ns",
@@ -94,12 +95,13 @@ export async function getCompassBundle(): Promise<CompassBundle> {
   const currentYear = new Date().getFullYear();
 
   try {
+    const period = await getActivePeriod();
     const [nsRow, fpaPeriod, planResult] = await Promise.all([
       prisma.companyNorthStar.findFirst({
         where: { active: true },
         include: { premiseAudit: true, milestones: { orderBy: { year: "asc" } } },
       }),
-      prisma.fpaPeriod.findFirst({ where: { period: "2026-FY", scope: "company" } }),
+      prisma.fpaPeriod.findFirst({ where: { period, scope: "company" } }),
       getActiveStrategicPlan(),
     ]);
 

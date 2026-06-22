@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export const runtime = "nodejs";
-const PERIOD = "2026-FY";
 
 export async function GET() {
-  const rows = await prisma.executionMaturity.findMany({ where: { period: PERIOD }, orderBy: { updatedAt: "asc" } });
+  const rows = await prisma.executionMaturity.findMany({ where: { period: await getActivePeriod() }, orderBy: { updatedAt: "asc" } });
   return NextResponse.json(rows);
 }
 
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const b = await req.json();
     if (!b.projectCode || !b.projectName) return NextResponse.json({ error: "projectCode/projectName 必填" }, { status: 400 });
     const data = {
-      period: b.period ?? PERIOD,
+      period: b.period ?? (await getActivePeriod()),
       projectCode: b.projectCode, projectName: b.projectName,
       owner: b.owner ?? "", 
       milestoneOnTimeRate: b.milestoneOnTimeRate ?? 0,

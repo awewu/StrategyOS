@@ -1,6 +1,7 @@
 import { dbAvailable, prisma } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { FpaSummary } from "@/lib/types/stratos";
+import { resetActivePeriodCache } from "@/lib/data/active-period";
 
 export type FpaEditablePayload = {
   revenueBudget: number;
@@ -40,6 +41,8 @@ async function seedFpaIfEmpty(period: string): Promise<void> {
       runwayMonths: d.cashRunwayMonths,
     },
   });
+  // A new company period row may shift the active period — invalidate the cache.
+  resetActivePeriodCache();
 }
 
 export async function getFpaEditable(period = demo.CURRENT_PERIOD): Promise<{

@@ -1,9 +1,10 @@
 import { getMandateBundle } from "@/lib/mandate/data";
 import { MandatesClient } from "@/components/mandate/MandatesClient";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export default async function MandatesPage() {
-  const bundle = await getMandateBundle();
+  const [bundle, activePeriod] = await Promise.all([getMandateBundle(), getActivePeriod()]);
   return (
     <div className="stratos-page">
       <PageHeader
@@ -11,7 +12,7 @@ export default async function MandatesPage() {
         title="战略职责"
         subtitle="战略职责为主线 · 会议为时点 · 当期责任人为切片 · 人变线不断"
       />
-      <MandatesClient bundle={bundle} />
+      <MandatesClient bundle={bundle} activePeriod={activePeriod} />
     </div>
   );
 }

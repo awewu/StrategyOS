@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Scenario } from "@/lib/types/stratos";
 import { weightedRunway } from "@/lib/stratos/spbp-bayes";
+import { monteCarloForecast } from "@/lib/stratos/monte-carlo";
 
 export function SpbpScenarioEditor({
   initialScenarios,
@@ -75,7 +76,7 @@ export function SpbpScenarioEditor({
       });
       const data = (await res.json()) as { scenarios: Scenario[]; source: string };
       setScenarios(data.scenarios);
-      setMsg(`贝叶斯式更新 · 数据源 ${data.source}`);
+      setMsg(`贝叶斯更新（posterior ∝ prior × likelihood）· 数据源 ${data.source}`);
     } finally {
       setBusy(false);
     }
@@ -83,6 +84,11 @@ export function SpbpScenarioEditor({
 
   const weightedRev = scenarios.reduce((s, sc) => s + sc.fpaImpact.revenue * (sc.probability / 100), 0);
   const wr = weightedRunway(scenarios);
+  const mc = useMemo(
+    () => monteCarloForecast(scenarios, { iterations: 4000, seed: 42, runwayThreshold: 3 }),
+    [scenarios],
+  );
+  const breachPct = Math.round(mc.probRunwayBreach * 100);
 
   return (
     <div className="stratos-page">
@@ -141,6 +147,36 @@ export function SpbpScenarioEditor({
         </div>
       </section>
 
+      <section className="stratos-card stratos-card--padded">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h4 className="text-subsection">蒙特卡洛概率预测</h4>
+          <span className="text-caption text-[var(--color-text-muted)]">
+            {mc.iterations.toLocaleString()} 次抽样 · 情景混合 + 对数正态噪声 · 种子固定可复现
+          </span>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <McStat label="营收（万）" p10={mc.revenue.p10} p50={mc.revenue.p50} p90={mc.revenue.p90} />
+          <McStat label="利润（万）" p10={mc.profit.p10} p50={mc.profit.p50} p90={mc.profit.p90} />
+          <McStat
+            label="Runway（月）"
+            p10={mc.runway.p10}
+            p50={mc.runway.p50}
+            p90={mc.runway.p90}
+            decimals={1}
+          />
+        </div>
+        <p
+          className={`mt-4 rounded-md border px-3 py-2 text-caption ${
+            breachPct >= 50
+              ? "border-[var(--signal-red)]/40 bg-[var(--signal-red)]/[0.08] text-[var(--signal-red)]"
+              : "border-[var(--surface-border)] text-[var(--color-text-muted)]"
+          }`}
+        >
+          P(runway &lt; {mc.runwayThreshold} 月) = <span className="font-data">{breachPct}%</span>
+          {breachPct >= 50 ? " · 跨现金安全线概率偏高，建议预案" : " · 现金安全线压力可控"}
+        </p>
+      </section>
+
       <div className="grid gap-4 md:grid-cols-3">
         {scenarios.map((sc, i) => (
           <article key={sc.id} className="stratos-card stratos-card--padded">
@@ -189,6 +225,31 @@ export function SpbpScenarioEditor({
             )}
           </article>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function McStat({
+  label,
+  p10,
+  p50,
+  p90,
+  decimals = 0,
+}: {
+  label: string;
+  p10: number;
+  p50: number;
+  p90: number;
+  decimals?: number;
+}) {
+  const fmt = (n: number) => n.toFixed(decimals);
+  return (
+    <div className="rounded-md border border-[var(--surface-border)] p-3">
+      <div className="label-xs text-[var(--color-text-muted)]">{label}</div>
+      <div className="mt-1 font-data text-[var(--type-kpi)] text-[var(--color-accent)]">{fmt(p50)}</div>
+      <div className="mt-1 text-caption text-[var(--color-text-muted)]">
+        P10 {fmt(p10)} · P90 {fmt(p90)}
       </div>
     </div>
   );

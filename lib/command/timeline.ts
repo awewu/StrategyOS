@@ -1,4 +1,5 @@
 import type { getCommandDeckBundle } from "@/lib/data/strategy-data";
+import { CURRENT_PERIOD } from "@/lib/constants";
 
 export type TimelineMilestone = {
   id: string;
@@ -19,7 +20,7 @@ const MEETING_MILESTONES: Omit<TimelineMilestone, "status">[] = [
 
 function snapshotStatus(status: SnapshotLike["status"], period: string): TimelineMilestone["status"] {
   if (status === "FROZEN") return "done";
-  if (period.includes("2026-FY") || period.includes("2026-H2")) return "active";
+  if (period.includes(CURRENT_PERIOD) || period.includes("2026-H2")) return "active";
   return "upcoming";
 }
 

@@ -1,4 +1,5 @@
 import { prisma, safeDbQuery } from "@/lib/db";
+import { logUsageEvent } from "@/lib/audit/log-event";
 import { requireAdmin } from "@/lib/auth/guard";
 import { getOrgUnitsFlat } from "@/lib/data/org-units-access";
 import { OrgAdminClient } from "@/components/admin/OrgAdminClient";
@@ -6,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function OrgAdminPage() {
   await requireAdmin();
+  await logUsageEvent({ action: "admin_view", resource: "/admin/org" });
   const units = await getOrgUnitsFlat();
   const plans = await safeDbQuery(
     () =>

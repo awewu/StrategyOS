@@ -1,5 +1,6 @@
 import { PlanLifecycleBar } from "@/components/strategy/PlanLifecycleBar";
 import { StrategyPageTabs } from "@/components/strategy/StrategyPageTabs";
+import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCapitalSummaryLine } from "@/lib/data/entity-getters";
 import { getStrategyBundle } from "@/lib/data/strategy-data";
@@ -28,6 +29,9 @@ export default async function StrategyPage() {
         onePager={onePager}
         capSummary={capSummary}
         period={CURRENT_PERIOD}
+      />
+      <ConceptGuide
+        ids={["rumelt", "playingToWin", "blm", "wuShiQiJi", "fourSatisfactions", "doctrine"]}
       />
     </div>
   );

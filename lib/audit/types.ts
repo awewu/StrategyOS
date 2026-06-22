@@ -13,6 +13,9 @@ export const USAGE_ACTIONS = [
   "diff_persist",
   "workos_webhook",
   "hermes_scan",
+  "fpa_view",
+  "admin_view",
+  "audit_export",
 ] as const;
 
 export type UsageAction = (typeof USAGE_ACTIONS)[number];
@@ -26,6 +29,8 @@ export interface UsageLogRecord {
   metadata?: Record<string, unknown>;
   ip?: string;
   userAgent?: string;
+  prevHash?: string;
+  hash?: string;
   createdAt: Date;
 }
 
@@ -44,4 +49,7 @@ export const ACTION_LABELS: Record<UsageAction, string> = {
   diff_persist: "Diff 持久化",
   workos_webhook: "WorkOS Webhook",
   hermes_scan: "Hermes 市场扫描",
+  fpa_view: "FPA 财务查看",
+  admin_view: "管理后台查看",
+  audit_export: "审计日志导出",
 };

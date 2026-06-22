@@ -3,12 +3,15 @@ import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { CounterfactualPanel } from "@/components/versions/CounterfactualPanel";
 import { StrategyPatternPanel } from "@/components/versions/StrategyPatternPanel";
 import { SnapshotFreezePanel } from "@/components/versions/SnapshotFreezePanel";
+import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getVersionsBundle } from "@/lib/data/versions-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export default async function VersionsPage() {
   const { snapshots, stratDiffs, strategyPattern, snapshotFY25, snapshotFY26, source } =
     await getVersionsBundle();
+  const activePeriod = await getActivePeriod();
 
   const mintzberg = stratDiffs.filter((d) =>
     ["EMERGENT_PATTERN", "UNREALIZED", "SERENDIPITOUS", "DELIBERATE_RATE_DROP"].includes(
@@ -57,7 +60,7 @@ export default async function VersionsPage() {
         ))}
       </section>
 
-      <SnapshotFreezePanel />
+      <SnapshotFreezePanel activePeriod={activePeriod} />
       <CounterfactualPanel />
       <StrategyPatternPanel pattern={strategyPattern} />
 
@@ -88,6 +91,8 @@ export default async function VersionsPage() {
         {snapshotFY25.strategyPattern?.deliberateRealizationRate}% →{" "}
         {snapshotFY26.strategyPattern?.deliberateRealizationRate}%
       </p>
+
+      <ConceptGuide ids={["mintzberg", "stratDiff", "counterfactual", "stratRobust"]} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { ensureCompassChildren, ensurePlanCompassChildren } from "@/lib/compass/seed";
+import { getActivePeriod } from "@/lib/data/active-period";
 import {
   getActiveStrategicPlan,
   DEFAULT_HORIZON_END,
@@ -25,7 +26,7 @@ function northStarInputFromPlan(
 /** 为 StrategicPlan（优先）或 North Star 补生成路径里程碑 + 前提审计模板 */
 export async function POST() {
   try {
-    const fpa = await prisma.fpaPeriod.findFirst({ where: { period: "2026-FY", scope: "company" } });
+    const fpa = await prisma.fpaPeriod.findFirst({ where: { period: await getActivePeriod(), scope: "company" } });
     const currentRevenue = fpa ? Number(fpa.revenueActual) : 5120;
     const currentYear = new Date().getFullYear();
 

@@ -24,7 +24,9 @@ export interface DynamicsStep extends SimSnapshot {
   };
 }
 
-const INITIAL: DynamicsState = {
+/** Operating-behavior defaults. Financial stocks (cash/profit) should be
+ *  overridden from live FPA via `deriveDynamicsInitial` (lib/stratos/calibrate). */
+export const DEFAULT_DYNAMICS_INITIAL: DynamicsState = {
   signings: 820,
   reputation: 68,
   profit: 720,
@@ -37,7 +39,7 @@ const INITIAL: DynamicsState = {
 export function runStratSimDynamics(
   horizonQuarters = 8,
   params: SimParams = DEFAULT_SIM_PARAMS,
-  initial: DynamicsState = INITIAL
+  initial: DynamicsState = DEFAULT_DYNAMICS_INITIAL
 ): DynamicsStep[] {
   const s = { ...initial };
   const results: DynamicsStep[] = [];
