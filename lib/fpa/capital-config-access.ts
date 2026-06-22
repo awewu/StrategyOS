@@ -1,6 +1,7 @@
 import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { PostInvestDeviation, RealOptionTag } from "@/lib/types/stratos";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type CapitalConfigBundle = {
   realOptions: RealOptionTag[];
@@ -40,12 +41,13 @@ async function seedCapitalConfigIfEmpty(period: string): Promise<void> {
   });
 }
 
-export async function getCapitalConfig(period = demo.CURRENT_PERIOD): Promise<CapitalConfigBundle> {
+export async function getCapitalConfig(period?: string): Promise<CapitalConfigBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { ...defaultCapitalConfig(), source: "demo" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    await seedCapitalConfigIfEmpty(period);
-    const row = await prisma.strategicCapitalConfig.findUnique({ where: { period } });
+    await seedCapitalConfigIfEmpty(activePeriod);
+    const row = await prisma.strategicCapitalConfig.findUnique({ where: { period: activePeriod } });
     if (!row) return fallback;
     const parsed = parseCapitalConfigJson(row.realOptionsJson, row.postInvestDeviationsJson);
     return { ...parsed, source: "database" as const };
@@ -54,11 +56,12 @@ export async function getCapitalConfig(period = demo.CURRENT_PERIOD): Promise<Ca
 
 export async function saveCapitalConfig(
   payload: { realOptions: RealOptionTag[]; postInvestDeviations: PostInvestDeviation[] },
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<CapitalConfigBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存资本配置");
-  await seedCapitalConfigIfEmpty(period);
-  const row = await prisma.strategicCapitalConfig.findUnique({ where: { period } });
+  await seedCapitalConfigIfEmpty(activePeriod);
+  const row = await prisma.strategicCapitalConfig.findUnique({ where: { period: activePeriod } });
   if (!row) throw new Error("资本配置记录未找到");
 
   for (const o of payload.realOptions) {

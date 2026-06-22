@@ -46,7 +46,7 @@ describe("command decisions-access", () => {
 
 describe("strategic timeline", () => {
   it("builds timeline from snapshots and meetings", () => {
-    const timeline = buildStrategicTimeline(demo.snapshots);
+    const timeline = buildStrategicTimeline(demo.snapshots, "2026-Q2");
     assert.ok(timeline.length >= demo.snapshots.length);
     assert.ok(timeline.some((m) => m.kind === "meeting"));
   });

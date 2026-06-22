@@ -6,11 +6,14 @@ import { BlindSpotPanel } from "@/components/market/BlindSpotPanel";
 import { LeadingIndicatorPanel } from "@/components/market/LeadingIndicatorPanel";
 import { MarketAskAiPanel, MarketBriefPanel } from "@/components/market/MarketBriefPanel";
 import { MarketTabs } from "@/components/market/MarketTabs";
+import { SwotPanel } from "@/components/market/SwotPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { buildMarketBrief } from "@/lib/market-intel/brief";
-import { demoSources, demoSignals, demoTracks } from "@/lib/market-intel/demo-data";
+import { demoSources, demoSignals, demoTracks, demoInternalSwot, demoSelfScores } from "@/lib/market-intel/demo-data";
 import { HERMES, runHermesScan, sourceHealth, blindSpots, rankSignals } from "@/lib/market-intel/hermes";
+import { buildSwot, buildPositioning, generateTows, internalSwotFromPremises } from "@/lib/market-intel/swot";
 import { loadWorkbench } from "@/lib/market-intel/workbench-data";
+import { getCompassBundle } from "@/lib/compass/data";
 import { prisma } from "@/lib/db";
 import type { IntelSource, IntelSignal, CompetitorTrack } from "@/lib/market-intel/types";
 
@@ -62,9 +65,16 @@ async function loadMarketData() {
   }
 }
 
-export default async function MarketPage() {
+export default async function MarketPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
+  const initialTab =
+    tab === "swot" || tab === "workbench" || tab === "intel" ? tab : "landscape";
   const now = new Date();
-  const [db, workbench] = await Promise.all([loadMarketData(), loadWorkbench()]);
+  const [db, workbench, compass] = await Promise.all([loadMarketData(), loadWorkbench(), getCompassBundle()]);
   const sources = (db?.sources ?? demoSources).map((s) => ({ ...s, health: sourceHealth(s, now) }));
   const signals = db?.signals ?? demoSignals;
   const tracks = db?.tracks ?? demoTracks;
@@ -89,6 +99,28 @@ export default async function MarketPage() {
       </p>
       <CompetitorMatrix tracks={tracks} />
     </div>
+  );
+
+  const momentumByEntity = Object.fromEntries(tracks.map((t) => [t.competitor, t.momentum]));
+  // S/W 数据源：优先 /compass 战略前提派生，空时回退 demo 基线
+  const premiseSwot = internalSwotFromPremises(compass.premises ?? []);
+  const internalSwot = premiseSwot.length > 0 ? premiseSwot : demoInternalSwot;
+  const swotSource = premiseSwot.length > 0 ? "战略罗盘前提" : "Demo 基线";
+  const swotBoard = buildSwot(signals, internalSwot);
+  const positioning = buildPositioning(signals, momentumByEntity, {
+    selfScores: demoSelfScores,
+    selfLabel: "我方",
+  });
+  const swotView = (
+    <SwotPanel
+      positioning={positioning}
+      board={swotBoard}
+      initialTows={generateTows(swotBoard, 2)}
+      initialEngine="rule"
+      signals={signals}
+      internal={internalSwot}
+      swotSource={swotSource}
+    />
   );
 
   const intelView = (
@@ -118,7 +150,7 @@ export default async function MarketPage() {
         <MarketAskAiPanel signals={signals} />
       </div>
 
-      <MarketTabs landscape={landscapeView} workbench={workbenchView} intel={intelView} />
+      <MarketTabs landscape={landscapeView} workbench={workbenchView} swot={swotView} intel={intelView} initialTab={initialTab} />
     </div>
   );
 }

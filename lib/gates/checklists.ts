@@ -59,18 +59,10 @@ export const gateChecklists: GateChecklist[] = [
       { id: "roadmap-deliver", label: "Deliver 承诺与 GtmRoadmap 一致", status: "pass" },
     ],
   },
-  {
-    id: "wushi",
-    title: "五事七计 · 定性 Gate",
-    items: [
-      { id: "dao", label: "道 — 与使命愿景一致", status: "pass" },
-      { id: "tian", label: "天 — 时机与宏观窗口", status: "pass" },
-      { id: "di", label: "地 — 市场/区域根基", status: "pass" },
-      { id: "jiang", label: "将 — 负责人与能力", status: "partial", note: "V6 未启动" },
-      { id: "fa", label: "法 — 组织与流程就绪", status: "pass" },
-    ],
-  },
 ];
+
+// 注：五事七计已从决策 Gate 迁出，改为 Normative 组织就绪度评估，见 lib/culture/wushi.ts。
+// Gates 仅保留 invest / innovate / deliver 三个决策 Gate，职责更清晰。
 
 export function gateRiskItems(checklist: GateChecklist): GateItem[] {
   return checklist.items.filter((i) => i.status !== "pass");

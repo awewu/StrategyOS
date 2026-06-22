@@ -3,7 +3,8 @@
  * 真实部署时由 Hermes 抓取写入 DB；此处提供董事会演示用基线。
  * 故意保留盲区（null）以体现「缺少把控 = 风险」。
  */
-import type { CompetitorTrack, IntelSignal, IntelSource } from "./types";
+import type { CompetitorTrack, IntelDimension, IntelSignal, IntelSource } from "./types";
+import type { SwotItem } from "./swot";
 
 export const demoSources: IntelSource[] = [
   { id: "src-smith-site", competitor: "史密斯", kind: "official_site", url: "https://www.aosmith.com.cn", cadenceDays: 7, lastScrapedAt: "2026-06-17", health: "active" },
@@ -177,3 +178,27 @@ export const demoTracks: CompetitorTrack[] = [
     momentumNote: "渠道情报来源从未抓到数据，全维度盲区 —— 对该对手缺乏任何把控",
   },
 ];
+
+/**
+ * 我方内部 S/W 基线（SWOT 推演用）。
+ * 占位演示数据；正式部署应由 /compass 假设前提审计 + /health + /finance 取数。
+ */
+export const demoInternalSwot: SwotItem[] = [
+  { id: "s-network", category: "strength", title: "全国服务网络与售后口碑", weight: 5, intensity: 4, source: "internal:compass" },
+  { id: "s-brand", category: "strength", title: "Rheem/Ruud 双品牌高端定位", weight: 4, intensity: 4, source: "internal:compass" },
+  { id: "s-tech", category: "strength", title: "商用热水技术积累", weight: 4, intensity: 3, source: "internal:compass" },
+  { id: "w-hp", category: "weakness", title: "热泵两联供产品化窗口落后约 9 个月", weight: 5, intensity: 4, dimension: "product", source: "internal:compass" },
+  { id: "w-channel", category: "weakness", title: "华东酒店工程渠道签约落后（62 vs 300）", weight: 5, intensity: 4, dimension: "gtm", source: "internal:compass" },
+  { id: "w-ecosystem", category: "weakness", title: "整装/智能家居生态布局不足", weight: 3, intensity: 3, dimension: "strategy", source: "internal:compass" },
+];
+
+/**
+ * 我方各维度自评分 0..100（十字坐标轴「我方」定位用）。
+ * 占位基线；正式部署由 /compass 内部数据或战略会人工校准。
+ */
+export const demoSelfScores: Partial<Record<IntelDimension, number>> = {
+  product: 50,
+  strategy: 52,
+  gtm: 45,
+  brand: 58,
+};

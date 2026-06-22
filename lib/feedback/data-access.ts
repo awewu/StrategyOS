@@ -1,9 +1,8 @@
 import { dbAvailable, prisma } from "@/lib/db";
 import { feedbackLoops as demoLoops } from "@/lib/stratos-demo-data";
 import type { FeedbackLoop, FeedbackLoopKind } from "@/lib/types/stratos";
-import { CURRENT_PERIOD } from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
-const DEFAULT_PERIOD = CURRENT_PERIOD;
 const KINDS: FeedbackLoopKind[] = ["R", "B", "D"];
 
 function mapLoop(r: {
@@ -40,17 +39,18 @@ async function seedFeedbackIfEmpty(period: string): Promise<void> {
   });
 }
 
-export async function getFeedbackLoops(period = DEFAULT_PERIOD): Promise<{
+export async function getFeedbackLoops(period?: string): Promise<{
   loops: FeedbackLoop[];
   source: "database" | "demo";
 }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     return { loops: demoLoops, source: "demo" };
   }
   try {
-    await seedFeedbackIfEmpty(period);
+    await seedFeedbackIfEmpty(activePeriod);
     const rows = await prisma.feedbackLoopRecord.findMany({
-      where: { period },
+      where: { period: activePeriod },
       orderBy: { sortOrder: "asc" },
     });
     if (rows.length === 0) return { loops: demoLoops, source: "demo" };
@@ -62,8 +62,9 @@ export async function getFeedbackLoops(period = DEFAULT_PERIOD): Promise<{
 
 export async function saveFeedbackLoops(
   loops: FeedbackLoop[],
-  period = DEFAULT_PERIOD,
+  period?: string,
 ): Promise<{ count: number }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存反馈环");
   for (const l of loops) {
     if (!KINDS.includes(l.kind)) {
@@ -74,10 +75,10 @@ export async function saveFeedbackLoops(
     }
   }
   await prisma.$transaction(async (tx) => {
-    await tx.feedbackLoopRecord.deleteMany({ where: { period } });
+    await tx.feedbackLoopRecord.deleteMany({ where: { period: activePeriod } });
     await tx.feedbackLoopRecord.createMany({
       data: loops.map((l, i) => ({
-        period,
+        period: activePeriod,
         kind: l.kind,
         label: l.label.trim(),
         chain: l.chain.trim(),
@@ -88,8 +89,4 @@ export async function saveFeedbackLoops(
     });
   });
   return { count: loops.length };
-}
-
-export function getFeedbackPeriod(): string {
-  return DEFAULT_PERIOD;
 }

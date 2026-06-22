@@ -9,6 +9,7 @@ import { ROLES, type RoleKey } from "@/lib/constants";
 const ROLE_SHORT: Record<RoleKey, string> = {
   ceo: "CEO",
   vp: "负责人",
+  system_head: "体系",
   pm: "项目",
   staff: "职能",
   observer: "观察",

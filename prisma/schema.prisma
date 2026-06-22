@@ -1406,6 +1406,7 @@ model IntelReport {
 enum UserRole {
   ceo
   vp
+  system_head
   pm
   staff
   observer
@@ -2195,6 +2196,30 @@ model CultureUnderstandingRecord {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("culture_understanding_records")
+}
+
+// 五事七计 · 组织战略就绪度（按 period 可编辑）
+model CultureWushiAssessment {
+  id          String   @id @default(uuid())
+  period      String   @unique @db.VarChar(10)
+  rival       String?  @db.VarChar(50)
+  factorsJson Json     @map("factors_json")
+  qijiJson    Json     @map("qiji_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("culture_wushi_assessments")
+}
+
+// 市场洞察 SWOT · 我方自评分（按 period 可编辑）
+model MarketSelfScores {
+  id         String   @id @default(uuid())
+  period     String   @unique @db.VarChar(10)
+  scoresJson Json     @map("scores_json")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("market_self_scores")
 }
 
 // 战略解码 · 系统反馈环

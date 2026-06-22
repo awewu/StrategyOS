@@ -30,7 +30,7 @@ export function minimalCommandDeckStub() {
       profitActual: 720,
       profitForecast: 820,
       cashRunwayMonths: 2.1,
-    }),
+    }, "2026-FY"),
     capStack: {
       period: "2026-FY",
       capexBudget: 12000,

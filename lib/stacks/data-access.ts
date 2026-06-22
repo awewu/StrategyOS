@@ -1,4 +1,5 @@
 import { dbAvailable, prisma } from "@/lib/db";
+import { getActivePeriod } from "@/lib/data/active-period";
 import * as demo from "@/lib/stratos-demo-data";
 import type {
   BetGateStatus,
@@ -10,8 +11,6 @@ import type {
   ProductBet,
   Project,
 } from "@/lib/types/stratos";
-
-const PERIOD = demo.CURRENT_PERIOD;
 
 export type StacksBundle = {
   capStack: CapStackPeriod;
@@ -174,7 +173,8 @@ function mapProject(r: {
   };
 }
 
-export async function getStacksBundle(period = PERIOD): Promise<StacksBundle> {
+export async function getStacksBundle(period?: string): Promise<StacksBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     return {
       capStack: demo.capStack,
@@ -186,14 +186,14 @@ export async function getStacksBundle(period = PERIOD): Promise<StacksBundle> {
     };
   }
   try {
-    await seedStacksIfEmpty(period);
+    await seedStacksIfEmpty(activePeriod);
     const [capRow, ics, pbs, gbs, projs] = await Promise.all([
-    prisma.capStackPeriod.findFirst({ where: { period } }),
-    prisma.investmentCase.findMany({ where: { period } }),
-    prisma.productBet.findMany({ where: { period } }),
-    prisma.gtmBet.findMany({ where: { period } }),
+    prisma.capStackPeriod.findFirst({ where: { period: activePeriod } }),
+    prisma.investmentCase.findMany({ where: { period: activePeriod } }),
+    prisma.productBet.findMany({ where: { period: activePeriod } }),
+    prisma.gtmBet.findMany({ where: { period: activePeriod } }),
     prisma.project.findMany({
-      where: { period },
+      where: { period: activePeriod },
       include: { owner: { select: { name: true } } },
       orderBy: { code: "asc" },
     }),
@@ -251,14 +251,15 @@ export async function getStacksBundle(period = PERIOD): Promise<StacksBundle> {
 
 export async function saveCapStack(
   capStack: CapStackPeriod,
-  period = PERIOD,
+  period?: string,
 ): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存 CapStack");
-  await seedStacksIfEmpty(period);
+  await seedStacksIfEmpty(activePeriod);
   await prisma.capStackPeriod.upsert({
-    where: { period },
+    where: { period: activePeriod },
     create: {
-      period,
+      period: activePeriod,
       capexBudget: capStack.capexBudget,
       capexCommitted: capStack.capexForecast,
       capexSpent: capStack.capexActual,
@@ -286,8 +287,9 @@ export async function saveCapStack(
 
 export async function saveInvestmentCases(
   items: InvestmentCase[],
-  period = PERIOD,
+  period?: string,
 ): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存投资案");
   for (const ic of items) {
     await prisma.investmentCase.upsert({
@@ -297,7 +299,7 @@ export async function saveInvestmentCases(
         title: ic.title,
         type: ic.type as "brand" | "capacity" | "strategic" | "technology" | "people",
         horizon: ic.horizon,
-        period,
+        period: activePeriod,
         capexTotal: ic.capexTotal,
         expectedIrr: ic.expectedIrr ? ic.expectedIrr / 100 : null,
         gateStatus: ic.gateStatus,
@@ -317,14 +319,15 @@ export async function saveInvestmentCases(
   }
 }
 
-export async function saveProductBets(items: ProductBet[], period = PERIOD): Promise<void> {
+export async function saveProductBets(items: ProductBet[], period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存产品栈");
   for (const pb of items) {
     if (pb.id.startsWith("pb-") || pb.id.length < 20) {
       await prisma.productBet.create({
         data: {
           title: pb.title,
-          period,
+          period: activePeriod,
           horizon: pb.horizon,
           gateStatus: pb.gateStatus,
           budgetTag: pb.budgetTag ?? null,
@@ -349,14 +352,15 @@ export async function saveProductBets(items: ProductBet[], period = PERIOD): Pro
   }
 }
 
-export async function saveGtmBets(items: GtmBet[], period = PERIOD): Promise<void> {
+export async function saveGtmBets(items: GtmBet[], period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存渠道栈");
   for (const gb of items) {
     if (gb.id.startsWith("gtm-") || gb.id.length < 20) {
       await prisma.gtmBet.create({
         data: {
           title: gb.title,
-          period,
+          period: activePeriod,
           gateStatus: gb.gateStatus,
           budgetTag: gb.budgetTag ?? null,
           fpaToggle: gb.fpaToggle,
@@ -380,7 +384,8 @@ export async function saveGtmBets(items: GtmBet[], period = PERIOD): Promise<voi
   }
 }
 
-export async function saveProjects(items: Project[], period = PERIOD): Promise<void> {
+export async function saveProjects(items: Project[], period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存 Vx 项目");
   for (const p of items) {
     await prisma.project.upsert({
@@ -388,7 +393,7 @@ export async function saveProjects(items: Project[], period = PERIOD): Promise<v
       create: {
         code: p.code,
         name: p.name,
-        period,
+        period: activePeriod,
         cynefinDomain: p.cynefinDomain,
         horizon: p.horizon ?? null,
         progressPercent: p.progressPercent,

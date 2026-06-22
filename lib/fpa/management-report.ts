@@ -14,9 +14,6 @@ import type {
   MarginBridgeItem,
   StatementLine,
 } from "./management-types";
-import { CURRENT_PERIOD } from "@/lib/constants";
-
-const PERIOD = CURRENT_PERIOD;
 
 export function computeRos(netIncome: number, revenue: number): number {
   if (revenue <= 0) return 0;
@@ -31,7 +28,7 @@ export function computeEbitdaMargin(ebitda: number, revenue: number): number {
 /** 从 B-A-F 摘要推导完整管理报表（Demo / DB 共用锚点） */
 export function buildManagementReport(
   fpa: FpaSummary,
-  period = PERIOD
+  period: string
 ): ManagementReportBundle {
   const income = buildIncomeStatement(fpa, period);
   const kpis = extractKpis(income, period);
@@ -281,5 +278,5 @@ export const demoManagementReport = buildManagementReport(
     profitForecast: 820,
     cashRunwayMonths: 2.1,
   },
-  PERIOD
+  "2026-FY"
 );

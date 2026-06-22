@@ -1,6 +1,6 @@
 import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import type { ObjectiveView } from "@/lib/data/entity-getters";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import type { KeyResult, StrategicDiagnosis } from "@/lib/types/stratos";
 
 export type ScoreboardConfigPayload = {
@@ -86,12 +86,13 @@ export function mergeScoreboardSource(
 }
 
 export async function getScoreboardConfig(
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<{ config: ScoreboardConfigPayload | null; source: "database" | "derived" }> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { config: null, source: "derived" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    const row = await prisma.executionScoreboardConfig.findUnique({ where: { period } });
+    const row = await prisma.executionScoreboardConfig.findUnique({ where: { period: activePeriod } });
     if (!row) return fallback;
     return {
       config: {
@@ -113,8 +114,8 @@ export async function getResolvedScoreboard(
     period?: string;
   },
 ): Promise<ResolvedScoreboard> {
-  const period = opts.period ?? demo.CURRENT_PERIOD;
-  const stored = await getScoreboardConfig(period);
+  const activePeriod = opts.period ?? await getActivePeriod();
+  const stored = await getScoreboardConfig(activePeriod);
   const base =
     stored.config ?? buildDerivedScoreboardConfig(opts.derivedLeadingKrs);
   const resolved = resolveScoreboardView(base, opts);
@@ -123,14 +124,15 @@ export async function getResolvedScoreboard(
 
 export async function saveScoreboardConfig(
   payload: ScoreboardConfigPayload,
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<ScoreboardConfigBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存 4DX 记分板");
   const config = parseScoreboardConfig(payload);
   await prisma.executionScoreboardConfig.upsert({
-    where: { period },
+    where: { period: activePeriod },
     create: {
-      period,
+      period: activePeriod,
       wigObjectiveId: config.wigObjectiveId,
       leadingKrIds: config.leadingKrIds,
       laggingKrIds: config.laggingKrIds,
@@ -144,7 +146,8 @@ export async function saveScoreboardConfig(
   return { ...config, source: "database" };
 }
 
-export async function clearScoreboardConfig(period = demo.CURRENT_PERIOD): Promise<void> {
+export async function clearScoreboardConfig(period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) return;
-  await prisma.executionScoreboardConfig.deleteMany({ where: { period } });
+  await prisma.executionScoreboardConfig.deleteMany({ where: { period: activePeriod } });
 }

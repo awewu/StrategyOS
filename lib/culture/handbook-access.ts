@@ -6,7 +6,7 @@ import {
   type CultureHandbookContent,
 } from "@/lib/culture/content";
 import { DOCTRINES } from "@/lib/constants";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type CultureHandbookBundle = {
   handbook: CultureHandbookContent;
@@ -53,12 +53,13 @@ async function seedHandbookIfEmpty(period: string): Promise<void> {
   });
 }
 
-export async function getCultureHandbook(period = demo.CURRENT_PERIOD): Promise<CultureHandbookBundle> {
+export async function getCultureHandbook(period?: string): Promise<CultureHandbookBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { handbook: defaultHandbook(), source: "demo" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    await seedHandbookIfEmpty(period);
-    const row = await prisma.cultureHandbook.findUnique({ where: { period } });
+    await seedHandbookIfEmpty(activePeriod);
+    const row = await prisma.cultureHandbook.findUnique({ where: { period: activePeriod } });
     if (!row) return fallback;
     return { handbook: parseCultureHandbookJson(row.contentJson), source: "database" as const };
   }, fallback);
@@ -66,11 +67,12 @@ export async function getCultureHandbook(period = demo.CURRENT_PERIOD): Promise<
 
 export async function saveCultureHandbook(
   handbook: CultureHandbookContent,
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<CultureHandbookBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存文化手册");
-  await seedHandbookIfEmpty(period);
-  const row = await prisma.cultureHandbook.findUnique({ where: { period } });
+  await seedHandbookIfEmpty(activePeriod);
+  const row = await prisma.cultureHandbook.findUnique({ where: { period: activePeriod } });
   if (!row) throw new Error("文化手册记录未找到");
 
   if (handbook.doctrines.length === 0) throw new Error("三大信条不能为空");

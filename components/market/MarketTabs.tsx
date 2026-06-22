@@ -3,16 +3,22 @@
 import { useState } from "react";
 import Link from "next/link";
 
+type MarketTab = "landscape" | "workbench" | "swot" | "intel";
+
 export function MarketTabs({
   landscape,
   workbench,
+  swot,
   intel,
+  initialTab = "landscape",
 }: {
   landscape: React.ReactNode;
   workbench: React.ReactNode;
+  swot: React.ReactNode;
   intel: React.ReactNode;
+  initialTab?: MarketTab;
 }) {
-  const [tab, setTab] = useState<"landscape" | "workbench" | "intel">("landscape");
+  const [tab, setTab] = useState<MarketTab>(initialTab);
   const tabClass = (active: boolean) =>
     "border-b-2 px-4 py-2.5 text-sm font-medium transition-colors " +
     (active
@@ -28,6 +34,9 @@ export function MarketTabs({
         <button type="button" onClick={() => setTab("workbench")} className={tabClass(tab === "workbench")}>
           竞争台
         </button>
+        <button type="button" onClick={() => setTab("swot")} className={tabClass(tab === "swot")}>
+          SWOT 推演
+        </button>
         <button type="button" onClick={() => setTab("intel")} className={tabClass(tab === "intel")}>
           情报流 · Hermes
         </button>
@@ -38,7 +47,7 @@ export function MarketTabs({
           ⚙ 配置
         </Link>
       </div>
-      {tab === "landscape" ? landscape : tab === "workbench" ? workbench : intel}
+      {tab === "landscape" ? landscape : tab === "workbench" ? workbench : tab === "swot" ? swot : intel}
     </div>
   );
 }

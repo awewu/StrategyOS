@@ -202,18 +202,19 @@ export interface HealthOverviewData {
 }
 
 export async function getHealthOverview(): Promise<HealthOverviewData> {
-  const lights = await getBscLights();
+  const [lights, activePeriod] = await Promise.all([getBscLights(), getActivePeriod()]);
   if (!(await dbAvailable())) {
     return {
       ...demoHealthOverview,
+      quarter: activePeriod,
       dimensions: lights,
     };
   }
   const kpiRows = await prisma.healthSignal.findMany({
-    where: { period: await getActivePeriod(), kpiName: { not: null } },
+    where: { period: activePeriod, kpiName: { not: null } },
   });
   if (kpiRows.length === 0) {
-    return { ...demoHealthOverview, dimensions: lights };
+    return { ...demoHealthOverview, quarter: activePeriod, dimensions: lights };
   }
   const kpis = kpiRows
     .filter((r) => r.kpiName)
@@ -231,7 +232,7 @@ export async function getHealthOverview(): Promise<HealthOverviewData> {
   );
   return {
     score,
-    quarter: "2026-Q2",
+    quarter: activePeriod,
     dimensions: lights,
     kpis: kpis.length >= 4 ? kpis : demoHealthOverview.kpis,
   };

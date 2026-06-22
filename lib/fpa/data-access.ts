@@ -1,7 +1,7 @@
 import { dbAvailable, prisma } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { FpaSummary } from "@/lib/types/stratos";
-import { resetActivePeriodCache } from "@/lib/data/active-period";
+import { getActivePeriod, resetActivePeriodCache } from "@/lib/data/active-period";
 
 export type FpaEditablePayload = {
   revenueBudget: number;
@@ -45,19 +45,20 @@ async function seedFpaIfEmpty(period: string): Promise<void> {
   resetActivePeriodCache();
 }
 
-export async function getFpaEditable(period = demo.CURRENT_PERIOD): Promise<{
+export async function getFpaEditable(period?: string): Promise<{
   fpa: FpaSummary;
   source: "database" | "demo";
 }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     return { fpa: demo.fpa, source: "demo" };
   }
-  await seedFpaIfEmpty(period);
+  await seedFpaIfEmpty(activePeriod);
   const row = await prisma.fpaPeriod.findFirst({
-    where: { period, scope: "company" },
+    where: { period: activePeriod, scope: "company" },
   });
   const cash = await prisma.cashPosition.findFirst({
-    where: { period },
+    where: { period: activePeriod },
     orderBy: { asOfDate: "desc" },
   });
   if (!row) return { fpa: demo.fpa, source: "demo" };
@@ -77,12 +78,13 @@ export async function getFpaEditable(period = demo.CURRENT_PERIOD): Promise<{
 
 export async function saveFpaEditable(
   payload: FpaEditablePayload,
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<FpaSummary> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存 FPA");
-  await seedFpaIfEmpty(period);
+  await seedFpaIfEmpty(activePeriod);
   const row = await prisma.fpaPeriod.findFirst({
-    where: { period, scope: "company" },
+    where: { period: activePeriod, scope: "company" },
   });
   if (!row) throw new Error("FPA period 未找到");
   await prisma.fpaPeriod.update({
@@ -97,7 +99,7 @@ export async function saveFpaEditable(
     },
   });
   const cash = await prisma.cashPosition.findFirst({
-    where: { period },
+    where: { period: activePeriod },
     orderBy: { asOfDate: "desc" },
   });
   if (cash) {
@@ -108,7 +110,7 @@ export async function saveFpaEditable(
   } else {
     await prisma.cashPosition.create({
       data: {
-        period,
+        period: activePeriod,
         asOfDate: new Date(),
         cashBalance: 4200,
         monthlyBurn: 2000,

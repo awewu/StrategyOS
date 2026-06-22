@@ -5,9 +5,8 @@ import {
   type GateItem,
   type GateStatus,
 } from "@/lib/gates/checklists";
-import { CURRENT_PERIOD } from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
-const DEFAULT_PERIOD = CURRENT_PERIOD;
 const STATUSES: GateStatus[] = ["pass", "fail", "partial"];
 
 async function seedGateIfEmpty(period: string): Promise<void> {
@@ -61,17 +60,18 @@ function mergeChecklists(rows: {
   });
 }
 
-export async function getGateChecklists(period = DEFAULT_PERIOD): Promise<{
+export async function getGateChecklists(period?: string): Promise<{
   checklists: GateChecklist[];
   source: "database" | "demo";
 }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     return { checklists: staticChecklists, source: "demo" };
   }
   try {
-    await seedGateIfEmpty(period);
+    await seedGateIfEmpty(activePeriod);
     const rows = await prisma.gateChecklistItem.findMany({
-      where: { period },
+      where: { period: activePeriod },
       orderBy: { sortOrder: "asc" },
     });
     if (rows.length === 0) return { checklists: staticChecklists, source: "demo" };
@@ -83,8 +83,9 @@ export async function getGateChecklists(period = DEFAULT_PERIOD): Promise<{
 
 export async function saveGateChecklists(
   checklists: GateChecklist[],
-  period = DEFAULT_PERIOD,
+  period?: string,
 ): Promise<{ count: number }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存 Gate");
   const data: {
     period: string;
@@ -102,7 +103,7 @@ export async function saveGateChecklists(
         throw new Error(`Gate 状态须为 pass / fail / partial`);
       }
       data.push({
-        period,
+        period: activePeriod,
         checklistId: cl.id,
         itemId: item.id,
         label: item.label.trim(),
@@ -113,14 +114,10 @@ export async function saveGateChecklists(
     }
   }
   await prisma.$transaction(async (tx) => {
-    await tx.gateChecklistItem.deleteMany({ where: { period } });
+    await tx.gateChecklistItem.deleteMany({ where: { period: activePeriod } });
     await tx.gateChecklistItem.createMany({ data });
   });
   return { count: data.length };
-}
-
-export function getGatePeriod(): string {
-  return DEFAULT_PERIOD;
 }
 
 export function gateSummaryFrom(checklists: GateChecklist[]): {

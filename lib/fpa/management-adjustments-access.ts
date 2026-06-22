@@ -6,7 +6,7 @@ import type {
   IncomeStatement,
   MarginBridgeItem,
 } from "@/lib/fpa/management-types";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type StatementsOverride = {
   incomeStatement: IncomeStatement;
@@ -38,8 +38,9 @@ export function parseStatementsJson(json: unknown): StatementsOverride {
 }
 
 export async function getManagementAdjustments(
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<ManagementAdjustmentsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback: ManagementAdjustmentsBundle = {
     marginBridge: null,
     statements: null,
@@ -48,7 +49,7 @@ export async function getManagementAdjustments(
   };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period } });
+    const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period: activePeriod } });
     if (!row) return fallback;
     return {
       marginBridge: row.marginBridgeJson
@@ -71,52 +72,57 @@ async function upsertRow(period: string) {
 
 export async function saveManagementMarginBridge(
   marginBridge: MarginBridgeItem[],
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<ManagementAdjustmentsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存管理报表调整");
   if (marginBridge.length === 0) throw new Error("利润桥不能为空");
-  await upsertRow(period);
+  await upsertRow(activePeriod);
   await prisma.strategicManagementAdjustments.update({
-    where: { period },
+    where: { period: activePeriod },
     data: { marginBridgeJson: asDbJson(marginBridge) },
   });
-  return getManagementAdjustments(period);
+  return getManagementAdjustments(activePeriod);
 }
 
 export async function saveManagementStatements(
   statements: StatementsOverride,
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<ManagementAdjustmentsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存三张表");
-  await upsertRow(period);
+  await upsertRow(activePeriod);
   await prisma.strategicManagementAdjustments.update({
-    where: { period },
+    where: { period: activePeriod },
     data: { statementsJson: asDbJson(statements) },
   });
-  return getManagementAdjustments(period);
+  return getManagementAdjustments(activePeriod);
 }
 
-export async function clearManagementMarginBridge(period = demo.CURRENT_PERIOD): Promise<void> {
+export async function clearManagementMarginBridge(period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) return;
-  const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period } });
+  const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period: activePeriod } });
   if (!row) return;
   await prisma.strategicManagementAdjustments.update({
-    where: { period },
+    where: { period: activePeriod },
     data: { marginBridgeJson: Prisma.DbNull },
   });
 }
 
-export async function clearManagementStatements(period = demo.CURRENT_PERIOD): Promise<void> {
+export async function clearManagementStatements(period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) return;
-  const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period } });
+  const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period: activePeriod } });
   if (!row) return;
   await prisma.strategicManagementAdjustments.update({
-    where: { period },
+    where: { period: activePeriod },
     data: { statementsJson: Prisma.DbNull },
   });
 }
 
-export async function clearAllManagementAdjustments(period = demo.CURRENT_PERIOD): Promise<void> {
+export async function clearAllManagementAdjustments(period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) return;
-  await prisma.strategicManagementAdjustments.deleteMany({ where: { period } });
+  await prisma.strategicManagementAdjustments.deleteMany({ where: { period: activePeriod } });
 }

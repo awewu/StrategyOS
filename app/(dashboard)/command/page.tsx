@@ -17,6 +17,7 @@ import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { brand } from "@/lib/brand/tokens";
 import { getCommandDeckBundle } from "@/lib/data/strategy-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import {
   buildScrSummary,
   buildTopAlerts,
@@ -42,7 +43,11 @@ const QUICK_LINKS = [
 
 export default async function CommandPage() {
   await requireRouteAccess("/command");
-  const [deck, inbox] = await Promise.all([getCommandDeckBundle(), getInboxSummary()]);
+  const [deck, inbox, activePeriod] = await Promise.all([
+    getCommandDeckBundle(),
+    getInboxSummary(),
+    getActivePeriod(),
+  ]);
   const top3 = topDiffs(deck.stratDiffs, 3);
   const scr = buildScrSummary(deck);
   const alerts = buildTopAlerts(deck);
@@ -55,7 +60,7 @@ export default async function CommandPage() {
       <PageHeader
         eyebrow={`${brand.taglineZh} · ${brand.taglineEn}`}
         title="指挥舱"
-        subtitle={`${brand.positioningZh} · 2026-Q2 · 数据源 ${deck.source === "database" ? "DB" : "Demo"}`}
+        subtitle={`${brand.positioningZh} · ${activePeriod} · 数据源 ${deck.source === "database" ? "DB" : "Demo"}`}
         actions={
           <>
             <Link href="/inbox" className="stratos-btn stratos-btn--ghost relative">

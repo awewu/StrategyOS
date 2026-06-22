@@ -2,7 +2,7 @@ import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import type { TimelineMilestone } from "@/lib/command/timeline";
 import type { DecisionItem } from "@/lib/panorama/scr";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type CommandDecisionsBundle = {
   decisions: DecisionItem[];
@@ -52,24 +52,26 @@ async function deleteRowIfEmpty(period: string) {
 }
 
 export async function getCommandDecisionsConfig(
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<{ decisions: DecisionItem[] | null; source: "database" | "derived" }> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { decisions: null, source: "derived" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
+    const row = await prisma.strategicCommandConfig.findUnique({ where: { period: activePeriod } });
     if (!row?.decisionsJson) return fallback;
     return { decisions: parseDecisionsJson(row.decisionsJson), source: "database" as const };
   }, fallback);
 }
 
 export async function getCommandTimelineConfig(
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<{ milestones: TimelineMilestone[] | null; source: "database" | "derived" }> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { milestones: null, source: "derived" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
+    const row = await prisma.strategicCommandConfig.findUnique({ where: { period: activePeriod } });
     if (!row?.timelineJson) return fallback;
     return { milestones: parseTimelineJson(row.timelineJson), source: "database" as const };
   }, fallback);
@@ -77,13 +79,14 @@ export async function getCommandTimelineConfig(
 
 export async function saveCommandDecisions(
   decisions: DecisionItem[],
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<CommandDecisionsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存待决事项");
   if (decisions.length === 0) throw new Error("待决事项不能为空");
   await prisma.strategicCommandConfig.upsert({
-    where: { period },
-    create: { period, decisionsJson: asDbJson(decisions) },
+    where: { period: activePeriod },
+    create: { period: activePeriod, decisionsJson: asDbJson(decisions) },
     update: { decisionsJson: asDbJson(decisions) },
   });
   return { decisions, source: "database" };
@@ -91,36 +94,39 @@ export async function saveCommandDecisions(
 
 export async function saveCommandTimeline(
   milestones: TimelineMilestone[],
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<CommandTimelineBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存战略时间轴");
   if (milestones.length === 0) throw new Error("战略时间轴不能为空");
   await prisma.strategicCommandConfig.upsert({
-    where: { period },
-    create: { period, timelineJson: asDbJson(milestones) },
+    where: { period: activePeriod },
+    create: { period: activePeriod, timelineJson: asDbJson(milestones) },
     update: { timelineJson: asDbJson(milestones) },
   });
   return { milestones, source: "database" };
 }
 
-export async function clearCommandDecisions(period = demo.CURRENT_PERIOD): Promise<void> {
+export async function clearCommandDecisions(period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) return;
-  const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
+  const row = await prisma.strategicCommandConfig.findUnique({ where: { period: activePeriod } });
   if (!row?.decisionsJson) return;
   await prisma.strategicCommandConfig.update({
-    where: { period },
+    where: { period: activePeriod },
     data: { decisionsJson: Prisma.DbNull },
   });
-  await deleteRowIfEmpty(period);
+  await deleteRowIfEmpty(activePeriod);
 }
 
-export async function clearCommandTimeline(period = demo.CURRENT_PERIOD): Promise<void> {
+export async function clearCommandTimeline(period?: string): Promise<void> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) return;
-  const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
+  const row = await prisma.strategicCommandConfig.findUnique({ where: { period: activePeriod } });
   if (!row?.timelineJson) return;
   await prisma.strategicCommandConfig.update({
-    where: { period },
+    where: { period: activePeriod },
     data: { timelineJson: Prisma.DbNull },
   });
-  await deleteRowIfEmpty(period);
+  await deleteRowIfEmpty(activePeriod);
 }

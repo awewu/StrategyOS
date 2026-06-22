@@ -2,6 +2,7 @@ import type { HorizonBubble } from "@/components/execution/HorizonBubbleChart";
 import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { RiceItem, TrlRadarPoint } from "@/lib/types/stratos";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type ExecutionAnalyticsBundle = {
   horizonBubbles: HorizonBubble[];
@@ -47,13 +48,14 @@ async function seedExecutionAnalyticsIfEmpty(period: string): Promise<void> {
 }
 
 export async function getExecutionAnalytics(
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<ExecutionAnalyticsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { ...defaultExecutionAnalytics(), source: "demo" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    await seedExecutionAnalyticsIfEmpty(period);
-    const row = await prisma.strategicExecutionAnalytics.findUnique({ where: { period } });
+    await seedExecutionAnalyticsIfEmpty(activePeriod);
+    const row = await prisma.strategicExecutionAnalytics.findUnique({ where: { period: activePeriod } });
     if (!row) return fallback;
     const parsed = parseExecutionAnalyticsJson(
       row.horizonBubblesJson,
@@ -66,11 +68,12 @@ export async function getExecutionAnalytics(
 
 export async function saveExecutionAnalytics(
   payload: Omit<ExecutionAnalyticsBundle, "source">,
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<ExecutionAnalyticsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存执行分析");
-  await seedExecutionAnalyticsIfEmpty(period);
-  const row = await prisma.strategicExecutionAnalytics.findUnique({ where: { period } });
+  await seedExecutionAnalyticsIfEmpty(activePeriod);
+  const row = await prisma.strategicExecutionAnalytics.findUnique({ where: { period: activePeriod } });
   if (!row) throw new Error("执行分析记录未找到");
 
   for (const b of payload.horizonBubbles) {

@@ -7,6 +7,7 @@ import { TwelveDimPanel } from "@/components/health/TwelveDimPanel";
 import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { useRole } from "@/lib/context/role-context";
+import { roleToLevel } from "@/lib/auth/permissions";
 import type { HealthOverviewData } from "@/lib/data/entity-getters";
 import type { FpaSummary, RobustnessDimensions, TrafficLight } from "@/lib/types/stratos";
 
@@ -36,7 +37,7 @@ export function HealthPageClient({
   hideTitle?: boolean;
 }) {
   const { role } = useRole();
-  const showTwelve = role === "ceo" || role === "staff" || role === "vp";
+  const showTwelve = roleToLevel(role) >= 2;
   const redLights = countLights(bscLights, "red");
   const yellowLights = countLights(bscLights, "yellow");
 

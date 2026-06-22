@@ -1,5 +1,5 @@
 import { dbAvailable, prisma } from "@/lib/db";
-import { CURRENT_PERIOD } from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import type { TrafficLight } from "@/lib/types/stratos";
 import { BSC_MAP, type BscDimensionRow } from "@/lib/decode/bsc-map";
 import {
@@ -9,8 +9,6 @@ import {
   syncPlanObjectivesFromBsc,
 } from "@/lib/data/strategic-plan-data";
 import { HOSHIN_QUADRANTS, type HoshinEntry, type HoshinQuadrant } from "@/lib/decode/hoshin-data";
-
-const DEFAULT_PERIOD = CURRENT_PERIOD;
 
 export type BscRowPayload = BscDimensionRow;
 export type HoshinRowPayload = HoshinEntry & {
@@ -112,10 +110,11 @@ async function seedHoshinIfEmpty(period: string): Promise<void> {
   await prisma.decodeHoshinEntry.createMany({ data });
 }
 
-export async function getDecodeBsc(period = DEFAULT_PERIOD): Promise<{
+export async function getDecodeBsc(period?: string): Promise<{
   rows: BscDimensionRow[];
   source: "database" | "demo";
 }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     return { rows: BSC_MAP, source: "demo" };
   }
@@ -124,7 +123,7 @@ export async function getDecodeBsc(period = DEFAULT_PERIOD): Promise<{
   if (plan?.objectives.some((o) => o.objective.trim())) {
     const needsBackfill = plan.objectives.some((o) => !o.mustNotFail?.trim());
     if (needsBackfill) {
-      await backfillPlanDecodeFieldsFromLegacy(plan.id, period);
+      await backfillPlanDecodeFieldsFromLegacy(plan.id, activePeriod);
       const refreshed = await getActiveStrategicPlan();
       if (refreshed.plan) {
         return {
@@ -136,27 +135,28 @@ export async function getDecodeBsc(period = DEFAULT_PERIOD): Promise<{
     return { rows: planObjectivesToBscRows(plan.objectives), source: "database" };
   }
 
-  await seedBscIfEmpty(period);
+  await seedBscIfEmpty(activePeriod);
   const rows = await prisma.decodeBscRow.findMany({
-    where: { period },
+    where: { period: activePeriod },
     orderBy: { sortOrder: "asc" },
   });
   if (rows.length === 0) return { rows: BSC_MAP, source: "demo" };
   return { rows: rows.map(rowToBsc), source: "database" };
 }
 
-export async function getDecodeHoshin(period = DEFAULT_PERIOD): Promise<{
+export async function getDecodeHoshin(period?: string): Promise<{
   quadrants: HoshinQuadrant[];
   flat: HoshinRowPayload[];
   source: "database" | "demo";
 }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     const flat = flattenHoshin(HOSHIN_QUADRANTS);
     return { quadrants: HOSHIN_QUADRANTS, flat, source: "demo" };
   }
-  await seedHoshinIfEmpty(period);
+  await seedHoshinIfEmpty(activePeriod);
   const rows = await prisma.decodeHoshinEntry.findMany({
-    where: { period },
+    where: { period: activePeriod },
     orderBy: { sortOrder: "asc" },
   });
   if (rows.length === 0) {
@@ -179,9 +179,10 @@ export async function getDecodeHoshin(period = DEFAULT_PERIOD): Promise<{
 
 export async function saveDecodeBsc(
   rows: BscRowPayload[],
-  period = DEFAULT_PERIOD,
+  period?: string,
   opts?: { syncToPlan?: boolean },
 ): Promise<{ count: number }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     throw new Error("DATABASE_URL unset — 无法保存解码数据");
   }
@@ -193,10 +194,10 @@ export async function saveDecodeBsc(
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.decodeBscRow.deleteMany({ where: { period } });
+    await tx.decodeBscRow.deleteMany({ where: { period: activePeriod } });
     await tx.decodeBscRow.createMany({
       data: rows.map((r, i) => ({
-        period,
+        period: activePeriod,
         dim: r.dim.trim(),
         sortOrder: i,
         objective: r.objective.trim(),
@@ -213,16 +214,17 @@ export async function saveDecodeBsc(
 
 export async function saveDecodeHoshin(
   rows: HoshinRowPayload[],
-  period = DEFAULT_PERIOD,
+  period?: string,
 ): Promise<{ count: number }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     throw new Error("DATABASE_URL unset — 无法保存解码数据");
   }
   await prisma.$transaction(async (tx) => {
-    await tx.decodeHoshinEntry.deleteMany({ where: { period } });
+    await tx.decodeHoshinEntry.deleteMany({ where: { period: activePeriod } });
     await tx.decodeHoshinEntry.createMany({
       data: rows.map((r, i) => ({
-        period,
+        period: activePeriod,
         rowLabel: r.rowLabel.trim(),
         colLabel: r.colLabel.trim(),
         sortOrder: i,
@@ -236,8 +238,4 @@ export async function saveDecodeHoshin(
     });
   });
   return { count: rows.length };
-}
-
-export function getDecodePeriod(): string {
-  return DEFAULT_PERIOD;
 }

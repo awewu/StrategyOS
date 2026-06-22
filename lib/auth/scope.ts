@@ -13,6 +13,7 @@ const DEMO_ORG_SCOPE: Record<RoleKey, string[] | null> = {
   ceo: null,
   staff: null,
   vp: ["org-exec-hw"],
+  system_head: ["org-exec-rd"],
   pm: ["org-exec-hw"],
   observer: ["org-exec-hw"],
 };
@@ -21,6 +22,7 @@ const DEMO_PROJECT_SCOPE: Record<RoleKey, string[] | null> = {
   ceo: null,
   staff: null,
   vp: null,
+  system_head: null,
   pm: ["V4"],
   observer: null,
 };

@@ -27,7 +27,7 @@ describe("management-report", () => {
       profitActual: 720,
       profitForecast: 820,
       cashRunwayMonths: 2.1,
-    });
+    }, "2026-FY");
 
     assert.equal(report.incomeStatement.lines.length >= 10, true);
     assert.equal(report.balanceSheet.assets.length >= 4, true);

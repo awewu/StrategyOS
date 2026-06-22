@@ -1,15 +1,17 @@
 import { dbAvailable, prisma } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { MaPipelineItem } from "@/lib/types/stratos";
+import { getActivePeriod } from "@/lib/data/active-period";
 
-export async function getMaPipelineEditable(period = demo.CURRENT_PERIOD): Promise<{
+export async function getMaPipelineEditable(period?: string): Promise<{
   items: MaPipelineItem[];
   source: "database" | "demo";
 }> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) {
     return { items: demo.maPipeline, source: "demo" };
   }
-  const rows = await prisma.maPipelineItem.findMany({ where: { period }, orderBy: { stage: "asc" } });
+  const rows = await prisma.maPipelineItem.findMany({ where: { period: activePeriod }, orderBy: { stage: "asc" } });
   if (rows.length === 0) {
     return { items: demo.maPipeline, source: "demo" };
   }
@@ -43,8 +45,9 @@ function mapRow(r: {
 
 export async function saveMaPipelineItems(
   items: MaPipelineItem[],
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<MaPipelineItem[]> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存 M&A 管道");
   const saved: MaPipelineItem[] = [];
   for (const item of items) {
@@ -57,7 +60,7 @@ export async function saveMaPipelineItems(
       valuationRange: item.valuationRange,
       linkedAssumptionCodes: item.linkedAssumptionCodes,
       integrationMilestone100d: item.integrationMilestone100d ?? null,
-      period,
+      period: activePeriod,
     };
     if (item.id && !item.id.startsWith("new-")) {
       const row = await prisma.maPipelineItem.update({ where: { id: item.id }, data });

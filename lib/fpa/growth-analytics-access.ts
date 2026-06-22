@@ -1,6 +1,7 @@
 import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { AarrrFunnelStage, KellerBrandLayer } from "@/lib/types/stratos";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export type GrowthAnalyticsBundle = {
   aarrrFunnel: AarrrFunnelStage[];
@@ -41,13 +42,14 @@ async function seedGrowthIfEmpty(period: string): Promise<void> {
 }
 
 export async function getGrowthAnalytics(
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<GrowthAnalyticsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   const fallback = { ...defaultGrowthAnalytics(), source: "demo" as const };
   if (!(await dbAvailable())) return fallback;
   return safeDbQuery(async () => {
-    await seedGrowthIfEmpty(period);
-    const row = await prisma.strategicGrowthAnalytics.findUnique({ where: { period } });
+    await seedGrowthIfEmpty(activePeriod);
+    const row = await prisma.strategicGrowthAnalytics.findUnique({ where: { period: activePeriod } });
     if (!row) return fallback;
     const parsed = parseGrowthAnalyticsJson(row.aarrrFunnelJson, row.kellerBrandJson);
     return { ...parsed, source: "database" as const };
@@ -56,11 +58,12 @@ export async function getGrowthAnalytics(
 
 export async function saveGrowthAnalytics(
   payload: Omit<GrowthAnalyticsBundle, "source">,
-  period = demo.CURRENT_PERIOD,
+  period?: string,
 ): Promise<GrowthAnalyticsBundle> {
+  const activePeriod = period ?? await getActivePeriod();
   if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存增长分析");
-  await seedGrowthIfEmpty(period);
-  const row = await prisma.strategicGrowthAnalytics.findUnique({ where: { period } });
+  await seedGrowthIfEmpty(activePeriod);
+  const row = await prisma.strategicGrowthAnalytics.findUnique({ where: { period: activePeriod } });
   if (!row) throw new Error("增长分析记录未找到");
 
   for (const s of payload.aarrrFunnel) {

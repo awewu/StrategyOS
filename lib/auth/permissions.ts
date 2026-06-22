@@ -71,6 +71,7 @@ export function roleToLevel(role: RoleKey): AccessLevel {
     case "pm":
       return 1;
     case "vp":
+    case "system_head":
     case "staff":
       return 2;
     case "ceo":
@@ -87,7 +88,7 @@ export function isAdmin(role: RoleKey): boolean {
 }
 
 export function isExecutive(role: RoleKey): boolean {
-  return role === "ceo" || role === "vp";
+  return role === "ceo" || role === "vp" || role === "system_head";
 }
 
 export function roleHomePath(role: RoleKey): string {
@@ -98,6 +99,8 @@ export function roleHomePath(role: RoleKey): string {
       return "/strategy";
     case "vp":
       return "/reports";
+    case "system_head":
+      return "/monitor/functions";
     case "pm":
       return "/execution";
     case "staff":
@@ -126,7 +129,7 @@ export function getRequiredLevel(pathname: string): AccessLevel | null {
 export function minRoleForPath(pathname: string): RoleKey | null {
   const level = getRequiredLevel(pathname);
   if (level == null) return null;
-  const roles: RoleKey[] = ["observer", "pm", "vp", "staff", "ceo"];
+  const roles: RoleKey[] = ["observer", "pm", "vp", "system_head", "staff", "ceo"];
   return roles.find((r) => roleToLevel(r) >= level) ?? "ceo";
 }
 

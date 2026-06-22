@@ -2,6 +2,13 @@
  * Market Ask AI — SCR-style推演，复用 StratOS LLM 配置。
  */
 import { hermesLlmConfigured } from "@/lib/market-intel/hermes-llm";
+import {
+  buildSwotPrompt,
+  generateTows,
+  parseSwotResponse,
+  type SwotBoard,
+  type TowsSet,
+} from "@/lib/market-intel/swot";
 
 function llmKey(): string | undefined {
   return process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY;
@@ -84,6 +91,51 @@ export async function askMarketAi(
     };
   } catch {
     return { error: "LLM 异常", fallback: true, text: ruleBasedAnswer(question, context) };
+  }
+}
+
+export interface SwotAiResult {
+  tows: TowsSet;
+  engine: "llm" | "rule";
+  note?: string;
+}
+
+/**
+ * SWOT → TOWS 推演。LLM 可用时走模型，否则确定性回退 generateTows。
+ * 复用与 askMarketAi 相同的 LLM 配置；提示词/解析在 swot.ts。
+ */
+export async function askSwotAi(board: SwotBoard): Promise<SwotAiResult> {
+  const fallback = (): SwotAiResult => ({
+    tows: generateTows(board, 2),
+    engine: "rule",
+    note: "未配置 LLM 或调用失败 · 规则引擎兜底",
+  });
+
+  if (!llmKey()) return fallback();
+
+  const { system, user } = buildSwotPrompt(board);
+  try {
+    const res = await fetch(llmBaseUrl() + "/chat/completions", {
+      method: "POST",
+      signal: AbortSignal.timeout(35000),
+      headers: { Authorization: "Bearer " + llmKey(), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: llmModel(),
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+    });
+    if (!res.ok) return fallback();
+    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const raw = data.choices?.[0]?.message?.content;
+    const parsed = raw ? parseSwotResponse(raw) : null;
+    return parsed ? { tows: parsed, engine: "llm" } : fallback();
+  } catch {
+    return fallback();
   }
 }
 
