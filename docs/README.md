@@ -20,6 +20,7 @@
 | 三栈 | [STRAT_CAPITAL.md](./STRAT_CAPITAL.md) · [STRAT_PRODUCT.md](./STRAT_PRODUCT.md) · [STRAT_GTM.md](./STRAT_GTM.md) |
 | 高维 | [HIGHER_DIMENSION.md](./HIGHER_DIMENSION.md) |
 | 报告 | [REPORT_FORMATS.md](./REPORT_FORMATS.md) |
+| **竞对分析** | [COMPETITIVE_ANALYSIS.md](./COMPETITIVE_ANALYSIS.md) — 价值总结 · 行业对标 · 企业自用结论 · Hermes |
 | **Phase 2** | [PHASE2.md](./PHASE2.md) — Hoshin · 三层面 · 十二维 · 角色 · ⌘K |
 
 ## 已归档

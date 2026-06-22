@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
-import { getDecodePeriod, saveDecodeBsc, saveDecodeHoshin } from "@/lib/decode/data-access";
+import { saveDecodeBsc, saveDecodeHoshin } from "@/lib/decode/data-access";
+import { getActivePeriod } from "@/lib/data/active-period";
 import { parseBscExcel, parseHoshinExcel } from "@/lib/decode/excel";
 
 export async function POST(req: Request) {
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
     const form = await req.formData();
     const file = form.get("file");
     const kind = String(form.get("kind") ?? "combined").toLowerCase();
-    const period = String(form.get("period") ?? getDecodePeriod());
+    const period = String(form.get("period") ?? await getActivePeriod());
 
     if (!(file instanceof File) || file.size === 0) {
       return NextResponse.json({ error: "请上传 Excel 文件 (.xlsx)" }, { status: 400 });

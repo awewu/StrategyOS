@@ -18,19 +18,26 @@ const MEETING_MILESTONES: Omit<TimelineMilestone, "status">[] = [
   { id: "mtg-year", label: "年底战略会", period: "2026-Q4", kind: "meeting", detail: "定稿 · 版本冻结" },
 ];
 
-function snapshotStatus(status: SnapshotLike["status"], period: string): TimelineMilestone["status"] {
+function snapshotStatus(
+  status: SnapshotLike["status"],
+  period: string,
+  activePeriod: string,
+): TimelineMilestone["status"] {
   if (status === "FROZEN") return "done";
-  if (period.includes(CURRENT_PERIOD) || period.includes("2026-H2")) return "active";
+  if (period.includes(activePeriod)) return "active";
   return "upcoming";
 }
 
-export function buildStrategicTimeline(snapshots: SnapshotLike[]): TimelineMilestone[] {
+export function buildStrategicTimeline(
+  snapshots: SnapshotLike[],
+  activePeriod: string = CURRENT_PERIOD,
+): TimelineMilestone[] {
   const fromSnapshots: TimelineMilestone[] = snapshots.map((s) => ({
     id: `snap-${s.code}`,
     label: s.status === "WORKING" ? "战略版本 · 编制中" : "战略版本 · 已冻结",
     period: s.period,
     kind: "snapshot",
-    status: snapshotStatus(s.status, s.period),
+    status: snapshotStatus(s.status, s.period, activePeriod),
     detail: `${s.code} · deliberate ${s.rate}%`,
   }));
 

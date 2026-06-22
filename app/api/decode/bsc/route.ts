@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
-import { getDecodeBsc, getDecodePeriod, saveDecodeBsc } from "@/lib/decode/data-access";
+import { getDecodeBsc, saveDecodeBsc } from "@/lib/decode/data-access";
+import { getActivePeriod } from "@/lib/data/active-period";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { TrafficLight } from "@/lib/types/stratos";
 
 export async function GET() {
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
-  const period = getDecodePeriod();
+  const period = await getActivePeriod();
   const { rows, source } = await getDecodeBsc(period);
   return NextResponse.json({ period, rows, source });
 }
@@ -30,7 +31,7 @@ export async function PUT(req: Request) {
         return NextResponse.json({ error: "灯色须为 green / yellow / red" }, { status: 400 });
       }
     }
-    const period = body.period ?? getDecodePeriod();
+    const period = body.period ?? await getActivePeriod();
     const result = await saveDecodeBsc(rows, period);
     return NextResponse.json({ ok: true, ...result, period });
   } catch (e) {

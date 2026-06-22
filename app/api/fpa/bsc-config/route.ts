@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import { getBscConfig, saveBscConfig } from "@/lib/fpa/bsc-config-access";
 
 export async function GET() {
-  const bundle = await getBscConfig(demo.CURRENT_PERIOD);
+  const bundle = await getBscConfig(await getActivePeriod());
   return NextResponse.json(bundle);
 }
 
@@ -15,7 +15,7 @@ export async function PUT(req: Request) {
     }
     const saved = await saveBscConfig(
       body.cards as Parameters<typeof saveBscConfig>[0],
-      body.period ?? demo.CURRENT_PERIOD,
+      body.period ?? await getActivePeriod(),
     );
     return NextResponse.json(saved);
   } catch (e) {

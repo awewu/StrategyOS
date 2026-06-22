@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import {
   clearScoreboardConfig,
   getScoreboardConfig,
@@ -8,7 +8,7 @@ import {
 } from "@/lib/execution/scoreboard-access";
 
 export async function GET() {
-  const result = await getScoreboardConfig(demo.CURRENT_PERIOD);
+  const result = await getScoreboardConfig(await getActivePeriod());
   return NextResponse.json(result);
 }
 
@@ -19,7 +19,7 @@ export async function PUT(req: Request) {
       config?: unknown;
       reset?: boolean;
     };
-    const period = body.period ?? demo.CURRENT_PERIOD;
+    const period = body.period ?? await getActivePeriod();
 
     if (body.reset) {
       await clearScoreboardConfig(period);

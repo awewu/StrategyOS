@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- dynamic JSON round-trips */
 /**
  * Persistence + data-flow closed-loop verifier.
  *

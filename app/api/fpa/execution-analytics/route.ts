@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import {
   getExecutionAnalytics,
   saveExecutionAnalytics,
 } from "@/lib/fpa/execution-analytics-access";
 
 export async function GET() {
-  const bundle = await getExecutionAnalytics(demo.CURRENT_PERIOD);
+  const bundle = await getExecutionAnalytics(await getActivePeriod());
   return NextResponse.json(bundle);
 }
 
@@ -27,7 +27,7 @@ export async function PUT(req: Request) {
         riceItems: body.riceItems as Parameters<typeof saveExecutionAnalytics>[0]["riceItems"],
         trlRadar: body.trlRadar as Parameters<typeof saveExecutionAnalytics>[0]["trlRadar"],
       },
-      body.period ?? demo.CURRENT_PERIOD,
+      body.period ?? await getActivePeriod(),
     );
     return NextResponse.json(saved);
   } catch (e) {

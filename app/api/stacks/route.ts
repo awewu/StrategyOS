@@ -8,7 +8,7 @@ import {
   saveProductBets,
   saveProjects,
 } from "@/lib/stacks/data-access";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import type {
   CapStackPeriod,
   GtmBet,
@@ -20,8 +20,8 @@ import type {
 export async function GET() {
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
-  const bundle = await getStacksBundle(demo.CURRENT_PERIOD);
-  return NextResponse.json({ period: demo.CURRENT_PERIOD, ...bundle });
+  const bundle = await getStacksBundle(await getActivePeriod());
+  return NextResponse.json({ period: await getActivePeriod(), ...bundle });
 }
 
 export async function PUT(req: Request) {
@@ -36,7 +36,7 @@ export async function PUT(req: Request) {
       projects?: Project[];
       period?: string;
     };
-    const period = body.period ?? demo.CURRENT_PERIOD;
+    const period = body.period ?? await getActivePeriod();
     if (body.capStack) await saveCapStack(body.capStack, period);
     if (body.investmentCases) await saveInvestmentCases(body.investmentCases, period);
     if (body.productBets) await saveProductBets(body.productBets, period);

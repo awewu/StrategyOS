@@ -121,7 +121,7 @@ export async function getFpaSummary(): Promise<FpaSummary> {
 export async function getCapStack(): Promise<CapStackPeriod> {
   if (!(await dbAvailable())) return demo.capStack;
   const row = await prisma.capStackPeriod.findFirst({
-    where: { period: demo.CURRENT_PERIOD },
+    where: { period: await getActivePeriod() },
   });
   if (!row) return demo.capStack;
   const byHorizon = row.byHorizonJson as Record<"H1" | "H2" | "H3", number>;
@@ -196,7 +196,7 @@ export async function getCommandDeckBundle() {
     derivedTimeline: [],
     timelineSource: "derived",
   });
-  const derivedTimeline = buildStrategicTimeline(snapshots);
+  const derivedTimeline = buildStrategicTimeline(snapshots, await getActivePeriod());
   return {
     ...base,
     decisions: decisionsConfig.decisions ?? derivedDecisions,
@@ -385,7 +385,7 @@ export async function getExecutionBundle() {
 
 export async function getExecutionTensions(): Promise<TensionItem[]> {
   if (!(await dbAvailable())) return demoTensions;
-  const rows = await prisma.executionTension.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { createdAt: "asc" } });
+  const rows = await prisma.executionTension.findMany({ where: { period: await getActivePeriod() }, orderBy: { createdAt: "asc" } });
   if (rows.length === 0) return demoTensions;
   return rows.map((r) => ({
     id: r.id, projectCode: r.projectCode, projectName: r.projectName,
@@ -398,7 +398,7 @@ export async function getExecutionTensions(): Promise<TensionItem[]> {
 
 export async function getExecutionMaturity(): Promise<ExecutionMaturityPoint[]> {
   if (!(await dbAvailable())) return demoMaturityPoints;
-  const rows = await prisma.executionMaturity.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { updatedAt: "asc" } });
+  const rows = await prisma.executionMaturity.findMany({ where: { period: await getActivePeriod() }, orderBy: { updatedAt: "asc" } });
   if (rows.length === 0) return demoMaturityPoints;
   return rows.map((r) => ({
     projectCode: r.projectCode, projectName: r.projectName, owner: r.owner,
@@ -431,7 +431,7 @@ export async function getCommitmentRecords(): Promise<CommitmentRecord[]> {
 
 export async function getMarketEvidence(): Promise<MarketEvidence[]> {
   if (!(await dbAvailable())) return demoMarketResponses;
-  const rows = await prisma.marketEvidence.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { createdAt: "asc" } });
+  const rows = await prisma.marketEvidence.findMany({ where: { period: await getActivePeriod() }, orderBy: { createdAt: "asc" } });
   if (rows.length === 0) return demoMarketResponses;
   return rows.map((r) => ({
     id: r.id, actionLabel: r.actionLabel, actionCode: r.actionCode ?? undefined,
@@ -444,7 +444,7 @@ export async function getMarketEvidence(): Promise<MarketEvidence[]> {
 
 export async function getCompetitivePositions(): Promise<CompetitivePosition[]> {
   if (!(await dbAvailable())) return demoCompetitivePositions;
-  const rows = await prisma.competitivePosition.findMany({ where: { period: demo.CURRENT_PERIOD }, orderBy: { createdAt: "asc" } });
+  const rows = await prisma.competitivePosition.findMany({ where: { period: await getActivePeriod() }, orderBy: { createdAt: "asc" } });
   if (rows.length === 0) return demoCompetitivePositions;
   return rows.map((r) => ({
     id: r.id, competitor: r.competitor, dimension: r.dimension,
@@ -558,7 +558,7 @@ export async function getMaPipeline() {
 
 export async function getSpbpScenarios() {
   if (!(await dbAvailable())) return demo.spbpScenarios;
-  const rows = await prisma.spbpScenario.findMany({ where: { period: demo.CURRENT_PERIOD } });
+  const rows = await prisma.spbpScenario.findMany({ where: { period: await getActivePeriod() } });
   if (rows.length === 0) return demo.spbpScenarios;
   return rows.map((r) => ({
     id: r.code,
@@ -577,7 +577,7 @@ export async function getSpbpScenarios() {
 export async function getTechSignals() {
   if (!(await dbAvailable())) return demo.techSignals;
   const rows = await prisma.techSignalRecord.findMany({
-    where: { period: demo.CURRENT_PERIOD },
+    where: { period: await getActivePeriod() },
     orderBy: { trl: "desc" },
   });
   if (rows.length === 0) return demo.techSignals;

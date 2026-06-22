@@ -4,6 +4,8 @@
 
 **产品总纲：** [docs/STRATOS_BLUEPRINT.md](./docs/STRATOS_BLUEPRINT.md) · [docs/README.md](./docs/README.md)
 
+**价值与竞对：** [docs/COMPETITIVE_ANALYSIS.md](./docs/COMPETITIVE_ANALYSIS.md) — 价值总结 · 行业对标 · 企业自用结论 · Hermes · SWOT/五力
+
 **Phase 2：** [docs/PHASE2.md](./docs/PHASE2.md) · `/decode` · 三层面气泡 · ⌘K · 角色切换
 
 ## 本地开发

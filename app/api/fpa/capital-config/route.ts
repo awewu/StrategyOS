@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { getCapitalConfig, saveCapitalConfig } from "@/lib/fpa/capital-config-access";
 import type { PostInvestDeviation, RealOptionTag } from "@/lib/types/stratos";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export async function GET() {
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
-  const bundle = await getCapitalConfig(demo.CURRENT_PERIOD);
+  const bundle = await getCapitalConfig(await getActivePeriod());
   return NextResponse.json(bundle);
 }
 
@@ -25,7 +25,7 @@ export async function PUT(req: Request) {
     }
     const saved = await saveCapitalConfig(
       { realOptions: body.realOptions, postInvestDeviations: body.postInvestDeviations },
-      body.period ?? demo.CURRENT_PERIOD,
+      body.period ?? await getActivePeriod(),
     );
     return NextResponse.json({ ok: true, ...saved });
   } catch (e) {

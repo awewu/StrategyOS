@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import {
   clearCommandDecisions,
   clearCommandTimeline,
@@ -13,8 +13,8 @@ import type { DecisionItem } from "@/lib/panorama/scr";
 
 export async function GET() {
   const [decisions, timeline] = await Promise.all([
-    getCommandDecisionsConfig(demo.CURRENT_PERIOD),
-    getCommandTimelineConfig(demo.CURRENT_PERIOD),
+    getCommandDecisionsConfig(await getActivePeriod()),
+    getCommandTimelineConfig(await getActivePeriod()),
   ]);
   return NextResponse.json({ ...decisions, timeline: timeline.milestones, timelineSource: timeline.source });
 }
@@ -27,7 +27,7 @@ export async function PUT(req: Request) {
       timeline?: TimelineMilestone[];
       reset?: boolean | "decisions" | "timeline";
     };
-    const period = body.period ?? demo.CURRENT_PERIOD;
+    const period = body.period ?? await getActivePeriod();
 
     if (body.reset === true || body.reset === "decisions") {
       await clearCommandDecisions(period);

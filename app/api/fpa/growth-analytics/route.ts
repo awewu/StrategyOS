@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import { getGrowthAnalytics, saveGrowthAnalytics } from "@/lib/fpa/growth-analytics-access";
 
 export async function GET() {
-  const bundle = await getGrowthAnalytics(demo.CURRENT_PERIOD);
+  const bundle = await getGrowthAnalytics(await getActivePeriod());
   return NextResponse.json(bundle);
 }
 
@@ -24,7 +24,7 @@ export async function PUT(req: Request) {
           typeof saveGrowthAnalytics
         >[0]["kellerBrandLayers"],
       },
-      body.period ?? demo.CURRENT_PERIOD,
+      body.period ?? await getActivePeriod(),
     );
     return NextResponse.json(saved);
   } catch (e) {

@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { getOutlookBundle, saveOutlookBundle } from "@/lib/fpa/outlook-access";
 import type { FpaYearRow, SensitivityDriver } from "@/lib/types/stratos";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export async function GET() {
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
-  const bundle = await getOutlookBundle(demo.CURRENT_PERIOD);
+  const bundle = await getOutlookBundle(await getActivePeriod());
   return NextResponse.json(bundle);
 }
 
@@ -28,7 +28,7 @@ export async function PUT(req: Request) {
         fiveYearForecast: body.fiveYearForecast,
         sensitivityDrivers: body.sensitivityDrivers,
       },
-      body.period ?? demo.CURRENT_PERIOD,
+      body.period ?? await getActivePeriod(),
     );
     return NextResponse.json({ ok: true, ...saved });
   } catch (e) {

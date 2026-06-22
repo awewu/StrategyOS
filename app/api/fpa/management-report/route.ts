@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import {
   clearAllManagementAdjustments,
   clearManagementMarginBridge,
@@ -13,7 +13,7 @@ import { validateMarginBridge, validateStatementsOverride } from "@/lib/fpa/mana
 import type { MarginBridgeItem } from "@/lib/fpa/management-types";
 
 export async function GET() {
-  const bundle = await getManagementAdjustments(demo.CURRENT_PERIOD);
+  const bundle = await getManagementAdjustments(await getActivePeriod());
   return NextResponse.json(bundle);
 }
 
@@ -25,7 +25,7 @@ export async function PUT(req: Request) {
       statements?: StatementsOverride;
       reset?: "all" | "marginBridge" | "statements";
     };
-    const period = body.period ?? demo.CURRENT_PERIOD;
+    const period = body.period ?? await getActivePeriod();
 
     if (body.reset === "all") {
       await clearAllManagementAdjustments(period);

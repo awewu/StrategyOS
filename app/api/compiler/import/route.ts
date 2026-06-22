@@ -20,7 +20,7 @@ import {
 } from "@/lib/compiler/merge-import";
 import { planObjectivesToBscRows } from "@/lib/data/strategic-plan-data";
 import { assertPlanWritable } from "@/lib/strategy/plan-lifecycle";
-import { CURRENT_PERIOD } from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 export const runtime = "nodejs";
 
@@ -234,14 +234,14 @@ export async function POST(req: Request) {
           notFailStatus: "yellow" as const,
         })),
       );
-      await saveDecodeBsc(derivedRows, CURRENT_PERIOD, { syncToPlan: false });
+      await saveDecodeBsc(derivedRows, await getActivePeriod(), { syncToPlan: false });
     } else if (mode === "replace" && compiled.bscRows.length > 0) {
-      await saveDecodeBsc(compiled.bscRows, CURRENT_PERIOD);
+      await saveDecodeBsc(compiled.bscRows, await getActivePeriod());
     }
 
     if (compiled.fpa) {
       const existing = await prisma.fpaPeriod.findFirst({
-        where: { period: CURRENT_PERIOD, scope: "company" },
+        where: { period: await getActivePeriod(), scope: "company" },
       });
       await saveFpaEditable(
         {
@@ -253,7 +253,7 @@ export async function POST(req: Request) {
           profitForecast: compiled.fpa.profitForecast ?? Number(existing?.profitForecast ?? 0),
           cashRunwayMonths: 3,
         },
-        CURRENT_PERIOD,
+        await getActivePeriod(),
       );
       imported.push("FPA 数字已更新");
     }

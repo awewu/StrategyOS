@@ -4,6 +4,7 @@
 import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import { healthOverview as demoHealthOverview } from "@/lib/demo-data";
 import * as demo from "@/lib/stratos-demo-data";
+import { getActivePeriod } from "@/lib/data/active-period";
 import type {
   Assumption,
   BrandStrategyCard,
@@ -17,11 +18,10 @@ import type {
   TrafficLight,
 } from "@/lib/types/stratos";
 
-const PERIOD = demo.CURRENT_PERIOD;
 
 export async function getBrandCards(): Promise<BrandStrategyCard[]> {
   if (!(await dbAvailable())) return demo.brandCards;
-  const rows = await prisma.brandStrategyCard.findMany({ where: { period: PERIOD } });
+  const rows = await prisma.brandStrategyCard.findMany({ where: { period: await getActivePeriod() } });
   if (rows.length === 0) return demo.brandCards;
   return rows.map((r) => {
     const wtp = r.whereToPlayJson as { summary?: string } | string;
@@ -38,7 +38,7 @@ export async function getBrandCards(): Promise<BrandStrategyCard[]> {
 
 export async function getProductBets(): Promise<ProductBet[]> {
   if (!(await dbAvailable())) return demo.productBets;
-  const rows = await prisma.productBet.findMany({ where: { period: PERIOD } });
+  const rows = await prisma.productBet.findMany({ where: { period: await getActivePeriod() } });
   if (rows.length === 0) return demo.productBets;
   return rows.map((r) => ({
     id: r.id,
@@ -52,7 +52,7 @@ export async function getProductBets(): Promise<ProductBet[]> {
 
 export async function getGtmBets(): Promise<GtmBet[]> {
   if (!(await dbAvailable())) return demo.gtmBets;
-  const rows = await prisma.gtmBet.findMany({ where: { period: PERIOD } });
+  const rows = await prisma.gtmBet.findMany({ where: { period: await getActivePeriod() } });
   if (rows.length === 0) return demo.gtmBets;
   return rows.map((r) => ({
     id: r.id,
@@ -66,7 +66,7 @@ export async function getGtmBets(): Promise<GtmBet[]> {
 export async function getProjects(): Promise<Project[]> {
   return safeDbQuery(async () => {
     const rows = await prisma.project.findMany({
-      where: { period: PERIOD },
+      where: { period: await getActivePeriod() },
       include: { owner: { select: { name: true } } },
     });
     if (rows.length === 0) return demo.projects;
@@ -88,7 +88,7 @@ export async function getProjects(): Promise<Project[]> {
 
 export async function getAssumptions(): Promise<Assumption[]> {
   if (!(await dbAvailable())) return demo.assumptions;
-  const rows = await prisma.assumption.findMany({ where: { period: PERIOD } });
+  const rows = await prisma.assumption.findMany({ where: { period: await getActivePeriod() } });
   if (rows.length === 0) return demo.assumptions;
   return rows.map((r) => ({
     id: r.id,
@@ -106,14 +106,14 @@ export interface ObjectiveView {
 
 export async function getObjectives(): Promise<ObjectiveView[]> {
   if (!(await dbAvailable())) return demo.objectives;
-  const rows = await prisma.objective.findMany({ where: { period: PERIOD }, orderBy: { createdAt: "asc" } });
+  const rows = await prisma.objective.findMany({ where: { period: await getActivePeriod() }, orderBy: { createdAt: "asc" } });
   if (rows.length === 0) return demo.objectives;
   return rows.map((r) => ({ id: r.id, title: r.title }));
 }
 
 export async function getAllKeyResults(): Promise<KeyResult[]> {
   if (!(await dbAvailable())) return [...demo.leadingKrs, ...demo.laggingKrs];
-  const rows = await prisma.keyResult.findMany({ where: { period: PERIOD }, orderBy: { title: "asc" } });
+  const rows = await prisma.keyResult.findMany({ where: { period: await getActivePeriod() }, orderBy: { title: "asc" } });
   if (rows.length === 0) return [...demo.leadingKrs, ...demo.laggingKrs];
   return rows.map((r) => ({
     id: r.id,
@@ -129,7 +129,7 @@ export async function getAllKeyResults(): Promise<KeyResult[]> {
 export async function getLeadingKeyResults(): Promise<KeyResult[]> {
   if (!(await dbAvailable())) return demo.leadingKrs;
   const rows = await prisma.keyResult.findMany({
-    where: { period: PERIOD, isLeadingIndicator: true },
+    where: { period: await getActivePeriod(), isLeadingIndicator: true },
   });
   if (rows.length === 0) return demo.leadingKrs;
   return rows.map((r) => ({
@@ -146,7 +146,7 @@ export async function getLeadingKeyResults(): Promise<KeyResult[]> {
 export async function getCapacity(): Promise<CapacitySnapshot> {
   if (!(await dbAvailable())) return demo.capacity;
   const row = await prisma.capacitySnapshot.findFirst({
-    where: { period: PERIOD },
+    where: { period: await getActivePeriod() },
     orderBy: { recordedAt: "desc" },
     include: { linkedInvestmentCase: true },
   });
@@ -168,7 +168,7 @@ export async function getBscLights(): Promise<{
   learning: TrafficLight;
 }> {
   if (!(await dbAvailable())) return demo.bscLights;
-  const rows = await prisma.healthSignal.findMany({ where: { period: PERIOD } });
+  const rows = await prisma.healthSignal.findMany({ where: { period: await getActivePeriod() } });
   if (rows.length === 0) return demo.bscLights;
   const map: Record<string, TrafficLight> = {};
   for (const r of rows) {
@@ -210,7 +210,7 @@ export async function getHealthOverview(): Promise<HealthOverviewData> {
     };
   }
   const kpiRows = await prisma.healthSignal.findMany({
-    where: { period: PERIOD, kpiName: { not: null } },
+    where: { period: await getActivePeriod(), kpiName: { not: null } },
   });
   if (kpiRows.length === 0) {
     return { ...demoHealthOverview, dimensions: lights };
@@ -239,7 +239,7 @@ export async function getHealthOverview(): Promise<HealthOverviewData> {
 
 export async function getRobustScore(): Promise<RobustnessDimensions> {
   return safeDbQuery(async () => {
-    const rows = await prisma.twelveDimScore.findMany({ where: { period: PERIOD } });
+    const rows = await prisma.twelveDimScore.findMany({ where: { period: await getActivePeriod() } });
     if (rows.length > 0) {
       const byId = Object.fromEntries(rows.map((r) => [r.dimId, r.score]));
       const avg = (ids: string[]) => {
@@ -310,7 +310,7 @@ export async function getFeedbackLoops() {
 
 export async function getBscCards() {
   const { getBscConfig, mergeBscCardsWithLights } = await import("@/lib/fpa/bsc-config-access");
-  const [config, lights] = await Promise.all([getBscConfig(PERIOD), getBscLights()]);
+  const [config, lights] = await Promise.all([getBscConfig(await getActivePeriod()), getBscLights()]);
   return mergeBscCardsWithLights(config.cards, lights);
 }
 
@@ -359,8 +359,8 @@ export async function getGtmSegments() {
   if (!(await dbAvailable())) return demo.gtmSegments;
   const rows = await prisma.customerSegment.findMany({ take: 10 });
   if (rows.length === 0) return demo.gtmSegments;
-  const coverage = await prisma.coverageSnapshot.findMany({ where: { period: PERIOD } });
-  const economics = await prisma.segmentEconomics.findMany({ where: { period: PERIOD } });
+  const coverage = await prisma.coverageSnapshot.findMany({ where: { period: await getActivePeriod() } });
+  const economics = await prisma.segmentEconomics.findMany({ where: { period: await getActivePeriod() } });
   return rows.map((r) => {
     const cov = coverage.find((c) => c.segmentCode === r.code);
     const econ = economics.find((e) => e.segmentId === r.id);
@@ -384,7 +384,7 @@ export async function getCapitalSummaryLine(): Promise<string> {
 
 async function getCapStackInline() {
   if (!(await dbAvailable())) return demo.capStack;
-  const row = await prisma.capStackPeriod.findFirst({ where: { period: PERIOD } });
+  const row = await prisma.capStackPeriod.findFirst({ where: { period: await getActivePeriod() } });
   if (!row) return demo.capStack;
   const byHorizon = row.byHorizonJson as Record<"H1" | "H2" | "H3", number>;
   return {
