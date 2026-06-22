@@ -4,7 +4,7 @@
  * Access levels (higher includes lower):
  * L0 observer — published one-pager, own-unit monitor (read-only)
  * L1 pm       — + execution, commitments, own project Vx
- * L2 vp/staff — + own slice monitor, own org OPS, draft strategy input
+ * L2 vp/system_head/staff — + own slice monitor, own org OPS, draft strategy input
  * L3 ceo      — command deck, inbox, FPA, compass, market, version diff (full company)
  * L4 admin    — access management, org master, system config (ceo + staff)
  */

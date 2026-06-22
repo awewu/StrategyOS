@@ -4,14 +4,15 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getCompassBundle } from "@/lib/compass/data";
 import { getCultureAwards, getCultureUnderstanding } from "@/lib/culture/data-access";
 import { getCultureHandbook } from "@/lib/culture/handbook-access";
-import { defaultWushiAssessment } from "@/lib/culture/wushi";
+import { getWushiAssessment } from "@/lib/culture/wushi-access";
 
 export default async function CulturePage() {
-  const [{ northStar }, awards, understanding, handbook] = await Promise.all([
+  const [{ northStar }, awards, understanding, handbook, wushi] = await Promise.all([
     getCompassBundle(),
     getCultureAwards(),
     getCultureUnderstanding(),
     getCultureHandbook(),
+    getWushiAssessment(),
   ]);
 
   return (
@@ -31,7 +32,7 @@ export default async function CulturePage() {
       />
 
       <div className="mt-10 border-t border-[var(--surface-border)] pt-8">
-        <WushiPanel assessment={defaultWushiAssessment("史密斯")} />
+        <WushiPanel assessment={wushi.assessment} source={wushi.source} />
       </div>
     </div>
   );
