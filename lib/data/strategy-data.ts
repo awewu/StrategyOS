@@ -2,7 +2,7 @@
  * Unified data access — DB when available, demo fallback otherwise.
  */
 import { Prisma } from "@prisma/client";
-import { dbAvailable, prisma } from "@/lib/db";
+import { dbAvailable, prisma, requireDbAvailable } from "@/lib/db";
 import * as entities from "@/lib/data/entity-getters";
 import * as demo from "@/lib/stratos-demo-data";
 import { buildManagementReport } from "@/lib/fpa/management-report";
@@ -147,6 +147,7 @@ export async function getRobustScore(): Promise<RobustnessDimensions> {
 
 /** Bundle for command deck + PDF one-pager */
 export async function getCommandDeckBundle() {
+  await requireDbAvailable();
   const { getCommandDecisionsConfig, getCommandTimelineConfig } = await import("@/lib/command/decisions-access");
   const { buildStrategicTimeline } = await import("@/lib/command/timeline");
   const { buildDecisionItems } = await import("@/lib/panorama/scr");
@@ -210,6 +211,7 @@ export async function getCommandDeckBundle() {
 
 /** Strategy page bundle */
 export async function getStrategyBundle() {
+  await requireDbAvailable();
   const [
     diagnosis,
     investmentCases,
@@ -224,6 +226,7 @@ export async function getStrategyBundle() {
     gtmSegments,
     bscCards,
     growthAnalytics,
+    fpa,
   ] = await Promise.all([
     getDiagnosis(),
     getInvestmentCases(),
@@ -238,6 +241,7 @@ export async function getStrategyBundle() {
     entities.getGtmSegments(),
     entities.getBscCards(),
     getGrowthAnalytics(),
+    getFpaSummary(),
   ]);
   return {
     source,
@@ -255,11 +259,13 @@ export async function getStrategyBundle() {
     aarrrFunnel: growthAnalytics.aarrrFunnel,
     kellerBrandLayers: growthAnalytics.kellerBrandLayers,
     growthAnalyticsSource: growthAnalytics.source,
+    fpa,
   };
 }
 
 /** Finance page bundle */
 export async function getFinanceBundle() {
+  await requireDbAvailable();
   const [fpa, capStack, investmentCases, spbpBundle, maBundle, source, managementReport, managementAdj, outlook, capitalConfig] =
     await Promise.all([
       getFpaSummary(),
@@ -310,6 +316,7 @@ export async function getManagementReport(): Promise<ManagementReportBundle> {
 
 /** Execution page bundle */
 export async function getExecutionBundle() {
+  await requireDbAvailable();
   const [
     diagnosis,
     techSignals,
@@ -646,6 +653,7 @@ export async function getReports(orgScope?: string[] | null): Promise<ReportList
 
 /** Health page bundle */
 export async function getHealthBundle() {
+  await requireDbAvailable();
   const { getBscConfig } = await import("@/lib/fpa/bsc-config-access");
   const [source, fpa, bscLights, bscConfig, healthOverview, robustScore, bscCards] = await Promise.all([
     getDataSource(),

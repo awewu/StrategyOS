@@ -47,10 +47,9 @@ export function StrategyPageTabs({
           <StrategySummaryPanel
             diagnosis={bundle.diagnosis}
             brandCards={bundle.brandCards}
-            ics={bundle.investmentCases}
-            productBets={bundle.productBets}
-            gtmBets={bundle.gtmBets}
             bscCards={bundle.bscCards}
+            investmentCases={bundle.investmentCases}
+            fpa={bundle.fpa}
             period={period}
           />
           <ThreeStackPanel
