@@ -52,10 +52,22 @@ export function calibrateForecastBias(points: BafPoint[]): ForecastCalibration {
   };
 }
 
-/** Apply a fitted bias to debias a forward forecast (shrinks optimistic plans). */
+/**
+ * Minimum history points before the fitted bias is applied at full strength.
+ * With fewer points the correction is linearly shrunk toward zero so a single
+ * noisy period cannot swing the forecast.
+ */
+export const BIAS_FULL_STRENGTH_N = 3;
+
+/**
+ * Apply a fitted bias to debias a forward forecast (shrinks optimistic plans).
+ * The correction is scaled by min(n, BIAS_FULL_STRENGTH_N) / BIAS_FULL_STRENGTH_N
+ * so sparse history (n < 3) only partially corrects.
+ */
 export function applyForecastBias(forecast: number, cal: ForecastCalibration): number {
   if (cal.n === 0) return forecast;
-  return forecast * (1 + cal.biasPct);
+  const strength = Math.min(cal.n, BIAS_FULL_STRENGTH_N) / BIAS_FULL_STRENGTH_N;
+  return forecast * (1 + cal.biasPct * strength);
 }
 
 /**

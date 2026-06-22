@@ -45,6 +45,32 @@ describe("calibrate", () => {
     assert.equal(applyForecastBias(1234, cal), 1234);
   });
 
+  it("shrinks the correction when history is sparse (n<3)", () => {
+    const sparse = calibrateForecastBias([{ budget: 100, actual: 90 }]);
+    const full = calibrateForecastBias([
+      { budget: 100, actual: 90 },
+      { budget: 100, actual: 90 },
+      { budget: 100, actual: 90 },
+    ]);
+    // same fitted bias, but sparse applies only 1/3 of it
+    assert.ok(approx(sparse.biasPct, full.biasPct));
+    const sparseOut = applyForecastBias(1000, sparse);
+    const fullOut = applyForecastBias(1000, full);
+    assert.ok(sparseOut > fullOut); // sparse corrects less (closer to 1000)
+    assert.ok(approx(sparseOut, 1000 * (1 + full.biasPct / 3)));
+    assert.ok(approx(fullOut, 1000 * (1 + full.biasPct)));
+  });
+
+  it("applies full-strength bias at n>=3", () => {
+    const cal = calibrateForecastBias([
+      { budget: 100, actual: 80 },
+      { budget: 100, actual: 80 },
+      { budget: 100, actual: 80 },
+      { budget: 100, actual: 80 },
+    ]);
+    assert.ok(approx(applyForecastBias(1000, cal), 1000 * (1 + cal.biasPct)));
+  });
+
   it("derives sim seed financial stocks from FPA", () => {
     const seed = deriveSimSeed(fpa);
     assert.equal(seed.profit, fpa.profitActual);
