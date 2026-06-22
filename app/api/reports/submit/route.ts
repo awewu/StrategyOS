@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { dbAvailable, prisma } from "@/lib/db";
 import { onReportApproved } from "@/lib/delivery/hooks";
 import { parseReportSmart } from "@/lib/stratos/llm-agent";
+import { formatMonthlyPulse, parseReportContent } from "@/lib/stratos/report-agent";
 
 export const runtime = "nodejs";
 
@@ -79,21 +80,30 @@ export async function POST(req: Request) {
     const form = await req.formData();
     const file = form.get("file") as File | null;
     const orgUnitId = (form.get("orgUnitId") as string | null) ?? undefined;
-    const reportType = (form.get("reportType") as string | null) ?? "MON_RPT";
+    const reportType = (form.get("reportType") as string | null) ?? "MON_PULSE";
     const period = (form.get("period") as string | null) ?? new Date().toISOString().slice(0, 7);
     const title = (form.get("title") as string | null) ?? "上传报告";
-    const rawText = (form.get("rawContent") as string | null) ?? "";
+    const rawContent = (form.get("rawContent") as string | null) ?? "";
+    const oneLiner = (form.get("oneLiner") as string | null) ?? "";
+    const offTrackKr = (form.get("offTrackKr") as string | null) ?? "";
+    const needHelp = (form.get("needHelp") as string | null) ?? "";
 
-    if (!file && !rawText.trim()) {
+    const isPulse = reportType === "MON_PULSE";
+
+    if (isPulse) {
+      if (!oneLiner.trim()) {
+        return NextResponse.json({ error: "本月一句话 oneLiner 必填" }, { status: 400 });
+      }
+    } else if (!file && !rawContent.trim()) {
       return NextResponse.json({ error: "file 或 rawContent 至少填一项" }, { status: 400 });
     }
 
-    const needsOrg = ["MON_RPT", "QTR_REV", "ANNUAL_RPT"].includes(reportType);
+    const needsOrg = ["MON_PULSE", "MON_RPT", "QTR_REV", "ANNUAL_RPT"].includes(reportType);
     if (needsOrg && !orgUnitId) {
       return NextResponse.json({ error: "运营月报/复盘必须选择组织单元 orgUnitId" }, { status: 400 });
     }
 
-    let extractedText = rawText;
+    let extractedText = rawContent;
     let filePath: string | undefined;
     let fileOrigName: string | undefined;
     let fileMime: string | undefined;
@@ -121,6 +131,35 @@ export async function POST(req: Request) {
     }
 
     const reportId = "RPT-" + randomUUID().slice(0, 8).toUpperCase();
+
+    if (isPulse) {
+      extractedText = formatMonthlyPulse({ oneLiner, offTrackKr, needHelp });
+      const parsed = parseReportContent(reportId, extractedText, period);
+      if (offTrackKr.trim()) {
+        parsed.coverageUpdates.push(`偏离KR: ${offTrackKr.trim()}`);
+      }
+      if (needHelp.trim()) {
+        parsed.agentTrace.push(`需协调: ${needHelp.trim()}`);
+      }
+
+      if (await dbAvailable()) {
+        await prisma.report.create({
+          data: {
+            id: reportId,
+            reportType: "MON_PULSE",
+            period,
+            title,
+            rawContent: extractedText,
+            parsedJson: parsed as object,
+            orgUnitId: orgUnitId || undefined,
+            approvalStatus: "PENDING",
+          },
+        });
+      }
+
+      return NextResponse.json({ ok: true, reportId, extracted: extractedText.length });
+    }
+
     const { parsed } = await parseReportSmart(reportId, extractedText || title, period, false);
 
     if (await dbAvailable()) {

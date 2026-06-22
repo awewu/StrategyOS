@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
+import { syncPlanAssumptionsToPremises } from "@/lib/data/plan-assumption-sync";
 
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
@@ -185,6 +186,8 @@ export async function POST(req: Request) {
 
       return plan.id;
     });
+
+    await syncPlanAssumptionsToPremises(planId).catch(() => undefined);
 
     return NextResponse.json({ success: true, planId });
   } catch (error: unknown) {

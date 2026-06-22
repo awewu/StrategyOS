@@ -17,6 +17,7 @@ type ReportRow = {
 };
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
+  MON_PULSE: "月度脉搏",
   MON_RPT: "月度报告",
   QTR_REV: "季度复盘",
   SHEET_IMPORT: "表格导入",
@@ -49,7 +50,6 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
   // Upload form state
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
-  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     orgUnitId: "",
     reportType: "MON_RPT",
@@ -135,22 +135,15 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
 
   return (
     <div className="space-y-6">
-      {/* Upload toggle */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-[var(--color-text-primary)]">报告档案库</h2>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-        >
-          {showForm ? "收起" : "+ 上传报告"}
-        </button>
       </div>
 
-      {/* Upload form */}
-      {showForm && (
-        <section className="surface-elevated rounded-xl border border-black/[0.06] p-5 space-y-4">
-          <h3 className="text-sm font-medium text-[var(--color-text-primary)]">提交新报告</h3>
+      <details className="surface-elevated rounded-xl border border-black/[0.06] p-5">
+        <summary className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+          高级 / 完整月报上传（Word · Excel · PDF · 七章节）
+        </summary>
+        <div className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="label-xs">报告类型</label>
@@ -159,7 +152,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                 value={form.reportType}
                 onChange={(e) => setForm((f) => ({ ...f, reportType: e.target.value }))}
               >
-                {Object.entries(REPORT_TYPE_LABELS).map(([k, v]) => (
+                {Object.entries(REPORT_TYPE_LABELS).filter(([k]) => k !== "MON_PULSE").map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
               </select>
@@ -233,8 +226,8 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
               </span>
             )}
           </div>
-        </section>
-      )}
+        </div>
+      </details>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">

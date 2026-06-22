@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AgentOrchestrationPanel } from "@/components/reports/AgentOrchestrationPanel";
+import { MonthlyPulseForm } from "@/components/reports/MonthlyPulseForm";
 import { ReportsArchive } from "@/components/reports/ReportsArchive";
 import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -38,6 +39,8 @@ export default async function ReportsPage() {
         title="OPS 运营"
         subtitle="经营档案 · AI 解析 · 反哺执行审计与指挥舱 · 各部门/体系/事业部月报与会议纪要"
       />
+
+      <MonthlyPulseForm orgUnits={visibleOrgUnits} />
 
       <ReportsArchive orgUnits={visibleOrgUnits} />
 

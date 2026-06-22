@@ -97,7 +97,7 @@ export function roleHomePath(role: RoleKey): string {
     case "observer":
       return "/strategy";
     case "vp":
-      return "/strategy";
+      return "/reports";
     case "pm":
       return "/execution";
     case "staff":

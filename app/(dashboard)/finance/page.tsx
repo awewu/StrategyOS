@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireRouteAccess } from "@/lib/auth/guard";
-import { BafBar } from "@/components/finance/BafBar";
+import { FpaEditor } from "@/components/finance/FpaEditor";
 import { CapitalTab } from "@/components/finance/CapitalTab";
 import { FiveYearForecast, SensitivityPanel } from "@/components/finance/FiveYearForecast";
 import {
@@ -12,7 +12,9 @@ import { MaPipelinePanel } from "@/components/finance/MaPipelinePanel";
 import { ManagementReportPanel } from "@/components/finance/ManagementReportPanel";
 import { PostInvestPanel, RealOptionsPanel } from "@/components/finance/RealOptionsPanel";
 import { SpbpLivePanel } from "@/components/finance/SpbpLivePanel";
+import { StacksEditor } from "@/components/stacks/StacksEditor";
 import { getFinanceBundle } from "@/lib/data/strategy-data";
+import { getStacksBundle } from "@/lib/stacks/data-access";
 
 type FinanceTab =
   | "management"
@@ -40,6 +42,7 @@ async function FinanceContent({
   const { tab } = await tabPromise;
   const activeTab = parseTab(tab);
   const data = await getFinanceBundle();
+  const stacks = await getStacksBundle();
   const report = data.managementReport;
 
   return (
@@ -94,10 +97,17 @@ async function FinanceContent({
         </div>
       )}
 
-      {activeTab === "overview" && <BafBar fpa={data.fpa} />}
+      {activeTab === "overview" && <FpaEditor initial={data.fpa} source={data.source} />}
 
       {activeTab === "capital" && (
         <div className="space-y-6">
+          <StacksEditor
+            initialCapStack={stacks.capStack}
+            initialIcs={stacks.investmentCases}
+            initialProductBets={stacks.productBets}
+            initialGtmBets={stacks.gtmBets}
+            source={stacks.source}
+          />
           <CapitalTab
             capStack={data.capStack}
             capacity={data.capacity}

@@ -1,5 +1,5 @@
 import { Scoreboard4DX } from "@/components/execution/Scoreboard4DX";
-import { VxBoard } from "@/components/execution/VxBoard";
+import { VxBoardEditor } from "@/components/execution/VxBoardEditor";
 import { HorizonBubbleChart } from "@/components/execution/HorizonBubbleChart";
 import {
   RiceScorecard,
@@ -51,7 +51,7 @@ export function ExecutionDashboard({
           </summary>
           <div className="space-y-6 px-5 pb-6">
             <Scoreboard4DX diagnosis={data.diagnosis} leadingKrs={data.leadingKrs} />
-            <VxBoard projects={data.projects} />
+            <VxBoardEditor initialProjects={data.projects} source={data.source} />
             <HorizonBubbleChart items={data.horizonBubbles} />
             <div className="grid gap-6 lg:grid-cols-2">
               <TechSignalPanel signals={data.techSignals} />

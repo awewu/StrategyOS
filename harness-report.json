@@ -1,0 +1,112 @@
+{
+  "timestamp": "2026-06-21T18:21:08.157Z",
+  "profile": "quick",
+  "exitCode": 0,
+  "summary": {
+    "pass": 9,
+    "warn": 0,
+    "fail": 0,
+    "skip": 0,
+    "total": 9
+  },
+  "checks": [
+    {
+      "id": "env",
+      "group": "env",
+      "name": ".env configuration",
+      "status": "pass",
+      "message": "DATABASE_URL set",
+      "durationMs": 0
+    },
+    {
+      "id": "capabilities",
+      "group": "env",
+      "name": "Runtime capabilities",
+      "status": "pass",
+      "message": "mode=full · db=ok · fonts=ok · llm=ok · workos=demo",
+      "durationMs": 137,
+      "meta": {
+        "db": {
+          "configured": true,
+          "reachable": true,
+          "detail": "postgresql"
+        },
+        "workos": {
+          "configured": false,
+          "detail": "demo session fallback"
+        },
+        "llm": {
+          "configured": true,
+          "detail": "gpt-4o-mini"
+        },
+        "fonts": {
+          "available": true,
+          "detail": "NotoSansSC"
+        },
+        "mode": "full"
+      }
+    },
+    {
+      "id": "fonts",
+      "group": "assets",
+      "name": "Chinese PDF font",
+      "status": "pass",
+      "message": "NotoSansSC-Regular.otf (7.9 MB)",
+      "durationMs": 0
+    },
+    {
+      "id": "files",
+      "group": "structure",
+      "name": "Required project files",
+      "status": "pass",
+      "message": "13 required files present",
+      "durationMs": 1
+    },
+    {
+      "id": "routes",
+      "group": "structure",
+      "name": "Page & API manifest",
+      "status": "pass",
+      "message": "27 pages · 33 APIs",
+      "durationMs": 3
+    },
+    {
+      "id": "prisma",
+      "group": "data",
+      "name": "Prisma client generated",
+      "status": "pass",
+      "message": "Prisma client present",
+      "durationMs": 0
+    },
+    {
+      "id": "schema-sync",
+      "group": "data",
+      "name": "Schema ↔ DB column sync",
+      "status": "pass",
+      "message": "4 critical columns present · schema matches DB",
+      "durationMs": 6083
+    },
+    {
+      "id": "database",
+      "group": "data",
+      "name": "Database connectivity & seed",
+      "status": "pass",
+      "message": "Connected · seed OK (4 users)",
+      "durationMs": 19,
+      "meta": {
+        "users": 4,
+        "strategicDiagnosis": 1,
+        "investmentCase": 2,
+        "healthAssertion": 1
+      }
+    },
+    {
+      "id": "unit-tests",
+      "group": "test",
+      "name": "Unit test suite",
+      "status": "pass",
+      "message": "All unit tests passed",
+      "durationMs": 11824
+    }
+  ]
+}

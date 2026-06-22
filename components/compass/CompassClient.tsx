@@ -37,7 +37,7 @@ function ConfidenceFragilityDot({ confidence, fragility }: { confidence: number;
 }
 
 export function CompassClient({ bundle }: { bundle: CompassBundle }) {
-  const { northStar, milestones, premises, currentRevenue, currentMargin } = bundle;
+  const { northStar, milestones, premises, currentRevenue, currentMargin, planBsc, planSource, planId } = bundle;
   const [tab, setTab] = useState<"path" | "premises">("path");
   const [editPremise, setEditPremise] = useState<PremiseAudit | null>(null);
   const [editMilestone, setEditMilestone] = useState<CompassMilestone | null>(null);
@@ -45,7 +45,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const persistedNorthStar = northStar?.id && !northStar.id.startsWith("demo");
+  const persistedNorthStar = Boolean(planId) || (northStar?.id && !northStar.id.startsWith("demo"));
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
@@ -59,7 +59,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
       const res = await fetch("/api/compass/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode }),
+        body: JSON.stringify({ mode, planId: planId ?? undefined }),
       });
       if (!res.ok) throw new Error();
       flash(mode === "assumptions" ? "已从战略假设同步" : mode === "signals" ? "已刷新自动审计" : "同步完成");
@@ -80,7 +80,8 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: form.id && form.id.includes("-") ? form.id : undefined,
-          northStarId: northStar.id,
+          planId: planId ?? undefined,
+          northStarId: planId ? undefined : northStar.id,
           year: form.year,
           label: form.label,
           revenueTarget: form.revenueTarget,
@@ -115,7 +116,11 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
       const res = await fetch("/api/compass/premise", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, northStarId: northStar?.id ?? "demo-ns" }),
+        body: JSON.stringify({
+          ...form,
+          planId: planId ?? undefined,
+          northStarId: planId ? undefined : northStar?.id,
+        }),
       });
       if (!res.ok) throw new Error();
       flash("已保存");
@@ -193,6 +198,27 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
         <p className="text-base font-medium text-[var(--color-text-primary)]">{northStar.mission}</p>
         <div className="mt-4 mb-1 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">愿景 · {northStar.targetYear}</div>
         <p className="text-sm text-[var(--color-text-secondary)]">{northStar.vision}</p>
+
+        {planBsc && planBsc.length > 0 ? (
+          <div className="mt-5 rounded-lg border border-[var(--color-accent-gold)]/25 bg-[var(--color-accent-gold)]/5 p-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
+                BSC 目标 · 战略计划同源
+              </span>
+              <span className="text-xs text-[var(--color-text-muted)]">
+                {planSource === "database" ? "数据库" : "Demo"}
+              </span>
+            </div>
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {planBsc.map((row) => (
+                <li key={row.dim} className="text-xs">
+                  <span className="text-[var(--color-text-muted)]">{row.dim} · </span>
+                  <span className="text-[var(--color-text-primary)]">{row.objective}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[

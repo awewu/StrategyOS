@@ -13,7 +13,16 @@ function createPrismaClient() {
 }
 
 function isStalePrismaClient(client: PrismaClient): boolean {
-  return !("strategyOnePager" in client);
+  return (
+    !("strategyOnePager" in client) ||
+    !("decodeBscRow" in client) ||
+    !("feedbackLoopRecord" in client) ||
+    !("gateChecklistItem" in client) ||
+    !("cultureAwardWinner" in client) ||
+    !("twelveDimScore" in client) ||
+    !("planMilestone" in client) ||
+    !("planPremise" in client)
+  );
 }
 
 function getPrismaClient(): PrismaClient {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StrategyInputClient } from "@/components/strategy/StrategyInputClient";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
+import { DataSourceBanner } from "@/components/ui/DataSourceBanner";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { prisma } from "@/lib/db";
 import { getVersionsBundle } from "@/lib/data/versions-data";
@@ -19,6 +20,7 @@ export default async function StrategyInputPage() {
 
   return (
     <div className="space-y-6">
+      <DataSourceBanner />
       <section className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-[var(--color-accent-gold)]/30 bg-[var(--color-accent-gold)]/5 p-4 md:p-5">
         <div className="min-w-0 flex-1 space-y-2">
           <h2 className="text-sm font-medium text-[var(--color-accent-gold)]">

@@ -2,6 +2,12 @@ import { dbAvailable, prisma } from "@/lib/db";
 import { CURRENT_PERIOD } from "@/lib/stratos-demo-data";
 import type { TrafficLight } from "@/lib/types/stratos";
 import { BSC_MAP, type BscDimensionRow } from "@/lib/decode/bsc-map";
+import {
+  backfillPlanDecodeFieldsFromLegacy,
+  getActiveStrategicPlan,
+  planObjectivesToBscRows,
+  syncPlanObjectivesFromBsc,
+} from "@/lib/data/strategic-plan-data";
 import { HOSHIN_QUADRANTS, type HoshinEntry, type HoshinQuadrant } from "@/lib/decode/hoshin-data";
 
 const DEFAULT_PERIOD = CURRENT_PERIOD;
@@ -113,6 +119,23 @@ export async function getDecodeBsc(period = DEFAULT_PERIOD): Promise<{
   if (!(await dbAvailable())) {
     return { rows: BSC_MAP, source: "demo" };
   }
+
+  const { plan } = await getActiveStrategicPlan();
+  if (plan?.objectives.some((o) => o.objective.trim())) {
+    const needsBackfill = plan.objectives.some((o) => !o.mustNotFail?.trim());
+    if (needsBackfill) {
+      await backfillPlanDecodeFieldsFromLegacy(plan.id, period);
+      const refreshed = await getActiveStrategicPlan();
+      if (refreshed.plan) {
+        return {
+          rows: planObjectivesToBscRows(refreshed.plan.objectives),
+          source: "database",
+        };
+      }
+    }
+    return { rows: planObjectivesToBscRows(plan.objectives), source: "database" };
+  }
+
   await seedBscIfEmpty(period);
   const rows = await prisma.decodeBscRow.findMany({
     where: { period },
@@ -157,10 +180,18 @@ export async function getDecodeHoshin(period = DEFAULT_PERIOD): Promise<{
 export async function saveDecodeBsc(
   rows: BscRowPayload[],
   period = DEFAULT_PERIOD,
+  opts?: { syncToPlan?: boolean },
 ): Promise<{ count: number }> {
   if (!(await dbAvailable())) {
     throw new Error("DATABASE_URL unset — 无法保存解码数据");
   }
+
+  const syncToPlan = opts?.syncToPlan !== false;
+  const { plan } = await getActiveStrategicPlan();
+  if (plan && syncToPlan) {
+    await syncPlanObjectivesFromBsc(plan.id, rows);
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.decodeBscRow.deleteMany({ where: { period } });
     await tx.decodeBscRow.createMany({

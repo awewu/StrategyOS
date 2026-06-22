@@ -184,3 +184,33 @@ export const DEMO_SHEET_IMPORT = `Sheet1 财务 Excel 导入 · ${new Date().toI
 覆盖：酒店签约 820/1200 · Q2 华东新签 62/80
 现金 runway 2.1 月 · 9 月波峰 3200 万
 `;
+
+export interface MonthlyPulseFields {
+  oneLiner: string;
+  offTrackKr?: string;
+  needHelp?: string;
+}
+
+/** Format 3-field monthly pulse into normalized text for parsing pipeline */
+export function formatMonthlyPulse(fields: MonthlyPulseFields): string {
+  const lines = [
+    `§Pulse 本月一句话：${fields.oneLiner.trim()}`,
+  ];
+  if (fields.offTrackKr?.trim()) {
+    lines.push(`§Pulse 偏离KR：${fields.offTrackKr.trim()}`);
+  }
+  if (fields.needHelp?.trim()) {
+    lines.push(`§Pulse 需协调：${fields.needHelp.trim()}`);
+  }
+  return lines.join("\n");
+}
+
+export function parseMonthlyPulse(rawContent: string): MonthlyPulseFields | null {
+  const oneLiner = rawContent.match(/§Pulse 本月一句话[：:]\s*(.+)/)?.[1]?.trim();
+  if (!oneLiner) return null;
+  return {
+    oneLiner,
+    offTrackKr: rawContent.match(/§Pulse 偏离KR[：:]\s*(.+)/)?.[1]?.trim(),
+    needHelp: rawContent.match(/§Pulse 需协调[：:]\s*(.+)/)?.[1]?.trim(),
+  };
+}

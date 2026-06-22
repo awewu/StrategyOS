@@ -41,6 +41,7 @@ const DEMO_KPIS: Record<string, SliceKpi[]> = {
 };
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
+  MON_PULSE: "月度脉搏",
   MON_RPT: "月报",
   QTR_REV: "季度复盘",
   SHEET_IMPORT: "表格导入",

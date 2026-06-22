@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { FeedbackLoopPanel } from "@/components/decode/FeedbackLoopPanel";
+import { FeedbackLoopEditor } from "@/components/decode/FeedbackLoopEditor";
 import { StratSimPanel } from "@/components/decode/StratSimPanel";
 import { BscEditor } from "@/components/decode/BscEditor";
 import { HoshinEditor } from "@/components/decode/HoshinEditor";
@@ -231,7 +231,7 @@ export function DecodeWorkspace({
       )}
       {tab === "stratsim" && (
         <div className="space-y-6">
-          <FeedbackLoopPanel loops={initial.loops} />
+          <FeedbackLoopEditor initialLoops={initial.loops} source={source} />
           <StratSimPanel loops={initial.loops} />
         </div>
       )}

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { AssumptionResult, AssumptionType } from "@prisma/client";
+import { syncPlanAssumptionsToPremises, syncPlanPremisesToAssumptions, normalizePremiseCode, premiseMatchesCode } from "@/lib/data/plan-assumption-sync";
 
 const PERIOD = "2026-FY";
 const RUNWAY_SAFE_MONTHS = 3;
@@ -229,4 +230,161 @@ export async function refreshCompassAudit(
   if (opts.assumptions) assumptionsSynced = await syncPremisesFromAssumptions(northStarId);
   if (opts.signals) signalsApplied = await applyAutoFailSignals(northStarId);
   return { assumptionsSynced, signalsApplied };
+}
+
+/** Plan-scoped premise sync — mirrors northStar path for StrategicPlan single source. */
+export async function syncPremisesFromAssumptionsToPlan(planId: string): Promise<number> {
+  const assumptions = await prisma.assumption.findMany({
+    where: { period: PERIOD },
+    orderBy: { code: "asc" },
+  });
+  if (assumptions.length === 0) return 0;
+
+  let synced = 0;
+  for (const a of assumptions) {
+    const code = normalizePremiseCode(a.code);
+    const existing = await prisma.planPremise.findFirst({
+      where: {
+        planId,
+        OR: [{ code }, { code: a.code }],
+      },
+    });
+    const data = {
+      premise: a.content,
+      category: assumptionCategory(a.assumptionType),
+      confidence: confidenceFromResult(a.result),
+      fragility: fragilityFromAssumption(a.assumptionType, a.result),
+      validationNote: a.validationMethod ?? a.failureImpact ?? "来自战略假设库同步",
+      lastValidatedAt: new Date(),
+      ...(a.result === "failed" && a.failureImpact
+        ? {
+            failSignal: a.failureImpact,
+            signalSource: "自动·假设库",
+            signalAt: new Date(),
+          }
+        : {}),
+    };
+
+    if (existing) {
+      const keepManualFail =
+        existing.failSignal && !isAutoSignal(existing.signalSource) && a.result !== "failed";
+      await prisma.planPremise.update({
+        where: { id: existing.id },
+        data: keepManualFail
+          ? {
+              premise: data.premise,
+              category: data.category,
+              confidence: data.confidence,
+              fragility: data.fragility,
+              validationNote: data.validationNote,
+              lastValidatedAt: data.lastValidatedAt,
+            }
+          : data,
+      });
+    } else {
+      await prisma.planPremise.create({
+        data: { planId, code, ...data },
+      });
+    }
+    synced++;
+  }
+  return synced;
+}
+
+export async function applyAutoFailSignalsToPlan(planId: string): Promise<number> {
+  const premises = await prisma.planPremise.findMany({ where: { planId } });
+  if (premises.length === 0) return 0;
+
+  let updated = 0;
+  const runway = await loadRunwayMonths();
+
+  if (runway !== null) {
+    for (const p of premises) {
+      if (!isCapitalPremise(p.code, p.premise)) continue;
+      if (runway < RUNWAY_SAFE_MONTHS) {
+        const msg = `现金 runway ${runway.toFixed(1)} 月，低于安全线 ${RUNWAY_SAFE_MONTHS} 月`;
+        if (p.failSignal !== msg || p.signalSource !== "自动·FPA") {
+          if (!p.failSignal || isAutoSignal(p.signalSource)) {
+            await prisma.planPremise.update({
+              where: { id: p.id },
+              data: {
+                failSignal: msg,
+                signalSource: "自动·FPA",
+                signalAt: new Date(),
+                confidence: Math.min(p.confidence, 35),
+                fragility: Math.max(p.fragility, 90),
+              },
+            });
+            updated++;
+          }
+        }
+      } else if (p.signalSource === "自动·FPA") {
+        await prisma.planPremise.update({
+          where: { id: p.id },
+          data: { failSignal: null, signalSource: null, signalAt: null },
+        });
+        updated++;
+      }
+    }
+  }
+
+  const hermes = await loadHermesThreatSignals();
+  for (const sig of hermes) {
+    const p = premises.find((row) => premiseMatchesCode(row.code, sig.code));
+    if (!p) continue;
+    const msg = `${sig.title}：${sig.summary.slice(0, 120)}`;
+    if (p.failSignal === msg && p.signalSource === sig.source) continue;
+    if (p.failSignal && !isAutoSignal(p.signalSource)) continue;
+    await prisma.planPremise.update({
+      where: { id: p.id },
+      data: {
+        failSignal: msg,
+        signalSource: sig.source,
+        signalAt: sig.at,
+        confidence: Math.min(p.confidence, 45),
+        fragility: Math.max(p.fragility, 80),
+      },
+    });
+    updated++;
+  }
+
+  const failed = await prisma.assumption.findMany({
+    where: { period: PERIOD, result: "failed" },
+  });
+  for (const a of failed) {
+    const p = premises.find((row) => premiseMatchesCode(row.code, a.code));
+    if (!p) continue;
+    const msg = a.failureImpact ?? `假设 ${a.code} 已标记失效：${a.content}`;
+    if (p.failSignal && !isAutoSignal(p.signalSource)) continue;
+    await prisma.planPremise.update({
+      where: { id: p.id },
+      data: {
+        failSignal: msg,
+        signalSource: "自动·假设库",
+        signalAt: new Date(),
+        confidence: 25,
+        fragility: 92,
+      },
+    });
+    updated++;
+  }
+
+  await syncPlanPremisesToAssumptions(planId).catch(() => undefined);
+
+  return updated;
+}
+
+export async function refreshPlanCompassAudit(
+  planId: string,
+  opts: { assumptions?: boolean; signals?: boolean } = { assumptions: false, signals: true },
+): Promise<{ assumptionsSynced: number; signalsApplied: number; planAssumptionsSynced?: number }> {
+  let assumptionsSynced = 0;
+  let signalsApplied = 0;
+  let planAssumptionsSynced = 0;
+  if (opts.assumptions) {
+    planAssumptionsSynced = await syncPlanAssumptionsToPremises(planId);
+    assumptionsSynced = await syncPremisesFromAssumptionsToPlan(planId);
+  }
+  if (opts.signals) signalsApplied = await applyAutoFailSignalsToPlan(planId);
+  return { assumptionsSynced, signalsApplied, planAssumptionsSynced };
 }

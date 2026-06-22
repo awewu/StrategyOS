@@ -774,6 +774,12 @@ model StrategicPlan {
   horizonEnd    Int               @map("horizon_end")
   intent        String?
   northStar     String?           @map("north_star") @db.VarChar(200)
+  targetYear          Int?          @map("target_year")
+  revenueTarget       Decimal?      @map("revenue_target") @db.Decimal(14, 2)
+  profitMarginTarget  Decimal?      @map("profit_margin_target") @db.Decimal(5, 4)
+  marketPositionDesc  String?       @map("market_position_desc") @db.VarChar(200)
+  geographyDesc       String?       @map("geography_desc") @db.VarChar(200)
+  brandDesc           String?       @map("brand_desc") @db.VarChar(200)
   status        PlanStatus        @default(DRAFT)
   submittedById String?           @map("submitted_by_id")
   submittedAt   DateTime?         @map("submitted_at")
@@ -783,6 +789,8 @@ model StrategicPlan {
   assumptions   PlanAssumption[]
   attachments   PlanAttachment[]
   initiatives   PlanInitiative[]
+  milestones    PlanMilestone[]
+  premises      PlanPremise[]
   objectives    PlanObjective[]
   resourceReqs  ResourceRequest[]
   orgUnit       OrgUnit           @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
@@ -794,14 +802,17 @@ model StrategicPlan {
 }
 
 model PlanObjective {
-  id         String          @id @default(uuid())
-  planId     String          @map("plan_id")
-  dimension  BscDimension
-  objective  String
-  sortOrder  Int             @default(999) @map("sort_order")
-  createdAt  DateTime        @default(now()) @map("created_at")
-  keyResults PlanKeyResult[]
-  plan       StrategicPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id            String          @id @default(uuid())
+  planId        String          @map("plan_id")
+  dimension     BscDimension
+  objective     String
+  mustNotFail   String?         @map("must_not_fail")
+  mustWinStatus TrafficLight    @default(yellow) @map("must_win_status")
+  notFailStatus TrafficLight    @default(yellow) @map("not_fail_status")
+  sortOrder     Int             @default(999) @map("sort_order")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  keyResults    PlanKeyResult[]
+  plan          StrategicPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId, dimension])
   @@map("plan_objectives")
@@ -876,6 +887,49 @@ model PlanAttachment {
 
   @@index([planId])
   @@map("plan_attachments")
+}
+
+model PlanMilestone {
+  id                 String        @id @default(uuid())
+  planId             String        @map("plan_id")
+  year               Int
+  label              String        @db.VarChar(100)
+  revenueTarget      Decimal?      @map("revenue_target") @db.Decimal(14, 2)
+  profitMarginTarget Decimal?      @map("profit_margin_target") @db.Decimal(5, 4)
+  keyConditions      String[]      @map("key_conditions")
+  revenueActual      Decimal?      @map("revenue_actual") @db.Decimal(14, 2)
+  progressNote       String?       @map("progress_note") @db.VarChar(500)
+  riskScore          Int?          @map("risk_score")
+  riskFactors        String[]      @map("risk_factors")
+  sortOrder          Int           @default(0) @map("sort_order")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  plan               StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, year])
+  @@map("plan_milestones")
+}
+
+model PlanPremise {
+  id              String        @id @default(uuid())
+  planId          String        @map("plan_id")
+  code            String        @db.VarChar(20)
+  premise         String        @db.VarChar(500)
+  category        String        @db.VarChar(50)
+  confidence      Int           @default(50)
+  fragility       Int           @default(50)
+  lastValidatedAt DateTime?     @map("last_validated_at")
+  validationNote  String?       @map("validation_note") @db.VarChar(500)
+  failSignal      String?       @map("fail_signal") @db.VarChar(300)
+  signalSource    String?       @map("signal_source") @db.VarChar(100)
+  signalAt        DateTime?     @map("signal_at")
+  sortOrder       Int           @default(0) @map("sort_order")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  plan            StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, code])
+  @@index([planId])
+  @@map("plan_premises")
 }
 
 /// 看战略 · China Strategy Summary 一页纸（可编辑 · 审批入库）
@@ -1438,6 +1492,7 @@ enum DocumentType {
 }
 
 enum ReportType {
+  MON_PULSE
   MON_RPT
   QTR_REV
   SHEET_IMPORT
@@ -1976,6 +2031,21 @@ model MeetingPollResponse {
   @@map("meeting_poll_responses")
 }
 
+// 十二维 CEO 面板 · 可编辑评分（可与 OPS 指标联动）
+model TwelveDimScore {
+  id        String   @id @default(uuid())
+  period    String   @default("2026-FY") @db.VarChar(10)
+  dimId     String   @map("dim_id") @db.VarChar(10)
+  score     Int
+  signal    String   @db.VarChar(10)
+  source    String   @default("manual") @db.VarChar(20)
+  note      String?
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([period, dimId])
+  @@map("twelve_dim_scores")
+}
+
 // 战略解码 · BSC 战略地图（公司级，按 period）
 model DecodeBscRow {
   id            String       @id @default(uuid())
@@ -1993,6 +2063,71 @@ model DecodeBscRow {
   @@unique([period, dim])
   @@index([period])
   @@map("decode_bsc_rows")
+}
+
+// 文化公示 · 价值观奖项与理解案例
+model CultureAwardWinner {
+  id        String   @id @default(uuid())
+  year      Int
+  period    String   @db.VarChar(20)
+  awardName String   @map("award_name") @db.VarChar(100)
+  winner    String   @db.VarChar(100)
+  unit      String   @db.VarChar(100)
+  citation  String
+  sortOrder Int      @default(999) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([year])
+  @@map("culture_award_winners")
+}
+
+model CultureUnderstandingRecord {
+  id               String   @id @default(uuid())
+  date             String   @db.VarChar(20)
+  title            String   @db.VarChar(200)
+  unit             String   @db.VarChar(100)
+  author           String   @db.VarChar(100)
+  summary          String
+  relatedPrinciple String?  @map("related_principle") @db.VarChar(100)
+  sortOrder        Int      @default(999) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("culture_understanding_records")
+}
+
+// 战略解码 · 系统反馈环
+model FeedbackLoopRecord {
+  id           String   @id @default(uuid())
+  period       String   @default("2026-FY") @db.VarChar(10)
+  kind         String   @db.VarChar(1)
+  label        String   @db.VarChar(200)
+  chain        String   @db.VarChar(300)
+  bscDimension String   @map("bsc_dimension") @db.VarChar(30)
+  fpaLinked    Boolean  @default(false) @map("fpa_linked")
+  sortOrder    Int      @default(0) @map("sort_order")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([period])
+  @@map("feedback_loop_records")
+}
+
+// Gate 十二维门槛 · 可编辑检查项状态
+model GateChecklistItem {
+  id          String   @id @default(uuid())
+  period      String   @default("2026-FY") @db.VarChar(10)
+  checklistId String   @map("checklist_id") @db.VarChar(30)
+  itemId      String   @map("item_id") @db.VarChar(30)
+  label       String   @db.VarChar(300)
+  status      String   @db.VarChar(10)
+  note        String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([period, checklistId, itemId])
+  @@index([period, checklistId])
+  @@map("gate_checklist_items")
 }
 
 // 战略解码 · Hoshin X-Matrix 条目

@@ -4,21 +4,11 @@ import { getSession } from "@/lib/auth/session";
 import { DEMO_USERS } from "@/lib/auth/config";
 import { dbAvailable, prisma } from "@/lib/db";
 import { pushMemorySnapshot } from "@/lib/data/versions-data";
+import { buildWorkingSnapshotState } from "@/lib/data/snapshot-state";
+import * as entities from "@/lib/data/entity-getters";
 import { autoPersistDiffsForSnapshot } from "@/lib/stratos/persist-diff";
-import { getCommandDeckBundle } from "@/lib/data/strategy-data";
+import { healthAssertion } from "@/lib/stratos-demo-data";
 import { freezeSnapshot } from "@/lib/stratos/freeze-snapshot";
-import {
-  healthAssertion,
-  snapshotFY26,
-  brandCards,
-  productBets,
-  gtmBets,
-  projects,
-  assumptions,
-  leadingKrs,
-  capacity,
-  bscLights,
-} from "@/lib/stratos-demo-data";
 
 async function resolveFrozenById(session: Awaited<ReturnType<typeof getSession>>) {
   if (await dbAvailable()) {
@@ -45,26 +35,14 @@ export async function POST(request: NextRequest) {
   const period = body.period ?? "2026-FY";
   const snapshotType = body.snapshotType ?? "FY";
 
-  const deck = await getCommandDeckBundle();
   const session = await getSession();
+  const bscLightsAtFreeze = await entities.getBscLights();
 
-  const state = {
-    ...snapshotFY26,
-    diagnosis: deck.diagnosis,
-    fpa: deck.fpa,
-    capStack: deck.capStack,
-    investmentCases: deck.investmentCases,
-    brandCards,
-    productBets,
-    gtmBets,
-    projects,
-    assumptions,
-    keyResults: leadingKrs,
-    capacity,
+  const state = await buildWorkingSnapshotState({
     healthAssertions: body.bypassAssertion
       ? [{ ...healthAssertion, active: false, ceoExceptionNote: "remedial Vx 已录" }]
-      : [healthAssertion],
-  };
+      : undefined,
+  });
 
   try {
     const frozen = freezeSnapshot({
@@ -74,7 +52,7 @@ export async function POST(request: NextRequest) {
       state,
       assertionCtx: {
         trigger: "PRE_SNAPSHOT",
-        cashRunwayMonths: deck.fpa.cashRunwayMonths,
+        cashRunwayMonths: state.fpa?.cashRunwayMonths,
       },
       meetingNotes: body.meetingNotes,
     });
@@ -92,7 +70,7 @@ export async function POST(request: NextRequest) {
           frozenAt: new Date(frozen.frozenAt),
           frozenById,
           meetingNotes: body.meetingNotes,
-          bscLightsAtFreeze: bscLights,
+          bscLightsAtFreeze,
           stateJson: frozen.stateJson as object,
           strategyPattern: {
             create: {
@@ -110,6 +88,7 @@ export async function POST(request: NextRequest) {
           frozenAt: new Date(frozen.frozenAt),
           stateJson: frozen.stateJson as object,
           meetingNotes: body.meetingNotes,
+          bscLightsAtFreeze,
         },
       });
       const diffResult = await autoPersistDiffsForSnapshot(row.id, frozen.code);

@@ -37,10 +37,18 @@ export interface PremiseAudit {
   signalAt: string | null;
 }
 
+import type { BscDimensionRow } from "@/lib/decode/bsc-map";
+
 export interface CompassBundle {
   northStar: NorthStar | null;
   milestones: CompassMilestone[];
   premises: PremiseAudit[];
   currentRevenue: number;
   currentMargin: number;
+  /** StrategicPlan DB vs demo fallback */
+  planSource?: "database" | "demo";
+  /** Active plan id — milestones persist here */
+  planId?: string;
+  /** BSC rows derived from active StrategicPlan when present */
+  planBsc?: BscDimensionRow[];
 }

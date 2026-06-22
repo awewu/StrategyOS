@@ -1,7 +1,16 @@
 import { prisma } from "@/lib/db";
+import {
+  ensurePlanMilestones,
+  ensurePlanPremises,
+  getActiveStrategicPlan,
+  hasPlanContent,
+  planMilestonesToCompass,
+  planObjectivesToBscRows,
+  planPremisesToCompass,
+} from "@/lib/data/strategic-plan-data";
 import { scoreMilestones } from "./risk-engine";
 import { ensureCompassChildren } from "./seed";
-import { refreshCompassAudit } from "./sync-audit";
+import { refreshCompassAudit, refreshPlanCompassAudit } from "./sync-audit";
 import type { CompassBundle, CompassMilestone, NorthStar, PremiseAudit } from "./types";
 
 const DEMO_NORTH_STAR: NorthStar = {
@@ -32,33 +41,125 @@ const DEMO_PREMISES: PremiseAudit[] = [
   { id: "p6", code: "P6", premise: "供应链稳定：不出现芯片/铜管/压缩机等核心零部件的大幅涨价或断供", category: "technology", confidence: 70, fragility: 65, lastValidatedAt: "2026-04-01", validationNote: "目前稳定，全球地缘风险仍存", failSignal: null, signalSource: null, signalAt: null },
 ];
 
+function buildNorthStarFromPlan(
+  plan: NonNullable<Awaited<ReturnType<typeof getActiveStrategicPlan>>["plan"]>,
+  nsRow: Awaited<ReturnType<typeof prisma.companyNorthStar.findFirst>> | null,
+): NorthStar {
+  return {
+    id: `plan-${plan.id}`,
+    mission: plan.intent?.trim() || nsRow?.mission || DEMO_NORTH_STAR.mission,
+    vision: plan.northStar?.trim() || nsRow?.vision || DEMO_NORTH_STAR.vision,
+    targetYear: plan.targetYear ?? nsRow?.targetYear ?? DEMO_NORTH_STAR.targetYear,
+    revenueTarget: plan.revenueTarget ?? (nsRow ? Number(nsRow.revenueTarget) : DEMO_NORTH_STAR.revenueTarget),
+    profitMarginTarget:
+      plan.profitMarginTarget ??
+      (nsRow ? Number(nsRow.profitMarginTarget) : DEMO_NORTH_STAR.profitMarginTarget),
+    marketPositionDesc: plan.marketPositionDesc ?? nsRow?.marketPositionDesc ?? DEMO_NORTH_STAR.marketPositionDesc,
+    geographyDesc: plan.geographyDesc ?? nsRow?.geographyDesc ?? DEMO_NORTH_STAR.geographyDesc,
+    brandDesc: plan.brandDesc ?? nsRow?.brandDesc ?? DEMO_NORTH_STAR.brandDesc,
+  };
+}
+
+function mapLegacyPremises(
+  rows: Array<{
+    id: string;
+    code: string;
+    premise: string;
+    category: string;
+    confidence: number;
+    fragility: number;
+    lastValidatedAt: Date | null;
+    validationNote: string | null;
+    failSignal: string | null;
+    signalSource: string | null;
+    signalAt: Date | null;
+  }>,
+): PremiseAudit[] {
+  return rows.map((p) => ({
+    id: p.id,
+    code: p.code,
+    premise: p.premise,
+    category: p.category,
+    confidence: p.confidence,
+    fragility: p.fragility,
+    lastValidatedAt: p.lastValidatedAt?.toISOString().slice(0, 10) ?? null,
+    validationNote: p.validationNote,
+    failSignal: p.failSignal,
+    signalSource: p.signalSource,
+    signalAt: p.signalAt?.toISOString().slice(0, 10) ?? null,
+  }));
+}
+
 export async function getCompassBundle(): Promise<CompassBundle> {
   const currentYear = new Date().getFullYear();
 
   try {
-    const [nsRow, fpaPeriod] = await Promise.all([
-      prisma.companyNorthStar.findFirst({ where: { active: true }, include: { milestones: true, premiseAudit: true } }),
+    const [nsRow, fpaPeriod, planResult] = await Promise.all([
+      prisma.companyNorthStar.findFirst({
+        where: { active: true },
+        include: { premiseAudit: true, milestones: { orderBy: { year: "asc" } } },
+      }),
       prisma.fpaPeriod.findFirst({ where: { period: "2026-FY", scope: "company" } }),
+      getActiveStrategicPlan(),
     ]);
 
+    const activePlan = planResult.plan;
+    const planSource = planResult.source;
+
     const currentRevenue = fpaPeriod ? Number(fpaPeriod.revenueActual) : 5120;
-    const currentMargin = fpaPeriod && Number(fpaPeriod.revenueActual) > 0
-      ? Number(fpaPeriod.profitActual ?? 0) / Number(fpaPeriod.revenueActual)
-      : 0.14;
+    const currentMargin =
+      fpaPeriod && Number(fpaPeriod.revenueActual) > 0
+        ? Number(fpaPeriod.profitActual ?? 0) / Number(fpaPeriod.revenueActual)
+        : 0.14;
+
+    if (activePlan && hasPlanContent(activePlan)) {
+      await ensurePlanMilestones(activePlan.id);
+      await ensurePlanPremises(activePlan.id);
+
+      try {
+        await refreshPlanCompassAudit(activePlan.id, { assumptions: false, signals: true });
+      } catch {
+        /* offline */
+      }
+
+      const [planMilestones, planPremises] = await Promise.all([
+        ensurePlanMilestones(activePlan.id),
+        ensurePlanPremises(activePlan.id),
+      ]);
+
+      const premises =
+        planPremises.length > 0 ? planPremisesToCompass(planPremises) : DEMO_PREMISES;
+
+      const milestonesRaw =
+        planMilestones.length > 0 ? planMilestonesToCompass(planMilestones) : DEMO_MILESTONES;
+      const scored = scoreMilestones(milestonesRaw, premises, currentRevenue, currentYear);
+      const northStar = buildNorthStarFromPlan(activePlan, nsRow);
+
+      return {
+        northStar,
+        milestones: scored,
+        premises,
+        currentRevenue,
+        currentMargin,
+        planSource,
+        planId: activePlan.id,
+        planBsc: planObjectivesToBscRows(activePlan.objectives),
+      };
+    }
 
     if (!nsRow) {
       const scored = scoreMilestones(DEMO_MILESTONES, DEMO_PREMISES, currentRevenue, currentYear);
-      return { northStar: DEMO_NORTH_STAR, milestones: scored, premises: DEMO_PREMISES, currentRevenue, currentMargin };
+      return {
+        northStar: DEMO_NORTH_STAR,
+        milestones: scored,
+        premises: DEMO_PREMISES,
+        currentRevenue,
+        currentMargin,
+        planSource: "demo",
+      };
     }
 
-    const ns: NorthStar = {
-      id: nsRow.id, mission: nsRow.mission, vision: nsRow.vision,
-      targetYear: nsRow.targetYear, revenueTarget: Number(nsRow.revenueTarget),
-      profitMarginTarget: Number(nsRow.profitMarginTarget),
-      marketPositionDesc: nsRow.marketPositionDesc, geographyDesc: nsRow.geographyDesc, brandDesc: nsRow.brandDesc,
-    };
-
-    if (nsRow.milestones.length === 0 || nsRow.premiseAudit.length === 0) {
+    if (nsRow.premiseAudit.length === 0 || nsRow.milestones.length === 0) {
       await ensureCompassChildren(
         nsRow.id,
         {
@@ -69,52 +170,69 @@ export async function getCompassBundle(): Promise<CompassBundle> {
         currentYear,
         currentRevenue,
       );
-      const refreshed = await prisma.companyNorthStar.findUnique({
-        where: { id: nsRow.id },
-        include: { milestones: true, premiseAudit: true },
-      });
-      if (refreshed) {
-        nsRow.milestones = refreshed.milestones;
-        nsRow.premiseAudit = refreshed.premiseAudit;
-      }
     }
 
     try {
       await refreshCompassAudit(nsRow.id, { assumptions: false, signals: true });
-      const afterSignals = await prisma.companyNorthStar.findUnique({
-        where: { id: nsRow.id },
-        include: { milestones: true, premiseAudit: true },
-      });
-      if (afterSignals) {
-        nsRow.milestones = afterSignals.milestones;
-        nsRow.premiseAudit = afterSignals.premiseAudit;
-      }
     } catch {
-      /* demo / offline — keep scored in-memory */
+      /* offline */
     }
 
-    const milestones: CompassMilestone[] = nsRow.milestones.map((m) => ({
-      id: m.id, year: m.year, label: m.label,
+    const refreshed = await prisma.companyNorthStar.findUnique({
+      where: { id: nsRow.id },
+      include: { premiseAudit: true, milestones: { orderBy: { year: "asc" } } },
+    });
+    const ns = refreshed ?? nsRow;
+
+    const northStar: NorthStar = {
+      id: ns.id,
+      mission: ns.mission,
+      vision: ns.vision,
+      targetYear: ns.targetYear,
+      revenueTarget: Number(ns.revenueTarget),
+      profitMarginTarget: Number(ns.profitMarginTarget),
+      marketPositionDesc: ns.marketPositionDesc,
+      geographyDesc: ns.geographyDesc,
+      brandDesc: ns.brandDesc,
+    };
+
+    const legacyMilestones: CompassMilestone[] = ns.milestones.map((m) => ({
+      id: m.id,
+      year: m.year,
+      label: m.label,
       revenueTarget: m.revenueTarget ? Number(m.revenueTarget) : null,
       profitMarginTarget: m.profitMarginTarget ? Number(m.profitMarginTarget) : null,
       keyConditions: m.keyConditions,
       revenueActual: m.revenueActual ? Number(m.revenueActual) : null,
-      progressNote: m.progressNote, riskScore: m.riskScore, riskFactors: m.riskFactors,
-    }));
-    const premises: PremiseAudit[] = nsRow.premiseAudit.map((p) => ({
-      id: p.id, code: p.code, premise: p.premise, category: p.category,
-      confidence: p.confidence, fragility: p.fragility,
-      lastValidatedAt: p.lastValidatedAt?.toISOString().slice(0, 10) ?? null,
-      validationNote: p.validationNote,
-      failSignal: p.failSignal, signalSource: p.signalSource,
-      signalAt: p.signalAt?.toISOString().slice(0, 10) ?? null,
+      progressNote: m.progressNote,
+      riskScore: m.riskScore,
+      riskFactors: m.riskFactors,
     }));
 
-    const scored = scoreMilestones(milestones, premises, currentRevenue, currentYear);
-    return { northStar: ns, milestones: scored, premises, currentRevenue, currentMargin };
+    const premises =
+      ns.premiseAudit.length > 0 ? mapLegacyPremises(ns.premiseAudit) : DEMO_PREMISES;
+    const milestonesRaw = legacyMilestones.length > 0 ? legacyMilestones : DEMO_MILESTONES;
+    const scored = scoreMilestones(milestonesRaw, premises, currentRevenue, currentYear);
+
+    return {
+      northStar,
+      milestones: scored,
+      premises,
+      currentRevenue,
+      currentMargin,
+      planSource: "demo",
+      planId: activePlan?.id,
+    };
   } catch {
     const currentRevenue = 5120;
     const scored = scoreMilestones(DEMO_MILESTONES, DEMO_PREMISES, currentRevenue, currentYear);
-    return { northStar: DEMO_NORTH_STAR, milestones: scored, premises: DEMO_PREMISES, currentRevenue, currentMargin: 0.14 };
+    return {
+      northStar: DEMO_NORTH_STAR,
+      milestones: scored,
+      premises: DEMO_PREMISES,
+      currentRevenue,
+      currentMargin: 0.14,
+      planSource: "demo",
+    };
   }
 }

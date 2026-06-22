@@ -8,6 +8,7 @@ import * as demo from "@/lib/stratos-demo-data";
 import { buildManagementReport } from "@/lib/fpa/management-report";
 import type { ManagementReportBundle } from "@/lib/fpa/management-types";
 import { computeRobustOverall } from "@/lib/stratos/robust-score";
+import { getStratDiffs } from "@/lib/data/versions-data";
 import {
   demoTensions, demoMaturityPoints, demoCommitments,
   type TensionItem, type ExecutionMaturityPoint, type CommitmentRecord,
@@ -69,7 +70,7 @@ export async function getInvestmentCases(): Promise<InvestmentCase[]> {
 export async function getActiveHealthAssertions(): Promise<HealthAssertion[]> {
   if (!(await dbAvailable())) return [demo.healthAssertion];
   const rows = await prisma.healthAssertion.findMany({ where: { active: true } });
-  if (rows.length === 0) return [demo.healthAssertion];
+  if (rows.length === 0) return [];
   return rows.map((r) => ({
     id: r.id,
     assertionType: r.assertionType,
@@ -131,7 +132,7 @@ export async function getRobustScore(): Promise<RobustnessDimensions> {
 
 /** Bundle for command deck + PDF one-pager */
 export async function getCommandDeckBundle() {
-  const [diagnosis, fpa, assertions, source, spbpScenarios, capStack, investmentCases, bscLights, robust, managementReport] =
+  const [diagnosis, fpa, assertions, source, spbpScenarios, capStack, investmentCases, bscLights, robust, managementReport, stratDiffs] =
     await Promise.all([
       getDiagnosis(),
       getFpaSummary(),
@@ -143,6 +144,7 @@ export async function getCommandDeckBundle() {
       entities.getBscLights(),
       getRobustScore(),
       getManagementReport(),
+      getStratDiffs(),
     ]);
   return {
     source,
@@ -153,7 +155,7 @@ export async function getCommandDeckBundle() {
     bscLights,
     robustScore: robust,
     robustOverall: computeRobustOverall(robust),
-    stratDiffs: demo.stratDiffs,
+    stratDiffs,
     spbpScenarios,
     capStack,
     investmentCases,
@@ -560,16 +562,20 @@ export async function getHealthBundle() {
 /** Decode page bundle */
 export async function getDecodeBundle() {
   const { getDecodeBsc, getDecodeHoshin } = await import("@/lib/decode/data-access");
-  const [source, loops, bsc, hoshin] = await Promise.all([
+  const { getFeedbackLoops } = await import("@/lib/feedback/data-access");
+  const [source, feedback, bsc, hoshin] = await Promise.all([
     getDataSource(),
-    entities.getFeedbackLoops(),
+    getFeedbackLoops(),
     getDecodeBsc(),
     getDecodeHoshin(),
   ]);
-  const dataSource = bsc.source === "database" || hoshin.source === "database" ? "database" : source;
+  const dataSource =
+    bsc.source === "database" || hoshin.source === "database" || feedback.source === "database"
+      ? "database"
+      : source;
   return {
     source: dataSource,
-    loops,
+    loops: feedback.loops,
     bsc: bsc.rows,
     hoshinQuadrants: hoshin.quadrants,
     hoshinFlat: hoshin.flat,

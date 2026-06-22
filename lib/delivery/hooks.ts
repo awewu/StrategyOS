@@ -15,7 +15,7 @@ export async function onReportApproved(reportId: string): Promise<void> {
 
   if (runwayFromParse != null) {
     await syncRunwayFromFpa({ runwayMonths: runwayFromParse });
-  } else if (report.reportType === "SHEET_IMPORT" || report.reportType === "MON_RPT") {
+  } else if (report.reportType === "SHEET_IMPORT" || report.reportType === "MON_RPT" || report.reportType === "MON_PULSE") {
     await syncRunwayFromFpa();
   }
 

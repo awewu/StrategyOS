@@ -55,6 +55,12 @@ export const EXPECTED_APIS = [
   "/api/decode/hoshin",
   "/api/decode/import",
   "/api/decode/template",
+  "/api/culture/awards",
+  "/api/culture/understanding",
+  "/api/feedback/loops",
+  "/api/fpa/period",
+  "/api/gates",
+  "/api/stacks",
   "/api/meeting/poll",
   "/api/meeting",
   "/api/mandate",
@@ -63,6 +69,7 @@ export const EXPECTED_APIS = [
   "/api/strategy/one-pager",
   "/api/strategy/plan",
   "/api/reports/submit",
+  "/api/compiler/import",
   "/api/spbp/update",
 ] as const;
 

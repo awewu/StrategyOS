@@ -1,0 +1,48 @@
+---
+description: StratOS 战略沙盘——产品灵魂、文档索引、禁止阉割范围
+alwaysApply: true
+---
+
+# StratOS Agent 规则
+
+## 一句话产品（不可偏离）
+
+**StratOS = 给 CEO/高管用的战略沙盘**：看战略、看执行、看健康；支撑年中/年底战略会；**不是 ERP、不是全员 OKR、不是日常项目管理**。
+
+服务对象：瑞合瑞德约 **300 人**公司里的 **~30 人核心管理层**（深度用户）。
+
+## 战略逻辑栈（顺序不可颠倒）
+
+1. **Doctrine**：Invest to Growth · Innovate to Lead · Deliver on Commitment  
+2. **四个满意 + BSC**（战略保障底线）  
+3. **OKR**（执行牵引）  
+4. **FPA 脊梁**（贯穿，非旁路财务模块）
+
+## 骨架 vs 血肉
+
+- **骨架**（少改）：逻辑栈、对象模型、会议节律、版本快照、StratDiff、稳健性指标 → 见 `docs/SKELETON_AND_FLESH.md`、`docs/OBJECT_MODEL.md`  
+- **血肉**（分期）：UI、报告模板、StratFinance 深推演、AI 顾问 → Phase 2/3
+
+理论导入 **必须** 落到对象/快照/diff → `docs/THEORY_IMPORTS.md`。
+
+## 禁止
+
+- 用「30 人版 / MVP」**砍掉** v5.4 引擎与模块（用户已明确反对阉割）  
+- 把方法论写成 PPT 式空话，不进对象模型  
+- 与 ERP/CRM **实时打通**（产品定位是在线填 + 偶尔 Excel）
+
+## 每次任务先打开
+
+| 任务类型 | 文档 |
+|----------|------|
+| 产品/PRD | `docs/PRD.md`、`docs/STRATOS_BLUEPRINT.md` |
+| 报告/快照 | `docs/REPORT_FORMATS.md`、`docs/STRATDIFF_RULES.md` |
+| 财务/FPA | `docs/FPA_MANAGEMENT.md` |
+| UI/VI | `docs/UI_VI.md`、`docs/BRAND_VI.md` |
+| 开发/setup | `docs/SETUP.md`、`docs/HARNESS.md` |
+
+## 输出习惯
+
+- 复杂前先给 **一句话定义**  
+- 重大结论写入 `docs/`，更新版本号与变更说明  
+- 需要公开市场学习时 **先检索再写进文档**，标注来源

@@ -63,7 +63,7 @@ export function deriveMilestoneRows(
   });
 }
 
-const DEFAULT_PREMISE_TEMPLATES: {
+export const DEFAULT_PREMISE_TEMPLATES: {
   code: string;
   premise: string;
   category: string;
@@ -121,7 +121,86 @@ const DEFAULT_PREMISE_TEMPLATES: {
   },
 ];
 
-/** 若 North Star 尚无子数据，自动生成里程碑 + 前提模板并落库 */
+async function seedMilestonesAndPremises(
+  milestoneTarget: { milestonesEmpty: boolean; createMilestones: (rows: ReturnType<typeof deriveMilestoneRows>) => Promise<number> },
+  premiseTarget: { premisesEmpty: boolean; createPremises: () => Promise<number> },
+  ns: NorthStarInput,
+  currentYear: number,
+  currentRevenue: number,
+): Promise<{ milestonesCreated: number; premisesCreated: number }> {
+  let milestonesCreated = 0;
+  let premisesCreated = 0;
+
+  if (milestoneTarget.milestonesEmpty) {
+    const rows = deriveMilestoneRows(ns, currentYear, currentRevenue);
+    milestonesCreated = await milestoneTarget.createMilestones(rows);
+  }
+
+  if (premiseTarget.premisesEmpty) {
+    premisesCreated = await premiseTarget.createPremises();
+  }
+
+  return { milestonesCreated, premisesCreated };
+}
+
+/** StrategicPlan：补生成路径里程碑 + 前提模板 */
+export async function ensurePlanCompassChildren(
+  planId: string,
+  ns: NorthStarInput,
+  currentYear: number,
+  currentRevenue: number,
+): Promise<{ milestonesCreated: number; premisesCreated: number }> {
+  const existing = await prisma.strategicPlan.findUnique({
+    where: { id: planId },
+    include: { milestones: true, premises: true },
+  });
+  if (!existing) return { milestonesCreated: 0, premisesCreated: 0 };
+
+  return seedMilestonesAndPremises(
+    {
+      milestonesEmpty: existing.milestones.length === 0,
+      createMilestones: async (rows) => {
+        await prisma.planMilestone.createMany({
+          data: rows.map((r, i) => ({
+            planId,
+            year: r.year,
+            label: r.label,
+            revenueTarget: r.revenueTarget,
+            profitMarginTarget: r.profitMarginTarget,
+            keyConditions: r.keyConditions,
+            riskFactors: [],
+            sortOrder: i,
+          })),
+        });
+        return rows.length;
+      },
+    },
+    {
+      premisesEmpty: existing.premises.length === 0,
+      createPremises: async () => {
+        await prisma.planPremise.createMany({
+          data: DEFAULT_PREMISE_TEMPLATES.map((p, i) => ({
+            planId,
+            code: p.code,
+            premise: p.premise,
+            category: p.category,
+            confidence: p.confidence,
+            fragility: p.fragility,
+            validationNote: p.validationNote,
+            lastValidatedAt: new Date(),
+            sortOrder: i,
+          })),
+        });
+        return DEFAULT_PREMISE_TEMPLATES.length;
+      },
+    },
+    ns,
+    currentYear,
+    currentRevenue,
+  );
+}
+
+/** 若 North Star 尚无子数据，自动生成里程碑 + 前提模板并落库（legacy） */
 export async function ensureCompassChildren(
   northStarId: string,
   ns: NorthStarInput,
@@ -134,40 +213,44 @@ export async function ensureCompassChildren(
   });
   if (!existing) return { milestonesCreated: 0, premisesCreated: 0 };
 
-  let milestonesCreated = 0;
-  let premisesCreated = 0;
-
-  if (existing.milestones.length === 0) {
-    const rows = deriveMilestoneRows(ns, currentYear, currentRevenue);
-    await prisma.compassMilestone.createMany({
-      data: rows.map((r) => ({
-        northStarId,
-        year: r.year,
-        label: r.label,
-        revenueTarget: r.revenueTarget,
-        profitMarginTarget: r.profitMarginTarget,
-        keyConditions: r.keyConditions,
-        riskFactors: [],
-      })),
-    });
-    milestonesCreated = rows.length;
-  }
-
-  if (existing.premiseAudit.length === 0) {
-    await prisma.compassPremiseAudit.createMany({
-      data: DEFAULT_PREMISE_TEMPLATES.map((p) => ({
-        northStarId,
-        code: p.code,
-        premise: p.premise,
-        category: p.category,
-        confidence: p.confidence,
-        fragility: p.fragility,
-        validationNote: p.validationNote,
-        lastValidatedAt: new Date(),
-      })),
-    });
-    premisesCreated = DEFAULT_PREMISE_TEMPLATES.length;
-  }
-
-  return { milestonesCreated, premisesCreated };
+  return seedMilestonesAndPremises(
+    {
+      milestonesEmpty: existing.milestones.length === 0,
+      createMilestones: async (rows) => {
+        await prisma.compassMilestone.createMany({
+          data: rows.map((r) => ({
+            northStarId,
+            year: r.year,
+            label: r.label,
+            revenueTarget: r.revenueTarget,
+            profitMarginTarget: r.profitMarginTarget,
+            keyConditions: r.keyConditions,
+            riskFactors: [],
+          })),
+        });
+        return rows.length;
+      },
+    },
+    {
+      premisesEmpty: existing.premiseAudit.length === 0,
+      createPremises: async () => {
+        await prisma.compassPremiseAudit.createMany({
+          data: DEFAULT_PREMISE_TEMPLATES.map((p) => ({
+            northStarId,
+            code: p.code,
+            premise: p.premise,
+            category: p.category,
+            confidence: p.confidence,
+            fragility: p.fragility,
+            validationNote: p.validationNote,
+            lastValidatedAt: new Date(),
+          })),
+        });
+        return DEFAULT_PREMISE_TEMPLATES.length;
+      },
+    },
+    ns,
+    currentYear,
+    currentRevenue,
+  );
 }

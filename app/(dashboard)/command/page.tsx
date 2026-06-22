@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireRouteAccess } from "@/lib/auth/guard";
+import { StrategicImportPanel } from "@/components/compiler/StrategicImportPanel";
 import { getInboxSummary } from "@/lib/inbox/count";
 import { TopAlertsPanel } from "@/components/command/TopAlertsPanel";
 import { ScenarioAdvisor } from "@/components/command/ScenarioAdvisor";
@@ -83,6 +84,8 @@ export default async function CommandPage() {
           </>
         }
       />
+
+      <StrategicImportPanel />
 
       <ExecutiveSummary scr={scr} />
 
