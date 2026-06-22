@@ -55,36 +55,41 @@ export async function persistHealthAssertions(
   if (assertions.length === 0) return [];
   if (!(await dbAvailable())) return [];
 
-  const out: HealthAssertion[] = [];
-  for (const a of assertions) {
-    const existing = await prisma.healthAssertion.findFirst({
-      where: { assertionType: a.assertionType, active: true },
-    });
-    if (existing) {
-      // Refresh the existing active assertion with the latest source and timestamp.
-      await prisma.healthAssertion.update({
-        where: { id: existing.id },
-        data: {
-          triggeredAt: new Date(),
-          sourceReportId: a.sourceReportId ?? existing.sourceReportId,
-          metricValue: a.metricValue ?? existing.metricValue,
-          message: a.message ?? existing.message,
-        },
-      });
-    } else {
-      await prisma.healthAssertion.create({
+  const types = assertions.map((a) => a.assertionType);
+  const existingRows = await prisma.healthAssertion.findMany({
+    where: { assertionType: { in: types }, active: true },
+    select: { id: true, assertionType: true, sourceReportId: true, metricValue: true },
+  });
+  const existingByType = new Map(existingRows.map((r) => [r.assertionType, r]));
+  const now = new Date();
+
+  await prisma.$transaction(
+    assertions.map((a) => {
+      const existing = existingByType.get(a.assertionType);
+      if (existing) {
+        return prisma.healthAssertion.update({
+          where: { id: existing.id },
+          data: {
+            triggeredAt: now,
+            sourceReportId: a.sourceReportId ?? existing.sourceReportId,
+            metricValue: a.metricValue ?? existing.metricValue,
+            message: a.message ?? undefined,
+          },
+        });
+      }
+      return prisma.healthAssertion.create({
         data: {
           assertionType: a.assertionType,
           active: true,
-          triggeredAt: new Date(),
+          triggeredAt: now,
           sourceReportId: a.sourceReportId ?? null,
           message: a.message,
           metricValue: a.metricValue ?? null,
           thresholdValue: a.thresholdValue ?? null,
         },
       });
-    }
-    out.push(a);
-  }
-  return out;
+    }),
+  );
+
+  return assertions;
 }
