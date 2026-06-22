@@ -1,7 +1,7 @@
 # StratOS · UI/VI 进化计划
 
 **版本：** v0.1 · 2026-06-14  
-**状态：** 路线图 · Phase A 部分已落地  
+**状态：** 路线图 · Phase A+B 已落地 · Phase C 待启动  
 **关联：** [BRAND_VI.md](./BRAND_VI.md) · [UI_VI.md](./UI_VI.md) · [EVOLUTION_PLAN.md](./EVOLUTION_PLAN.md) · [STRATEGY_REVIEW_UI_BENCHMARK.md](./STRATEGY_REVIEW_UI_BENCHMARK.md)
 
 ---
@@ -12,9 +12,9 @@
 |---|------|
 | 1 | **品牌语气已从「下注/博彩」转向「抉择/资源配置」** — `brand.tagline`、三栈 UI 文案、A3 一页纸已对齐；域模型 `ProductBet`/`GtmBet` 保留，UI 层统一称「战略项/资源配置」。 |
 | 2 | **VI 骨架（暗色指挥舱 + 琥珀金 + 语义红绿灯）仍然正确**，无需换色；进化重点是 **信息层级、FP&A 视觉权重、导航 IA、打印董事会主题**。 |
-| 3 | **最大缺口**：指挥舱未达 UI_VI §4.3 12 列布局；导航项过多平铺；Light/Print 与 Dark 组件样式不一致；图表/数据 viz 语言未系统化。 |
+| 3 | **Phase B 已落地**：12 列指挥舱 · Print/Light 预览 · chart/FP&A token · PPT palette · PageHeader/KpiTile 统一。 |
 | 4 | **Phase A（1–2 天）** 已完成：标语面、导航分层、指挥舱 hero、三栈标题、FPA hero、token 注释。 |
-| 5 | **Phase B/C** 分别聚焦组件系统 + 董事会打印主题，以及彩排动效、角色密度、移动端 rehearsal。 |
+| 5 | **Phase C** 待启动：彩排动效、五角色 nav E2E、移动端 rehearsal、chart visual regression。 |
 
 ---
 
@@ -333,10 +333,11 @@ StratOS · 战略是抉择
 
 ### Phase B Done
 
-- [ ] 零 inline brand hex in `components/`
-- [ ] `PageHeader` + `KpiTile` 用于 command/finance/health
-- [ ] A3 PDF 含 ROS/EBITDA 行
-- [ ] Print preview toggle on command
+- [x] 零 inline brand hex in `components/`（PPT 图标 → `lib/brand/ppt-palette.ts`）
+- [x] `PageHeader` + `KpiTile` 用于 command / finance / health
+- [x] A3 PDF 含 ROS / EBITDA 行（`PANORAMA_KPI_CARDS`）
+- [x] Print preview toggle on command（`CommandBoardShell` · `data-theme="print"`）
+- [x] `--page-gutter` · `--fpa-kpi-*` · 12 列指挥舱网格 · `display-labels.ts`
 
 ### Phase C Done
 

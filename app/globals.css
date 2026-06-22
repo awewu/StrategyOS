@@ -1015,10 +1015,20 @@ a.stratos-segment__item {
 }
 
 [data-theme="print"] .stratos-print-title {
-  font-size: 2rem;
+  font-size: var(--text-h1);
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
+}
+
+@media print {
+  :root {
+    --text-h1: 1.75rem; /* 28px · UI_VI §4.6 board projection */
+  }
+
+  .stratos-print-title {
+    font-size: 1.75rem;
+  }
 }
 
 [data-theme="print"] .stratos-print-muted {

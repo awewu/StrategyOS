@@ -98,11 +98,17 @@ Staff 可编战略录入，**不可**进 FPA 财务页 — 符合 ~30 人高管�
 
 ---
 
-## 已知非阻塞项（Phase B/C · 上线后）
+## 已知非阻塞项（Phase C · 上线后）
 
-- 指挥舱 12 列布局 · PPT 图标 inline hex · 董事会 Light 预览切换
+- 五角色 nav 过滤 E2E · Rehearsal tablet 1280+ · Chart visual regression
 - 完整 SCR 数据库持久化
 - Mobile rehearsal tablet
+
+## Phase B 完成（2026-06-22）
+
+- Token 系统：`globals.css` · `lib/brand/tokens.ts` · `ppt-palette.ts` · `display-labels.ts`
+- 指挥舱 12 列网格 + Light 预览 + ROS/EBITDA KPI + A3 打印 theme
+- 详见 [UI_VI_EVOLUTION.md](./UI_VI_EVOLUTION.md) §八
 
 ---
 

@@ -173,12 +173,12 @@ E2E runs against production build (`npm run start`) with Playwright. Harness gat
 
 ---
 
-## Post-launch (Phase B — not blocking)
+## Post-launch (Phase C)
 
-- Command center 12-column layout
-- PPT icon inline hex cleanup
-- Board Light preview toggle
+- Five-role nav filter E2E · Rehearsal tablet layout
 - Full SCR database persistence
-- Mobile rehearsal tablet
+- Chart visual regression / Storybook
+
+Phase B (component system, 12-col command board, print theme, PPT palette) — **complete**. See [UI_VI_EVOLUTION.md](./UI_VI_EVOLUTION.md).
 
 See [DELIVERY.md](./DELIVERY.md) and [EVOLUTION_PLAN.md](./EVOLUTION_PLAN.md).
