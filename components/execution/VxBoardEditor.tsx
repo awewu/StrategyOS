@@ -71,7 +71,7 @@ export function VxBoardEditor({
         </div>
       </div>
       <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="border-b border-[var(--surface-border)] bg-[var(--surface-panel)] text-[#828c8d]">
+        <thead className="border-b border-[var(--surface-border)] bg-[var(--surface-panel)] text-[var(--color-text-muted)]">
           <tr>
             <th className="px-4 py-3">Vx</th>
             <th className="px-4 py-3">进度</th>
@@ -104,7 +104,7 @@ export function VxBoardEditor({
                   ) : (
                     <>
                       <div className="font-medium">{vx.code}</div>
-                      <div className="text-xs text-[#828c8d]">{vx.name}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">{vx.name}</div>
                     </>
                   )}
                 </td>

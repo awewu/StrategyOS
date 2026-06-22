@@ -1,5 +1,21 @@
 import { PrismaClient } from "@prisma/client";
+import { DOCTRINES } from "../lib/constants";
+import {
+  BEHAVIOR_GUIDELINES,
+  CORE_VALUES_INTRO,
+  FOUR_SATISFACTION_PILLARS,
+} from "../lib/culture/content";
 import { getAllSeries } from "../lib/health/ops-metrics";
+import {
+  aarrrFunnel,
+  horizonBubbles,
+  kellerBrandLayers,
+  postInvestDeviations,
+  realOptions,
+  riceItems,
+  trlRadar,
+  bscCards,
+} from "../lib/stratos-demo-data";
 
 const prisma = new PrismaClient();
 
@@ -217,6 +233,69 @@ async function main() {
         { id: "drv-v4", label: "V4 上市延迟", baseValue: 0, unit: "月", lowDelta: 0, highDelta: 3, impactOnProfit: { low: 0, high: -220 } },
         { id: "drv-steel", label: "钢材成本", baseValue: 100, unit: "指数", lowDelta: -8, highDelta: 12, impactOnProfit: { low: 60, high: -95 } },
       ],
+    },
+  });
+
+  await prisma.strategicCapitalConfig.upsert({
+    where: { period: "2026-FY" },
+    update: {},
+    create: {
+      period: "2026-FY",
+      realOptionsJson: realOptions,
+      postInvestDeviationsJson: postInvestDeviations,
+    },
+  });
+
+  await prisma.cultureHandbook.upsert({
+    where: { period: "2026-FY" },
+    update: {},
+    create: {
+      period: "2026-FY",
+      contentJson: {
+        doctrines: DOCTRINES.map((d) => ({ ...d })),
+        fourSatisfactionPillars: [...FOUR_SATISFACTION_PILLARS],
+        coreValuesIntro: {
+          headline: CORE_VALUES_INTRO.headline,
+          body: CORE_VALUES_INTRO.body,
+          principles: [...CORE_VALUES_INTRO.principles],
+          decisionTest: CORE_VALUES_INTRO.decisionTest,
+        },
+        behaviorGuidelines: BEHAVIOR_GUIDELINES.map((g) => ({
+          id: g.id,
+          title: g.title,
+          items: [...g.items],
+        })),
+      },
+    },
+  });
+
+  await prisma.strategicExecutionAnalytics.upsert({
+    where: { period: "2026-FY" },
+    update: {},
+    create: {
+      period: "2026-FY",
+      horizonBubblesJson: horizonBubbles,
+      riceItemsJson: riceItems,
+      trlRadarJson: trlRadar,
+    },
+  });
+
+  await prisma.strategicBscConfig.upsert({
+    where: { period: "2026-FY" },
+    update: {},
+    create: {
+      period: "2026-FY",
+      cardsJson: bscCards.map((c) => ({ ...c })),
+    },
+  });
+
+  await prisma.strategicGrowthAnalytics.upsert({
+    where: { period: "2026-FY" },
+    update: {},
+    create: {
+      period: "2026-FY",
+      aarrrFunnelJson: aarrrFunnel,
+      kellerBrandJson: kellerBrandLayers,
     },
   });
 

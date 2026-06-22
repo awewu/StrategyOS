@@ -15,7 +15,7 @@ function defaultCapitalConfig(): Omit<CapitalConfigBundle, "source"> {
   };
 }
 
-function parseCapitalJson(
+export function parseCapitalConfigJson(
   realOptionsJson: unknown,
   postInvestDeviationsJson: unknown,
 ): Omit<CapitalConfigBundle, "source"> {
@@ -47,7 +47,7 @@ export async function getCapitalConfig(period = demo.CURRENT_PERIOD): Promise<Ca
   await seedCapitalConfigIfEmpty(period);
   const row = await prisma.strategicCapitalConfig.findUnique({ where: { period } });
   if (!row) return { ...defaultCapitalConfig(), source: "demo" };
-  const parsed = parseCapitalJson(row.realOptionsJson, row.postInvestDeviationsJson);
+  const parsed = parseCapitalConfigJson(row.realOptionsJson, row.postInvestDeviationsJson);
   return { ...parsed, source: "database" };
 }
 

@@ -129,8 +129,8 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
       <ResponsiveContainer width="100%" height={160}>
         <ComposedChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0d" />
-          <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#828c8d" }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10, fill: "#828c8d" }} />
+          <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} interval="preserveStartEnd" />
+          <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} />
           <Tooltip
             contentStyle={{ background: "#1e293b", border: "1px solid #cdd1d2", fontSize: 12 }}
             formatter={(v: unknown, name: unknown) => [
@@ -145,7 +145,7 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
           <Bar dataKey="actual" fill={SIG_COLOR[signal]} opacity={0.7} radius={[2, 2, 0, 0]} name="实际" maxBarSize={12} />
           {/* history/plan split */}
           {mode !== "6m" && splitMonth && (
-            <ReferenceLine x={monthLabel(splitMonth)} stroke="#4e5758" strokeDasharray="2 2" label={{ value: "计划→", position: "insideTopRight", fontSize: 9, fill: "#4e5758" }} />
+            <ReferenceLine x={monthLabel(splitMonth)} stroke="var(--color-text-secondary)" strokeDasharray="2 2" label={{ value: "计划→", position: "insideTopRight", fontSize: 9, fill: "var(--color-text-secondary)" }} />
           )}
         </ComposedChart>
       </ResponsiveContainer>

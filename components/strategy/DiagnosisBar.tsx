@@ -14,7 +14,7 @@ export function DiagnosisBar({ diagnosis }: { diagnosis: StrategicDiagnosis }) {
         Rumelt 诊断 · Diagnosis
       </div>
       <p className="text-xl font-medium leading-snug">{diagnosis.challengeStatement}</p>
-      <div className="mt-3 flex flex-wrap gap-4 text-sm text-[#828c8d]">
+      <div className="mt-3 flex flex-wrap gap-4 text-sm text-[var(--color-text-muted)]">
         <span>瓶颈：{bottleneck[diagnosis.bottleneckType]}</span>
         <span>枢纽：{diagnosis.crux}</span>
         <span className="rounded bg-[#1f8a45]/20 px-2 py-0.5 text-[#1f8a45]">{diagnosis.status}</span>

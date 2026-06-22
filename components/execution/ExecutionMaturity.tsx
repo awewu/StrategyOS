@@ -135,7 +135,7 @@ function TooltipContent({ active, payload }: { active?: boolean; payload?: Array
   return (
     <div className="rounded-lg border border-black/15 bg-[#1e293b] p-3 text-xs shadow-xl">
       <div className="mb-2 font-medium">{p.projectName} ({p.projectCode})</div>
-      <div className="space-y-1 text-[#828c8d]">
+      <div className="space-y-1 text-[var(--color-text-muted)]">
         <div>速度（里程碑准时率）<span className="ml-2 text-[var(--color-text-primary)]">{Math.round(p.milestoneOnTimeRate * 100)}%</span></div>
         <div>学习速度（假设命中率）<span className="ml-2 text-[var(--color-text-primary)]">{Math.round(p.assumptionHitRate * 100)}%</span></div>
         <div>响应延迟<span className="ml-2 text-[var(--color-text-primary)]">{p.responseLatencyDays} 天</span></div>
@@ -189,9 +189,9 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
               <XAxis type="number" dataKey="x" domain={[0, 100]} tickCount={6}
-                tick={{ fontSize: 10, fill: "#828c8d" }} label={{ value: "速度（%）", position: "insideBottom", offset: -10, fill: "#828c8d", fontSize: 11 }} />
+                tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} label={{ value: "速度（%）", position: "insideBottom", offset: -10, fill: "var(--chart-axis-tick)", fontSize: 11 }} />
               <YAxis type="number" dataKey="y" domain={[0, 100]} tickCount={6}
-                tick={{ fontSize: 10, fill: "#828c8d" }} label={{ value: "学习速度（%）", angle: -90, position: "insideLeft", fill: "#828c8d", fontSize: 11 }} />
+                tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} label={{ value: "学习速度（%）", angle: -90, position: "insideLeft", fill: "var(--chart-axis-tick)", fontSize: 11 }} />
               <ReferenceLine x={50} stroke="#ffffff15" strokeDasharray="4 3" />
               <ReferenceLine y={50} stroke="#ffffff15" strokeDasharray="4 3" />
               <Tooltip content={<TooltipContent />} />
@@ -207,7 +207,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
               <div key={q.label} className="flex items-center gap-1.5 text-xs">
                 <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: q.color }} />
                 <span className="text-[var(--color-text-muted)]">{q.label}</span>
-                <span className="text-[#4e5758]">— {q.sub}</span>
+                <span className="text-[var(--color-text-secondary)]">— {q.sub}</span>
               </div>
             ))}
           </div>

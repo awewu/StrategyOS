@@ -117,34 +117,34 @@ export function RehearsalPresentMode({
     <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--print-navy)] text-white">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--surface-border)] px-8 py-4">
         <div>
-          <p className="text-sm text-[#828c8d]">
+          <p className="text-sm text-[var(--color-text-muted)]">
             StratOS Q3 战略会 · 环节 {active + 1}/{Q3_REHEARSAL_AGENDA.length} ·{" "}
             {live.source === "database" ? "DB" : "Demo"}
           </p>
           <h1 className="text-2xl font-semibold text-[var(--color-accent)]">
             {step.segment} — {step.title}
           </h1>
-          <p className="mt-1 text-sm text-[#828c8d]">
+          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
             Crux: {live.crux} · Runway {live.runwayMonths}m · Robust {live.robustOverall}
             {live.hardBlock ? ` · ⚠ ${live.hardBlock}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <div className="text-xs text-[#828c8d]">本环节</div>
+            <div className="text-xs text-[var(--color-text-muted)]">本环节</div>
             <div
               className={`font-data text-4xl tabular-nums ${overtime ? "text-[#8b0e04]" : "text-[var(--color-accent)]"}`}
             >
               {overtime ? "+" : ""}
               {formatClock(overtime ? segmentElapsed - segmentBudgetSec : segmentRemaining)}
             </div>
-            <div className="text-xs text-[#828c8d]">
+            <div className="text-xs text-[var(--color-text-muted)]">
               预算 {step.durationMin} 分钟 · 清单 {checkedCount}/{step.checklist.length}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-[#828c8d]">全会</div>
-            <div className="font-data text-2xl tabular-nums text-[#828c8d]">
+            <div className="text-xs text-[var(--color-text-muted)]">全会</div>
+            <div className="font-data text-2xl tabular-nums text-[var(--color-text-muted)]">
               {formatClock(meetingElapsed)} / {REHEARSAL_TOTAL_MIN}:00
             </div>
           </div>
@@ -188,7 +188,7 @@ export function RehearsalPresentMode({
         </section>
 
         <aside className="w-full shrink-0 space-y-4 lg:w-96">
-          <h2 className="text-sm font-medium text-[#828c8d]">环节清单 · 点击勾选</h2>
+          <h2 className="text-sm font-medium text-[var(--color-text-muted)]">环节清单 · 点击勾选</h2>
           <ul className="space-y-2">
             {step.checklist.map((c) => {
               const key = `${step.id}:${c}`;
@@ -211,7 +211,7 @@ export function RehearsalPresentMode({
               );
             })}
           </ul>
-          <div className="rounded-lg border border-[var(--surface-border)] p-4 text-xs text-[#828c8d]">
+          <div className="rounded-lg border border-[var(--surface-border)] p-4 text-xs text-[var(--color-text-muted)]">
             ← → 切换环节 · Space 暂停 · 超时会标橙 · 清单写入审计
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.06]">
               <div
@@ -233,7 +233,7 @@ export function RehearsalPresentMode({
           type="button"
           disabled={active === 0}
           onClick={goPrev}
-          className="text-lg text-[#828c8d] disabled:opacity-30"
+          className="text-lg text-[var(--color-text-muted)] disabled:opacity-30"
         >
           ← 上一环节
         </button>

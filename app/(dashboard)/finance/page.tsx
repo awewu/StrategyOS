@@ -3,13 +3,9 @@ import { requireRouteAccess } from "@/lib/auth/guard";
 import { CapitalConfigEditor } from "@/components/finance/CapitalConfigEditor";
 import { FpaEditor } from "@/components/finance/FpaEditor";
 import { OutlookEditor } from "@/components/finance/OutlookEditor";
-import {
-  BalanceSheetPanel,
-  CashFlowStatementPanel,
-  IncomeStatementPanel,
-} from "@/components/finance/FinancialStatements";
+import { FinancialStatementsEditor } from "@/components/finance/FinancialStatementsEditor";
 import { MaPipelineEditor } from "@/components/finance/MaPipelineEditor";
-import { ManagementReportPanel } from "@/components/finance/ManagementReportPanel";
+import { ManagementReportEditor } from "@/components/finance/ManagementReportEditor";
 import { CapitalTab } from "@/components/finance/CapitalTab";
 import { SpbpScenarioEditor } from "@/components/finance/SpbpScenarioEditor";
 import { StacksEditor } from "@/components/stacks/StacksEditor";
@@ -72,14 +68,12 @@ async function FinanceContent({
 
       <StratosTabNav tabs={tabs} />
 
-      {activeTab === "management" && <ManagementReportPanel report={report} />}
+      {activeTab === "management" && (
+        <ManagementReportEditor report={report} bridgeSource={data.managementMarginBridgeSource} />
+      )}
 
       {activeTab === "statements" && (
-        <div className="stratos-page">
-          <IncomeStatementPanel statement={report.incomeStatement} />
-          <BalanceSheetPanel sheet={report.balanceSheet} />
-          <CashFlowStatementPanel statement={report.cashFlowStatement} />
-        </div>
+        <FinancialStatementsEditor report={report} statementsSource={data.managementStatementsSource} />
       )}
 
       {activeTab === "overview" && <FpaEditor initial={data.fpa} source={data.source} />}

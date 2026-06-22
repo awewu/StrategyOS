@@ -7,19 +7,19 @@ function BafRow({ label, budget, actual, forecast }: {
   const max = Math.max(Math.abs(budget), Math.abs(actual), Math.abs(forecast), 1);
   const w = (v: number) => `${Math.round((Math.abs(v) / max) * 100)}%`;
   const fmt = (v: number) => v.toLocaleString("zh-CN");
-  const bars: { key: string; value: number; cls: string }[] = [
-    { key: "B", value: budget,   cls: "bg-[var(--color-accent)] opacity-70" },
-    { key: "A", value: actual,   cls: "bg-sky-400" },
-    { key: "F", value: forecast, cls: "bg-violet-400 opacity-75" },
+  const bars: { key: string; value: number; color: string }[] = [
+    { key: "B", value: budget,   color: "var(--chart-baf-budget)" },
+    { key: "A", value: actual,   color: "var(--chart-baf-actual)" },
+    { key: "F", value: forecast, color: "var(--chart-baf-forecast)" },
   ];
   return (
     <div className="space-y-1.5">
       <div className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</div>
-      {bars.map(({ key, value, cls }) => (
+      {bars.map(({ key, value, color }) => (
         <div key={key} className="flex items-center gap-2">
           <span className="w-4 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{key}</span>
           <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
-            <div className={`h-full rounded-full ${cls}`} style={{ width: w(value) }} />
+            <div className="h-full rounded-full" style={{ width: w(value), background: color }} />
           </div>
           <span className="w-16 shrink-0 text-right font-data text-xs text-[var(--color-text-secondary)]">
             {fmt(value)} 万

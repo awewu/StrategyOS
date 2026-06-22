@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { brand } from "@/lib/brand/tokens";
 
 const ASSETS = [
@@ -9,44 +10,66 @@ const ASSETS = [
   { file: "stratos-light-mode-board.png", title: "Light Board", desc: "董事会 PDF 主题" },
 ] as const;
 
+const TOKEN_SWATCHES = [
+  { name: "Accent Gold", var: "--color-accent" },
+  { name: "Deep BG", var: "--color-bg-deep" },
+  { name: "Surface", var: "--color-bg-surface" },
+  { name: "Text Primary", var: "--color-text-primary" },
+  { name: "Signal Green", var: "--signal-green" },
+  { name: "Signal Red", var: "--signal-red" },
+] as const;
+
 export default function BrandGalleryPage() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg-deep)] px-6 py-10">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
+    <div className="min-h-screen bg-[var(--color-bg-deep)]">
+      <div className="stratos-page mx-auto max-w-6xl py-10">
+        <PageHeader
+          eyebrow="Brand Gallery · VI v1.1"
+          title="StratOS 品牌资产"
+          subtitle={`${brand.positioningZh} · ${brand.fullName}`}
+          actions={
+            <Link href="/command" className="stratos-btn stratos-btn--ghost text-xs">
+              ← 指挥舱
+            </Link>
+          }
+        />
+
+        <section className="stratos-card stratos-card--padded flex flex-wrap items-center gap-6">
+          <Image src="/logo-mark.svg" alt="" width={80} height={80} />
+          <Image src="/icon.svg" alt="" width={48} height={48} />
           <div>
-            <h1 className="text-2xl font-semibold text-[var(--color-accent)]">
-              StratOS Brand Gallery
-            </h1>
-            <p className="mt-1 text-sm font-medium text-[var(--color-accent)]">{brand.taglineZh}</p>
-            <p className="text-xs italic text-[var(--color-text-muted)]">{brand.taglineEn}</p>
+            <p className="text-xl font-semibold text-[var(--color-text-primary)]">{brand.name}</p>
+            <p className="text-[var(--color-accent)]">{brand.taglineZh}</p>
+            <p className="text-sm italic text-[var(--color-text-muted)]">{brand.taglineEn}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-              {brand.positioningZh} · {brand.fullName} · VI v1.1 ·{" "}
               <Link href="/print/panorama" className="text-[var(--color-accent)] hover:underline">
                 打印一页纸 →
               </Link>
             </p>
           </div>
-          <Link href="/command" className="text-sm text-[#828c8d] hover:text-[var(--color-text-primary)]">
-            ← 指挥舱
-          </Link>
-        </header>
+        </section>
 
-        <section className="mb-10 flex items-center gap-6 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-          <Image src="/logo-mark.svg" alt="" width={80} height={80} />
-          <Image src="/icon.svg" alt="" width={48} height={48} />
-          <div>
-            <p className="text-xl font-semibold">{brand.name}</p>
-            <p className="text-[var(--color-accent)]">{brand.taglineZh}</p>
-            <p className="text-sm italic text-[var(--color-text-muted)]">{brand.taglineEn}</p>
+        <section className="stratos-card stratos-card--padded">
+          <h2 className="stratos-section-title mb-4">Design Tokens</h2>
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {TOKEN_SWATCHES.map((t) => (
+              <div key={t.var} className="rounded-lg border border-[var(--surface-border)] p-3">
+                <div
+                  className="mb-2 h-10 rounded-md border border-[var(--surface-border)]"
+                  style={{ background: `var(${t.var})` }}
+                />
+                <p className="text-xs font-medium text-[var(--color-text-primary)]">{t.name}</p>
+                <p className="font-data text-[10px] text-[var(--color-text-muted)]">{t.var}</p>
+              </div>
+            ))}
           </div>
         </section>
 
-        <div className="grid gap-8">
+        <div className="stratos-section-gap flex flex-col">
           {ASSETS.map((a) => (
-            <figure key={a.file} className="overflow-hidden rounded-lg border border-[var(--surface-border)]">
-              <div className="border-b border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-4 py-3">
-                <figcaption className="font-medium">{a.title}</figcaption>
+            <figure key={a.file} className="stratos-card overflow-hidden">
+              <div className="border-b border-[var(--surface-border)] px-4 py-3">
+                <figcaption className="font-medium text-[var(--color-text-primary)]">{a.title}</figcaption>
                 <p className="text-xs text-[var(--color-text-muted)]">{a.desc}</p>
               </div>
               <Image

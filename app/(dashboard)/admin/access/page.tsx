@@ -9,11 +9,13 @@ export default async function AccessPage() {
   const [users, logs] = await Promise.all([getUsers(), getRecentLogs(50)]);
 
   return (
-    <AccessManagementPanel
-      users={users}
-      logs={logs}
-      session={session}
-      effectiveRole={effectiveRole}
-    />
+    <div className="stratos-page">
+      <AccessManagementPanel
+        users={users}
+        logs={logs}
+        session={session}
+        effectiveRole={effectiveRole}
+      />
+    </div>
   );
 }

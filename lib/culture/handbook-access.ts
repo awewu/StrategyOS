@@ -31,7 +31,7 @@ function defaultHandbook(): CultureHandbookContent {
   };
 }
 
-function parseHandbookJson(contentJson: unknown): CultureHandbookContent {
+export function parseCultureHandbookJson(contentJson: unknown): CultureHandbookContent {
   const c = contentJson as CultureHandbookContent;
   if (
     !c ||
@@ -60,7 +60,7 @@ export async function getCultureHandbook(period = demo.CURRENT_PERIOD): Promise<
   await seedHandbookIfEmpty(period);
   const row = await prisma.cultureHandbook.findUnique({ where: { period } });
   if (!row) return { handbook: defaultHandbook(), source: "demo" };
-  return { handbook: parseHandbookJson(row.contentJson), source: "database" };
+  return { handbook: parseCultureHandbookJson(row.contentJson), source: "database" };
 }
 
 export async function saveCultureHandbook(

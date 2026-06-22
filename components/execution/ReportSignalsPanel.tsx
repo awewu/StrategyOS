@@ -4,7 +4,7 @@ import type { ReportSignal } from "@/lib/data/strategy-data";
 const SEVERITY_META: Record<ReportSignal["severity"], { label: string; color: string; bg: string; border: string }> = {
   high:   { label: "高", color: "var(--signal-red)",   bg: "bg-red-600/[0.06]",    border: "border-red-600/25" },
   medium: { label: "中", color: "var(--color-accent)", bg: "bg-[var(--color-accent-dim)]", border: "border-[var(--color-accent)]/25" },
-  low:    { label: "低", color: "#4e5758",             bg: "bg-black/[0.03]",      border: "border-[var(--surface-border)]" },
+  low:    { label: "低", color: "var(--color-text-secondary)", bg: "bg-black/[0.03]",      border: "border-[var(--surface-border)]" },
 };
 
 export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {

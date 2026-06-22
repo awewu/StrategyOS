@@ -10,7 +10,7 @@ function KanbanColumn({
 }) {
   return (
     <div className="min-w-[200px] flex-1 rounded-lg bg-[var(--surface-raised)] p-3">
-      <div className="mb-3 text-xs uppercase tracking-wider text-[#828c8d]">{title}</div>
+      <div className="mb-3 text-xs uppercase tracking-wider text-[var(--color-text-muted)]">{title}</div>
       <div className="space-y-2">
         {items.map((ic) => (
           <div
@@ -19,15 +19,15 @@ function KanbanColumn({
           >
             <div className="font-data text-xs text-[var(--color-accent)]">{ic.code}</div>
             <div className="mt-1 text-sm font-medium">{ic.title}</div>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#828c8d]">
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--color-text-muted)]">
               <span>{ic.capexTotal} 万</span>
               {ic.expectedIrr && <span>IRR {ic.expectedIrr}%</span>}
-              <span className="text-[#828c8d]">{ic.budgetTag}</span>
+              <span className="text-[var(--color-text-muted)]">{ic.budgetTag}</span>
             </div>
           </div>
         ))}
         {items.length === 0 && (
-          <div className="py-4 text-center text-xs text-[#828c8d]">—</div>
+          <div className="py-4 text-center text-xs text-[var(--color-text-muted)]">—</div>
         )}
       </div>
     </div>
@@ -63,7 +63,7 @@ export function CapitalTab({
       <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[var(--surface-panel)] p-6">
         <h3 className="mb-4 text-sm font-medium text-[var(--color-accent)]">CapStack {capStack.period}</h3>
         <div className="mb-4">
-          <div className="mb-1 flex justify-between text-xs text-[#828c8d]">
+          <div className="mb-1 flex justify-between text-xs text-[var(--color-text-muted)]">
             <span>CAPEX B-A-F（万）</span>
             <span className="font-data">
               B {capStack.capexBudget} · A {capStack.capexActual} · F {forecast}
@@ -80,18 +80,18 @@ export function CapitalTab({
         </div>
         <div className="grid gap-4 text-sm md:grid-cols-3">
           <div>
-            <span className="text-[#828c8d]">三层面 </span>
+            <span className="text-[var(--color-text-muted)]">三层面 </span>
             H1 {capStack.byHorizon.H1}% · H2 {capStack.byHorizon.H2}% · H3{" "}
             {capStack.byHorizon.H3}%
           </div>
           <div>
-            <span className="text-[#828c8d]">现金波峰 </span>
+            <span className="text-[var(--color-text-muted)]">现金波峰 </span>
             <span className="font-data text-[var(--color-accent)]">
               {capStack.cashPeakMonth} ¥{capStack.cashPeakAmount}万
             </span>
           </div>
           <div>
-            <span className="text-[#828c8d]">波峰后 runway </span>
+            <span className="text-[var(--color-text-muted)]">波峰后 runway </span>
             <span
               className={`font-data ${capStack.runwayAfterPeak < 3 ? "text-[#8b0e04]" : ""}`}
             >
@@ -104,7 +104,7 @@ export function CapitalTab({
       {/* Three-stack allocation breakdown */}
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[#828c8d]">品牌分配</h3>
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">品牌分配</h3>
           <div className="space-y-2">
             {Object.entries(capStack.byBrand ?? {}).map(([brand, pct]) => (
               <div key={brand} className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export function CapitalTab({
           </div>
         </div>
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[#828c8d]">投入类型</h3>
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">投入类型</h3>
           <div className="space-y-2">
             {Object.entries(capStack.byType ?? {}).map(([type, pct]) => (
               <div key={type} className="flex items-center gap-2">
@@ -134,7 +134,7 @@ export function CapitalTab({
       </section>
 
       <section>
-        <h3 className="mb-3 text-sm font-medium text-[#828c8d]">投资管道</h3>
+        <h3 className="mb-3 text-sm font-medium text-[var(--color-text-muted)]">投资管道</h3>
         <div className="flex gap-3 overflow-x-auto pb-2">
           <KanbanColumn title="Review" items={columns.review} />
           <KanbanColumn title="Approved" items={columns.approved} />
@@ -144,7 +144,7 @@ export function CapitalTab({
       </section>
 
       <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
-        <h3 className="mb-3 text-sm font-medium text-[#828c8d]">产能缺口反推</h3>
+        <h3 className="mb-3 text-sm font-medium text-[var(--color-text-muted)]">产能缺口反推</h3>
         <div className="grid gap-2 font-data text-sm md:grid-cols-4">
           <div>需求 {capacity.demandUnits.toLocaleString()} 台</div>
           <div>产能 {capacity.capacityUnits.toLocaleString()} 台</div>

@@ -1,4 +1,5 @@
-import { Scoreboard4DX } from "@/components/execution/Scoreboard4DX";
+import { Scoreboard4DXEditor } from "@/components/execution/Scoreboard4DXEditor";
+import { buildDerivedScoreboardConfig } from "@/lib/execution/scoreboard-access";
 import { VxBoardEditor } from "@/components/execution/VxBoardEditor";
 import { HorizonBubbleChart } from "@/components/execution/HorizonBubbleChart";
 import {
@@ -11,6 +12,7 @@ import type { getExecutionBundle } from "@/lib/data/strategy-data";
 import { TensionMap } from "@/components/execution/TensionMap";
 import { ExecutionMaturity } from "@/components/execution/ExecutionMaturity";
 import { CommitmentLedger } from "@/components/execution/CommitmentLedger";
+import { ExecutionAnalyticsEditor } from "@/components/execution/ExecutionAnalyticsEditor";
 import { MarketResponsePanel } from "@/components/execution/MarketResponsePanel";
 import { ReportSignalsPanel } from "@/components/execution/ReportSignalsPanel";
 
@@ -38,6 +40,12 @@ export function ExecutionDashboard({
       <ReportSignalsPanel signals={data.reportSignals} />
       {!compact ? (
         <>
+          <ExecutionAnalyticsEditor
+            initialHorizon={data.horizonBubbles}
+            initialRice={data.riceItems}
+            initialTrl={data.trlRadar}
+            source={data.executionAnalyticsSource}
+          />
           <MarketResponsePanel responses={data.marketResponses} positions={data.competitivePositions} />
           <TensionMap tensions={data.tensions} />
           <ExecutionMaturity points={data.maturityPoints} />
@@ -50,7 +58,14 @@ export function ExecutionDashboard({
             展开执行明细 · Vx 看板 · 4DX 记分板 · 假设 · TechSignal
           </summary>
           <div className="space-y-6 px-5 pb-6">
-            <Scoreboard4DX diagnosis={data.diagnosis} leadingKrs={data.leadingKrs} />
+            <Scoreboard4DXEditor
+              initialConfig={data.scoreboardConfig}
+              derivedConfig={buildDerivedScoreboardConfig(data.leadingKrs)}
+              objectives={data.objectives}
+              allKrs={data.allKrs}
+              scoreboard={data.scoreboard}
+              source={data.scoreboardConfigSource}
+            />
             <VxBoardEditor initialProjects={data.projects} source={data.source} />
             <HorizonBubbleChart items={data.horizonBubbles} />
             <div className="grid gap-6 lg:grid-cols-2">

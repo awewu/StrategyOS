@@ -169,6 +169,11 @@ export const assumptions: Assumption[] = [
   },
 ];
 
+export const objectives = [
+  { id: "obj-wig", title: diagnosis.crux },
+  { id: "obj-channel", title: "华东渠道新签规模化" },
+];
+
 export const leadingKrs: KeyResult[] = [
   {
     id: "kr-lead-1",
@@ -187,6 +192,18 @@ export const leadingKrs: KeyResult[] = [
     currentValue: "62",
     confidence: 0.7,
     isLeadingIndicator: true,
+  },
+];
+
+export const laggingKrs: KeyResult[] = [
+  {
+    id: "kr-lag-1",
+    title: "FY26 热泵营收",
+    budgetTag: "KR-REV",
+    targetValue: "2.5亿",
+    currentValue: "1.2亿",
+    confidence: 0.55,
+    isLeadingIndicator: false,
   },
 ];
 

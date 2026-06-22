@@ -2,13 +2,15 @@ import Link from "next/link";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { StrategicImportPanel } from "@/components/compiler/StrategicImportPanel";
 import { getInboxSummary } from "@/lib/inbox/count";
+import { CommandBoardShell } from "@/components/command/CommandBoardShell";
+import { TimelineEditor } from "@/components/command/TimelineEditor";
+import { DecisionsEditor } from "@/components/command/DecisionsEditor";
 import { TopAlertsPanel } from "@/components/command/TopAlertsPanel";
 import { ScenarioAdvisor } from "@/components/command/ScenarioAdvisor";
 import { BscLights } from "@/components/health/BscLights";
 import { BafBar } from "@/components/finance/BafBar";
 import { RobustBars } from "@/components/health/RobustBars";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
-import { DecisionsPanel } from "@/components/ui/DecisionsPanel";
 import { ExecutiveSummary } from "@/components/ui/ExecutiveSummary";
 import { ImplicationsBar } from "@/components/ui/ImplicationsBar";
 import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
@@ -19,7 +21,6 @@ import {
   buildScrSummary,
   buildTopAlerts,
   buildImplications,
-  buildDecisionItems,
 } from "@/lib/panorama/scr";
 import { topDiffs } from "@/lib/stratos";
 
@@ -46,7 +47,6 @@ export default async function CommandPage() {
   const scr = buildScrSummary(deck);
   const alerts = buildTopAlerts(deck);
   const implications = buildImplications(deck);
-  const decisions = buildDecisionItems(deck);
   const kpis = deck.managementReport.kpis;
   const hardBlock = alerts.find((a) => a.severity === "critical") ?? alerts[0];
 
@@ -105,7 +105,11 @@ export default async function CommandPage() {
         </section>
       ) : null}
 
-      <DecisionsPanel decisions={decisions} />
+      <DecisionsEditor
+        initialDecisions={deck.decisions}
+        derivedDecisions={deck.derivedDecisions}
+        source={deck.decisionsSource}
+      />
 
       <ImplicationsBar items={implications} />
 
@@ -122,65 +126,60 @@ export default async function CommandPage() {
         ))}
       </nav>
 
-      <section className="stratos-page space-y-6" aria-labelledby="command-workflow-heading">
-        <h2 id="command-workflow-heading" className="stratos-section-title">
-          工作流 · FPA · 预警
-        </h2>
-        <SectionCard title="战略工作流" subtitle="编制 → 解码 → 一页纸">
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              { href: "/strategy/input", title: "编制战略", desc: "三级录入与提交" },
-              { href: "/decode", title: "战略解码", desc: "BSC · X-Matrix · 反馈环" },
-              { href: "/strategy", title: "一页纸", desc: "董事会战略摘要" },
-            ].map((step) => (
-              <Link
-                key={step.href}
-                href={step.href}
-                className="group rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-4 transition-colors hover:border-[var(--color-accent)]/35 hover:bg-[var(--color-accent)]/5"
-              >
-                <div className="text-subsection text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">
-                  {step.title}
-                </div>
-                <div className="mt-1.5 text-caption">{step.desc}</div>
+      <CommandBoardShell>
+      <section className="stratos-command-board" aria-label="指挥舱态势板">
+        <div className="stratos-command-board__timeline">
+          <TimelineEditor
+            initialMilestones={deck.timeline}
+            derivedMilestones={deck.derivedTimeline}
+            source={deck.timelineSource}
+          />
+        </div>
+
+        <div className="stratos-command-board__fpa">
+          <SectionCard
+            title="FPA 管理报表"
+            subtitle={`${kpis.period} · ROS / EBITDA / 利润桥`}
+            action={
+              <Link href="/finance" className="text-sm text-[var(--color-accent)] hover:underline">
+                完整报表 →
               </Link>
-            ))}
-          </div>
-        </SectionCard>
+            }
+          >
+            <div className="stratos-slot-grid sm:grid-cols-2 xl:grid-cols-4">
+              <KpiTile label="ROS 销售净利率" value={pct(kpis.rosActual)} sub={`B ${pct(kpis.rosBudget)} · F ${pct(kpis.rosForecast)}`} href="/finance" />
+              <KpiTile label="EBITDA 利润率" value={pct(kpis.ebitdaMarginActual)} sub={`B ${pct(kpis.ebitdaMarginBudget)} · F ${pct(kpis.ebitdaMarginForecast)}`} href="/finance" />
+              <KpiTile label="EBITDA" value={`${Math.round(kpis.ebitdaActual)} 万`} sub={`B ${Math.round(kpis.ebitdaBudget)} · F ${Math.round(kpis.ebitdaForecast)}`} tone="neutral" />
+              <KpiTile label="Runway" value={`${deck.fpa.cashRunwayMonths} 月`} sub="现金 runway" tone={deck.fpa.cashRunwayMonths < 3 ? "red" : "green"} href="/finance?tab=overview" />
+            </div>
+          </SectionCard>
+        </div>
 
-        <SectionCard
-          title="FPA 管理报表"
-          subtitle={`${kpis.period} · ROS / EBITDA / 利润桥`}
-          action={
-            <Link href="/finance" className="text-sm text-[var(--color-accent)] hover:underline">
-              完整报表 →
-            </Link>
-          }
-        >
-          <div className="stratos-slot-grid lg:grid-cols-4">
-            <KpiTile label="ROS 销售净利率" value={pct(kpis.rosActual)} sub={`B ${pct(kpis.rosBudget)} · F ${pct(kpis.rosForecast)}`} href="/finance" />
-            <KpiTile label="EBITDA 利润率" value={pct(kpis.ebitdaMarginActual)} sub={`B ${pct(kpis.ebitdaMarginBudget)} · F ${pct(kpis.ebitdaMarginForecast)}`} href="/finance" />
-            <KpiTile label="EBITDA" value={`${Math.round(kpis.ebitdaActual)} 万`} sub={`B ${Math.round(kpis.ebitdaBudget)} · F ${Math.round(kpis.ebitdaForecast)}`} tone="neutral" />
-            <KpiTile label="Runway" value={`${deck.fpa.cashRunwayMonths} 月`} sub="现金 runway" tone={deck.fpa.cashRunwayMonths < 3 ? "red" : "green"} href="/finance?tab=overview" />
-          </div>
-        </SectionCard>
+        <div className="stratos-command-board__baf">
+          <SectionCard title="B-A-F 闭环" subtitle="营收 · 利润 · 与 FPA 联动" accent="gold">
+            <BafBar fpa={deck.fpa} />
+          </SectionCard>
+        </div>
 
-        <SectionCard title="Top 预警" subtitle="硬阻断 · ≤3 条" accent="green">
-          <TopAlertsPanel alerts={alerts} embedded />
-        </SectionCard>
-      </section>
+        <div className="stratos-command-board__bsc">
+          <SectionCard title="BSC 四满意" subtitle="四灯 · 目标来自 DB" accent="green">
+            <BscLights lights={deck.bscLights} cards={deck.bscCards} />
+          </SectionCard>
+        </div>
 
-      <section className="stratos-page space-y-6" aria-labelledby="command-bsc-heading">
-        <h2 id="command-bsc-heading" className="stratos-section-title">
-          BSC · 稳健性 · StratDiff
-        </h2>
-        <BscLights lights={deck.bscLights} />
-        <section className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="stratos-command-board__robust">
           <SectionCard title="StratRobust" subtitle="战略稳健性五维" accent="violet">
             <RobustBars dims={deck.robustScore} />
           </SectionCard>
+        </div>
+
+        <div className="stratos-command-board__spbp">
           <SectionCard title="SPBP 情景" subtitle="Bayes 概率预览" accent="sky">
             <ScenarioAdvisor scenarios={deck.spbpScenarios} embedded />
           </SectionCard>
+        </div>
+
+        <div className="stratos-command-board__diff">
           <SectionCard title="Top3 StratDiff" subtitle="版本间关键变化" accent="gold">
             <ul className="space-y-3">
               {top3.map((d, i) => (
@@ -194,11 +193,38 @@ export default async function CommandPage() {
               查看全部 diff →
             </Link>
           </SectionCard>
-          <SectionCard title="B-A-F 闭环" subtitle="营收 · 利润" accent="gold">
-            <BafBar fpa={deck.fpa} />
+        </div>
+
+        <div className="stratos-command-board__alerts">
+          <SectionCard title="Top 预警" subtitle="硬阻断 · ≤3 条" accent="green">
+            <TopAlertsPanel alerts={alerts} embedded />
           </SectionCard>
-        </section>
+        </div>
+
+        <div className="stratos-command-board__workflow">
+          <SectionCard title="战略工作流" subtitle="编制 → 解码 → 一页纸">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { href: "/strategy/input", title: "编制战略", desc: "三级录入与提交" },
+                { href: "/decode", title: "战略解码", desc: "BSC · X-Matrix · 反馈环" },
+                { href: "/strategy", title: "一页纸", desc: "董事会战略摘要" },
+              ].map((step) => (
+                <Link
+                  key={step.href}
+                  href={step.href}
+                  className="group rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-3 transition-colors hover:border-[var(--color-accent)]/35 hover:bg-[var(--color-accent)]/5"
+                >
+                  <div className="text-subsection text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">
+                    {step.title}
+                  </div>
+                  <div className="mt-1 text-caption">{step.desc}</div>
+                </Link>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
       </section>
+      </CommandBoardShell>
     </div>
   );
 }

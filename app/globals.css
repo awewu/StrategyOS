@@ -59,6 +59,17 @@
   --bsc-process:   #6344b8;
   --bsc-learning:  #1f8a45;
 
+  /* ── Chart colors ── */
+  --chart-baf-budget:   color-mix(in srgb, var(--color-accent) 70%, transparent);
+  --chart-baf-actual:   #38bdf8;
+  --chart-baf-forecast: color-mix(in srgb, #a78bfa 75%, transparent);
+  --chart-bridge-track: color-mix(in srgb, var(--bsc-financial) 40%, transparent);
+  --chart-bridge-total: color-mix(in srgb, var(--color-accent) 80%, transparent);
+  --chart-bridge-negative: color-mix(in srgb, var(--signal-red) 60%, transparent);
+  --chart-bridge-positive: color-mix(in srgb, var(--signal-green) 60%, transparent);
+  --chart-axis-tick: var(--color-text-muted);
+  --chart-progress: var(--color-accent);
+
   /* ── Three-stack ── */
   --stack-cap:  #8b0e04;
   --stack-prod: #1f8a45;
@@ -102,6 +113,8 @@
   --color-bg-surface: #ffffff;
   --color-text-primary: var(--print-navy);
   --color-text-muted: #828c8d;
+  --print-border: color-mix(in srgb, var(--print-navy) 10%, transparent);
+  --print-surface-muted: color-mix(in srgb, var(--print-navy) 4%, white);
 }
 
 @theme inline {
@@ -887,6 +900,110 @@ a.stratos-segment__item {
 .stratos-disclosure__body {
   padding: var(--space-card) calc(var(--space-card) + 0.25rem);
 }
+
+/* Command deck · UI_VI §4.3 · 12-column board */
+.stratos-command-board {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.stratos-command-board__fpa {
+  grid-column: 1 / -1;
+}
+
+.stratos-command-board__baf {
+  grid-column: 1 / -1;
+}
+
+.stratos-command-board__bsc {
+  grid-column: 1 / -1;
+}
+
+.stratos-command-board__robust,
+.stratos-command-board__spbp,
+.stratos-command-board__diff,
+.stratos-command-board__alerts {
+  grid-column: 1 / -1;
+}
+
+.stratos-command-board__workflow {
+  grid-column: 1 / -1;
+}
+
+.stratos-command-board__timeline {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 1024px) {
+  .stratos-command-board__timeline {
+    grid-column: span 4;
+  }
+
+  .stratos-command-board__fpa {
+    grid-column: span 8;
+  }
+
+  .stratos-command-board__baf {
+    grid-column: span 4;
+  }
+
+  .stratos-command-board__robust,
+  .stratos-command-board__spbp,
+  .stratos-command-board__diff,
+  .stratos-command-board__alerts {
+    grid-column: span 3;
+  }
+}
+
+/* Print / board theme utilities */
+[data-theme="print"] .stratos-print-header {
+  border-bottom: 1px solid var(--print-border);
+}
+
+[data-theme="print"] .stratos-print-title {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+[data-theme="print"] .stratos-print-muted {
+  color: var(--color-text-muted);
+}
+
+[data-theme="print"] .stratos-print-body {
+  color: color-mix(in srgb, var(--color-text-primary) 72%, var(--color-text-muted));
+}
+
+[data-theme="print"] .stratos-print-card {
+  border-radius: 0.75rem;
+  border: 1px solid var(--print-border);
+  background: var(--color-bg-surface);
+  padding: 1rem;
+}
+
+[data-theme="print"] .stratos-print-card--accent {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+[data-theme="print"] .stratos-print-card--muted-bg {
+  background: var(--print-surface-muted);
+}
+
+[data-theme="print"] .stratos-print-section-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+[data-theme="print"] .stratos-print-footer {
+  border-top: 1px solid var(--print-border);
+  color: var(--color-text-muted);
+}
+
 
 .stratos-disclosure--secondary {
   opacity: 0.92;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChinaStrategyOnePager } from "@/components/strategy/ChinaStrategyOnePager";
+import { StrategyGrowthPanel } from "@/components/strategy/StrategyGrowthPanel";
 import { StrategySummaryPanel } from "@/components/strategy/StrategySummaryPanel";
 import { ThreeStackPanel } from "@/components/strategy/ThreeStackPanel";
 import type { OnePagerRecord } from "@/lib/strategy/one-pager-store";
@@ -23,7 +24,7 @@ export function StrategyPageTabs({
   const [tab, setTab] = useState<"view" | "onepager">("view");
 
   return (
-    <div className="stratos-page">
+    <div className="stratos-section-gap flex flex-col">
       <div className="stratos-segment">
         <button
           type="button"
@@ -58,6 +59,7 @@ export function StrategyPageTabs({
             gtmBets={bundle.gtmBets}
             capSummary={capSummary}
           />
+          <StrategyGrowthPanel bundle={bundle} />
         </div>
       ) : (
         <ChinaStrategyOnePager initial={onePager} />

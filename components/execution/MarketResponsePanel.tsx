@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import type { MarketEvidence, CompetitivePosition } from "@/lib/execution/market-response";
 
 const VERDICT_META = {
-  effective:        { label: "执行有效",   color: "#22c55e", bg: "bg-green-900/20",  border: "border-green-500/30"  },
-  assumption_failed:{ label: "假设失效",   color: "#ef4444", bg: "bg-red-900/20",    border: "border-red-500/30"    },
-  inconclusive:     { label: "证据不足",   color: "#eab308", bg: "bg-yellow-900/20", border: "border-yellow-500/30" },
-  empty:            { label: "待录入",     color: "#4e5758", bg: "bg-black/[0.03]",  border: "border-[var(--surface-border)] border-dashed" },
+  effective:        { label: "执行有效",   color: "var(--signal-green)", bg: "bg-green-900/20",  border: "border-green-500/30"  },
+  assumption_failed:{ label: "假设失效",   color: "var(--signal-red)", bg: "bg-red-900/20",    border: "border-red-500/30"    },
+  inconclusive:     { label: "证据不足",   color: "var(--signal-yellow)", bg: "bg-yellow-900/20", border: "border-yellow-500/30" },
+  empty:            { label: "待录入",     color: "var(--color-text-secondary)", bg: "bg-black/[0.03]",  border: "border-[var(--surface-border)] border-dashed" },
 } as const;
 
 const inputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
@@ -19,14 +19,14 @@ function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: Mark
       <div className={`rounded-lg border ${meta.border} ${meta.bg} px-4 py-3`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#4e5758]" />
-            <span className="text-sm text-[#828c8d]">{item.actionLabel}</span>
-            {item.actionCode && <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-xs text-[#4e5758]">{item.actionCode}</span>}
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-secondary)]" />
+            <span className="text-sm text-[var(--color-text-muted)]">{item.actionLabel}</span>
+            {item.actionCode && <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-xs text-[var(--color-text-secondary)]">{item.actionCode}</span>}
           </div>
           <button onClick={() => onEdit(item)} className="text-xs text-[var(--color-accent)] hover:underline">录入反馈</button>
         </div>
         {item.linkedAssumptionCode && (
-          <p className="mt-1.5 text-xs text-[#4e5758]">关联假设 {item.linkedAssumptionCode} · 市场反馈缺失，假设有效性无法评估</p>
+          <p className="mt-1.5 text-xs text-[var(--color-text-secondary)]">关联假设 {item.linkedAssumptionCode} · 市场反馈缺失，假设有效性无法评估</p>
         )}
       </div>
     );
@@ -56,7 +56,7 @@ function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: Mark
       {item.verdictNote && (
         <p className="mt-2 text-xs text-[var(--color-text-muted)]">→ {item.verdictNote}</p>
       )}
-      <div className="mt-3 flex gap-3 text-xs text-[#4e5758]">
+      <div className="mt-3 flex gap-3 text-xs text-[var(--color-text-secondary)]">
         {item.evidenceSource && <span>{item.evidenceSource}</span>}
         {item.recordedBy && <span>录入：{item.recordedBy}</span>}
         {item.recordedAt && <span>{item.recordedAt}</span>}
@@ -210,7 +210,7 @@ function CompetitiveTable({ positions, onEdit }: {
       <div className="mb-3 flex items-center justify-between">
         <span className="text-xs text-[var(--color-text-muted)]">竞争位移对标</span>
         {missingCount > 0 && (
-          <span className="text-xs text-[#4e5758]">{missingCount} 项对标数据缺失</span>
+          <span className="text-xs text-[var(--color-text-secondary)]">{missingCount} 项对标数据缺失</span>
         )}
       </div>
       <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
@@ -233,14 +233,14 @@ function CompetitiveTable({ positions, onEdit }: {
                 <tr key={p.id} className={`border-b border-[var(--surface-border)] ${missing ? "bg-black/[0.015]" : ""}`}>
                   <td className="px-3 py-2.5">{p.dimension}</td>
                   <td className="px-3 py-2.5 text-[var(--color-text-muted)]">{p.competitor}</td>
-                  <td className="px-3 py-2.5 font-medium">{p.ourValue ?? <span className="text-[#4e5758]">待录入</span>}</td>
-                  <td className="px-3 py-2.5">{p.theirValue ?? <span className="text-[#4e5758]">待录入</span>}</td>
+                  <td className="px-3 py-2.5 font-medium">{p.ourValue ?? <span className="text-[var(--color-text-secondary)]">待录入</span>}</td>
+                  <td className="px-3 py-2.5">{p.theirValue ?? <span className="text-[var(--color-text-secondary)]">待录入</span>}</td>
                   <td className="px-3 py-2.5">
                     {p.delta
                       ? <span className={p.delta.includes("落后") ? "text-red-400" : "text-green-400"}>{p.delta}</span>
-                      : <span className="text-[#4e5758]">—</span>}
+                      : <span className="text-[var(--color-text-secondary)]">—</span>}
                   </td>
-                  <td className="px-3 py-2.5 text-[#4e5758]">
+                  <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">
                     {p.evidenceSource
                       ? <span>{p.evidenceSource} · {p.recordedBy}</span>
                       : <span className="italic">无来源</span>}
@@ -293,8 +293,8 @@ export function MarketResponsePanel({
         </div>
         <div className="flex gap-3 text-xs">
           {emptyCount > 0 && (
-            <span className="flex items-center gap-1.5 text-[#4e5758]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#4e5758]" />
+            <span className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-secondary)]" />
               {emptyCount}/{totalSlots} 待录入
             </span>
           )}
@@ -314,7 +314,7 @@ export function MarketResponsePanel({
       </div>
 
       {emptyCount > 0 && (
-        <div className="rounded-lg border border-[#cdd1d2] bg-[var(--surface-raised)] px-4 py-3 text-xs text-[#828c8d]">
+        <div className="rounded-lg border border-[#cdd1d2] bg-[var(--surface-raised)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
           <span className="text-[var(--color-text-muted)]">{emptyCount} 个战略行动缺少市场反馈录入</span>
           {" "}— 战略会前要求责任人补录，缺失本身是对市场理解深度的考核。
           {cpMissingCount > 0 && <span> 竞争位移表另有 {cpMissingCount} 项对标数据缺失。</span>}

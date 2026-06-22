@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { SessionPayload } from "@/lib/auth/config";
-import { canAccessRoute, isAdmin, roleHomePath } from "@/lib/auth/permissions";
+import { canAccessHub, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand/tokens";
 import { RoleSwitcher } from "@/components/shell/RoleSwitcher";
 import { NavIcon, type NavIconId } from "@/components/shell/NavIcons";
@@ -22,6 +22,18 @@ import {
   type NavHub,
 } from "@/lib/nav/hubs";
 import { useRole } from "@/lib/context/role-context";
+import type { RoleKey } from "@/lib/auth/permissions";
+
+function filterHubForRole(hub: NavHub, role: RoleKey): NavHub | null {
+  if (!canAccessHub(role, hub.id)) return null;
+  const children = hub.children.filter((c) => filterNavHref(role, c.href));
+  if (children.length === 0) return null;
+  const defaultHref =
+    children.find((c) => c.href === hub.defaultHref)?.href ??
+    children.find((c) => filterNavHref(role, c.href))?.href ??
+    children[0]!.href;
+  return { ...hub, children, defaultHref };
+}
 
 function RailNavItem({
   href,
@@ -57,7 +69,7 @@ function HubFlyout({
   pathname: string;
   open: boolean;
 }) {
-  if (!open) return null;
+  if (!open || hub.children.length === 0) return null;
 
   return (
     <div className="stratos-nav-flyout" role="menu">
@@ -132,9 +144,11 @@ export function AppNav({
   const home = roleHomePath(role);
   const showAccess = isAdmin(role);
 
-  const standalone = NAV_STANDALONE;
-  const primaryHubs = NAV_PRIMARY_HUBS;
-  const bottomHubs = [NAV_OPS_HUB, NAV_MONITOR_HUB, NAV_TOOLS_HUB];
+  const standalone = NAV_STANDALONE.filter((item) => filterNavHref(role, item.href));
+  const primaryHubs = NAV_PRIMARY_HUBS.map((h) => filterHubForRole(h, role)).filter(Boolean) as NavHub[];
+  const bottomHubs = [NAV_OPS_HUB, NAV_MONITOR_HUB, NAV_TOOLS_HUB]
+    .map((h) => filterHubForRole(h, role))
+    .filter(Boolean) as NavHub[];
 
   return (
     <aside className="stratos-sidebar">

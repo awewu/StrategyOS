@@ -99,6 +99,33 @@ export async function getAssumptions(): Promise<Assumption[]> {
   }));
 }
 
+export interface ObjectiveView {
+  id: string;
+  title: string;
+}
+
+export async function getObjectives(): Promise<ObjectiveView[]> {
+  if (!(await dbAvailable())) return demo.objectives;
+  const rows = await prisma.objective.findMany({ where: { period: PERIOD }, orderBy: { createdAt: "asc" } });
+  if (rows.length === 0) return demo.objectives;
+  return rows.map((r) => ({ id: r.id, title: r.title }));
+}
+
+export async function getAllKeyResults(): Promise<KeyResult[]> {
+  if (!(await dbAvailable())) return [...demo.leadingKrs, ...demo.laggingKrs];
+  const rows = await prisma.keyResult.findMany({ where: { period: PERIOD }, orderBy: { title: "asc" } });
+  if (rows.length === 0) return [...demo.leadingKrs, ...demo.laggingKrs];
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    budgetTag: r.budgetTag ?? undefined,
+    targetValue: r.targetValue ?? undefined,
+    currentValue: r.currentValue ?? undefined,
+    confidence: r.confidence ? Number(r.confidence) : undefined,
+    isLeadingIndicator: r.isLeadingIndicator,
+  }));
+}
+
 export async function getLeadingKeyResults(): Promise<KeyResult[]> {
   if (!(await dbAvailable())) return demo.leadingKrs;
   const rows = await prisma.keyResult.findMany({
@@ -282,12 +309,9 @@ export async function getFeedbackLoops() {
 }
 
 export async function getBscCards() {
-  if (!(await dbAvailable())) return demo.bscCards;
-  const signals = await getBscLights();
-  return demo.bscCards.map((c) => ({
-    ...c,
-    light: signals[c.key as keyof typeof signals] ?? c.light,
-  }));
+  const { getBscConfig, mergeBscCardsWithLights } = await import("@/lib/fpa/bsc-config-access");
+  const [config, lights] = await Promise.all([getBscConfig(PERIOD), getBscLights()]);
+  return mergeBscCardsWithLights(config.cards, lights);
 }
 
 export async function getProductRoadmap() {

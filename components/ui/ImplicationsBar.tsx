@@ -13,7 +13,7 @@ export function ImplicationsBar({
     <section
       className={
         isPrint
-          ? "rounded-xl border border-[#0a1628]/10 bg-[#faf8f5] px-5 py-4"
+          ? "stratos-print-card stratos-print-card--muted-bg px-5 py-4"
           : "stratos-card stratos-card--padded"
       }
       aria-labelledby="implications-title"
@@ -26,7 +26,7 @@ export function ImplicationsBar({
           >
             战略含义
           </h2>
-          <p className={`stratos-section-desc ${isPrint ? "text-[#828c8d]" : ""}`}>
+          <p className={`stratos-section-desc ${isPrint ? "stratos-print-muted" : ""}`}>
             对组织与资源的连带影响
           </p>
         </div>
@@ -34,7 +34,7 @@ export function ImplicationsBar({
           {items.map((item) => (
             <li
               key={item}
-              className={`stratos-prose ${isPrint ? "text-[#4e5758]" : ""}`}
+              className={`stratos-prose ${isPrint ? "stratos-print-body" : ""}`}
             >
               <span className="mr-2 text-[var(--color-accent)]" aria-hidden>
                 →

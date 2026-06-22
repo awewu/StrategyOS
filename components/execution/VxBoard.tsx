@@ -5,7 +5,7 @@ export function VxBoard({ projects }: { projects: Project[] }) {
   return (
     <section className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
       <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="border-b border-[var(--surface-border)] bg-[var(--surface-panel)] text-[#828c8d]">
+        <thead className="border-b border-[var(--surface-border)] bg-[var(--surface-panel)] text-[var(--color-text-muted)]">
           <tr>
             <th className="px-4 py-3">Vx</th>
             <th className="px-4 py-3">进度</th>
@@ -24,7 +24,7 @@ export function VxBoard({ projects }: { projects: Project[] }) {
               <tr key={vx.id} className="border-b border-[var(--surface-border)] hover:bg-black/[0.02]">
                 <td className="px-4 py-3">
                   <div className="font-medium">{vx.code}</div>
-                  <div className="text-xs text-[#828c8d]">{vx.name}</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">{vx.name}</div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="font-data">{vx.progressPercent}%</div>
@@ -44,7 +44,7 @@ export function VxBoard({ projects }: { projects: Project[] }) {
                 <td className="px-4 py-3 font-data text-xs text-[var(--color-text-muted)]">
                   {vx.horizon ?? "—"}
                 </td>
-                <td className="px-4 py-3 text-[#828c8d]">{vx.owner}</td>
+                <td className="px-4 py-3 text-[var(--color-text-muted)]">{vx.owner}</td>
               </tr>
             );
           })}

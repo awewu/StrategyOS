@@ -760,6 +760,61 @@ model CultureHandbook {
   @@map("culture_handbooks")
 }
 
+model StrategicExecutionAnalytics {
+  id                 String   @id @default(uuid())
+  period             String   @default("2026-FY") @db.VarChar(10)
+  horizonBubblesJson Json     @map("horizon_bubbles_json")
+  riceItemsJson      Json     @map("rice_items_json")
+  trlRadarJson       Json     @map("trl_radar_json")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_execution_analytics")
+}
+
+model StrategicBscConfig {
+  id        String   @id @default(uuid())
+  period    String   @default("2026-FY") @db.VarChar(10)
+  cardsJson Json     @map("cards_json")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_bsc_configs")
+}
+
+model StrategicManagementAdjustments {
+  id               String   @id @default(uuid())
+  period           String   @default("2026-FY") @db.VarChar(10)
+  marginBridgeJson Json?    @map("margin_bridge_json")
+  statementsJson   Json?    @map("statements_json")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_management_adjustments")
+}
+
+model StrategicGrowthAnalytics {
+  id              String   @id @default(uuid())
+  period          String   @default("2026-FY") @db.VarChar(10)
+  aarrrFunnelJson Json     @map("aarrr_funnel_json")
+  kellerBrandJson Json     @map("keller_brand_json")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_growth_analytics")
+}
+
+model StrategicCommandConfig {
+  id            String   @id @default(uuid())
+  period        String   @default("2026-FY") @db.VarChar(10)
+  decisionsJson Json?    @map("decisions_json")
+  timelineJson  Json?    @map("timeline_json")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_command_configs")
+}
+
 model TechSignalRecord {
   id                String           @id @default(uuid())
   title             String           @db.VarChar(200)

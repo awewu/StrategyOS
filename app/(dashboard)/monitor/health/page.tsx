@@ -1,3 +1,4 @@
+import { BscConfigEditor } from "@/components/health/BscConfigEditor";
 import { HealthPageClient } from "@/components/health/HealthPageClient";
 import { OpsHealthDashboard } from "@/components/health/OpsHealthDashboard";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -12,6 +13,11 @@ export default async function MonitorHealthPage() {
         eyebrow="运行监测 · 集团"
         title="集团健康"
         subtitle="BSC 四灯 · Robust · 当期 KPI · 十二维下钻（角色）"
+      />
+      <BscConfigEditor
+        initialCards={data.bscCards}
+        lights={data.bscLights}
+        source={data.bscConfigSource}
       />
       <HealthPageClient
         bscLights={data.bscLights}

@@ -7,11 +7,19 @@ import * as entities from "@/lib/data/entity-getters";
 import * as demo from "@/lib/stratos-demo-data";
 import { buildManagementReport } from "@/lib/fpa/management-report";
 import { getCapitalConfig } from "@/lib/fpa/capital-config-access";
+import { getExecutionAnalytics } from "@/lib/fpa/execution-analytics-access";
+import { getGrowthAnalytics } from "@/lib/fpa/growth-analytics-access";
+import { getManagementAdjustments } from "@/lib/fpa/management-adjustments-access";
 import { getOutlookBundle } from "@/lib/fpa/outlook-access";
 import { getMaPipelineEditable } from "@/lib/fpa/ma-pipeline-access";
 import { getSpbpEditable } from "@/lib/fpa/spbp-access";
 import type { ManagementReportBundle } from "@/lib/fpa/management-types";
-import { computeRobustOverall } from "@/lib/stratos/robust-score";
+import {
+  buildDerivedScoreboardConfig,
+  getScoreboardConfig,
+  mergeScoreboardSource,
+  resolveScoreboardView,
+} from "@/lib/execution/scoreboard-access";
 import { getStratDiffs } from "@/lib/data/versions-data";
 import {
   demoTensions, demoMaturityPoints, demoCommitments,
@@ -136,7 +144,12 @@ export async function getRobustScore(): Promise<RobustnessDimensions> {
 
 /** Bundle for command deck + PDF one-pager */
 export async function getCommandDeckBundle() {
-  const [diagnosis, fpa, assertions, source, spbpScenarios, capStack, investmentCases, bscLights, robust, managementReport, stratDiffs] =
+  const { getCommandDecisionsConfig, getCommandTimelineConfig } = await import("@/lib/command/decisions-access");
+  const { buildStrategicTimeline } = await import("@/lib/command/timeline");
+  const { buildDecisionItems } = await import("@/lib/panorama/scr");
+  const { getSnapshotList } = await import("@/lib/data/versions-data");
+
+  const [diagnosis, fpa, assertions, source, spbpScenarios, capStack, investmentCases, bscLights, bscCards, robust, managementReport, stratDiffs, snapshots, decisionsConfig, timelineConfig] =
     await Promise.all([
       getDiagnosis(),
       getFpaSummary(),
@@ -146,23 +159,41 @@ export async function getCommandDeckBundle() {
       getCapStack(),
       getInvestmentCases(),
       entities.getBscLights(),
+      entities.getBscCards(),
       getRobustScore(),
       getManagementReport(),
       getStratDiffs(),
+      getSnapshotList(),
+      getCommandDecisionsConfig(),
+      getCommandTimelineConfig(),
     ]);
-  return {
+
+  const base = {
     source,
     diagnosis,
     fpa,
     managementReport,
     assertions,
     bscLights,
+    bscCards,
     robustScore: robust,
     robustOverall: computeRobustOverall(robust),
     stratDiffs,
     spbpScenarios,
     capStack,
     investmentCases,
+  };
+
+  const derivedDecisions = buildDecisionItems(base);
+  const derivedTimeline = buildStrategicTimeline(snapshots);
+  return {
+    ...base,
+    decisions: decisionsConfig.decisions ?? derivedDecisions,
+    derivedDecisions,
+    decisionsSource: decisionsConfig.source,
+    timeline: timelineConfig.milestones ?? derivedTimeline,
+    derivedTimeline,
+    timelineSource: timelineConfig.source,
   };
 }
 
@@ -181,6 +212,7 @@ export async function getStrategyBundle() {
     productGaps,
     gtmSegments,
     bscCards,
+    growthAnalytics,
   ] = await Promise.all([
     getDiagnosis(),
     getInvestmentCases(),
@@ -194,6 +226,7 @@ export async function getStrategyBundle() {
     entities.getProductGaps(),
     entities.getGtmSegments(),
     entities.getBscCards(),
+    getGrowthAnalytics(),
   ]);
   return {
     source,
@@ -208,14 +241,15 @@ export async function getStrategyBundle() {
     productGaps,
     gtmSegments,
     bscCards,
-    aarrrFunnel: demo.aarrrFunnel,
-    kellerBrandLayers: demo.kellerBrandLayers,
+    aarrrFunnel: growthAnalytics.aarrrFunnel,
+    kellerBrandLayers: growthAnalytics.kellerBrandLayers,
+    growthAnalyticsSource: growthAnalytics.source,
   };
 }
 
 /** Finance page bundle */
 export async function getFinanceBundle() {
-  const [fpa, capStack, investmentCases, spbpBundle, maBundle, source, managementReport, outlook, capitalConfig] =
+  const [fpa, capStack, investmentCases, spbpBundle, maBundle, source, managementReport, managementAdj, outlook, capitalConfig] =
     await Promise.all([
       getFpaSummary(),
       getCapStack(),
@@ -224,6 +258,7 @@ export async function getFinanceBundle() {
       getMaPipelineEditable(),
       getDataSource(),
       getManagementReport(),
+      getManagementAdjustments(),
       getOutlookBundle(),
       getCapitalConfig(),
     ]);
@@ -231,6 +266,8 @@ export async function getFinanceBundle() {
     source,
     fpa,
     managementReport,
+    managementMarginBridgeSource: managementAdj.marginBridgeSource,
+    managementStatementsSource: managementAdj.statementsSource,
     capStack,
     capacity: await entities.getCapacity(),
     investmentCases,
@@ -249,35 +286,81 @@ export async function getFinanceBundle() {
 
 export async function getManagementReport(): Promise<ManagementReportBundle> {
   const fpa = await getFpaSummary();
-  return buildManagementReport(fpa, demo.CURRENT_PERIOD);
+  const base = buildManagementReport(fpa, demo.CURRENT_PERIOD);
+  const adj = await getManagementAdjustments();
+  return {
+    ...base,
+    marginBridge: adj.marginBridge ?? base.marginBridge,
+    incomeStatement: adj.statements?.incomeStatement ?? base.incomeStatement,
+    balanceSheet: adj.statements?.balanceSheet ?? base.balanceSheet,
+    cashFlowStatement: adj.statements?.cashFlowStatement ?? base.cashFlowStatement,
+  };
 }
 
 /** Execution page bundle */
 export async function getExecutionBundle() {
-  const [diagnosis, techSignals, source, projects, assumptions, leadingKrs, tensions, maturityPoints, commitments, marketResponses, competitivePositions, reportSignals] = await Promise.all([
+  const [
+    diagnosis,
+    techSignals,
+    source,
+    projects,
+    assumptions,
+    leadingKrs,
+    allKrs,
+    objectives,
+    scoreboardStored,
+    tensions,
+    maturityPoints,
+    commitments,
+    marketResponses,
+    competitivePositions,
+    reportSignals,
+    executionAnalytics,
+  ] = await Promise.all([
     getDiagnosis(),
     getTechSignals(),
     getDataSource(),
     entities.getProjects(),
     entities.getAssumptions(),
     entities.getLeadingKeyResults(),
+    entities.getAllKeyResults(),
+    entities.getObjectives(),
+    getScoreboardConfig(),
     getExecutionTensions(),
     getExecutionMaturity(),
     getCommitmentRecords(),
     getMarketEvidence(),
     getCompetitivePositions(),
     getReportDerivedSignals(),
+    getExecutionAnalytics(),
   ]);
+  const scoreboardConfig =
+    scoreboardStored.config ?? buildDerivedScoreboardConfig(leadingKrs);
+  const scoreboard = mergeScoreboardSource(
+    resolveScoreboardView(scoreboardConfig, {
+      diagnosis,
+      objectives,
+      allKrs,
+      derivedLeadingKrs: leadingKrs,
+    }),
+    scoreboardStored.source,
+  );
   return {
     source,
     diagnosis,
     leadingKrs,
-    horizonBubbles: demo.horizonBubbles,
+    allKrs,
+    objectives,
+    scoreboard,
+    scoreboardConfigSource: scoreboardStored.source,
+    scoreboardConfig,
+    horizonBubbles: executionAnalytics.horizonBubbles,
     projects,
     assumptions,
     techSignals,
-    riceItems: demo.riceItems,
-    trlRadar: demo.trlRadar,
+    riceItems: executionAnalytics.riceItems,
+    trlRadar: executionAnalytics.trlRadar,
+    executionAnalyticsSource: executionAnalytics.source,
     tensions,
     maturityPoints,
     commitments,
@@ -552,17 +635,22 @@ export async function getReports(orgScope?: string[] | null): Promise<ReportList
 
 /** Health page bundle */
 export async function getHealthBundle() {
-  const [source, fpa, bscLights, healthOverview, robustScore] = await Promise.all([
+  const { getBscConfig } = await import("@/lib/fpa/bsc-config-access");
+  const [source, fpa, bscLights, bscConfig, healthOverview, robustScore, bscCards] = await Promise.all([
     getDataSource(),
     getFpaSummary(),
     entities.getBscLights(),
+    getBscConfig(),
     entities.getHealthOverview(),
     getRobustScore(),
+    entities.getBscCards(),
   ]);
   return {
     source,
     fpa,
     bscLights,
+    bscCards,
+    bscConfigSource: bscConfig.source,
     healthOverview,
     robustScore,
     robustOverall: computeRobustOverall(robustScore),

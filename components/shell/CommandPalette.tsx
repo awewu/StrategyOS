@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isAdmin } from "@/lib/auth/permissions";
+import { isAdmin, filterNavHref } from "@/lib/auth/permissions";
 import { useRole } from "@/lib/context/role-context";
 import { flattenNavLinks } from "@/lib/nav/hubs";
 
@@ -26,8 +26,10 @@ export function CommandPalette() {
   const { role } = useRole();
 
   const links = [
-    ...flattenNavLinks(),
-    ...EXTRA_LINKS.filter((l) => !("adminOnly" in l && l.adminOnly) || isAdmin(role)),
+    ...flattenNavLinks().filter((l) => filterNavHref(role, l.href)),
+    ...EXTRA_LINKS.filter((l) => !("adminOnly" in l && l.adminOnly) || isAdmin(role)).filter((l) =>
+      filterNavHref(role, l.href),
+    ),
     ...(isAdmin(role)
       ? [{ href: "/admin/access", label: "访问管理", group: "管理" }]
       : []),

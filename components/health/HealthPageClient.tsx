@@ -97,7 +97,7 @@ export function HealthPageClient({
             {healthOverview.kpis.map((k) => (
               <tr key={k.name} className="border-t border-[var(--surface-border)]">
                 <td className="py-2">{k.name}</td>
-                <td className="py-2 text-[#828c8d]">{k.target}</td>
+                <td className="py-2 text-[var(--color-text-muted)]">{k.target}</td>
                 <td className="py-2">{k.value}</td>
                 <td className="py-2">
                   <TrafficLightDot signal={k.status as TrafficLight} />

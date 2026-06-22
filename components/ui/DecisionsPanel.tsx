@@ -20,7 +20,7 @@ export function DecisionsPanel({
 
   return (
     <section
-      className={isPrint ? "rounded-xl border border-[#0a1628]/10 bg-white p-5" : "stratos-card stratos-card--padded"}
+      className={isPrint ? "stratos-print-card" : "stratos-card stratos-card--padded"}
       aria-labelledby="decisions-title"
     >
       <header className="stratos-section-header">
@@ -28,7 +28,7 @@ export function DecisionsPanel({
           <h2 id="decisions-title" className="stratos-section-title">
             待决事项
           </h2>
-          <p className={`stratos-section-desc ${isPrint ? "text-[#828c8d]" : ""}`}>
+          <p className={`stratos-section-desc ${isPrint ? "stratos-print-muted" : ""}`}>
             董事会 / 指挥层需拍板的决策清单
           </p>
         </div>
@@ -37,7 +37,7 @@ export function DecisionsPanel({
         {decisions.map((d) => (
           <li key={d.id} className="flex flex-wrap items-start justify-between gap-3 py-3.5 first:pt-0 last:pb-0">
             <div>
-              <p className={`text-subsection ${isPrint ? "text-[#0a1628]" : "text-[var(--color-text-primary)]"}`}>
+              <p className={`text-subsection ${isPrint ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-primary)]"}`}>
                 {d.title}
               </p>
               {(d.owner || d.deadline) ? (

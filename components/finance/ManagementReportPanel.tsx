@@ -2,6 +2,7 @@
 
 import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
 import type { ManagementReportBundle } from "@/lib/fpa/management-types";
+import { bridgeBarStyle } from "@/lib/fpa/bridge-bar-style";
 
 function pct(v: number) {
   return `${(v * 100).toFixed(1)}%`;
@@ -58,8 +59,8 @@ export function ManagementReportPanel({ report }: { report: ManagementReportBund
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.04]">
                   <div
-                    className={`h-full rounded-full ${isTotal ? "bg-[var(--color-accent)] opacity-80" : "bg-[var(--bsc-financial)] opacity-40"}`}
-                    style={{ width: barW }}
+                    className="h-full rounded-full"
+                    style={{ width: barW, background: bridgeBarStyle(item) }}
                   />
                 </div>
               </div>

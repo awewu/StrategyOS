@@ -12,14 +12,10 @@ export function ExecutiveSummary({
 }) {
   const isPrint = variant === "print";
   const shell = isPrint
-    ? "rounded-2xl border border-[var(--color-accent)]/40 bg-white p-6 shadow-sm"
+    ? "stratos-print-card stratos-print-card--accent p-6 shadow-sm"
     : "stratos-card stratos-card--padded";
 
-  const labelClass = isPrint
-    ? "text-label text-[#828c8d]"
-    : "label-xs";
-
-  const resolutionClass = isPrint ? "text-[#0a1628]" : "text-[var(--color-text-primary)]";
+  const labelClass = isPrint ? "stratos-print-section-label" : "label-xs";
 
   return (
     <section className={shell} aria-labelledby="exec-summary-title">
@@ -29,7 +25,7 @@ export function ExecutiveSummary({
             执行摘要 · SCR
           </h2>
           {!compact ? (
-            <p className={`stratos-section-desc ${isPrint ? "text-[#828c8d]" : ""}`}>
+            <p className={`stratos-section-desc ${isPrint ? "stratos-print-muted" : ""}`}>
               答案先行 · Resolution 占叙事主轴
             </p>
           ) : null}
@@ -40,7 +36,7 @@ export function ExecutiveSummary({
           <dt className={labelClass}>
             {mckinseySections.scr.situation.id} · {mckinseySections.scr.situation.labelZh}
           </dt>
-          <dd className={`stratos-prose ${isPrint ? "text-[#4e5758]" : ""}`}>
+          <dd className={`stratos-prose ${isPrint ? "stratos-print-body" : ""}`}>
             {scr.situation}
           </dd>
         </div>
@@ -48,7 +44,7 @@ export function ExecutiveSummary({
           <dt className={labelClass}>
             {mckinseySections.scr.complication.id} · {mckinseySections.scr.complication.labelZh}
           </dt>
-          <dd className={`stratos-prose font-medium ${isPrint ? "text-[#b45309]" : "text-[var(--signal-yellow)]"}`}>
+          <dd className={`stratos-prose font-medium ${isPrint ? "text-[var(--signal-yellow)]" : "text-[var(--signal-yellow)]"}`}>
             {scr.complication}
           </dd>
         </div>
@@ -56,7 +52,9 @@ export function ExecutiveSummary({
           <dt className={labelClass}>
             {mckinseySections.scr.resolution.id} · {mckinseySections.scr.resolution.labelZh}
           </dt>
-          <dd className={`stratos-prose font-semibold ${resolutionClass}`}>{scr.resolution}</dd>
+          <dd className={`stratos-prose font-semibold ${isPrint ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-primary)]"}`}>
+            {scr.resolution}
+          </dd>
         </div>
       </dl>
     </section>
