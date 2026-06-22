@@ -8,18 +8,24 @@ import type { RoleKey } from "@/lib/constants";
 export function verifyWorkOSWebhook(
   payload: string,
   signatureHeader: string | null,
-  secret: string
+  secret: string,
+  maxAgeSeconds = 300,
 ): boolean {
   if (!signatureHeader || !secret) return false;
   const parts = Object.fromEntries(
     signatureHeader.split(",").map((p) => {
       const [k, v] = p.split("=");
       return [k.trim(), v?.trim()];
-    })
+    }),
   );
   const ts = parts.t;
   const v1 = parts.v1;
   if (!ts || !v1) return false;
+
+  const tsNum = Number(ts);
+  if (!Number.isFinite(tsNum)) return false;
+  const age = Math.abs(Date.now() / 1000 - tsNum);
+  if (age > maxAgeSeconds) return false;
 
   const signed = crypto.createHmac("sha256", secret).update(`${ts}.${payload}`).digest("hex");
   try {

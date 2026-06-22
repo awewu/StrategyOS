@@ -23,7 +23,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  const evt = JSON.parse(raw) as { id: string; event: string; data: Record<string, unknown> };
+  let evt: { id: string; event: string; data: Record<string, unknown> };
+  try {
+    evt = JSON.parse(raw) as typeof evt;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+
+  if (!evt?.event || typeof evt.event !== "string") {
+    return NextResponse.json({ error: "Missing event type" }, { status: 400 });
+  }
+
   const result = await handleWorkOSEvent(evt);
 
   await logUsageEvent({

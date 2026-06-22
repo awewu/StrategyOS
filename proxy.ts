@@ -6,6 +6,7 @@ import {
   type RoleKey,
 } from "@/lib/auth/permissions";
 import { resolveEffectiveRole, shouldEnforceRoutePermissions } from "@/lib/auth/resolve-role";
+import { decodeSessionToken } from "@/lib/auth/session";
 
 const PUBLIC = [
   "/login",
@@ -21,19 +22,9 @@ const PUBLIC = [
 
 function roleFromRequest(request: NextRequest): RoleKey {
   const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
-  let sessionRole: RoleKey | null = null;
-  if (sessionToken) {
-    try {
-      const payload = JSON.parse(
-        Buffer.from(sessionToken, "base64url").toString("utf8"),
-      ) as { role?: string };
-      if (payload.role) sessionRole = payload.role as RoleKey;
-    } catch {
-      // fall through
-    }
-  }
+  const payload = sessionToken ? decodeSessionToken(sessionToken) : null;
   return resolveEffectiveRole({
-    sessionRole,
+    sessionRole: payload?.role ?? null,
     cookieRole: request.cookies.get(ROLE_COOKIE)?.value,
   });
 }

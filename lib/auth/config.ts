@@ -21,6 +21,11 @@ export function workosConfigured(): boolean {
   return Boolean(process.env.WORKOS_CLIENT_ID && process.env.WORKOS_API_KEY);
 }
 
+/** Demo email login — disabled when production auth requires WorkOS SSO. */
+export function demoLoginAllowed(): boolean {
+  return !(authRequired() && workosConfigured());
+}
+
 /** Demo users when DB unavailable */
 export const DEMO_USERS: SessionPayload[] = [
   { userId: "demo-ceo", email: "ceo@rheem.cn", name: "铁山", role: "ceo", orgUnitId: null, projectCode: null },

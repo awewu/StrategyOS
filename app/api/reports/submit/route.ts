@@ -6,6 +6,7 @@ import { dbAvailable, prisma } from "@/lib/db";
 import { onReportApproved } from "@/lib/delivery/hooks";
 import { parseReportSmart } from "@/lib/stratos/llm-agent";
 import { formatMonthlyPulse, parseReportContent } from "@/lib/stratos/report-agent";
+import { checkPulseDuplicate } from "@/lib/reports/pulse-dedup";
 
 export const runtime = "nodejs";
 
@@ -134,6 +135,23 @@ export async function POST(req: Request) {
 
     if (isPulse) {
       extractedText = formatMonthlyPulse({ oneLiner, offTrackKr, needHelp });
+
+      const forceSubmit = String(form.get("forceSubmit") ?? "") === "1";
+      if (orgUnitId && (await dbAvailable())) {
+        const dup = await checkPulseDuplicate(orgUnitId, period, { oneLiner, offTrackKr, needHelp });
+        if (dup.isDuplicate && !forceSubmit) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "duplicate_pulse",
+              duplicate: dup,
+              message: dup.message,
+            },
+            { status: 409 },
+          );
+        }
+      }
+
       const parsed = parseReportContent(reportId, extractedText, period);
       if (offTrackKr.trim()) {
         parsed.coverageUpdates.push(`偏离KR: ${offTrackKr.trim()}`);
@@ -157,7 +175,7 @@ export async function POST(req: Request) {
         });
       }
 
-      return NextResponse.json({ ok: true, reportId, extracted: extractedText.length });
+      return NextResponse.json({ ok: true, reportId, extracted: extractedText.length, duplicateChecked: true });
     }
 
     const { parsed } = await parseReportSmart(reportId, extractedText || title, period, false);

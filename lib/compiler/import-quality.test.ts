@@ -24,7 +24,19 @@ describe("import-quality", () => {
   it("rejects slide boilerplate and discussion prompts", () => {
     assert.equal(classifyObjectiveNoise("IN-CONFIDENCE"), "slide_boilerplate");
     assert.equal(classifyObjectiveNoise("先制造/财务 vs. 业务同步？"), "discussion_prompt");
-    assert.equal(classifyObjectiveNoise("123"), "too_short");
+    assert.equal(classifyObjectiveNoise("123"), "low_signal");
+    assert.equal(classifyObjectiveNoise("---"), "too_short");
+    assert.equal(classifyObjectiveNoise("------"), "low_signal");
+  });
+
+  it("accepts substantive Chinese OKR titles (not low_signal)", () => {
+    assert.equal(classifyObjectiveNoise("区域销售达成（待改进点）"), null);
+    assert.equal(classifyObjectiveNoise("江苏客户布局（待改进点）"), null);
+    assert.equal(
+      classifyObjectiveNoise("构建驱动业务增长的预算与资源体系，确保年度毛利目标绝对值达成"),
+      null,
+    );
+    assert.equal(classifyObjectiveNoise("待改进点"), "low_signal");
   });
 
   it("dedupes within batch and against existing", () => {

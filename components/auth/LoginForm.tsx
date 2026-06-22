@@ -12,14 +12,36 @@ const DEMO_USERS = [
   { email: "staff@rheem.cn", name: "战略组", role: "Staff" },
 ];
 
-export function LoginForm({ workosReady }: { workosReady: boolean }) {
+const ERROR_MESSAGES: Record<string, string> = {
+  state_mismatch: "SSO 状态校验失败，请重试。",
+  missing_code: "SSO 未返回授权码。",
+  workos_exchange_failed: "SSO 登录交换失败，请检查 WorkOS 配置。",
+  demo_disabled: "演示登录已禁用，请使用企业 SSO。",
+};
+
+export function LoginForm({
+  workosReady,
+  demoLoginAllowed,
+  requireAuth,
+}: {
+  workosReady: boolean;
+  demoLoginAllowed: boolean;
+  requireAuth: boolean;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const errorParam = searchParams.get("error");
+
+  const next = searchParams.get("next") ?? "/command";
+  const displayError =
+    error ??
+    (errorParam ? (ERROR_MESSAGES[errorParam] ?? `登录失败：${errorParam}`) : null);
 
   async function signIn(email: string) {
     setLoading(email);
+    setError(null);
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -27,12 +49,20 @@ export function LoginForm({ workosReady }: { workosReady: boolean }) {
     });
     if (!res.ok) {
       setLoading(null);
+      if (res.status === 403) {
+        setError(ERROR_MESSAGES.demo_disabled);
+      } else {
+        setError("登录失败，请重试。");
+      }
       return;
     }
-    const next = searchParams.get("next") ?? "/command";
     router.push(next);
     router.refresh();
   }
+
+  const showDemo = demoLoginAllowed;
+  const showWorkos = workosReady;
+  const needsWorkosConfig = requireAuth && !workosReady;
 
   return (
     <div className="mx-auto w-full max-w-md space-y-8">
@@ -46,50 +76,75 @@ export function LoginForm({ workosReady }: { workosReady: boolean }) {
         <p className="mt-2 text-sm text-[var(--color-text-muted)]">战略网络登录 · 30 人核心层</p>
       </div>
 
-      {errorParam && (
+      {displayError && (
         <p className="rounded bg-[#8b0e04]/10 px-3 py-2 text-center text-sm text-[#8b0e04]">
-          登录失败：{errorParam}
+          {displayError}
         </p>
       )}
 
-      {workosReady && (
+      {needsWorkosConfig && (
+        <div className="rounded-lg border border-[#8b0e04]/30 bg-[#8b0e04]/5 px-4 py-3 text-sm text-[#8b0e04]">
+          <p className="font-medium">需要配置 WorkOS</p>
+          <p className="mt-1 text-xs">
+            已启用 <code>STRATOS_REQUIRE_AUTH=1</code>，但未检测到 WorkOS 密钥。生产环境请配置{" "}
+            <code>WORKOS_CLIENT_ID</code> 与 <code>WORKOS_API_KEY</code>，或运行{" "}
+            <code>npm run workos:check</code> 查看清单。
+          </p>
+        </div>
+      )}
+
+      {showWorkos && (
         <a
-          href={`/api/auth/workos?next=${encodeURIComponent(searchParams.get("next") ?? "/command")}`}
-          className="flex w-full items-center justify-center rounded-lg border border-[var(--color-accent-gold)]/50 bg-[var(--color-accent-gold)]/10 py-3 text-sm font-medium text-[var(--color-accent-gold)]"
+          href={`/api/auth/workos?next=${encodeURIComponent(next)}`}
+          className="flex w-full items-center justify-center rounded-lg border border-[var(--color-accent-gold)]/50 bg-[var(--color-accent-gold)]/10 py-3 text-sm font-medium text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/20"
         >
           Enterprise SSO · WorkOS
         </a>
       )}
 
-      <div className="space-y-2">
-        {DEMO_USERS.map((u) => (
-          <button
-            key={u.email}
-            type="button"
-            disabled={loading !== null}
-            onClick={() => signIn(u.email)}
-            className="flex w-full items-center justify-between rounded-lg border border-black/10 bg-[var(--color-bg-surface)] px-4 py-3 text-left text-sm hover:border-[var(--color-accent-gold)]/40 disabled:opacity-50"
-          >
-            <span>
-              {u.name}
-              <span className="ml-2 text-[var(--color-text-muted)]">{u.email}</span>
-            </span>
-            <span className="text-xs text-[var(--color-accent-gold)]">{u.role}</span>
-          </button>
-        ))}
-      </div>
+      {showDemo && (
+        <div className="space-y-2">
+          <p className="text-xs text-[var(--color-text-muted)]">演示账号（开发 / 无 SSO 时）</p>
+          {DEMO_USERS.map((u) => (
+            <button
+              key={u.email}
+              type="button"
+              disabled={loading !== null}
+              onClick={() => signIn(u.email)}
+              className="flex w-full items-center justify-between rounded-lg border border-black/10 bg-[var(--color-bg-surface)] px-4 py-3 text-left text-sm hover:border-[var(--color-accent-gold)]/40 disabled:opacity-50"
+            >
+              <span>
+                {u.name}
+                <span className="ml-2 text-[var(--color-text-muted)]">{u.email}</span>
+              </span>
+              <span className="text-xs text-[var(--color-accent-gold)]">{u.role}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!showDemo && showWorkos && (
+        <p className="text-center text-xs text-[var(--color-text-muted)]">
+          演示登录已关闭 — 请使用上方企业 SSO 登录。
+        </p>
+      )}
 
       <div className="rounded-lg border border-black/10 p-4 text-xs text-[var(--color-text-muted)]">
         <p className="font-medium text-[var(--color-text-primary)]">Enterprise SSO</p>
         {workosReady ? (
-          <p className="mt-1">WorkOS 已配置 — 使用上方 SSO 或演示账号。</p>
+          <p className="mt-1">WorkOS 已配置 — AuthKit SSO 可用。</p>
         ) : (
           <p className="mt-1">
-            配置 WORKOS_CLIENT_ID + WORKOS_API_KEY 后启用 AuthKit。
+            在 <code>.env</code> 中配置 <code>WORKOS_CLIENT_ID</code> +{" "}
+            <code>WORKOS_API_KEY</code> 后启用 AuthKit。详见{" "}
+            <code>docs/SETUP.md</code>。
           </p>
         )}
         <p className="mt-2">
           强制登录：<code className="text-[var(--color-accent-gold)]">STRATOS_REQUIRE_AUTH=1</code>
+          {requireAuth && (
+            <span className="ml-1 text-[var(--color-accent-gold)]">（已启用）</span>
+          )}
         </p>
       </div>
     </div>

@@ -15,13 +15,19 @@
     "setup": "npx tsx scripts/setup.ts",
     "setup:fonts": "npx tsx scripts/setup.ts --fonts-only",
     "setup:db": "npx tsx scripts/setup.ts --db-only",
-    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts lib/market-intel/*.test.ts lib/health/*.test.ts lib/decode/*.test.ts lib/data/plan-assumption-sync.test.ts lib/compiler/import-quality.test.ts",
+    "workos:check": "npx tsx scripts/workos-setup-check.ts",
+    "preflight": "npx tsx scripts/production-preflight.ts",
+    "smoke": "npx tsx scripts/smoke-health.ts",
+    "plan:import": "npx tsx scripts/import-strategic-plan.ts",
+    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts lib/market-intel/*.test.ts lib/health/*.test.ts lib/decode/*.test.ts lib/data/plan-assumption-sync.test.ts lib/compiler/import-quality.test.ts lib/compiler/import-deduction.test.ts lib/compiler/import-llm.test.ts lib/compiler/import-audit.test.ts lib/reports/pulse-dedup.test.ts lib/env/*.test.ts lib/rate-limit.test.ts lib/auth/*.test.ts",
     "test:e2e": "playwright test",
     "test:compiler-chain": "npx tsx scripts/e2e-compiler-chain.ts",
     "harness": "npx tsx scripts/harness.ts",
     "harness:full": "npx tsx scripts/harness.ts --full",
     "harness:ci": "npx tsx scripts/harness.ts --ci",
-    "check": "npm run harness:ci"
+    "check": "npm run harness:ci",
+    "plan:export": "npx tsx scripts/export-strategic-plan.ts",
+    "plan:restore": "npx tsx scripts/import-strategic-plan.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"

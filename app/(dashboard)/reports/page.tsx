@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AgentOrchestrationPanel } from "@/components/reports/AgentOrchestrationPanel";
 import { MonthlyPulseForm } from "@/components/reports/MonthlyPulseForm";
+import { PulseOpsPanel } from "@/components/reports/PulseOpsPanel";
 import { ReportsArchive } from "@/components/reports/ReportsArchive";
 import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -41,6 +42,8 @@ export default async function ReportsPage() {
       />
 
       <MonthlyPulseForm orgUnits={visibleOrgUnits} />
+
+      <PulseOpsPanel />
 
       <ReportsArchive orgUnits={visibleOrgUnits} />
 

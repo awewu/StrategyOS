@@ -12,7 +12,9 @@ export type RejectReason =
   | "duplicate_in_batch"
   | "duplicate_existing"
   | "kr_subsumed"
-  | "low_signal";
+  | "low_signal"
+  | "semantic_duplicate"
+  | "semantic_noise";
 
 export interface QualityReject {
   text: string;
@@ -97,17 +99,22 @@ export function isNearDuplicate(a: string, b: string): boolean {
   return textSimilarity(a, b) >= SIMILAR_THRESHOLD;
 }
 
+/** True when string has no letters, digits, or CJK — punctuation/whitespace only. */
+function isPunctuationOnly(text: string): boolean {
+  return !/[\p{L}\p{N}]/u.test(text);
+}
+
 export function classifyObjectiveNoise(text: string): RejectReason | null {
   const t = text.trim();
   if (!t) return "too_short";
+  if (NOISE_OBJECTIVE.test(t)) return "low_signal";
   if (t.length < 6) return "too_short";
   if (SLIDE_LINE.test(t)) return "slide_boilerplate";
   if (DISCUSSION_PROMPT.test(t)) return "discussion_prompt";
-  if (NOISE_OBJECTIVE.test(t)) return "low_signal";
   if (/^[\d\s.%]+$/.test(t)) return "numeric_only";
-  if (/^[\W_]+$/.test(t)) return "low_signal";
-  // 有效 OKR 常带（待改进点）后缀，保留
+  // 有效 OKR 常带（待改进点）后缀，保留（须在标点-only 检测之前）
   if (/^(.{4,})[（(]\s*待改进点\s*[)）]\s*$/.test(t)) return null;
+  if (isPunctuationOnly(t)) return "low_signal";
   return null;
 }
 

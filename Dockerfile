@@ -28,6 +28,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
+# Container listens on 3000 (map host port as needed: docker run -p 3000:3000).
+# Local npm dev/start uses PORT=3003 in .env to avoid PLM on 3000 — do not copy that into prod.
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0

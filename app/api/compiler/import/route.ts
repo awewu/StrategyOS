@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
-import { requireApiMinLevel } from "@/lib/auth/api-guard";
+import { requireApiAdmin, requireApiMinLevel } from "@/lib/auth/api-guard";
+import { getSession } from "@/lib/auth/session";
 import { dbAvailable, prisma } from "@/lib/db";
+import { checkRateLimit, clientRateLimitKey } from "@/lib/rate-limit";
 import { saveDecodeBsc } from "@/lib/decode/data-access";
 import { saveFpaEditable } from "@/lib/fpa/data-access";
 import {
-  compileStrategicText,
   extractTextFromPdf,
   extractTextFromXlsx,
   type CompiledObjective,
 } from "@/lib/compiler/strategic-compiler";
 import { sanitizeCompiledPayload } from "@/lib/compiler/import-quality";
+import { buildImportDeductionReport } from "@/lib/compiler/import-deduction";
+import { compileStrategicTextSmart, refineWithSemanticDedupe } from "@/lib/compiler/import-llm";
 import {
-  loadExistingObjectiveTitles,
+  loadExistingObjectiveRefs,
   mergeIntoStrategicPlan,
   replaceStrategicPlan,
 } from "@/lib/compiler/merge-import";
@@ -23,6 +26,8 @@ export const runtime = "nodejs";
 const ORG_UNIT_ID = "org-group-rhautt";
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
+const IMPORT_RATE_LIMIT = 8;
+const IMPORT_RATE_WINDOW_MS = 10 * 60 * 1000;
 
 type ImportMode = "merge" | "replace";
 
@@ -47,6 +52,16 @@ async function ensurePlanId(): Promise<string> {
 export async function POST(req: Request) {
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
+
+  const session = await getSession();
+  const rateKey = clientRateLimitKey(req, session?.email);
+  const rate = checkRateLimit(`compiler-import:${rateKey}`, IMPORT_RATE_LIMIT, IMPORT_RATE_WINDOW_MS);
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: "导入请求过于频繁，请稍后再试", retryAfterSec: rate.retryAfterSec },
+      { status: 429, headers: { "Retry-After": String(rate.retryAfterSec ?? 60) } },
+    );
+  }
 
   if (!(await dbAvailable())) {
     return NextResponse.json({ error: "DATABASE_URL unset — 无法导入" }, { status: 503 });
@@ -90,14 +105,60 @@ export async function POST(req: Request) {
       }
     }
 
+    if (mode === "replace" && !previewOnly) {
+      const adminDenied = await requireApiAdmin();
+      if (adminDenied) return adminDenied;
+    }
+
     if (!rawText.trim()) {
       return NextResponse.json({ error: "无法提取文本 — 请上传 PDF/Excel 或粘贴正文" }, { status: 400 });
     }
 
-    const compiled = compileStrategicText(rawText);
+    const { payload: compiled, engine: compileEngine } = await compileStrategicTextSmart(rawText);
     const planId = await ensurePlanId();
-    const existingTitles = mode === "merge" ? await loadExistingObjectiveTitles(planId) : [];
-    const sanitized = sanitizeCompiledPayload(compiled, existingTitles);
+    const existingRefs =
+      mode === "merge" || previewOnly ? await loadExistingObjectiveRefs(planId) : [];
+    const existingTitles = existingRefs.flatMap((o) => [o.objective, ...o.keyResults]);
+    const planMeta = await prisma.strategicPlan.findUnique({
+      where: { id: planId },
+      select: { intent: true, northStar: true },
+    });
+    let sanitized = sanitizeCompiledPayload(compiled, mode === "merge" ? existingTitles : []);
+    // 合并模式：语义层对「本批接受项」与库内比对（不因规则 pre-filter 跳过 LLM）
+    let semanticSource = sanitized;
+    if (mode === "merge" && sanitized.stats.acceptedObjectives === 0 && compiled.objectives.length > 0) {
+      semanticSource = sanitizeCompiledPayload(compiled, []);
+    }
+    const { sanitized: semanticSanitized, semantic } = await refineWithSemanticDedupe(
+      semanticSource,
+      existingTitles,
+    );
+    if (semanticSource !== sanitized) {
+      // 规则已全判重时，以语义 refinement 结果作为合并输入
+      sanitized = {
+        ...semanticSanitized,
+        stats: {
+          ...sanitized.stats,
+          acceptedObjectives: semanticSanitized.stats.acceptedObjectives,
+          acceptedKeyResults: semanticSanitized.stats.acceptedKeyResults,
+          rejectedCount: semanticSanitized.rejected.length,
+        },
+      };
+    } else {
+      sanitized = semanticSanitized;
+    }
+    const deduction = buildImportDeductionReport({
+      mode,
+      fileName,
+      charCount: rawText.length,
+      compiled,
+      sanitized,
+      existingObjectives: existingRefs,
+      planIntent: planMeta?.intent,
+      planNorthStar: planMeta?.northStar,
+      semantic,
+      compileEngine,
+    });
 
     if (previewOnly) {
       return NextResponse.json({
@@ -108,12 +169,30 @@ export async function POST(req: Request) {
         compiled: sanitized.payload,
         quality: sanitized.stats,
         rejected: sanitized.rejected.slice(0, 40),
+        deduction,
         summary: [
           ...compiled.summary,
-          `质量: 原始 ${sanitized.stats.rawObjectives} 目标 → 接受 ${sanitized.stats.acceptedObjectives} · 剔除 ${sanitized.stats.rejectedCount}`,
-          mode === "merge" ? `合并模式: 与现有 ${existingTitles.length} 条指纹比对` : "替换模式: 将覆盖现有计划目标",
-        ],
+          deduction.recommendation,
+          compileEngine !== "rules" ? `编译引擎: ${compileEngine}` : "",
+          semantic.engine === "llm"
+            ? `语义查重: 检 ${semantic.checked} · 去重 ${semantic.removedDuplicate} · 去噪 ${semantic.removedNoise}`
+            : semantic.enabled
+              ? "语义查重: 已配置但本次未命中"
+              : "语义查重: 未配置 LLM（仅规则）",
+          `质量: 原始 ${sanitized.stats.rawObjectives} → 接受 ${sanitized.stats.acceptedObjectives} · 剔除 ${sanitized.stats.rejectedCount}`,
+        ].filter(Boolean),
       });
+    }
+
+    if (!deduction.safeToImport) {
+      return NextResponse.json(
+        {
+          error: "推演阻断导入",
+          deduction,
+          risks: deduction.risks.filter((r) => r.level === "block"),
+        },
+        { status: 422 },
+      );
     }
 
     const imported: string[] = [];
@@ -143,8 +222,8 @@ export async function POST(req: Request) {
             target: kr.target ?? null,
           })),
           mustNotFail: null,
-          mustWinStatus: null,
-          notFailStatus: null,
+          mustWinStatus: "yellow" as const,
+          notFailStatus: "yellow" as const,
         })),
       );
       await saveDecodeBsc(derivedRows, CURRENT_PERIOD, { syncToPlan: false });
@@ -179,6 +258,7 @@ export async function POST(req: Request) {
       compiled: sanitized.payload,
       quality: sanitized.stats,
       rejected: sanitized.rejected.slice(0, 40),
+      deduction,
       imported,
       summary: compiled.summary,
     });

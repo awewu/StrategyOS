@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { cookies } from "next/headers";
 import { dbAvailable, prisma } from "@/lib/db";
 import {
@@ -9,21 +10,49 @@ import {
 } from "@/lib/auth/config";
 import type { RoleKey } from "@/lib/constants";
 
-export async function getSession(): Promise<SessionPayload | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
+function sessionSecret(): string | undefined {
+  return process.env.STRATOS_SESSION_SECRET?.trim() || undefined;
+}
+
+/** Parse signed or unsigned session token (shared by cookies + proxy). */
+export function decodeSessionToken(token: string): SessionPayload | null {
+  const secret = sessionSecret();
+  let body = token;
+
+  if (secret) {
+    const dot = token.lastIndexOf(".");
+    if (dot <= 0) return null;
+    body = token.slice(0, dot);
+    const sig = token.slice(dot + 1);
+    const expected = crypto.createHmac("sha256", secret).update(body).digest("base64url");
+    try {
+      if (sig.length !== expected.length) return null;
+      if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+    } catch {
+      return null;
+    }
+  }
 
   try {
-    const payload = JSON.parse(Buffer.from(token, "base64url").toString("utf8")) as SessionPayload;
-    return payload;
+    return JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as SessionPayload;
   } catch {
     return null;
   }
 }
 
+export async function getSession(): Promise<SessionPayload | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+  return decodeSessionToken(token);
+}
+
 export function encodeSession(payload: SessionPayload): string {
-  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const body = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const secret = sessionSecret();
+  if (!secret) return body;
+  const sig = crypto.createHmac("sha256", secret).update(body).digest("base64url");
+  return `${body}.${sig}`;
 }
 
 export async function resolveUserByEmail(email: string): Promise<SessionPayload | null> {

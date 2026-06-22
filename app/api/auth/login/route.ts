@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logUsageEvent } from "@/lib/audit/log-event";
-import { DEMO_USERS, workosConfigured } from "@/lib/auth/config";
+import { DEMO_USERS, demoLoginAllowed, workosConfigured } from "@/lib/auth/config";
 import {
   encodeSession,
   getSession,
@@ -12,6 +12,13 @@ import {
 } from "@/lib/auth/session";
 
 export async function POST(request: Request) {
+  if (!demoLoginAllowed()) {
+    return NextResponse.json(
+      { error: "demo login disabled — use WorkOS SSO" },
+      { status: 403 },
+    );
+  }
+
   const body = (await request.json()) as { email?: string };
   const email = body.email?.trim();
   if (!email) {
@@ -49,6 +56,7 @@ export async function GET() {
     demoUsers: DEMO_USERS.map((u) => ({ email: u.email, name: u.name, role: u.role })),
     workosReady: workosConfigured(),
     requireAuth: process.env.STRATOS_REQUIRE_AUTH === "1",
+    demoLoginAllowed: demoLoginAllowed(),
   });
 }
 

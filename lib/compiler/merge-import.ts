@@ -120,9 +120,7 @@ export async function mergeIntoStrategicPlan(
     }
 
     existing.push({
-      id: created.id,
-      objective: created.objective,
-      sortOrder: created.sortOrder,
+      ...created,
       keyResults: [],
     });
     addedObjectives++;
@@ -187,14 +185,23 @@ export async function replaceStrategicPlan(
 }
 
 export async function loadExistingObjectiveTitles(planId: string): Promise<string[]> {
-  const rows = await prisma.planObjective.findMany({
-    where: { planId },
-    select: { objective: true, keyResults: { select: { keyResult: true } } },
-  });
+  const rows = await loadExistingObjectiveRefs(planId);
   const titles: string[] = [];
   for (const r of rows) {
     titles.push(r.objective);
-    for (const kr of r.keyResults) titles.push(kr.keyResult);
+    for (const kr of r.keyResults) titles.push(kr);
   }
   return titles;
+}
+
+export async function loadExistingObjectiveRefs(planId: string) {
+  const rows = await prisma.planObjective.findMany({
+    where: { planId },
+    select: { objective: true, keyResults: { select: { keyResult: true }, orderBy: { sortOrder: "asc" } } },
+    orderBy: { sortOrder: "asc" },
+  });
+  return rows.map((r) => ({
+    objective: r.objective,
+    keyResults: r.keyResults.map((k) => k.keyResult),
+  }));
 }
