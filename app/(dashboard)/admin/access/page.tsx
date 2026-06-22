@@ -1,13 +1,13 @@
 import { AccessManagementPanel } from "@/components/admin/AccessManagementPanel";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import { requireAdmin, getEffectiveSession } from "@/lib/auth/guard";
-import { getPermissionConfig } from "@/lib/auth/permission-config";
+import { loadPermissionConfigFromDb } from "@/lib/auth/permission-config";
 import { getAuditIntegrity, getRecentLogs, getUsers } from "@/lib/data/access-data";
 
 export default async function AccessPage() {
   const effectiveRole = await requireAdmin();
   const session = await getEffectiveSession();
-  const permissionConfig = getPermissionConfig();
+  const permissionConfig = await loadPermissionConfigFromDb();
 
   await logUsageEvent({ action: "admin_view", resource: "/admin/access" });
 

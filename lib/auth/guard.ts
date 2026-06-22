@@ -8,6 +8,7 @@ import {
   roleToLevel,
   type AccessLevel,
 } from "@/lib/auth/permissions";
+import { loadPermissionConfigFromDb } from "@/lib/auth/permission-config";
 import { resolveEffectiveRole, shouldEnforceRoutePermissions } from "@/lib/auth/resolve-role";
 import { getSession } from "@/lib/auth/session";
 import type { RoleKey } from "@/lib/constants";
@@ -42,12 +43,14 @@ export async function requireMinLevel(
 
 export async function requireRouteAccess(pathname: string): Promise<RoleKey> {
   const role = await getEffectiveRole();
-  if (!shouldEnforceRoutePermissions() || canAccessRoute(role, pathname)) return role;
+  const config = await loadPermissionConfigFromDb();
+  if (!shouldEnforceRoutePermissions() || canAccessRoute(role, pathname, config)) return role;
   redirect(`${roleHomePath(role)}?denied=1`);
 }
 
 export async function requireAdmin(): Promise<RoleKey> {
   const role = await getEffectiveRole();
-  if (!shouldEnforceRoutePermissions() || isAdmin(role)) return role;
+  const config = await loadPermissionConfigFromDb();
+  if (!shouldEnforceRoutePermissions() || isAdmin(role, config)) return role;
   redirect(`${roleHomePath(role)}?denied=1`);
 }

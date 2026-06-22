@@ -20,6 +20,8 @@ const DEFAULT_CONFIG: PermissionConfig = {
   executiveRoles: ["ceo", "cfo", "vp", "system_head"],
 };
 
+const OPEN_MODE_KEY = "permission:openMode";
+
 let runtimeConfig: PermissionConfig | null = null;
 
 export function getPermissionConfig(): PermissionConfig {
@@ -32,6 +34,36 @@ export function getPermissionConfig(): PermissionConfig {
 }
 
 export function setPermissionConfig(config: PermissionConfig): void {
+  runtimeConfig = config;
+}
+
+export async function loadPermissionConfigFromDb(): Promise<PermissionConfig> {
+  try {
+    const { prisma } = await import("@/lib/db");
+    const row = await prisma.systemSetting.findUnique({ where: { key: OPEN_MODE_KEY } });
+    const openMode = row?.value === "1";
+    runtimeConfig = {
+      openMode,
+      adminRoles: DEFAULT_CONFIG.adminRoles,
+      executiveRoles: DEFAULT_CONFIG.executiveRoles,
+    };
+    return runtimeConfig;
+  } catch {
+    return getPermissionConfig();
+  }
+}
+
+export async function savePermissionConfigToDb(config: PermissionConfig): Promise<void> {
+  try {
+    const { prisma } = await import("@/lib/db");
+    await prisma.systemSetting.upsert({
+      where: { key: OPEN_MODE_KEY },
+      create: { key: OPEN_MODE_KEY, value: config.openMode ? "1" : "0" },
+      update: { value: config.openMode ? "1" : "0" },
+    });
+  } catch {
+    // Ignore DB errors in demo/offline mode.
+  }
   runtimeConfig = config;
 }
 
