@@ -3,17 +3,14 @@ import { StrategyInputClient } from "@/components/strategy/StrategyInputClient";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { requireRouteAccess } from "@/lib/auth/guard";
-import { prisma } from "@/lib/db";
+import { getOrgUnitsWithChildren } from "@/lib/data/org-units-access";
 import { getVersionsBundle } from "@/lib/data/versions-data";
 import { topDiffs } from "@/lib/stratos";
 
 export default async function StrategyInputPage() {
   await requireRouteAccess("/strategy/input");
   const [orgUnits, { stratDiffs }] = await Promise.all([
-    prisma.orgUnit.findMany({
-      orderBy: [{ level: "asc" }, { sortOrder: "asc" }],
-      include: { children: true },
-    }),
+    getOrgUnitsWithChildren(),
     getVersionsBundle(),
   ]);
   const top3 = topDiffs(stratDiffs, 3);

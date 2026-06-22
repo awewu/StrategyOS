@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getOrgUnitsFlat } from "@/lib/data/org-units-access";
+import { prisma, safeDbQuery } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -7,9 +8,7 @@ const VALID_LEVELS = ["GROUP", "EXECUTIVE", "OPERATING_UNIT"] as const;
 type OrgLevel = (typeof VALID_LEVELS)[number];
 
 export async function GET() {
-  const units = await prisma.orgUnit.findMany({
-    orderBy: [{ level: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
-  });
+  const units = await getOrgUnitsFlat();
   return NextResponse.json(units);
 }
 

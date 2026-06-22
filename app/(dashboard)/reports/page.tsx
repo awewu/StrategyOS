@@ -5,26 +5,17 @@ import { PulseOpsPanel } from "@/components/reports/PulseOpsPanel";
 import { ReportsArchive } from "@/components/reports/ReportsArchive";
 import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { dbAvailable, prisma } from "@/lib/db";
+import { getOrgUnitsSummary } from "@/lib/data/org-units-access";
 import { getEffectiveRole, getEffectiveSession } from "@/lib/auth/guard";
 import { getManagementReport, getFpaSummary } from "@/lib/data/strategy-data";
 import { getOrgScope } from "@/lib/auth/scope";
-
-async function getOrgUnits() {
-  if (!(await dbAvailable())) return [];
-  const units = await prisma.orgUnit.findMany({
-    orderBy: [{ level: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
-    select: { id: true, name: true, level: true },
-  });
-  return units;
-}
 
 export default async function ReportsPage() {
   const role = await getEffectiveRole();
   const session = await getEffectiveSession();
   const orgScope = getOrgScope(role, session);
   const [orgUnits, mgmt, fpa] = await Promise.all([
-    getOrgUnits(),
+    getOrgUnitsSummary(),
     getManagementReport(),
     getFpaSummary(),
   ]);

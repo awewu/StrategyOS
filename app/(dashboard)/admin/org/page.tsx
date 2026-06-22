@@ -1,17 +1,20 @@
-import { prisma } from "@/lib/db";
+import { prisma, safeDbQuery } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/guard";
+import { getOrgUnitsFlat } from "@/lib/data/org-units-access";
 import { OrgAdminClient } from "@/components/admin/OrgAdminClient";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function OrgAdminPage() {
   await requireAdmin();
-  const units = await prisma.orgUnit.findMany({
-    orderBy: [{ level: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
-  });
-  const plans = await prisma.strategicPlan.groupBy({
-    by: ["orgUnitId"],
-    _count: { id: true },
-  });
+  const units = await getOrgUnitsFlat();
+  const plans = await safeDbQuery(
+    () =>
+      prisma.strategicPlan.groupBy({
+        by: ["orgUnitId"],
+        _count: { id: true },
+      }),
+    [] as { orgUnitId: string; _count: { id: number } }[],
+  );
   const planCounts: Record<string, number> = {};
   for (const p of plans) planCounts[p.orgUnitId] = p._count.id;
 
