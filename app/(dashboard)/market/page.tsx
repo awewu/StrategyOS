@@ -106,7 +106,7 @@ export default async function MarketPage() {
   );
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="竞争情报 · Hermes"
         title="市场洞察"

@@ -7,7 +7,7 @@ export default async function MonitorHealthPage() {
   const [data, opsSeries] = await Promise.all([getHealthBundle(), getOpsHealthSeries()]);
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="运行监测 · 集团"
         title="集团健康"

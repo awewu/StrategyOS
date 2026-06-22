@@ -1,5 +1,4 @@
 import { mckinseySections } from "@/lib/brand/apple-mckinsey";
-import { typography } from "@/lib/brand/typography";
 import type { ScrSummary } from "@/lib/panorama/scr";
 
 export function ExecutiveSummary({
@@ -17,45 +16,47 @@ export function ExecutiveSummary({
     : "stratos-card stratos-card--padded";
 
   const labelClass = isPrint
-    ? "text-[11px] font-medium uppercase tracking-[0.08em] text-[#828c8d]"
+    ? "text-label text-[#828c8d]"
     : "label-xs";
 
   const resolutionClass = isPrint ? "text-[#0a1628]" : "text-[var(--color-text-primary)]";
 
   return (
     <section className={shell} aria-labelledby="exec-summary-title">
-      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="exec-summary-title" className="text-title text-[var(--color-text-primary)]">
-          执行摘要 · SCR
-        </h2>
-        {!compact ? (
-          <p className={`${typography.caption} ${isPrint ? "text-[#828c8d]" : ""}`}>
-            答案先行 · Resolution 占叙事主轴
-          </p>
-        ) : null}
+      <header className="stratos-section-header">
+        <div>
+          <h2 id="exec-summary-title" className="stratos-section-title">
+            执行摘要 · SCR
+          </h2>
+          {!compact ? (
+            <p className={`stratos-section-desc ${isPrint ? "text-[#828c8d]" : ""}`}>
+              答案先行 · Resolution 占叙事主轴
+            </p>
+          ) : null}
+        </div>
       </header>
-      <dl className={`grid gap-5 ${compact ? "md:grid-cols-3 md:gap-4" : "md:grid-cols-3"}`}>
-        <div className="space-y-1.5">
+      <dl className={`grid gap-6 ${compact ? "md:grid-cols-3 md:gap-5" : "md:grid-cols-3"}`}>
+        <div className="space-y-2">
           <dt className={labelClass}>
             {mckinseySections.scr.situation.id} · {mckinseySections.scr.situation.labelZh}
           </dt>
-          <dd className={`text-sm leading-relaxed text-[var(--color-text-secondary)] ${isPrint ? "text-[#cdd1d2]" : ""}`}>
+          <dd className={`stratos-prose ${isPrint ? "text-[#4e5758]" : ""}`}>
             {scr.situation}
           </dd>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <dt className={labelClass}>
             {mckinseySections.scr.complication.id} · {mckinseySections.scr.complication.labelZh}
           </dt>
-          <dd className={`text-sm leading-relaxed ${isPrint ? "text-[#b45309]" : "text-[var(--signal-yellow)]"}`}>
+          <dd className={`stratos-prose font-medium ${isPrint ? "text-[#b45309]" : "text-[var(--signal-yellow)]"}`}>
             {scr.complication}
           </dd>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <dt className={labelClass}>
             {mckinseySections.scr.resolution.id} · {mckinseySections.scr.resolution.labelZh}
           </dt>
-          <dd className={`text-sm font-medium leading-relaxed ${resolutionClass}`}>{scr.resolution}</dd>
+          <dd className={`stratos-prose font-semibold ${resolutionClass}`}>{scr.resolution}</dd>
         </div>
       </dl>
     </section>

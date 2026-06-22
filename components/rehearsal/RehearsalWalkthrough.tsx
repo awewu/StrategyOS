@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { RehearsalPresentMode } from "@/components/rehearsal/RehearsalPresentMode";
+import { typography } from "@/lib/brand/typography";
 import { Q3_REHEARSAL_AGENDA, REHEARSAL_TOTAL_MIN } from "@/lib/rehearsal/q3-agenda";
 import type { RehearsalLiveContext } from "@/lib/rehearsal/live-context";
 
@@ -51,9 +52,9 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs text-[var(--color-text-muted)]">2026 Q3 · 战略会标准包 · EVOLUTION §9.3</p>
-          <h1 className="text-2xl font-semibold text-[var(--color-accent)]">彩排 Walkthrough</h1>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p className={typography.eyebrow}>Walkthrough · 环节 {active + 1}/{Q3_REHEARSAL_AGENDA.length}</p>
+          <h2 className={`${typography.h2} text-[var(--color-accent)]`}>{step.title}</h2>
+          <p className={typography.caption}>
             总时长 {REHEARSAL_TOTAL_MIN} 分钟 · 6 环节 · 30 人核心层 · 实时数据驱动
           </p>
         </div>

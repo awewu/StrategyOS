@@ -1,5 +1,3 @@
-import { typography } from "@/lib/brand/typography";
-
 export function ImplicationsBar({
   items,
   variant = "dark",
@@ -20,25 +18,23 @@ export function ImplicationsBar({
       }
       aria-labelledby="implications-title"
     >
-      <div className="flex flex-wrap items-start gap-4 md:gap-6">
-        <div className="min-w-[7rem] shrink-0">
-          <h3
+      <div className="flex flex-wrap items-start gap-5 md:gap-8">
+        <div className="min-w-[8rem] shrink-0">
+          <h2
             id="implications-title"
-            className={`text-title ${isPrint ? "text-[var(--color-accent)]" : "text-[var(--color-text-primary)]"}`}
+            className={`stratos-section-title ${isPrint ? "text-[var(--color-accent)]" : ""}`}
           >
             战略含义
-          </h3>
-          <p className={`${typography.caption} mt-0.5 ${isPrint ? "text-[#828c8d]" : ""}`}>
+          </h2>
+          <p className={`stratos-section-desc ${isPrint ? "text-[#828c8d]" : ""}`}>
             对组织与资源的连带影响
           </p>
         </div>
-        <ul className="flex flex-1 flex-col gap-2">
+        <ul className="flex flex-1 flex-col gap-2.5">
           {items.map((item) => (
             <li
               key={item}
-              className={`text-sm leading-relaxed ${
-                isPrint ? "text-[#cdd1d2]" : "text-[var(--color-text-secondary)]"
-              }`}
+              className={`stratos-prose ${isPrint ? "text-[#4e5758]" : ""}`}
             >
               <span className="mr-2 text-[var(--color-accent)]" aria-hidden>
                 →

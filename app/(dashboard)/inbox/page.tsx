@@ -9,7 +9,7 @@ export default async function InboxPage() {
   const critical = items.filter((i) => i.severity === "critical" && i.status === "OPEN").length;
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="战略态势 · 交付闭环"
         title="议题 Inbox"

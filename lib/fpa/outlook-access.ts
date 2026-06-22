@@ -1,0 +1,78 @@
+import { dbAvailable, prisma } from "@/lib/db";
+import * as demo from "@/lib/stratos-demo-data";
+import type { FpaYearRow, SensitivityDriver } from "@/lib/types/stratos";
+
+export type OutlookBundle = {
+  fiveYearForecast: FpaYearRow[];
+  sensitivityDrivers: SensitivityDriver[];
+  source: "database" | "demo";
+};
+
+function defaultOutlook(): Omit<OutlookBundle, "source"> {
+  return {
+    fiveYearForecast: demo.fiveYearForecast,
+    sensitivityDrivers: demo.sensitivityDrivers,
+  };
+}
+
+function parseOutlookJson(
+  fiveYearForecastJson: unknown,
+  sensitivityJson: unknown,
+): Omit<OutlookBundle, "source"> {
+  const rows = fiveYearForecastJson as FpaYearRow[];
+  const drivers = sensitivityJson as SensitivityDriver[];
+  if (!Array.isArray(rows) || !Array.isArray(drivers)) {
+    throw new Error("战略展望数据格式无效");
+  }
+  return { fiveYearForecast: rows, sensitivityDrivers: drivers };
+}
+
+async function seedOutlookIfEmpty(period: string): Promise<void> {
+  const existing = await prisma.strategicOutlook.findUnique({ where: { period } });
+  if (existing) return;
+  const d = defaultOutlook();
+  await prisma.strategicOutlook.create({
+    data: {
+      period,
+      fiveYearForecastJson: d.fiveYearForecast,
+      sensitivityJson: d.sensitivityDrivers,
+    },
+  });
+}
+
+export async function getOutlookBundle(period = demo.CURRENT_PERIOD): Promise<OutlookBundle> {
+  if (!(await dbAvailable())) {
+    return { ...defaultOutlook(), source: "demo" };
+  }
+  await seedOutlookIfEmpty(period);
+  const row = await prisma.strategicOutlook.findUnique({ where: { period } });
+  if (!row) return { ...defaultOutlook(), source: "demo" };
+  const parsed = parseOutlookJson(row.fiveYearForecastJson, row.sensitivityJson);
+  return { ...parsed, source: "database" };
+}
+
+export async function saveOutlookBundle(
+  payload: { fiveYearForecast: FpaYearRow[]; sensitivityDrivers: SensitivityDriver[] },
+  period = demo.CURRENT_PERIOD,
+): Promise<OutlookBundle> {
+  if (!(await dbAvailable())) throw new Error("DATABASE_URL unset — 无法保存战略展望");
+  await seedOutlookIfEmpty(period);
+  const row = await prisma.strategicOutlook.findUnique({ where: { period } });
+  if (!row) throw new Error("战略展望记录未找到");
+
+  for (const r of payload.fiveYearForecast) {
+    if (!r.year?.trim()) throw new Error("年度不能为空");
+  }
+  for (const d of payload.sensitivityDrivers) {
+    if (!d.label?.trim()) throw new Error("敏感性驱动项名称不能为空");
+  }
+
+  await prisma.strategicOutlook.update({
+    where: { id: row.id },
+    data: {
+      fiveYearForecastJson: payload.fiveYearForecast,
+      sensitivityJson: payload.sensitivityDrivers,
+    },
+  });
+  return { ...payload, source: "database" };
+}

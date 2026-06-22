@@ -13,7 +13,7 @@ export default async function DecodePage({
     tab === "stratsim" ? ("stratsim" as const) : tab === "hoshin" ? ("hoshin" as const) : undefined;
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="BSC · X-Matrix · 反馈环"
         title="战略解码"

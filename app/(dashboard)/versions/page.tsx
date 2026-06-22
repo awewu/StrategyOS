@@ -17,7 +17,7 @@ export default async function VersionsPage() {
   );
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="战略制定 · 历史参照"
         title="历史版本 · 对照"

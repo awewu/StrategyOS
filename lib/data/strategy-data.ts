@@ -6,6 +6,10 @@ import { dbAvailable, prisma } from "@/lib/db";
 import * as entities from "@/lib/data/entity-getters";
 import * as demo from "@/lib/stratos-demo-data";
 import { buildManagementReport } from "@/lib/fpa/management-report";
+import { getCapitalConfig } from "@/lib/fpa/capital-config-access";
+import { getOutlookBundle } from "@/lib/fpa/outlook-access";
+import { getMaPipelineEditable } from "@/lib/fpa/ma-pipeline-access";
+import { getSpbpEditable } from "@/lib/fpa/spbp-access";
 import type { ManagementReportBundle } from "@/lib/fpa/management-types";
 import { computeRobustOverall } from "@/lib/stratos/robust-score";
 import { getStratDiffs } from "@/lib/data/versions-data";
@@ -211,15 +215,17 @@ export async function getStrategyBundle() {
 
 /** Finance page bundle */
 export async function getFinanceBundle() {
-  const [fpa, capStack, investmentCases, spbpScenarios, maPipeline, source, managementReport] =
+  const [fpa, capStack, investmentCases, spbpBundle, maBundle, source, managementReport, outlook, capitalConfig] =
     await Promise.all([
       getFpaSummary(),
       getCapStack(),
       getInvestmentCases(),
-      getSpbpScenarios(),
-      getMaPipeline(),
+      getSpbpEditable(),
+      getMaPipelineEditable(),
       getDataSource(),
       getManagementReport(),
+      getOutlookBundle(),
+      getCapitalConfig(),
     ]);
   return {
     source,
@@ -228,12 +234,16 @@ export async function getFinanceBundle() {
     capStack,
     capacity: await entities.getCapacity(),
     investmentCases,
-    fiveYearForecast: demo.fiveYearForecast,
-    sensitivityDrivers: demo.sensitivityDrivers,
-    spbpScenarios,
-    maPipeline,
-    realOptions: demo.realOptions,
-    postInvestDeviations: demo.postInvestDeviations,
+    fiveYearForecast: outlook.fiveYearForecast,
+    sensitivityDrivers: outlook.sensitivityDrivers,
+    outlookSource: outlook.source,
+    spbpScenarios: spbpBundle.scenarios,
+    spbpSource: spbpBundle.source,
+    maPipeline: maBundle.items,
+    maSource: maBundle.source,
+    realOptions: capitalConfig.realOptions,
+    postInvestDeviations: capitalConfig.postInvestDeviations,
+    capitalConfigSource: capitalConfig.source,
   };
 }
 

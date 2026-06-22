@@ -19,7 +19,7 @@ export default async function StrategyInputPage() {
   const top3 = topDiffs(stratDiffs, 3);
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="三级规划 · 提交审核"
         title="战略录入"

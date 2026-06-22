@@ -32,7 +32,7 @@ export default async function MonitorFunctionsPage({
   const exec = await getExecutionBundle();
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="运行监测 · N-1"
         title="职能体系"

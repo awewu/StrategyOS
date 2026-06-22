@@ -1,4 +1,5 @@
 import { MarketConfigPanel } from "@/components/market/MarketConfigPanel";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { prisma } from "@/lib/db";
 
 export default async function MarketConfigPage() {
@@ -22,11 +23,12 @@ export default async function MarketConfigPage() {
     cadenceDays: s.cadenceDays, active: s.active, health: s.health,
   }));
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">市场配置</h1>
-        <p className="text-sm text-[var(--color-text-muted)]">管理销售大区 / 省级、产品品类、竞品品牌、重点产品与爆款信号、Hermes 情报来源</p>
-      </div>
+    <div className="stratos-page">
+      <PageHeader
+        eyebrow="市场情报 · 配置"
+        title="市场配置"
+        subtitle="销售大区 / 品类 / 竞品品牌 / 重点产品 / Hermes 情报来源"
+      />
       <MarketConfigPanel regions={regions} productLines={productLines} brands={brands} products={products} sources={sources} />
     </div>
   );

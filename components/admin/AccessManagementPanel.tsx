@@ -7,6 +7,7 @@ import { ACTION_LABELS, type UsageLogRecord } from "@/lib/audit/types";
 import type { AccessUser } from "@/lib/data/access-data";
 import { ROLES, type RoleKey } from "@/lib/constants";
 import { roleLabel } from "@/lib/context/role-context";
+import { typography } from "@/lib/brand/typography";
 
 function formatTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -44,8 +45,8 @@ export function AccessManagementPanel({
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">访问管理</h1>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <h1 className={typography.h1}>访问管理</h1>
+          <p className={`${typography.caption} mt-1`}>
             登录账号 · 当前会话 · 使用审计日志（最近 50 条）
           </p>
         </div>

@@ -728,6 +728,38 @@ model SpbpScenario {
   @@map("spbp_scenarios")
 }
 
+model StrategicOutlook {
+  id                   String   @id @default(uuid())
+  period               String   @default("2026-FY") @db.VarChar(10)
+  fiveYearForecastJson Json     @map("five_year_forecast_json")
+  sensitivityJson      Json     @map("sensitivity_json")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_outlook")
+}
+
+model StrategicCapitalConfig {
+  id                       String   @id @default(uuid())
+  period                   String   @default("2026-FY") @db.VarChar(10)
+  realOptionsJson          Json     @map("real_options_json")
+  postInvestDeviationsJson Json     @map("post_invest_deviations_json")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("strategic_capital_configs")
+}
+
+model CultureHandbook {
+  id          String   @id @default(uuid())
+  period      String   @default("2026-FY") @db.VarChar(10)
+  contentJson Json     @map("content_json")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([period])
+  @@map("culture_handbooks")
+}
+
 model TechSignalRecord {
   id                String           @id @default(uuid())
   title             String           @db.VarChar(200)

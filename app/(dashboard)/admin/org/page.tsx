@@ -22,7 +22,7 @@ export default async function OrgAdminPage() {
   }));
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="组织架构管理"
         title="事业部 · 体系 · 二级部门"

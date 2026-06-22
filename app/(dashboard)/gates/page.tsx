@@ -7,7 +7,7 @@ export default async function GatesPage() {
   const summary = gateSummaryFrom(checklists);
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="工具 · 战略会"
         title="战略会准入"

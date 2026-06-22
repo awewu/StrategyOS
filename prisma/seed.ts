@@ -200,6 +200,26 @@ async function main() {
     },
   });
 
+  await prisma.strategicOutlook.upsert({
+    where: { period: "2026-FY" },
+    update: {},
+    create: {
+      period: "2026-FY",
+      fiveYearForecastJson: [
+        { year: "2026", revenueBudget: 6000, revenueForecast: 5800, profitBudget: 880, profitForecast: 820, capexBudget: 12000 },
+        { year: "2027", revenueBudget: 8500, revenueForecast: 8200, profitBudget: 1200, profitForecast: 1100, capexBudget: 9000 },
+        { year: "2028", revenueBudget: 12000, revenueForecast: 11500, profitBudget: 1680, profitForecast: 1580, capexBudget: 7500 },
+        { year: "2029", revenueBudget: 16500, revenueForecast: 16000, profitBudget: 2310, profitForecast: 2200, capexBudget: 6000 },
+        { year: "2030", revenueBudget: 22000, revenueForecast: 21000, profitBudget: 3080, profitForecast: 2900, capexBudget: 5000 },
+      ],
+      sensitivityJson: [
+        { id: "drv-hotel", label: "酒店签约达成率", baseValue: 68, unit: "%", lowDelta: -10, highDelta: 5, impactOnProfit: { low: -180, high: 90 } },
+        { id: "drv-v4", label: "V4 上市延迟", baseValue: 0, unit: "月", lowDelta: 0, highDelta: 3, impactOnProfit: { low: 0, high: -220 } },
+        { id: "drv-steel", label: "钢材成本", baseValue: 100, unit: "指数", lowDelta: -8, highDelta: 12, impactOnProfit: { low: 60, high: -95 } },
+      ],
+    },
+  });
+
   const tsCount = await prisma.techSignalRecord.count();
   if (tsCount === 0) {
     await prisma.techSignalRecord.createMany({

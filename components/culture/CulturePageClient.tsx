@@ -1,13 +1,17 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  BehaviorGuidelinesPanel,
-  CoreValuesPanel,
+  NorthStarEditModal,
+  saveNorthStarToApi,
+  type NorthStarForm,
+} from "@/components/compass/NorthStarEditModal";
+import {
   CultureLinksBar,
-  DoctrinesPanel,
   MissionVisionPanel,
 } from "@/components/culture/CulturePanels";
+import { CultureHandbookEditor } from "@/components/culture/CultureHandbookEditor";
 import { SectionCard } from "@/components/ui/KpiTile";
 import { typography } from "@/lib/brand/typography";
 import {
@@ -17,21 +21,31 @@ import {
   type ValuesAwardWinner,
   type ValuesUnderstandingRecord,
 } from "@/lib/culture/content";
+import type { CultureHandbookContent } from "@/lib/culture/content";
+
 import type { NorthStar } from "@/lib/compass/types";
 
 type Props = {
   northStar: NorthStar | null;
+  initialHandbook: CultureHandbookContent;
+  handbookSource: "database" | "demo";
   initialWinners: ValuesAwardWinner[];
   initialRecords: ValuesUnderstandingRecord[];
   source: "database" | "demo";
 };
 
 export function CulturePageClient({
-  northStar,
+  northStar: initialNorthStar,
+  initialHandbook,
+  handbookSource,
   initialWinners,
   initialRecords,
   source,
 }: Props) {
+  const router = useRouter();
+  const [northStar, setNorthStar] = useState(initialNorthStar);
+  const [editNorthStar, setEditNorthStar] = useState(false);
+  const [savingNorthStar, setSavingNorthStar] = useState(false);
   const [winners, setWinners] = useState(initialWinners);
   const [records, setRecords] = useState(initialRecords);
   const [editing, setEditing] = useState(false);
@@ -63,6 +77,31 @@ export function CulturePageClient({
     const j = (await res.json()) as { record?: ValuesUnderstandingRecord; error?: string };
     if (!res.ok) throw new Error(j.error ?? "保存失败");
     return j.record!;
+  }
+
+  async function handleSaveNorthStar(form: NorthStarForm) {
+    setSavingNorthStar(true);
+    try {
+      const { id } = await saveNorthStarToApi(form, northStar);
+      setNorthStar({
+        id,
+        mission: form.mission,
+        vision: form.vision,
+        targetYear: form.targetYear,
+        revenueTarget: form.revenueTarget,
+        profitMarginTarget: form.profitMarginTarget,
+        marketPositionDesc: form.marketPositionDesc,
+        geographyDesc: form.geographyDesc,
+        brandDesc: form.brandDesc,
+      });
+      setEditNorthStar(false);
+      flash("使命愿景已保存");
+      router.refresh();
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "保存失败");
+    } finally {
+      setSavingNorthStar(false);
+    }
   }
 
   async function handleSaveAll() {
@@ -121,7 +160,7 @@ export function CulturePageClient({
   }
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <div className="flex flex-wrap items-center justify-end gap-2">
         <span className="text-xs text-[var(--color-text-muted)]">
           数据源 {source === "database" ? "DB" : "Demo"}
@@ -143,26 +182,43 @@ export function CulturePageClient({
               type="button"
               disabled={busy}
               onClick={() => void handleSaveAll()}
-              className="rounded-lg bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
-            >
-              {busy ? "保存中…" : "保存公示"}
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="rounded-lg border border-[var(--color-accent)]/35 px-3 py-1.5 text-sm text-[var(--color-accent)]"
+            className="stratos-btn stratos-btn--primary"
           >
-            编辑公示
+            {busy ? "保存中…" : "保存获奖与公示"}
           </button>
-        )}
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="stratos-btn"
+        >
+          编辑获奖与公示
+        </button>
+      )}
       </div>
 
-      <MissionVisionPanel northStar={northStar} />
-      <DoctrinesPanel />
-      <CoreValuesPanel />
-      <BehaviorGuidelinesPanel />
+      <MissionVisionPanel
+        northStar={northStar}
+        action={
+          <button
+            type="button"
+            onClick={() => setEditNorthStar(true)}
+            className="stratos-btn stratos-btn--primary"
+          >
+            编辑使命愿景
+          </button>
+        }
+      />
+      {editNorthStar ? (
+        <NorthStarEditModal
+          northStar={northStar}
+          saving={savingNorthStar}
+          onClose={() => setEditNorthStar(false)}
+          onSave={(form) => void handleSaveNorthStar(form)}
+        />
+      ) : null}
+      <CultureHandbookEditor initialHandbook={initialHandbook} source={handbookSource} />
 
       <SectionCard title="价值观评选大奖" subtitle="七大奖项 · 让优秀行为被看见" accent="gold">
         <p className={`${typography.caption} mb-4`}>

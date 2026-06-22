@@ -34,7 +34,7 @@ export default async function ReportsPage() {
       : orgUnits;
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="经营档案 · AI 解析 · 反哺执行"
         title="OPS 运营"

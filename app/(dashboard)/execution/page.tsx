@@ -23,7 +23,7 @@ export default async function ExecutionPage({
   filtered = filterExecByProjectScope(filtered, projectScope);
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="运行监测 · 集团全览"
         title={resolved ? `执行 · 全览 · ${resolved.slice.label}` : "执行 · 全览"}

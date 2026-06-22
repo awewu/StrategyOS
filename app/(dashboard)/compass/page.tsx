@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 export default async function CompassPage() {
   const bundle = await getCompassBundle();
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="使命 · 愿景 · 终点反推"
         title="战略罗盘"

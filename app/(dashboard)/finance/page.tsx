@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { requireRouteAccess } from "@/lib/auth/guard";
+import { CapitalConfigEditor } from "@/components/finance/CapitalConfigEditor";
 import { FpaEditor } from "@/components/finance/FpaEditor";
-import { CapitalTab } from "@/components/finance/CapitalTab";
-import { FiveYearForecast, SensitivityPanel } from "@/components/finance/FiveYearForecast";
+import { OutlookEditor } from "@/components/finance/OutlookEditor";
 import {
   BalanceSheetPanel,
   CashFlowStatementPanel,
   IncomeStatementPanel,
 } from "@/components/finance/FinancialStatements";
-import { MaPipelinePanel } from "@/components/finance/MaPipelinePanel";
+import { MaPipelineEditor } from "@/components/finance/MaPipelineEditor";
 import { ManagementReportPanel } from "@/components/finance/ManagementReportPanel";
-import { PostInvestPanel, RealOptionsPanel } from "@/components/finance/RealOptionsPanel";
-import { SpbpLivePanel } from "@/components/finance/SpbpLivePanel";
+import { CapitalTab } from "@/components/finance/CapitalTab";
+import { SpbpScenarioEditor } from "@/components/finance/SpbpScenarioEditor";
 import { StacksEditor } from "@/components/stacks/StacksEditor";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StratosTabNav } from "@/components/ui/StratosTabNav";
@@ -58,7 +58,7 @@ async function FinanceContent({
   ];
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="ROS · EBITDA · 利润桥"
         title="FPA 财务"
@@ -75,7 +75,7 @@ async function FinanceContent({
       {activeTab === "management" && <ManagementReportPanel report={report} />}
 
       {activeTab === "statements" && (
-        <div className="stratos-section-gap flex flex-col">
+        <div className="stratos-page">
           <IncomeStatementPanel statement={report.incomeStatement} />
           <BalanceSheetPanel sheet={report.balanceSheet} />
           <CashFlowStatementPanel statement={report.cashFlowStatement} />
@@ -85,7 +85,7 @@ async function FinanceContent({
       {activeTab === "overview" && <FpaEditor initial={data.fpa} source={data.source} />}
 
       {activeTab === "capital" && (
-        <div className="stratos-section-gap flex flex-col">
+        <div className="stratos-page">
           <StacksEditor
             initialCapStack={stacks.capStack}
             initialIcs={stacks.investmentCases}
@@ -98,21 +98,29 @@ async function FinanceContent({
             capacity={data.capacity}
             investmentCases={data.investmentCases}
           />
-          <RealOptionsPanel options={data.realOptions} />
-          <PostInvestPanel deviations={data.postInvestDeviations} />
+          <CapitalConfigEditor
+            initialOptions={data.realOptions}
+            initialDeviations={data.postInvestDeviations}
+            source={data.capitalConfigSource}
+          />
         </div>
       )}
 
       {activeTab === "forecast" && (
-        <div className="stratos-section-gap flex flex-col">
-          <FiveYearForecast rows={data.fiveYearForecast} />
-          <SensitivityPanel drivers={data.sensitivityDrivers} />
-        </div>
+        <OutlookEditor
+          initialRows={data.fiveYearForecast}
+          initialDrivers={data.sensitivityDrivers}
+          source={data.outlookSource}
+        />
       )}
 
-      {activeTab === "scenarios" && <SpbpLivePanel initialScenarios={data.spbpScenarios} />}
+      {activeTab === "scenarios" && (
+        <SpbpScenarioEditor initialScenarios={data.spbpScenarios} source={data.spbpSource} />
+      )}
 
-      {activeTab === "ma" && <MaPipelinePanel items={data.maPipeline} />}
+      {activeTab === "ma" && (
+        <MaPipelineEditor initialItems={data.maPipeline} source={data.maSource} />
+      )}
     </div>
   );
 }

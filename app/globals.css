@@ -19,8 +19,9 @@
   --surface-border-strong: #cdd1d2;
   --surface-overlay: color-mix(in srgb, #ffffff 90%, transparent);
   --blur-glass: 18px;
-  --space-section: 1.75rem;
-  --space-card: 1.25rem;
+  --space-section: 3rem;
+  --space-card: 1.5rem;
+  --space-page-block: 2.5rem;
   --radius-card: 10px;
   --radius-control: 8px;
 
@@ -84,6 +85,16 @@
   --ruud-steel: #3f585a;
   --ruud-dark-red: #76232f;
   --nav-active-indicator: var(--ruud-red-primary);
+
+  /* ── Typography scale (栏目 → 卡片 → 槽位 → 正文) · UI_VI 32:20:16:12 ── */
+  --type-page: 2rem;           /* 32 · 页面标题 */
+  --type-section: 1.25rem;     /* 20 · 卡片/区块标题 */
+  --type-subsection: 1rem;     /* 16 · 子栏目标题 */
+  --type-body: 1rem;           /* 16 · 正文 */
+  --type-label: 0.6875rem;     /* 11 · 栏目标签（下限） */
+  --type-caption: 0.75rem;     /* 12 · 说明 / meta */
+  --type-kpi: 1.5rem;          /* 24 · 槽位数值 */
+  --type-kpi-hero: 2rem;       /* 32 · 主 KPI */
 }
 
 [data-theme="print"] {
@@ -110,9 +121,9 @@ body {
     "PingFang SC", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 14px;
-  line-height: 1.5;
-  letter-spacing: 0em;
+  font-size: var(--type-body);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
 }
 
 .stratos-shell-bg {
@@ -439,17 +450,17 @@ body {
 }
 
 .stratos-hub-subnav {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-section);
   border-bottom: 1px solid var(--surface-border);
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.875rem;
 }
 
 .stratos-hub-subnav__eyebrow {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.5rem;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
-  font-size: 0.6875rem;
+  font-size: var(--type-label);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--color-text-muted);
 }
 
@@ -464,10 +475,10 @@ body {
 
 .stratos-hub-subnav__tab {
   display: inline-block;
-  border-radius: 6px;
-  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
-  font-size: 0.8125rem;
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--color-text-secondary);
   text-decoration: none;
@@ -485,39 +496,44 @@ body {
   font-weight: 600;
 }
 
-/* Type scale — Ruud engineering-sans: Arial-weight discipline, near-zero
- * tracking (no aggressive Apple negative kerning) for a flat financial feel. */
+/* Type scale — page · section · body · label (sync with --type-* tokens) */
 .text-headline {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  line-height: 1.2;
+  font-size: var(--type-page);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 .text-title {
-  font-size: 18px;
+  font-size: var(--type-section);
   font-weight: 600;
-  letter-spacing: 0em;
-  line-height: 1.25;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.text-subsection {
+  font-size: var(--type-subsection);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.35;
 }
 .text-callout {
-  font-size: 13px;
+  font-size: var(--type-body);
   font-weight: 500;
-  letter-spacing: 0em;
-  line-height: 1.4;
+  letter-spacing: 0;
+  line-height: 1.55;
 }
 .text-caption {
-  font-size: 11px;
+  font-size: var(--type-caption);
   font-weight: 400;
   letter-spacing: 0.01em;
-  line-height: 1.35;
+  line-height: 1.45;
   color: var(--color-text-muted);
 }
 .text-label {
-  font-size: 10px;
+  font-size: var(--type-label);
   font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
 }
 
 .font-data {
@@ -544,21 +560,91 @@ body {
   gap: var(--space-section);
 }
 
+/* Page layout rhythm — 栏目间距统一 */
+.stratos-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section);
+}
+
+.stratos-page-header {
+  margin-bottom: 0.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.stratos-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.stratos-section-title {
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: var(--type-section);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+.stratos-section-desc {
+  margin-top: 0.35rem;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: var(--type-caption);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.stratos-slot-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.stratos-prose {
+  font-size: var(--type-body);
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+}
+
+.stratos-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  font-size: var(--type-caption);
+}
+
+.stratos-link-row__label {
+  margin-right: 0.25rem;
+  font-size: var(--type-label);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
 /* ── Cards & panels ── */
 .stratos-card {
   border-radius: var(--radius-card);
   border: 1px solid var(--surface-border);
   background: var(--surface-panel);
-  box-shadow: 0 1px 2px color-mix(in srgb, black 4%, transparent);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, black 4%, transparent),
+    0 4px 16px color-mix(in srgb, black 2%, transparent);
 }
 
 .stratos-card--padded {
-  padding: 1.25rem 1.5rem;
+  padding: var(--space-card) calc(var(--space-card) + 0.25rem);
 }
 
 @media (min-width: 768px) {
   .stratos-card--padded {
-    padding: 1.5rem 1.75rem;
+    padding: calc(var(--space-card) + 0.25rem) calc(var(--space-card) + 0.5rem);
   }
 }
 
@@ -569,11 +655,37 @@ body {
 /* ── Form controls (used across compiler, reports, strategy) ── */
 .label-xs {
   display: block;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
-  font-size: 0.6875rem;
+  font-size: var(--type-label);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+}
+
+.stratos-kpi-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 6.5rem;
+}
+
+.stratos-kpi-slot__value {
+  font-family: var(--font-geist-mono), var(--font-noto-sc), "PingFang SC", ui-monospace, sans-serif;
+  font-size: var(--type-kpi);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.stratos-kpi-slot__sub {
+  margin-top: 0.375rem;
+  font-family: var(--font-geist-mono), var(--font-noto-sc), ui-monospace, sans-serif;
+  font-size: var(--type-caption);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
   color: var(--color-text-muted);
 }
 
@@ -691,9 +803,9 @@ textarea.stratos-input {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
-  font-size: 0.75rem;
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -727,8 +839,8 @@ a.stratos-segment__item {
   border-radius: 9999px;
   border: 1px solid var(--surface-border);
   background: var(--surface-raised);
-  padding: 0.15rem 0.55rem;
-  font-size: 0.6875rem;
+  padding: 0.2rem 0.6rem;
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--color-text-secondary);
 }
@@ -755,8 +867,9 @@ a.stratos-segment__item {
 .stratos-disclosure > summary {
   cursor: pointer;
   list-style: none;
-  padding: 1rem 1.25rem;
-  font-size: 0.8125rem;
+  padding: 1.125rem 1.5rem;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: var(--type-subsection);
   font-weight: 600;
   color: var(--color-text-secondary);
   user-select: none;
@@ -772,7 +885,18 @@ a.stratos-segment__item {
 }
 
 .stratos-disclosure__body {
-  padding: 1.25rem 1.5rem;
+  padding: var(--space-card) calc(var(--space-card) + 0.25rem);
+}
+
+.stratos-disclosure--secondary {
+  opacity: 0.92;
+  border-style: dashed;
+}
+
+.stratos-disclosure--secondary > summary {
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
 /* Tables in decode / reports */
@@ -1085,18 +1209,18 @@ a.stratos-segment__item {
 }
 
 .ppt-btn--ghost:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: var(--surface-raised);
+  border-color: var(--surface-border-strong);
 }
 
 .ppt-btn--primary {
   color: #fff;
-  background: #111827;
-  border: 1px solid #111827;
+  background: var(--color-text-primary);
+  border: 1px solid var(--color-text-primary);
 }
 
 .ppt-btn--primary:hover:not(:disabled) {
-  background: #1f2937;
+  background: var(--ruud-steel);
 }
 
 .strategy-viewport {
@@ -1116,14 +1240,15 @@ a.stratos-segment__item {
 }
 
 .china-strategy-one-pager {
-  --ppt-accent-neutral: #4b5563;
-  --ppt-accent-invest: #5a8f3e;
-  --ppt-accent-innovate: #4a7fb8;
-  --ppt-accent-deliver: #c96f2e;
-  --ppt-accent-measure: #5c6b7a;
-  --ppt-rule: #d8d8dc;
-  --ppt-text: #111827;
-  --ppt-text-soft: #4b5563;
+  /* Map PPT accents to StratOS VI tokens (print-safe) */
+  --ppt-accent-neutral: var(--color-text-muted);
+  --ppt-accent-invest: var(--stack-cap);
+  --ppt-accent-innovate: var(--bsc-process);
+  --ppt-accent-deliver: var(--stack-gtm);
+  --ppt-accent-measure: var(--ruud-steel);
+  --ppt-rule: var(--surface-border);
+  --ppt-text: var(--color-text-primary);
+  --ppt-text-soft: var(--color-text-secondary);
   /* Paloma 参考稿标准尺寸 1024 × 665 */
   width: 1024px;
   max-width: 100%;
@@ -1134,14 +1259,15 @@ a.stratos-segment__item {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
-  background: #ffffff;
+  background: var(--color-bg-surface);
   color: var(--ppt-text);
-  font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: var(--font-inter), var(--font-noto-sc), "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: var(--type-caption);
+  border: 1px solid var(--surface-border);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.8) inset,
     0 2px 4px rgba(0, 0, 0, 0.04),
-    0 16px 40px rgba(17, 24, 39, 0.1);
+    0 16px 40px rgba(17, 24, 39, 0.08);
   position: relative;
 }
 
@@ -1404,12 +1530,12 @@ a.stratos-segment__item {
 }
 
 .ppt-bi-line__zh {
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
 .ppt-bi-line__sep {
-  color: #d1d5db;
+  color: var(--surface-border-strong);
   padding: 0 0.2em;
   flex-shrink: 0;
   user-select: none;
@@ -1417,31 +1543,31 @@ a.stratos-segment__item {
 
 .ppt-bi-line--underline {
   text-decoration: underline;
-  text-decoration-color: #9ca3af;
+  text-decoration-color: var(--color-text-muted);
   text-underline-offset: 3px;
 }
 
 .ppt-submodule-title .ppt-bi-line__en {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .ppt-submodule-title .ppt-bi-line__zh {
-  font-size: 9px;
+  font-size: 11px;
   text-transform: none;
 }
 
 .ppt-col-title__line .ppt-bi-line__en {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .ppt-col-title__line .ppt-bi-line__zh {
-  font-size: 9px;
+  font-size: 11px;
   text-transform: none;
 }
 
@@ -1621,10 +1747,10 @@ textarea.ppt-submodule-content__editor:focus {
 .ppt-section-title {
   margin: 0;
   text-align: center;
-  font-size: 10.5px;
+  font-size: var(--type-caption);
   font-weight: 700;
   letter-spacing: 0.04em;
-  line-height: 1.25;
+  line-height: 1.35;
   color: var(--ppt-text);
   border: none;
   background: transparent;
@@ -1637,14 +1763,14 @@ textarea.ppt-submodule-content__editor:focus {
 
 .ppt-section-title--underline {
   text-decoration: underline;
-  text-decoration-color: #9ca3af;
+  text-decoration-color: var(--color-text-muted);
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
 
 .ppt-body {
-  font-size: 10px;
-  line-height: 1.45;
+  font-size: var(--type-caption);
+  line-height: 1.5;
   color: var(--ppt-text-soft);
 }
 
@@ -1654,19 +1780,19 @@ textarea.ppt-submodule-content__editor:focus {
 }
 
 .ppt-field:focus {
-  border-color: #9ca3af !important;
-  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.06);
-  background: #fff !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 2px var(--color-accent-dim);
+  background: var(--color-bg-surface) !important;
 }
 
 .ppt-field::placeholder {
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
 textarea.ppt-field {
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--surface-border);
+  background: var(--color-bg-surface);
 }
 
 input.ppt-field:not(textarea) {
@@ -1732,8 +1858,8 @@ input.ppt-col-title.ppt-field:focus {
 }
 
 /* legacy icon / kpi helpers (reference deck) */
-.ppt-label { font-size: 10px; line-height: 1.25; color: #333; text-align: center; }
-.ppt-tier-title { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+.ppt-label { font-size: var(--type-caption); line-height: 1.35; color: var(--ppt-text-soft); text-align: center; }
+.ppt-tier-title { font-size: var(--type-caption); font-weight: 700; margin-bottom: 2px; }
 .ppt-ico { display: block; margin-inline: auto; }
 .ppt-ico--md { width: 52px; height: 52px; }
 .ppt-ico--lg { width: 60px; height: 60px; }
@@ -1748,8 +1874,8 @@ input.ppt-col-title.ppt-field:focus {
   text-underline-offset: 2px;
   margin-bottom: 1px;
 }
-.ppt-kpi-value { font-size: 22px; font-weight: 700; line-height: 1.1; margin-bottom: 2px; }
-.ppt-kpi-sub { font-size: 10px; line-height: 1.25; color: #666; }
+.ppt-kpi-value { font-size: 1.375rem; font-weight: 700; line-height: 1.15; margin-bottom: 2px; color: var(--ppt-text); }
+.ppt-kpi-sub { font-size: var(--type-caption); line-height: 1.35; color: var(--color-text-muted); }
 .ppt-brand {
   color: #c00000;
   font-family: Georgia, "Times New Roman", serif;

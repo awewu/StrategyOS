@@ -1,5 +1,32 @@
 /** 手册来源：《解决问题最简单的方式 — 价值为锚 V2》 */
 
+export type DoctrineEntry = {
+  en: string;
+  zh: string;
+  hint: string;
+  scenario: string;
+};
+
+export type BehaviorGuidelineEntry = {
+  id: number;
+  title: string;
+  items: string[];
+};
+
+export type CoreValuesIntroContent = {
+  headline: string;
+  body: string;
+  principles: string[];
+  decisionTest: string;
+};
+
+export type CultureHandbookContent = {
+  doctrines: DoctrineEntry[];
+  fourSatisfactionPillars: string[];
+  coreValuesIntro: CoreValuesIntroContent;
+  behaviorGuidelines: BehaviorGuidelineEntry[];
+};
+
 export const HANDBOOK_MISSION =
   "以创新高效低碳技术与数字化服务为核心，为每一个空间赋予更舒适、高效、可持续的生活环境。";
 

@@ -23,7 +23,7 @@ export function StrategyPageTabs({
   const [tab, setTab] = useState<"view" | "onepager">("view");
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <div className="stratos-segment">
         <button
           type="button"

@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 export default async function MandatesPage() {
   const bundle = await getMandateBundle();
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="事在前 · 人在后 · 组织为战略服务"
         title="战略职责"

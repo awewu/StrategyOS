@@ -23,21 +23,25 @@ export function DecisionsPanel({
       className={isPrint ? "rounded-xl border border-[#0a1628]/10 bg-white p-5" : "stratos-card stratos-card--padded"}
       aria-labelledby="decisions-title"
     >
-      <header className="mb-3">
-        <h3 id="decisions-title" className="text-title text-[var(--color-text-primary)]">
-          待决事项
-        </h3>
-        <p className={`${typography.caption} mt-0.5`}>董事会 / 指挥层需拍板的决策清单</p>
+      <header className="stratos-section-header">
+        <div>
+          <h2 id="decisions-title" className="stratos-section-title">
+            待决事项
+          </h2>
+          <p className={`stratos-section-desc ${isPrint ? "text-[#828c8d]" : ""}`}>
+            董事会 / 指挥层需拍板的决策清单
+          </p>
+        </div>
       </header>
       <ul className="divide-y divide-[var(--surface-border)]">
         {decisions.map((d) => (
-          <li key={d.id} className="flex flex-wrap items-start justify-between gap-2 py-3 first:pt-0 last:pb-0">
+          <li key={d.id} className="flex flex-wrap items-start justify-between gap-3 py-3.5 first:pt-0 last:pb-0">
             <div>
-              <p className={`text-sm font-medium ${isPrint ? "text-[#0a1628]" : "text-[var(--color-text-primary)]"}`}>
+              <p className={`text-subsection ${isPrint ? "text-[#0a1628]" : "text-[var(--color-text-primary)]"}`}>
                 {d.title}
               </p>
               {(d.owner || d.deadline) ? (
-                <p className={`${typography.caption} mt-0.5`}>
+                <p className={`${typography.caption} mt-1`}>
                   {[d.owner, d.deadline].filter(Boolean).join(" · ")}
                 </p>
               ) : null}

@@ -16,7 +16,7 @@ export default async function StrategyPage() {
   ]);
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="战略 · 三栈 · 一页纸"
         title="战略总览"

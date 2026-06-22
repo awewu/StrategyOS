@@ -1,17 +1,17 @@
-/** StratOS typography scale — UI_VI §32:20:12 · Apple × McKinsey rhythm */
+/** StratOS typography — sync with --type-* tokens in app/globals.css */
 export const typography = {
-  h1:     "text-[1.875rem] font-semibold leading-[1.1] tracking-[-0.025em]",
-  h2:     "text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em]",
-  h3:     "text-[0.6875rem] font-medium uppercase tracking-[0.1em] text-[var(--color-text-muted)]",
-  /** Page section eyebrow — no uppercase (CJK-safe) */
-  eyebrow:"text-[0.6875rem] font-medium tracking-[0.04em] text-[var(--color-text-muted)]",
-  body:   "text-[0.9375rem] leading-[1.6]",
-  caption:"text-[0.75rem] leading-relaxed text-[var(--color-text-muted)]",
+  h1:     "text-headline text-[var(--color-text-primary)]",
+  h2:     "text-title text-[var(--color-text-primary)]",
+  h3:     "text-subsection text-[var(--color-text-primary)]",
+  /** Page section eyebrow — CJK-safe, no uppercase */
+  eyebrow:"text-label text-[var(--color-text-muted)]",
+  body:   "text-callout text-[var(--color-text-secondary)]",
+  caption:"text-caption",
   data:   "font-data text-[1.125rem] tabular-nums tracking-tight",
-  /** Primary KPI — 44px, Bloomberg-style */
-  dataXl: "font-data text-[2.75rem] tabular-nums tracking-[-0.03em] leading-none",
-  /** Section KPI — 32px */
-  dataLg: "font-data text-[2rem] tabular-nums tracking-[-0.02em] leading-none",
-  /** Inline metric — 20px */
+  /** Primary KPI — hero slot */
+  dataXl: "font-data text-[var(--type-kpi-hero)] tabular-nums tracking-[-0.03em] leading-none",
+  /** Section KPI — tile slot */
+  dataLg: "stratos-kpi-slot__value",
+  /** Inline metric */
   dataMd: "font-data text-[1.25rem] tabular-nums tracking-tight leading-none",
 } as const;

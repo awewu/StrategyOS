@@ -4,8 +4,8 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
   const maxRev = Math.max(...rows.map((r) => r.revenueBudget));
 
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
+    <section className="stratos-card stratos-card--padded">
+      <h3 className="stratos-section-title mb-4 text-[var(--color-accent)]">
         5 年 FPA 展望 · B-A-F
       </h3>
       <div className="overflow-x-auto">
@@ -59,8 +59,8 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
 
 export function SensitivityPanel({ drivers }: { drivers: SensitivityDriver[] }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">
+    <section className="stratos-card stratos-card--padded">
+      <h3 className="stratos-section-title mb-4">
         敏感性分析 · 利润影响（万）
       </h3>
       <div className="space-y-4">

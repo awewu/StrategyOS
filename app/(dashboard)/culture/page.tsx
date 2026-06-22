@@ -2,16 +2,18 @@ import { CulturePageClient } from "@/components/culture/CulturePageClient";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCompassBundle } from "@/lib/compass/data";
 import { getCultureAwards, getCultureUnderstanding } from "@/lib/culture/data-access";
+import { getCultureHandbook } from "@/lib/culture/handbook-access";
 
 export default async function CulturePage() {
-  const [{ northStar }, awards, understanding] = await Promise.all([
+  const [{ northStar }, awards, understanding, handbook] = await Promise.all([
     getCompassBundle(),
     getCultureAwards(),
     getCultureUnderstanding(),
+    getCultureHandbook(),
   ]);
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="Normative · 精神与文化"
         title="企业文化"
@@ -19,6 +21,8 @@ export default async function CulturePage() {
       />
       <CulturePageClient
         northStar={northStar}
+        initialHandbook={handbook.handbook}
+        handbookSource={handbook.source}
         initialWinners={awards.winners}
         initialRecords={understanding.records}
         source={awards.source === "database" ? "database" : understanding.source}

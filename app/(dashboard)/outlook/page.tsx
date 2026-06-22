@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FiveYearForecast, SensitivityPanel } from "@/components/finance/FiveYearForecast";
+import { OutlookEditor } from "@/components/finance/OutlookEditor";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getFinanceBundle } from "@/lib/data/strategy-data";
 
@@ -7,11 +7,11 @@ export default async function OutlookPage() {
   const data = await getFinanceBundle();
 
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="战略态势 · 前瞻"
         title="战略展望"
-        subtitle={`5 年轨迹摘要 · 完整模型与敏感性分析在 FPA · 数据源 ${data.source === "database" ? "DB" : "Demo"}`}
+        subtitle={`5 年轨迹与敏感性 · 可编辑并保存 · 数据源 ${data.outlookSource === "database" ? "DB" : "Demo"}`}
         actions={
           <>
             <Link href="/finance?tab=forecast" className="stratos-btn stratos-btn--primary">
@@ -23,8 +23,11 @@ export default async function OutlookPage() {
           </>
         }
       />
-      <FiveYearForecast rows={data.fiveYearForecast} />
-      <SensitivityPanel drivers={data.sensitivityDrivers} />
+      <OutlookEditor
+        initialRows={data.fiveYearForecast}
+        initialDrivers={data.sensitivityDrivers}
+        source={data.outlookSource}
+      />
     </div>
   );
 }

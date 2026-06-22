@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function MeetingToolsPage() {
   return (
-    <div className="stratos-section-gap flex flex-col">
+    <div className="stratos-page">
       <PageHeader
         eyebrow="工具 · 会议闭环"
         title="会议工具"

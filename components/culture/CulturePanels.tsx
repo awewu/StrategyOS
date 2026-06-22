@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { SectionCard } from "@/components/ui/KpiTile";
 import { typography } from "@/lib/brand/typography";
@@ -9,6 +10,7 @@ import {
   FOUR_SATISFACTION_PILLARS,
   HANDBOOK_MISSION,
   HANDBOOK_VISION,
+  type CultureHandbookContent,
   VALUES_AWARD_CATALOG,
   VALUES_AWARD_WINNERS,
   VALUES_UNDERSTANDING_INTRO,
@@ -26,13 +28,37 @@ const PILLAR_COLORS = [
   "var(--bsc-process)",
 ] as const;
 
-export function MissionVisionPanel({ northStar }: { northStar: NorthStar | null }) {
+function defaultHandbook(): CultureHandbookContent {
+  return {
+    doctrines: DOCTRINES.map((d) => ({ ...d })),
+    fourSatisfactionPillars: [...FOUR_SATISFACTION_PILLARS],
+    coreValuesIntro: {
+      headline: CORE_VALUES_INTRO.headline,
+      body: CORE_VALUES_INTRO.body,
+      principles: [...CORE_VALUES_INTRO.principles],
+      decisionTest: CORE_VALUES_INTRO.decisionTest,
+    },
+    behaviorGuidelines: BEHAVIOR_GUIDELINES.map((g) => ({
+      id: g.id,
+      title: g.title,
+      items: [...g.items],
+    })),
+  };
+}
+
+export function MissionVisionPanel({
+  northStar,
+  action,
+}: {
+  northStar: NorthStar | null;
+  action?: ReactNode;
+}) {
   const mission = northStar?.mission ?? HANDBOOK_MISSION;
   const vision = northStar?.vision ?? HANDBOOK_VISION;
   const targetYear = northStar?.targetYear;
 
   return (
-    <SectionCard title="使命愿景" subtitle="North Star · 文化手册同源" accent="gold">
+    <SectionCard title="使命愿景" subtitle="North Star · 文化手册同源" accent="gold" action={action}>
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-[var(--surface-border)] bg-black/[0.02] px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">使命 · 为何存在</p>
@@ -45,9 +71,9 @@ export function MissionVisionPanel({ northStar }: { northStar: NorthStar | null 
           <p className={`${typography.body} mt-3 text-[var(--color-text-secondary)]`}>{vision}</p>
         </div>
       </div>
-      <div className="mt-5 flex flex-wrap gap-3 text-sm">
-        <Link href="/compass" className="text-[var(--color-accent)] hover:underline">
-          战略罗盘中编辑 →
+      <div className="mt-5 flex flex-wrap gap-3 text-caption">
+        <Link href="/compass" className="text-[var(--color-text-muted)] hover:underline">
+          战略罗盘 · 里程碑与前提 →
         </Link>
         <Link href="/strategy" className="text-[var(--color-text-muted)] hover:underline">
           董事会一页纸 →
@@ -57,11 +83,12 @@ export function MissionVisionPanel({ northStar }: { northStar: NorthStar | null 
   );
 }
 
-export function DoctrinesPanel() {
+export function DoctrinesPanel({ handbook }: { handbook?: CultureHandbookContent }) {
+  const doctrines = handbook?.doctrines ?? defaultHandbook().doctrines;
   return (
     <SectionCard title="三大信条" subtitle="Doctrine · 精神审计，不打分" accent="green">
       <div className="grid gap-4 lg:grid-cols-3">
-        {DOCTRINES.map((d, i) => (
+        {doctrines.map((d, i) => (
           <article
             key={d.en}
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-4"
@@ -88,12 +115,15 @@ export function DoctrinesPanel() {
   );
 }
 
-export function CoreValuesPanel() {
+export function CoreValuesPanel({ handbook }: { handbook?: CultureHandbookContent }) {
+  const h = handbook ?? defaultHandbook();
+  const intro = h.coreValuesIntro;
+  const pillars = h.fourSatisfactionPillars;
   return (
     <SectionCard title="四个满意" subtitle="核心价值观 · 系统最优，非零和博弈" accent="gold">
-      <p className={`${typography.body} text-[var(--color-text-secondary)]`}>{CORE_VALUES_INTRO.body}</p>
+      <p className={`${typography.body} text-[var(--color-text-secondary)]`}>{intro.body}</p>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {FOUR_SATISFACTION_PILLARS.map((label, i) => (
+        {pillars.map((label, i) => (
           <div
             key={label}
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-3 text-center"
@@ -105,9 +135,9 @@ export function CoreValuesPanel() {
           </div>
         ))}
       </div>
-      <p className={`${typography.h3} mt-5 text-[var(--color-accent)]`}>{CORE_VALUES_INTRO.headline}</p>
+      <p className={`${typography.h3} mt-5 text-[var(--color-accent)]`}>{intro.headline}</p>
       <ul className="mt-3 space-y-2">
-        {CORE_VALUES_INTRO.principles.map((p) => (
+        {intro.principles.map((p) => (
           <li key={p} className="flex gap-2 text-sm text-[var(--color-text-secondary)]">
             <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--color-accent)]" aria-hidden />
             {p}
@@ -115,20 +145,21 @@ export function CoreValuesPanel() {
         ))}
       </ul>
       <blockquote className="mt-5 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/[0.05] px-4 py-3 text-sm italic text-[var(--color-text-primary)]">
-        决策自检：{CORE_VALUES_INTRO.decisionTest}
+        决策自检：{intro.decisionTest}
       </blockquote>
     </SectionCard>
   );
 }
 
-export function BehaviorGuidelinesPanel() {
+export function BehaviorGuidelinesPanel({ handbook }: { handbook?: CultureHandbookContent }) {
+  const guidelines = handbook?.behaviorGuidelines ?? defaultHandbook().behaviorGuidelines;
   return (
     <SectionCard title="六项基本原则" subtitle="行为准则 · 抵达四个满意的核心路径" accent="sky">
       <p className={`${typography.caption} mb-4`}>
         将抽象的价值理念转化为具体可操作的行为指南——让每一位员工都知道在日常工作中「该如何做」。
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BEHAVIOR_GUIDELINES.map((g) => (
+        {guidelines.map((g) => (
           <article
             key={g.id}
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-4"
