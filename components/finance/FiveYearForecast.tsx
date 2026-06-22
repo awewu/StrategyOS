@@ -29,7 +29,7 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
                   <td className="py-3 font-data">
                     {r.revenueBudget} / {r.revenueForecast}
                     <span
-                      className={`ml-2 text-xs ${revGap < 0 ? "text-[#8b0e04]" : "text-emerald-400"}`}
+                      className={`ml-2 text-xs ${revGap < 0 ? "text-[var(--fpa-kpi-negative)]" : "text-[var(--fpa-kpi-positive)]"}`}
                     >
                       {revGap >= 0 ? "+" : ""}
                       {revGap}
@@ -74,21 +74,21 @@ export function SensitivityPanel({ drivers }: { drivers: SensitivityDriver[] }) 
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="w-16 text-right font-data text-xs text-[#8b0e04]">
+              <span className="w-16 text-right font-data text-xs text-[var(--fpa-kpi-negative)]">
                 {d.impactOnProfit.low}
               </span>
               <div className="relative h-3 flex-1 rounded-full bg-black/[0.06]">
                 <div className="absolute left-1/2 top-0 h-full w-px bg-black/15" />
                 <div
-                  className="absolute top-0 h-full rounded-l-full bg-[#8b0e04]/70"
+                  className="absolute top-0 h-full rounded-l-full bg-[color-mix(in_srgb,var(--fpa-kpi-negative)_70%,transparent)]"
                   style={{ right: "50%", left: `${Math.min(45, Math.abs(d.impactOnProfit.low) / 5)}%` }}
                 />
                 <div
-                  className="absolute top-0 h-full rounded-r-full bg-emerald-500/70"
+                  className="absolute top-0 h-full rounded-r-full bg-[color-mix(in_srgb,var(--fpa-kpi-positive)_70%,transparent)]"
                   style={{ left: "50%", width: `${Math.min(45, d.impactOnProfit.high / 5)}%` }}
                 />
               </div>
-              <span className="w-16 font-data text-xs text-emerald-400">
+              <span className="w-16 font-data text-xs text-[var(--fpa-kpi-positive)]">
                 +{d.impactOnProfit.high}
               </span>
             </div>

@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { FpaYearRow, SensitivityDriver } from "@/lib/types/stratos";
 
@@ -34,21 +34,22 @@ async function seedOutlookIfEmpty(period: string): Promise<void> {
   await prisma.strategicOutlook.create({
     data: {
       period,
-      fiveYearForecastJson: d.fiveYearForecast,
-      sensitivityJson: d.sensitivityDrivers,
+      fiveYearForecastJson: asDbJson(d.fiveYearForecast),
+      sensitivityJson: asDbJson(d.sensitivityDrivers),
     },
   });
 }
 
 export async function getOutlookBundle(period = demo.CURRENT_PERIOD): Promise<OutlookBundle> {
-  if (!(await dbAvailable())) {
-    return { ...defaultOutlook(), source: "demo" };
-  }
-  await seedOutlookIfEmpty(period);
-  const row = await prisma.strategicOutlook.findUnique({ where: { period } });
-  if (!row) return { ...defaultOutlook(), source: "demo" };
-  const parsed = parseOutlookJson(row.fiveYearForecastJson, row.sensitivityJson);
-  return { ...parsed, source: "database" };
+  const fallback = { ...defaultOutlook(), source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    await seedOutlookIfEmpty(period);
+    const row = await prisma.strategicOutlook.findUnique({ where: { period } });
+    if (!row) return fallback;
+    const parsed = parseOutlookJson(row.fiveYearForecastJson, row.sensitivityJson);
+    return { ...parsed, source: "database" as const };
+  }, fallback);
 }
 
 export async function saveOutlookBundle(
@@ -70,8 +71,8 @@ export async function saveOutlookBundle(
   await prisma.strategicOutlook.update({
     where: { id: row.id },
     data: {
-      fiveYearForecastJson: payload.fiveYearForecast,
-      sensitivityJson: payload.sensitivityDrivers,
+      fiveYearForecastJson: asDbJson(payload.fiveYearForecast),
+      sensitivityJson: asDbJson(payload.sensitivityDrivers),
     },
   });
   return { ...payload, source: "database" };

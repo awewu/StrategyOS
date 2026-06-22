@@ -11,7 +11,7 @@ const STYLE: Record<CynefinDomain, string> = {
   clear: "bg-slate-600/40 text-slate-200",
   complicated: "bg-violet-500/20 text-violet-200",
   complex: "bg-sky-500/20 text-sky-200",
-  chaotic: "bg-[#8b0e04]/30 text-orange-200",
+  chaotic: "bg-[color-mix(in_srgb,var(--signal-red)_30%,transparent)] text-orange-200",
 };
 
 const LABEL: Record<CynefinDomain, string> = {

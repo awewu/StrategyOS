@@ -71,7 +71,7 @@ export function PostInvestPanel({ deviations }: { deviations: PostInvestDeviatio
                   {d.expectedIrr}% / {d.actualIrr ?? "—"}%
                 </td>
                 <td
-                  className={`py-3 font-data ${d.deviationPct > 10 ? "text-[#8b0e04]" : ""}`}
+                  className={`py-3 font-data ${d.deviationPct > 10 ? "text-[var(--fpa-kpi-negative)]" : ""}`}
                 >
                   {d.deviationPct > 0 ? "+" : ""}
                   {d.deviationPct}%
@@ -92,7 +92,7 @@ function StatusBadge({ status }: { status: PostInvestDeviation["status"] }) {
   const map = {
     on_track: { label: "正常", cls: "text-emerald-400 bg-emerald-500/20" },
     watch: { label: "关注", cls: "text-amber-400 bg-amber-500/20" },
-    critical: { label: "临界", cls: "text-[#8b0e04] bg-[#8b0e04]/20" },
+    critical: { label: "临界", cls: "text-[var(--fpa-kpi-negative)] bg-[color-mix(in_srgb,var(--signal-red)_20%,transparent)]" },
   };
   const { label, cls } = map[status];
   return (

@@ -48,7 +48,7 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
           type="button"
           disabled={loading}
           onClick={() => applyEvidence("pessimistic")}
-          className="rounded border border-[#8b0e04]/40 px-3 py-1.5 text-xs text-[#8b0e04] hover:bg-[#8b0e04]/10 disabled:opacity-50"
+          className="rounded border border-[color-mix(in_srgb,var(--signal-red)_40%,transparent)] px-3 py-1.5 text-xs text-[var(--fpa-kpi-negative)] hover:bg-[color-mix(in_srgb,var(--signal-red)_10%,transparent)] disabled:opacity-50"
         >
           Q2 证据偏悲观
         </button>
@@ -84,9 +84,9 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
                 width: `${sc.probability}%`,
                 backgroundColor:
                   sc.name === "乐观"
-                    ? "#22c55e"
+                    ? "var(--signal-green)"
                     : sc.name === "悲观"
-                      ? "#8b0e04"
+                      ? "var(--signal-red)"
                       : "var(--color-accent-gold)",
               }}
             />
@@ -123,7 +123,7 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
               <div>
                 <div className="text-[var(--color-text-muted)]">Runway</div>
                 <div
-                  className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[#8b0e04]" : ""}`}
+                  className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[var(--fpa-kpi-negative)]" : ""}`}
                 >
                   {sc.fpaImpact.runwayMonths}月
                 </div>

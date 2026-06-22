@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { TrafficLight } from "@/lib/types/stratos";
 
@@ -31,18 +31,19 @@ async function seedBscIfEmpty(period: string): Promise<void> {
   const existing = await prisma.strategicBscConfig.findUnique({ where: { period } });
   if (existing) return;
   await prisma.strategicBscConfig.create({
-    data: { period, cardsJson: defaultBscCards() },
+    data: { period, cardsJson: asDbJson(defaultBscCards()) },
   });
 }
 
 export async function getBscConfig(period = demo.CURRENT_PERIOD): Promise<BscConfigBundle> {
-  if (!(await dbAvailable())) {
-    return { cards: defaultBscCards(), source: "demo" };
-  }
-  await seedBscIfEmpty(period);
-  const row = await prisma.strategicBscConfig.findUnique({ where: { period } });
-  if (!row) return { cards: defaultBscCards(), source: "demo" };
-  return { cards: parseBscCardsJson(row.cardsJson), source: "database" };
+  const fallback = { cards: defaultBscCards(), source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    await seedBscIfEmpty(period);
+    const row = await prisma.strategicBscConfig.findUnique({ where: { period } });
+    if (!row) return fallback;
+    return { cards: parseBscCardsJson(row.cardsJson), source: "database" as const };
+  }, fallback);
 }
 
 /** Merge persisted card copy with live health signals. */
@@ -70,7 +71,7 @@ export async function saveBscConfig(
   if (!row) throw new Error("BSC 配置记录未找到");
   await prisma.strategicBscConfig.update({
     where: { id: row.id },
-    data: { cardsJson: cards },
+    data: { cardsJson: asDbJson(cards) },
   });
   return { cards, source: "database" };
 }

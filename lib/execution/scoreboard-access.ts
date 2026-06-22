@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import type { ObjectiveView } from "@/lib/data/entity-getters";
 import * as demo from "@/lib/stratos-demo-data";
 import type { KeyResult, StrategicDiagnosis } from "@/lib/types/stratos";
@@ -88,19 +88,20 @@ export function mergeScoreboardSource(
 export async function getScoreboardConfig(
   period = demo.CURRENT_PERIOD,
 ): Promise<{ config: ScoreboardConfigPayload | null; source: "database" | "derived" }> {
-  if (!(await dbAvailable())) {
-    return { config: null, source: "derived" };
-  }
-  const row = await prisma.executionScoreboardConfig.findUnique({ where: { period } });
-  if (!row) return { config: null, source: "derived" };
-  return {
-    config: {
-      wigObjectiveId: row.wigObjectiveId,
-      leadingKrIds: row.leadingKrIds,
-      laggingKrIds: row.laggingKrIds,
-    },
-    source: "database",
-  };
+  const fallback = { config: null, source: "derived" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    const row = await prisma.executionScoreboardConfig.findUnique({ where: { period } });
+    if (!row) return fallback;
+    return {
+      config: {
+        wigObjectiveId: row.wigObjectiveId,
+        leadingKrIds: row.leadingKrIds,
+        laggingKrIds: row.laggingKrIds,
+      },
+      source: "database" as const,
+    };
+  }, fallback);
 }
 
 export async function getResolvedScoreboard(

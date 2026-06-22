@@ -133,7 +133,7 @@ export function RehearsalPresentMode({
           <div className="text-right">
             <div className="text-xs text-[var(--color-text-muted)]">本环节</div>
             <div
-              className={`font-data text-4xl tabular-nums ${overtime ? "text-[#8b0e04]" : "text-[var(--color-accent)]"}`}
+              className={`font-data text-4xl tabular-nums ${overtime ? "text-[var(--signal-red)]" : "text-[var(--color-accent)]"}`}
             >
               {overtime ? "+" : ""}
               {formatClock(overtime ? segmentElapsed - segmentBudgetSec : segmentRemaining)}
@@ -158,7 +158,7 @@ export function RehearsalPresentMode({
           <button
             type="button"
             onClick={onExit}
-            className="rounded border border-[#8b0e04]/40 px-4 py-2 text-sm text-[#8b0e04]"
+            className="rounded border border-[var(--signal-red)]/40 px-4 py-2 text-sm text-[var(--signal-red)]"
           >
             退出 Esc
           </button>
@@ -168,7 +168,7 @@ export function RehearsalPresentMode({
       <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-8 py-6 lg:flex-row">
         <section className="flex-1 space-y-4">
           <h2 className="text-lg font-medium text-[var(--color-accent)]">话术要点</h2>
-          <ul className="space-y-3 text-xl leading-relaxed text-[#e2e8f0]">
+          <ul className="space-y-3 text-xl leading-relaxed text-[var(--color-text-primary)]">
             {step.talkingPoints.map((t) => (
               <li key={t}>{t}</li>
             ))}
@@ -215,7 +215,7 @@ export function RehearsalPresentMode({
             ← → 切换环节 · Space 暂停 · 超时会标橙 · 清单写入审计
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.06]">
               <div
-                className={`h-full ${overtime ? "bg-[#8b0e04]" : "bg-[var(--color-accent)]"}`}
+                className={`h-full ${overtime ? "bg-[var(--signal-red)]" : "bg-[var(--color-accent)]"}`}
                 style={{
                   width: `${Math.min(100, (segmentElapsed / segmentBudgetSec) * 100)}%`,
                 }}

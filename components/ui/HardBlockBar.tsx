@@ -5,7 +5,7 @@ export function HardBlockBar({ assertions }: { assertions: HealthAssertion[] }) 
   if (active.length === 0) return null;
 
   return (
-    <div className="w-full bg-[#8b0e04] px-6 py-3 text-center text-sm font-medium text-white">
+    <div className="w-full bg-[var(--signal-red)] px-6 py-3 text-center text-sm font-medium text-white">
       {active.map((a) => (
         <span key={a.id}>
           {a.message}

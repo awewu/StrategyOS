@@ -1,4 +1,5 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type {
   BalanceSheet,
   CashFlowStatement,
@@ -39,31 +40,25 @@ export function parseStatementsJson(json: unknown): StatementsOverride {
 export async function getManagementAdjustments(
   period = demo.CURRENT_PERIOD,
 ): Promise<ManagementAdjustmentsBundle> {
-  if (!(await dbAvailable())) {
-    return {
-      marginBridge: null,
-      statements: null,
-      marginBridgeSource: "derived",
-      statementsSource: "derived",
-    };
-  }
-  const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period } });
-  if (!row) {
-    return {
-      marginBridge: null,
-      statements: null,
-      marginBridgeSource: "derived",
-      statementsSource: "derived",
-    };
-  }
-  return {
-    marginBridge: row.marginBridgeJson
-      ? parseMarginBridgeJson(row.marginBridgeJson)
-      : null,
-    statements: row.statementsJson ? parseStatementsJson(row.statementsJson) : null,
-    marginBridgeSource: row.marginBridgeJson ? "database" : "derived",
-    statementsSource: row.statementsJson ? "database" : "derived",
+  const fallback: ManagementAdjustmentsBundle = {
+    marginBridge: null,
+    statements: null,
+    marginBridgeSource: "derived",
+    statementsSource: "derived",
   };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    const row = await prisma.strategicManagementAdjustments.findUnique({ where: { period } });
+    if (!row) return fallback;
+    return {
+      marginBridge: row.marginBridgeJson
+        ? parseMarginBridgeJson(row.marginBridgeJson)
+        : null,
+      statements: row.statementsJson ? parseStatementsJson(row.statementsJson) : null,
+      marginBridgeSource: row.marginBridgeJson ? ("database" as const) : ("derived" as const),
+      statementsSource: row.statementsJson ? ("database" as const) : ("derived" as const),
+    };
+  }, fallback);
 }
 
 async function upsertRow(period: string) {
@@ -83,7 +78,7 @@ export async function saveManagementMarginBridge(
   await upsertRow(period);
   await prisma.strategicManagementAdjustments.update({
     where: { period },
-    data: { marginBridgeJson: marginBridge },
+    data: { marginBridgeJson: asDbJson(marginBridge) },
   });
   return getManagementAdjustments(period);
 }
@@ -96,7 +91,7 @@ export async function saveManagementStatements(
   await upsertRow(period);
   await prisma.strategicManagementAdjustments.update({
     where: { period },
-    data: { statementsJson: statements },
+    data: { statementsJson: asDbJson(statements) },
   });
   return getManagementAdjustments(period);
 }
@@ -107,7 +102,7 @@ export async function clearManagementMarginBridge(period = demo.CURRENT_PERIOD):
   if (!row) return;
   await prisma.strategicManagementAdjustments.update({
     where: { period },
-    data: { marginBridgeJson: null },
+    data: { marginBridgeJson: Prisma.DbNull },
   });
 }
 
@@ -117,7 +112,7 @@ export async function clearManagementStatements(period = demo.CURRENT_PERIOD): P
   if (!row) return;
   await prisma.strategicManagementAdjustments.update({
     where: { period },
-    data: { statementsJson: null },
+    data: { statementsJson: Prisma.DbNull },
   });
 }
 

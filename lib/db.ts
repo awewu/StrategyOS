@@ -12,17 +12,41 @@ function createPrismaClient() {
   });
 }
 
+/** Prisma delegates that must exist after `prisma generate` — used to bust HMR-stale clients. */
+const REQUIRED_PRISMA_DELEGATES = [
+  "strategyOnePager",
+  "decodeBscRow",
+  "feedbackLoopRecord",
+  "gateChecklistItem",
+  "cultureAwardWinner",
+  "twelveDimScore",
+  "planMilestone",
+  "planPremise",
+  "strategicOutlook",
+  "strategicCapitalConfig",
+  "cultureHandbook",
+  "strategicExecutionAnalytics",
+  "strategicBscConfig",
+  "strategicManagementAdjustments",
+  "strategicGrowthAnalytics",
+  "strategicCommandConfig",
+  "executionScoreboardConfig",
+] as const;
+
 function isStalePrismaClient(client: PrismaClient): boolean {
-  return (
-    !("strategyOnePager" in client) ||
-    !("decodeBscRow" in client) ||
-    !("feedbackLoopRecord" in client) ||
-    !("gateChecklistItem" in client) ||
-    !("cultureAwardWinner" in client) ||
-    !("twelveDimScore" in client) ||
-    !("planMilestone" in client) ||
-    !("planPremise" in client)
-  );
+  return REQUIRED_PRISMA_DELEGATES.some((key) => {
+    const delegate = (client as unknown as Record<string, unknown>)[key];
+    return delegate == null || typeof (delegate as { findUnique?: unknown }).findUnique !== "function";
+  });
+}
+
+function invalidatePrismaClient(): void {
+  const cached = globalForPrisma.prisma;
+  if (cached) {
+    void cached.$disconnect().catch(() => {});
+  }
+  globalForPrisma.prisma = undefined;
+  dbReady = null;
 }
 
 function getPrismaClient(): PrismaClient {
@@ -40,9 +64,26 @@ function getPrismaClient(): PrismaClient {
   return client;
 }
 
-export const prisma = getPrismaClient();
+/** Always routes through getPrismaClient() — avoids HMR holding a stale `const prisma`. */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, prop, client) as unknown;
+    if (typeof value === "function") {
+      return (value as (...args: unknown[]) => unknown).bind(client);
+    }
+    return value;
+  },
+});
 
 let dbReady: boolean | null = null;
+
+function isPrismaDelegateError(err: unknown): boolean {
+  return (
+    err instanceof TypeError &&
+    /findUnique|findMany|create|update|upsert|deleteMany/.test(String(err.message))
+  );
+}
 
 async function probeDb(): Promise<boolean> {
   if (!process.env.DATABASE_URL) return false;
@@ -60,9 +101,14 @@ async function probeDb(): Promise<boolean> {
   }
 }
 
+/** Cast to Prisma InputJsonValue-compatible payload */
+export function asDbJson<T>(value: T): object {
+  return value as object;
+}
+
 /** Reset after schema sync (e.g. prisma db push) without restarting dev server. */
 export function invalidateDbCache(): void {
-  dbReady = null;
+  invalidatePrismaClient();
 }
 
 export async function dbAvailable(): Promise<boolean> {
@@ -78,6 +124,9 @@ export async function safeDbQuery<T>(fn: () => Promise<T>, fallback: T): Promise
   try {
     return await fn();
   } catch (err) {
+    if (isPrismaDelegateError(err)) {
+      invalidatePrismaClient();
+    }
     dbReady = false;
     if (process.env.NODE_ENV === "development") {
       console.warn("[StratOS] DB query failed — using demo fallback:", err);

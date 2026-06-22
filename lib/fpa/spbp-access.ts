@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { Scenario } from "@/lib/types/stratos";
 
@@ -6,17 +6,13 @@ export async function getSpbpEditable(period = demo.CURRENT_PERIOD): Promise<{
   scenarios: Scenario[];
   source: "database" | "demo";
 }> {
-  if (!(await dbAvailable())) {
-    return { scenarios: demo.spbpScenarios, source: "demo" };
-  }
-  const rows = await prisma.spbpScenario.findMany({ where: { period } });
-  if (rows.length === 0) {
-    return { scenarios: demo.spbpScenarios, source: "demo" };
-  }
-  return {
-    scenarios: rows.map(mapRow),
-    source: "database",
-  };
+  const fallback = { scenarios: demo.spbpScenarios, source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    const rows = await prisma.spbpScenario.findMany({ where: { period } });
+    if (rows.length === 0) return fallback;
+    return { scenarios: rows.map(mapRow), source: "database" as const };
+  }, fallback);
 }
 
 function mapRow(r: {

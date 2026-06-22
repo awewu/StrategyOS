@@ -314,7 +314,7 @@ export function MarketResponsePanel({
       </div>
 
       {emptyCount > 0 && (
-        <div className="rounded-lg border border-[#cdd1d2] bg-[var(--surface-raised)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
+        <div className="rounded-lg border border-[var(--surface-border-strong)] bg-[var(--surface-raised)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
           <span className="text-[var(--color-text-muted)]">{emptyCount} 个战略行动缺少市场反馈录入</span>
           {" "}— 战略会前要求责任人补录，缺失本身是对市场理解深度的考核。
           {cpMissingCount > 0 && <span> 竞争位移表另有 {cpMissingCount} 项对标数据缺失。</span>}

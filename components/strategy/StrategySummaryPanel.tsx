@@ -1,5 +1,6 @@
 import type { StrategicDiagnosis, InvestmentCase, ProductBet, GtmBet } from "@/lib/types/stratos";
 import type { TrafficLight } from "@/lib/types/stratos";
+import { labelFor } from "@/lib/brand/display-labels";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 
 const BSC_COLOR: Record<string, string> = {
@@ -8,9 +9,9 @@ const BSC_COLOR: Record<string, string> = {
 };
 
 const TIER_CONFIG = [
-  { key: "invest",   label: "Invest to Grow",         color: "var(--color-accent)", dot: "bg-[var(--color-accent)]" },
-  { key: "innovate", label: "Innovate to Lead",        color: "#60a5fa",             dot: "bg-[#60a5fa]" },
-  { key: "deliver",  label: "Deliver on Commitments",  color: "var(--signal-green)", dot: "bg-[var(--signal-green)]" },
+  { key: "invest",   label: "Invest to Grow",         color: "var(--color-accent)", dot: "bg-[var(--color-accent)]", stackLabel: labelFor("capitalStack") },
+  { key: "innovate", label: "Innovate to Lead",        color: "var(--stack-prod)",   dot: "bg-[var(--stack-prod)]", stackLabel: labelFor("productBets") },
+  { key: "deliver",  label: "Deliver on Commitments",  color: "var(--stack-gtm)",    dot: "bg-[var(--stack-gtm)]", stackLabel: labelFor("gtmBets") },
 ];
 
 function LeftPanel({ diagnosis, brandCards }: {
@@ -63,6 +64,7 @@ function MiddlePanel({ ics, productBets, gtmBets }: {
           <div className="mb-2 flex items-center gap-2">
             <span className={`inline-block h-2 w-2 flex-shrink-0 rounded-full ${tier.dot}`} />
             <span className="text-sm font-semibold" style={{ color: tier.color }}>{tier.label}</span>
+            <span className="text-[10px] text-[var(--color-text-muted)]">· {tier.stackLabel}</span>
           </div>
           <ul className="space-y-1">
             {tier.items.length > 0 ? tier.items.map((item, i) => (

@@ -1,3 +1,4 @@
+import { RhauttBrandShowcase } from "@/components/brand/RhauttBrandShowcase";
 import Image from "next/image";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -11,7 +12,8 @@ const ASSETS = [
 ] as const;
 
 const TOKEN_SWATCHES = [
-  { name: "Accent Gold", var: "--color-accent" },
+  { name: "Rhautt Red", var: "--brand-rhautt-red" },
+  { name: "Accent", var: "--color-accent" },
   { name: "Deep BG", var: "--color-bg-deep" },
   { name: "Surface", var: "--color-bg-surface" },
   { name: "Text Primary", var: "--color-text-primary" },
@@ -48,6 +50,8 @@ export default function BrandGalleryPage() {
             </p>
           </div>
         </section>
+
+        <RhauttBrandShowcase />
 
         <section className="stratos-card stratos-card--padded">
           <h2 className="stratos-section-title mb-4">Design Tokens</h2>

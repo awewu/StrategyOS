@@ -1,4 +1,5 @@
 import type { GtmBet, InvestmentCase, ProductBet } from "@/lib/types/stratos";
+import { labelFor } from "@/lib/brand/display-labels";
 
 function StackItemChip({
   label,
@@ -20,7 +21,7 @@ function StackItemChip({
       <div className="mt-2 flex flex-wrap gap-2 text-xs">
         <span className="rounded bg-black/[0.04] px-2 py-0.5">{status}</span>
         {tag && <span className="font-data text-[var(--color-accent)]">{tag}</span>}
-        <span className={toggle === "on" ? "text-[#1f8a45]" : "text-[var(--color-text-muted)]"}>
+        <span className={toggle === "on" ? "text-[var(--signal-green)]" : "text-[var(--color-text-muted)]"}>
           FPA {toggle.toUpperCase()}
         </span>
       </div>
@@ -42,7 +43,7 @@ export function ThreeStackPanel({
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-sm font-medium text-[var(--color-text-primary)]">三栈资源配置</h2>
+        <h2 className="text-sm font-medium text-[var(--color-text-primary)]">{labelFor("threeStack")}</h2>
         <p className="text-xs text-[var(--color-text-muted)]">资本 · 产品 · 渠道 — 每项可挂 budget_tag 联动 FPA</p>
       </div>
       <div className="rounded-md bg-[var(--color-accent)]/10 px-4 py-2 text-sm text-[var(--color-accent)]">
@@ -55,7 +56,7 @@ export function ThreeStackPanel({
             {ics.map((ic) => (
               <StackItemChip
                 key={ic.id}
-                label="资本投向"
+                label={labelFor("capitalStack")}
                 title={ic.title}
                 tag={ic.budgetTag}
                 toggle={ic.fpaToggle}
@@ -65,12 +66,12 @@ export function ThreeStackPanel({
           </div>
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-medium text-[#60a5fa]">产品栈 ProdStack</h3>
+          <h3 className="mb-2 text-sm font-medium text-[var(--stack-prod)]">产品栈 ProdStack</h3>
           <div className="space-y-2">
             {productBets.map((pb) => (
               <StackItemChip
                 key={pb.id}
-                label="产品战略项"
+                label={labelFor("productBet")}
                 title={pb.title}
                 tag={pb.budgetTag}
                 toggle={pb.fpaToggle}
@@ -80,12 +81,12 @@ export function ThreeStackPanel({
           </div>
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-medium text-[#1f8a45]">渠道栈 GtmStack</h3>
+          <h3 className="mb-2 text-sm font-medium text-[var(--stack-gtm)]">渠道栈 GtmStack</h3>
           <div className="space-y-2">
             {gtmBets.map((gb) => (
               <StackItemChip
                 key={gb.id}
-                label="市场战略项"
+                label={labelFor("gtmBet")}
                 title={gb.title}
                 tag={gb.budgetTag}
                 toggle={gb.fpaToggle}

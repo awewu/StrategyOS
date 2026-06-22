@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { AarrrFunnelStage, KellerBrandLayer } from "@/lib/types/stratos";
 
@@ -34,8 +34,8 @@ async function seedGrowthIfEmpty(period: string): Promise<void> {
   await prisma.strategicGrowthAnalytics.create({
     data: {
       period,
-      aarrrFunnelJson: d.aarrrFunnel,
-      kellerBrandJson: d.kellerBrandLayers,
+      aarrrFunnelJson: asDbJson(d.aarrrFunnel),
+      kellerBrandJson: asDbJson(d.kellerBrandLayers),
     },
   });
 }
@@ -43,14 +43,15 @@ async function seedGrowthIfEmpty(period: string): Promise<void> {
 export async function getGrowthAnalytics(
   period = demo.CURRENT_PERIOD,
 ): Promise<GrowthAnalyticsBundle> {
-  if (!(await dbAvailable())) {
-    return { ...defaultGrowthAnalytics(), source: "demo" };
-  }
-  await seedGrowthIfEmpty(period);
-  const row = await prisma.strategicGrowthAnalytics.findUnique({ where: { period } });
-  if (!row) return { ...defaultGrowthAnalytics(), source: "demo" };
-  const parsed = parseGrowthAnalyticsJson(row.aarrrFunnelJson, row.kellerBrandJson);
-  return { ...parsed, source: "database" };
+  const fallback = { ...defaultGrowthAnalytics(), source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    await seedGrowthIfEmpty(period);
+    const row = await prisma.strategicGrowthAnalytics.findUnique({ where: { period } });
+    if (!row) return fallback;
+    const parsed = parseGrowthAnalyticsJson(row.aarrrFunnelJson, row.kellerBrandJson);
+    return { ...parsed, source: "database" as const };
+  }, fallback);
 }
 
 export async function saveGrowthAnalytics(
@@ -72,8 +73,8 @@ export async function saveGrowthAnalytics(
   await prisma.strategicGrowthAnalytics.update({
     where: { id: row.id },
     data: {
-      aarrrFunnelJson: payload.aarrrFunnel,
-      kellerBrandJson: payload.kellerBrandLayers,
+      aarrrFunnelJson: asDbJson(payload.aarrrFunnel),
+      kellerBrandJson: asDbJson(payload.kellerBrandLayers),
     },
   });
   return { ...payload, source: "database" };

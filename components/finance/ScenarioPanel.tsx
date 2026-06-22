@@ -28,9 +28,9 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
                 width: `${sc.probability}%`,
                 backgroundColor:
                   sc.name === "乐观"
-                    ? "#22c55e"
+                    ? "var(--signal-green)"
                     : sc.name === "悲观"
-                      ? "#8b0e04"
+                      ? "var(--signal-red)"
                       : "var(--color-accent-gold)",
               }}
               title={`${sc.name} ${sc.probability}%`}
@@ -75,7 +75,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
               <div>
                 <div className="text-[var(--color-text-muted)]">Runway</div>
                 <div
-                  className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[#8b0e04]" : ""}`}
+                  className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[var(--fpa-kpi-negative)]" : ""}`}
                 >
                   {sc.fpaImpact.runwayMonths}月
                 </div>

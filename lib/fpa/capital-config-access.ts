@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { PostInvestDeviation, RealOptionTag } from "@/lib/types/stratos";
 
@@ -34,21 +34,22 @@ async function seedCapitalConfigIfEmpty(period: string): Promise<void> {
   await prisma.strategicCapitalConfig.create({
     data: {
       period,
-      realOptionsJson: d.realOptions,
-      postInvestDeviationsJson: d.postInvestDeviations,
+      realOptionsJson: asDbJson(d.realOptions),
+      postInvestDeviationsJson: asDbJson(d.postInvestDeviations),
     },
   });
 }
 
 export async function getCapitalConfig(period = demo.CURRENT_PERIOD): Promise<CapitalConfigBundle> {
-  if (!(await dbAvailable())) {
-    return { ...defaultCapitalConfig(), source: "demo" };
-  }
-  await seedCapitalConfigIfEmpty(period);
-  const row = await prisma.strategicCapitalConfig.findUnique({ where: { period } });
-  if (!row) return { ...defaultCapitalConfig(), source: "demo" };
-  const parsed = parseCapitalConfigJson(row.realOptionsJson, row.postInvestDeviationsJson);
-  return { ...parsed, source: "database" };
+  const fallback = { ...defaultCapitalConfig(), source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    await seedCapitalConfigIfEmpty(period);
+    const row = await prisma.strategicCapitalConfig.findUnique({ where: { period } });
+    if (!row) return fallback;
+    const parsed = parseCapitalConfigJson(row.realOptionsJson, row.postInvestDeviationsJson);
+    return { ...parsed, source: "database" as const };
+  }, fallback);
 }
 
 export async function saveCapitalConfig(
@@ -70,8 +71,8 @@ export async function saveCapitalConfig(
   await prisma.strategicCapitalConfig.update({
     where: { id: row.id },
     data: {
-      realOptionsJson: payload.realOptions,
-      postInvestDeviationsJson: payload.postInvestDeviations,
+      realOptionsJson: asDbJson(payload.realOptions),
+      postInvestDeviationsJson: asDbJson(payload.postInvestDeviations),
     },
   });
   return { ...payload, source: "database" };

@@ -1,10 +1,16 @@
 "use client";
 
+/**
+ * Primary sidebar navigation — all hubs/standalones visible per role permissions.
+ * DO NOT import layoutSidebarNav from lib/nav/sidebar-layout.ts here without
+ * explicit product approval; CEO「更多」collapse caused recurring "modules lost" UX.
+ */
+import { RhauttSidebarLogo } from "@/components/brand/RhauttSidebarLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { SessionPayload } from "@/lib/auth/config";
-import { canAccessHub, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
+import { canAccessHub, canAccessRoute, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand/tokens";
 import { RoleSwitcher } from "@/components/shell/RoleSwitcher";
 import { NavIcon, type NavIconId } from "@/components/shell/NavIcons";
@@ -64,10 +70,12 @@ function HubFlyout({
   hub,
   pathname,
   open,
+  role,
 }: {
   hub: NavHub;
   pathname: string;
   open: boolean;
+  role: RoleKey;
 }) {
   if (!open || hub.children.length === 0) return null;
 
@@ -75,7 +83,7 @@ function HubFlyout({
     <div className="stratos-nav-flyout" role="menu">
       <p className="stratos-nav-flyout__title">{hub.label}</p>
       <ul className="stratos-nav-flyout__list">
-        {hub.children.map((item) => {
+        {hub.children.filter((c) => filterNavHref(role, c.href)).map((item) => {
           const active = matchesNavRoute(pathname, item.href);
           return (
             <li key={item.href}>
@@ -125,7 +133,7 @@ function HubNavItem({
         {hub.id === "posture" ? <InboxNavBadge /> : null}
         <span className="stratos-nav-item__label">{hub.shortLabel}</span>
       </Link>
-      <HubFlyout hub={hub} pathname={pathname} open={flyout} />
+      <HubFlyout hub={hub} pathname={pathname} open={flyout} role={role} />
     </div>
   );
 }
@@ -152,11 +160,12 @@ export function AppNav({
 
   return (
     <aside className="stratos-sidebar">
-      <Link href={home} className="stratos-sidebar__logo" title={brand.sidebarLabelZh}>
-        <span className="stratos-sidebar__mark" aria-hidden>
-          {brand.markName}
-        </span>
-        <span className="stratos-sidebar__wordmark">{brand.sidebarLabelZh}</span>
+      <Link
+        href={home}
+        className="stratos-sidebar__logo"
+        title={`${brand.sidebarLabelZh} · ${brand.rhautt.taglineEn}`}
+      >
+        <RhauttSidebarLogo />
       </Link>
 
       <nav className="stratos-sidebar__nav">

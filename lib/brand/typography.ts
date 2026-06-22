@@ -1,4 +1,8 @@
-/** StratOS typography — sync with --type-* tokens in app/globals.css */
+/** StratOS typography — sync with --type-* / --text-* tokens in app/globals.css */
+import { typeScale } from "./tokens";
+
+export { typeScale };
+
 export const typography = {
   h1:     "text-headline text-[var(--color-text-primary)]",
   h2:     "text-title text-[var(--color-text-primary)]",

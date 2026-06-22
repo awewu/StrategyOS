@@ -69,6 +69,9 @@
   --chart-bridge-positive: color-mix(in srgb, var(--signal-green) 60%, transparent);
   --chart-axis-tick: var(--color-text-muted);
   --chart-progress: var(--color-accent);
+  --chart-tooltip-bg: #1e293b;
+  --chart-grid-stroke: rgba(255, 255, 255, 0.05);
+  --chart-ref-line: rgba(255, 255, 255, 0.08);
 
   /* ── Three-stack ── */
   --stack-cap:  #8b0e04;
@@ -78,6 +81,11 @@
   /* ── Print ── */
   --print-ivory: #faf8f5;
   --print-navy:  #0a1220;
+
+  /* ── Rhautt group brand (logo PDF · RGB 194·44·18) ── */
+  --brand-rhautt-red:   #c22c12;
+  --brand-rhautt-black: #000000;
+  --brand-rhautt-grey:  #efefef;
 
   /* ── Sidebar rail ── */
   --sidebar-w: 80px;
@@ -106,6 +114,28 @@
   --type-caption: 0.75rem;     /* 12 · 说明 / meta */
   --type-kpi: 1.5rem;          /* 24 · 槽位数值 */
   --type-kpi-hero: 2rem;       /* 32 · 主 KPI */
+
+  /* UI_VI §4.2 aliases (sync with --type-*) */
+  --text-h1: var(--type-kpi-hero);
+  --text-h2: var(--type-section);
+  --text-body: var(--type-body);
+  --text-data: var(--type-subsection);
+  --text-caption: var(--type-caption);
+
+  /* UI_VI §4.3 spacing */
+  --page-gutter: 4rem;
+
+  /* FP&A semantic (reuse signals — §4.1) */
+  --fpa-kpi-positive: var(--signal-green);
+  --fpa-kpi-negative: var(--signal-red);
+
+  /* Strategy house diagram (BSC palette) */
+  --house-mission: var(--stack-prod);
+  --house-vision: var(--bsc-customer);
+  --house-annual: var(--stack-cap);
+  --house-foundation: var(--print-navy);
+  --house-vision-tint: color-mix(in srgb, var(--bsc-customer) 12%, #ffffff);
+  --house-annual-tint: color-mix(in srgb, var(--stack-cap) 6%, #ffffff);
 }
 
 [data-theme="print"] {
@@ -169,47 +199,62 @@ body {
 .stratos-sidebar__logo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   min-height: 3.75rem;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  padding: 0.65rem 0.25rem 0.5rem;
+  padding: 0.55rem 0.35rem 0.45rem;
   border-bottom: 1px solid var(--sidebar-rail-border);
   text-decoration: none;
   color: var(--sidebar-rail-text-hover);
+  transition: opacity 0.15s ease;
 }
 
-.stratos-sidebar__mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.75rem;
-  padding: 0.2rem 0.35rem;
-  border-radius: 6px;
-  border: 1px solid rgba(228, 0, 43, 0.65);
-  background: #ffffff;
-  color: #e4002b;
-  font-family: Georgia, "Times New Roman", serif;
+.stratos-sidebar__logo:hover {
+  opacity: 0.9;
+}
+
+.stratos-sidebar__rhautt {
+  display: block;
+  font-family: var(--font-rhautt), "Nunito", "Arial Rounded MT Bold", sans-serif;
   font-size: 0.6875rem;
   font-weight: 800;
-  font-style: italic;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  text-transform: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  font-style: normal;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--sidebar-rail-text-hover);
 }
 
-.stratos-sidebar__wordmark {
+.stratos-sidebar__rhautt-accent {
+  display: block;
+  width: 1.125rem;
+  height: 2px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  background: var(--brand-rhautt-red);
+  margin: 0.1rem 0;
+}
+
+.stratos-sidebar__group {
   max-width: 100%;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
   font-size: 0.5625rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   line-height: 1.15;
-  color: var(--sidebar-rail-text-hover);
+  color: rgba(255, 255, 255, 0.82);
   text-align: center;
   white-space: nowrap;
+}
+
+.rhautt-lockup--light {
+  font-family: var(--font-rhautt), "Nunito", "Arial Rounded MT Bold", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--brand-rhautt-red);
 }
 
 .stratos-sidebar__nav {
@@ -259,6 +304,14 @@ body {
   background: var(--sidebar-rail-active-bg);
   color: var(--sidebar-rail-active-text);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.stratos-nav-item--more {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .stratos-nav-item--active .stratos-nav-item__icon {
@@ -1994,11 +2047,12 @@ input.ppt-col-title.ppt-field:focus {
 .ppt-kpi-value { font-size: 1.375rem; font-weight: 700; line-height: 1.15; margin-bottom: 2px; color: var(--ppt-text); }
 .ppt-kpi-sub { font-size: var(--type-caption); line-height: 1.35; color: var(--color-text-muted); }
 .ppt-brand {
-  color: #c00000;
-  font-family: Georgia, "Times New Roman", serif;
+  color: var(--brand-rhautt-red);
+  font-family: var(--font-rhautt), "Nunito", sans-serif;
   font-size: 24px;
-  font-weight: 700;
-  font-style: italic;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
 .ppt-drivers-grid {

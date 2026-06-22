@@ -123,7 +123,7 @@ export function VxBoardEditor({
                       <div className="font-data">{vx.progressPercent}%</div>
                       <div className="mt-1 h-1.5 w-24 overflow-hidden rounded-full bg-black/[0.06]">
                         <div
-                          className={`h-full ${vx.riskLevel === "high" ? "bg-[#8b0e04]" : "bg-[#1f8a45]"}`}
+                          className={`h-full ${vx.riskLevel === "high" ? "bg-[var(--signal-red)]" : "bg-[var(--signal-green)]"}`}
                           style={{ width: `${vx.progressPercent}%` }}
                         />
                       </div>

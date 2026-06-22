@@ -104,10 +104,10 @@ function MaturityModal({ item, onClose, onSaved }: {
 }
 
 const QUADRANT_LABELS = [
-  { x: 15, y: 85, label: "快速学习", sub: "高价值区", color: "#22c55e" },
-  { x: 65, y: 85, label: "高效执行", sub: "理想区", color: "#3b82f6" },
-  { x: 15, y: 15, label: "高风险区", sub: "慢且不学习", color: "#ef4444" },
-  { x: 65, y: 15, label: "执行型", sub: "快但不调适", color: "#f59e0b" },
+  { x: 15, y: 85, label: "快速学习", sub: "高价值区", color: "var(--signal-green)" },
+  { x: 65, y: 85, label: "高效执行", sub: "理想区", color: "var(--color-accent)" },
+  { x: 15, y: 15, label: "高风险区", sub: "慢且不学习", color: "var(--signal-red)" },
+  { x: 65, y: 15, label: "执行型", sub: "快但不调适", color: "var(--signal-yellow)" },
 ];
 
 function CustomDot(props: {
@@ -133,7 +133,7 @@ function TooltipContent({ active, payload }: { active?: boolean; payload?: Array
   const p = payload[0].payload;
   const meta = TENSION_META[p.tensionType];
   return (
-    <div className="rounded-lg border border-black/15 bg-[#1e293b] p-3 text-xs shadow-xl">
+    <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--chart-tooltip-bg)] p-3 text-xs shadow-xl">
       <div className="mb-2 font-medium">{p.projectName} ({p.projectCode})</div>
       <div className="space-y-1 text-[var(--color-text-muted)]">
         <div>速度（里程碑准时率）<span className="ml-2 text-[var(--color-text-primary)]">{Math.round(p.milestoneOnTimeRate * 100)}%</span></div>
@@ -187,13 +187,13 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
               <XAxis type="number" dataKey="x" domain={[0, 100]} tickCount={6}
                 tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} label={{ value: "速度（%）", position: "insideBottom", offset: -10, fill: "var(--chart-axis-tick)", fontSize: 11 }} />
               <YAxis type="number" dataKey="y" domain={[0, 100]} tickCount={6}
                 tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} label={{ value: "学习速度（%）", angle: -90, position: "insideLeft", fill: "var(--chart-axis-tick)", fontSize: 11 }} />
-              <ReferenceLine x={50} stroke="#ffffff15" strokeDasharray="4 3" />
-              <ReferenceLine y={50} stroke="#ffffff15" strokeDasharray="4 3" />
+              <ReferenceLine x={50} stroke="var(--chart-ref-line)" strokeDasharray="4 3" />
+              <ReferenceLine y={50} stroke="var(--chart-ref-line)" strokeDasharray="4 3" />
               <Tooltip content={<TooltipContent />} />
               <Scatter data={chartData} shape={(props: unknown) => (
                 <CustomDot {...(props as Parameters<typeof CustomDot>[0])} selected={selected} onSelect={setSelected} />

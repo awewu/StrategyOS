@@ -12,7 +12,8 @@ export type NavIconId =
   | "reports"
   | "rehearsal"
   | "gates"
-  | "access";
+  | "access"
+  | "more";
 
 type NavIconProps = {
   id: NavIconId;
@@ -147,6 +148,13 @@ const ICONS: Record<NavIconId, React.ReactNode> = {
       <rect x="3" y="11" width="18" height="11" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       <circle cx="12" cy="16" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" />
     </>
   ),
 };

@@ -1,5 +1,5 @@
 import { GrowthAnalyticsEditor } from "@/components/strategy/GrowthAnalyticsEditor";
-import { SectionCard } from "@/components/ui/SectionCard";
+import { SectionCard } from "@/components/ui/KpiTile";
 import { labelFor } from "@/lib/brand/display-labels";
 import type { getStrategyBundle } from "@/lib/data/strategy-data";
 
@@ -47,7 +47,7 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
               </p>
               <p className="mt-1 font-data text-xs text-[var(--color-text-muted)]">{item.quarter}</p>
               {"product" in item && item.product ? (
-                <p className="mt-1 text-xs text-[var(--stack-product)]">{item.product}</p>
+                <p className="mt-1 text-xs text-[var(--stack-prod)]">{String(item.product)}</p>
               ) : null}
             </div>
           ))}
@@ -62,7 +62,7 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
                 key={`${card.product}-${card.segment}`}
                 className="rounded-lg border border-[var(--surface-border)] p-4"
               >
-                <p className="text-xs font-medium text-[var(--stack-product)]">{card.product}</p>
+                <p className="text-xs font-medium text-[var(--stack-prod)]">{card.product}</p>
                 <p className="mt-2 text-sm text-[var(--color-text-primary)]">{card.statement}</p>
                 <p className="mt-2 text-xs text-[var(--color-text-muted)]">细分 · {card.segment}</p>
               </li>

@@ -21,6 +21,7 @@ import {
   resolveScoreboardView,
 } from "@/lib/execution/scoreboard-access";
 import { getStratDiffs } from "@/lib/data/versions-data";
+import { computeRobustOverall } from "@/lib/stratos/robust-score";
 import {
   demoTensions, demoMaturityPoints, demoCommitments,
   type TensionItem, type ExecutionMaturityPoint, type CommitmentRecord,
@@ -184,7 +185,15 @@ export async function getCommandDeckBundle() {
     investmentCases,
   };
 
-  const derivedDecisions = buildDecisionItems(base);
+  const derivedDecisions = buildDecisionItems({
+    ...base,
+    decisions: [],
+    derivedDecisions: [],
+    decisionsSource: "derived",
+    timeline: [],
+    derivedTimeline: [],
+    timelineSource: "derived",
+  });
   const derivedTimeline = buildStrategicTimeline(snapshots);
   return {
     ...base,

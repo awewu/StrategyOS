@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono, Noto_Sans_SC } from "next/font/google";
+import { Inter, Geist_Mono, Noto_Sans_SC, Nunito } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,6 +21,14 @@ const notoSansSc = Noto_Sans_SC({
   display: "swap",
 });
 
+/** Rhautt group wordmark — rounded bold sans (Nunito) */
+const nunitoRhautt = Nunito({
+  variable: "--font-rhautt",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "StratOS · 战略沙盘",
   description: "瑞合瑞德战略推演系统 — Decide with clarity.",
@@ -38,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${inter.variable} ${geistMono.variable} ${notoSansSc.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${notoSansSc.variable} ${nunitoRhautt.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

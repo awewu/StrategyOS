@@ -110,7 +110,7 @@ export function RiceScorecard({ items }: { items: RiceItem[] }) {
 }
 
 function TrlBadge({ trl }: { trl: number }) {
-  const color = trl >= 7 ? "text-emerald-400" : trl >= 4 ? "text-amber-400" : "text-[#8b0e04]";
+  const color = trl >= 7 ? "text-[var(--signal-green)]" : trl >= 4 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]";
   return (
     <div className={`flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-full border border-[var(--surface-border)] ${color}`}>
       <span className="text-[10px] opacity-70">TRL</span>

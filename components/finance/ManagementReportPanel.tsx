@@ -18,29 +18,29 @@ export function ManagementReportPanel({ report }: { report: ManagementReportBund
       <SectionCard
         title={`管理报表 · ${report.period}`}
         subtitle="ROS = 净利润 ÷ 营收 · EBITDA 不含 D&A、利息、所得税"
-      />
-
-      <div className="stratos-slot-grid lg:grid-cols-4">
-        <KpiTile
-          className="lg:col-span-2"
-          size="hero"
-          label="ROS 销售净利率"
-          value={pct(kpis.rosActual)}
-          sub={`B ${pct(kpis.rosBudget)} · F ${pct(kpis.rosForecast)} · vs B ${rosVs >= 0 ? "+" : ""}${pct(rosVs)}`}
-        />
-        <KpiTile
-          label="EBITDA 利润率"
-          value={pct(kpis.ebitdaMarginActual)}
-          sub={`B ${pct(kpis.ebitdaMarginBudget)} · F ${pct(kpis.ebitdaMarginForecast)}`}
-          tone="neutral"
-        />
-        <KpiTile
-          label="毛利率"
-          value={pct(kpis.grossMarginActual)}
-          sub={`B ${pct(kpis.grossMarginBudget)} · F ${pct(kpis.grossMarginForecast)}`}
-          tone="neutral"
-        />
-      </div>
+      >
+        <div className="stratos-slot-grid lg:grid-cols-4">
+          <KpiTile
+            className="lg:col-span-2"
+            size="hero"
+            label="ROS 销售净利率"
+            value={pct(kpis.rosActual)}
+            sub={`B ${pct(kpis.rosBudget)} · F ${pct(kpis.rosForecast)} · vs B ${rosVs >= 0 ? "+" : ""}${pct(rosVs)}`}
+          />
+          <KpiTile
+            label="EBITDA 利润率"
+            value={pct(kpis.ebitdaMarginActual)}
+            sub={`B ${pct(kpis.ebitdaMarginBudget)} · F ${pct(kpis.ebitdaMarginForecast)}`}
+            tone="neutral"
+          />
+          <KpiTile
+            label="毛利率"
+            value={pct(kpis.grossMarginActual)}
+            sub={`B ${pct(kpis.grossMarginBudget)} · F ${pct(kpis.grossMarginForecast)}`}
+            tone="neutral"
+          />
+        </div>
+      </SectionCard>
 
       <SectionCard title="利润桥（Actual · 万元）" subtitle="累计至当期实际">
         <div className="space-y-2">

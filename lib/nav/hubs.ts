@@ -158,21 +158,40 @@ export function isStandaloneActive(pathname: string, href: string): boolean {
   return matchesNavRoute(pathname, href);
 }
 
-export function flattenNavLinks(): { href: string; label: string; group: string }[] {
-  const out: { href: string; label: string; group: string }[] = [];
+/** ⌘K palette section order — aligned with UI_VI §4.7 hub grouping */
+export const PALETTE_GROUPS = ["指挥", "战略", "执行", "财务", "工具", "管理"] as const;
+export type PaletteGroup = (typeof PALETTE_GROUPS)[number];
+
+const HUB_PALETTE_GROUP: Record<string, PaletteGroup> = {
+  posture: "指挥",
+  formulate: "战略",
+  ops: "执行",
+  operate: "执行",
+  tools: "工具",
+};
+
+function paletteGroupForStandalone(id: string): PaletteGroup {
+  if (id === "finance") return "财务";
+  if (id === "decode") return "战略";
+  return "战略";
+}
+
+export function flattenNavLinks(): { href: string; label: string; group: PaletteGroup }[] {
+  const out: { href: string; label: string; group: PaletteGroup }[] = [];
   for (const hub of NAV_HUBS) {
+    const group = HUB_PALETTE_GROUP[hub.id] ?? "工具";
     for (const c of hub.children) {
-      out.push({ href: c.href, label: `${hub.label} · ${c.label}`, group: hub.label });
+      out.push({ href: c.href, label: `${hub.label} · ${c.label}`, group });
     }
   }
   for (const s of NAV_STANDALONE) {
-    out.push({ href: s.href, label: s.label, group: "一级模块" });
+    out.push({ href: s.href, label: s.label, group: paletteGroupForStandalone(s.id) });
   }
   out.push(
-    { href: "/health", label: "集团健康（兼容链）", group: "运行监测" },
-    { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "战略解码" },
-    { href: "/decode?tab=stratsim", label: "战略解码 · 反馈环", group: "战略解码" },
-    { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "FPA" },
+    { href: "/health", label: "集团健康（兼容链）", group: "执行" },
+    { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "战略" },
+    { href: "/decode?tab=stratsim", label: "战略解码 · 反馈环", group: "战略" },
+    { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
   );
   return out;
 }

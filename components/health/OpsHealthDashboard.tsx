@@ -11,6 +11,7 @@ import {
   ALL_MONTHS, HISTORY_END,
   type DomainDef, type MetricDef, type MonthPoint, type MetricSeries,
 } from "@/lib/health/ops-metrics";
+import { colors } from "@/lib/brand/tokens";
 
 function signalFromSeries(series: MetricSeries | undefined, metric: MetricDef): "green" | "yellow" | "red" {
   const v = latestActualOf(series);
@@ -24,7 +25,7 @@ function latestActualOf(series: MetricSeries | undefined): number | null {
 }
 
 // ─── Signal colours ──────────────────────────────────────────────────────────
-const SIG_COLOR = { green: "#22c55e", yellow: "#eab308", red: "#ef4444" } as const;
+const SIG_COLOR = { green: colors.signalGreen, yellow: colors.signalYellow, red: colors.signalRed } as const;
 const SIG_BG    = { green: "bg-green-900/30 text-green-400", yellow: "bg-yellow-900/30 text-yellow-400", red: "bg-red-900/30 text-red-400" } as const;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -128,11 +129,11 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
 
       <ResponsiveContainer width="100%" height={160}>
         <ComposedChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0d" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} interval="preserveStartEnd" />
           <YAxis tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }} />
           <Tooltip
-            contentStyle={{ background: "#1e293b", border: "1px solid #cdd1d2", fontSize: 12 }}
+            contentStyle={{ background: "var(--chart-tooltip-bg)", border: "1px solid var(--surface-border-strong)", fontSize: 12 }}
             formatter={(v: unknown, name: unknown) => [
               `${fmt(v as number, metric.unit)} ${metric.unit}`,
               String(name) === "actual" ? "实际" : "规划",

@@ -53,7 +53,7 @@ export function ExecutionDashboard({
       ) : null}
       <CommitmentLedger records={data.commitments} />
       {!compact ? (
-        <details className="group rounded-lg border border-[var(--surface-border)]">
+        <details open className="group rounded-lg border border-[var(--surface-border)]">
           <summary className="cursor-pointer px-5 py-4 text-sm font-medium text-[var(--color-text-muted)] transition-colors group-open:text-[var(--color-text-primary)]">
             展开执行明细 · Vx 看板 · 4DX 记分板 · 假设 · TechSignal
           </summary>

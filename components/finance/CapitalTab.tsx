@@ -93,7 +93,7 @@ export function CapitalTab({
           <div>
             <span className="text-[var(--color-text-muted)]">波峰后 runway </span>
             <span
-              className={`font-data ${capStack.runwayAfterPeak < 3 ? "text-[#8b0e04]" : ""}`}
+              className={`font-data ${capStack.runwayAfterPeak < 3 ? "text-[var(--fpa-kpi-negative)]" : ""}`}
             >
               {capStack.runwayAfterPeak} 月
             </span>
@@ -148,7 +148,7 @@ export function CapitalTab({
         <div className="grid gap-2 font-data text-sm md:grid-cols-4">
           <div>需求 {capacity.demandUnits.toLocaleString()} 台</div>
           <div>产能 {capacity.capacityUnits.toLocaleString()} 台</div>
-          <div className="text-[#8b0e04]">缺口 {capacity.gapUnits.toLocaleString()} 台</div>
+          <div className="text-[var(--fpa-kpi-negative)]">缺口 {capacity.gapUnits.toLocaleString()} 台</div>
           <div>利用率 {capacity.utilizationPct}% → {capacity.linkedIcCode}</div>
         </div>
       </section>

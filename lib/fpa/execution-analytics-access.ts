@@ -1,5 +1,5 @@
 import type { HorizonBubble } from "@/components/execution/HorizonBubbleChart";
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import type { RiceItem, TrlRadarPoint } from "@/lib/types/stratos";
 
@@ -39,9 +39,9 @@ async function seedExecutionAnalyticsIfEmpty(period: string): Promise<void> {
   await prisma.strategicExecutionAnalytics.create({
     data: {
       period,
-      horizonBubblesJson: d.horizonBubbles,
-      riceItemsJson: d.riceItems,
-      trlRadarJson: d.trlRadar,
+      horizonBubblesJson: asDbJson(d.horizonBubbles),
+      riceItemsJson: asDbJson(d.riceItems),
+      trlRadarJson: asDbJson(d.trlRadar),
     },
   });
 }
@@ -49,18 +49,19 @@ async function seedExecutionAnalyticsIfEmpty(period: string): Promise<void> {
 export async function getExecutionAnalytics(
   period = demo.CURRENT_PERIOD,
 ): Promise<ExecutionAnalyticsBundle> {
-  if (!(await dbAvailable())) {
-    return { ...defaultExecutionAnalytics(), source: "demo" };
-  }
-  await seedExecutionAnalyticsIfEmpty(period);
-  const row = await prisma.strategicExecutionAnalytics.findUnique({ where: { period } });
-  if (!row) return { ...defaultExecutionAnalytics(), source: "demo" };
-  const parsed = parseExecutionAnalyticsJson(
-    row.horizonBubblesJson,
-    row.riceItemsJson,
-    row.trlRadarJson,
-  );
-  return { ...parsed, source: "database" };
+  const fallback = { ...defaultExecutionAnalytics(), source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    await seedExecutionAnalyticsIfEmpty(period);
+    const row = await prisma.strategicExecutionAnalytics.findUnique({ where: { period } });
+    if (!row) return fallback;
+    const parsed = parseExecutionAnalyticsJson(
+      row.horizonBubblesJson,
+      row.riceItemsJson,
+      row.trlRadarJson,
+    );
+    return { ...parsed, source: "database" as const };
+  }, fallback);
 }
 
 export async function saveExecutionAnalytics(
@@ -85,9 +86,9 @@ export async function saveExecutionAnalytics(
   await prisma.strategicExecutionAnalytics.update({
     where: { id: row.id },
     data: {
-      horizonBubblesJson: payload.horizonBubbles,
-      riceItemsJson: payload.riceItems,
-      trlRadarJson: payload.trlRadar,
+      horizonBubblesJson: asDbJson(payload.horizonBubbles),
+      riceItemsJson: asDbJson(payload.riceItems),
+      trlRadarJson: asDbJson(payload.trlRadar),
     },
   });
   return { ...payload, source: "database" };

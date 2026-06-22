@@ -1,14 +1,11 @@
 import type { AarrrFunnelStage } from "@/lib/types/stratos";
-import { colors } from "@/lib/brand/tokens";
 
 export function AARRRFunnel({ stages }: { stages: AarrrFunnelStage[] }) {
   const maxCount = stages[0]?.count ?? 1;
 
   return (
     <section className="rounded-lg border border-[var(--stack-gtm)]/30 bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium" style={{ color: colors.stackGtm }}>
-        AARRR 漏斗 · 哪一段漏
-      </h3>
+      <h3 className="mb-4 text-sm font-medium text-[var(--stack-gtm)]">AARRR 漏斗 · 哪一段漏</h3>
       <div className="space-y-3">
         {stages.map((s, i) => {
           const widthPct = Math.max(20, Math.round((s.count / maxCount) * 100));
@@ -27,15 +24,15 @@ export function AARRRFunnel({ stages }: { stages: AarrrFunnelStage[] }) {
                 <span className="font-data">{s.count.toLocaleString()}</span>
               </div>
               <div
-                className="mx-auto h-8 rounded transition-all"
-                style={{
-                  width: `${widthPct}%`,
-                  backgroundColor: leak ? "rgba(230,81,0,0.35)" : "rgba(212,165,116,0.25)",
-                  borderLeft: `3px solid ${leak ? "#8b0e04" : colors.stackGtm}`,
-                }}
+                className={`mx-auto h-8 rounded transition-all border-l-[3px] ${
+                  leak
+                    ? "border-l-[var(--signal-red)] bg-[color-mix(in_srgb,var(--signal-red)_35%,transparent)]"
+                    : "border-l-[var(--stack-gtm)] bg-[color-mix(in_srgb,var(--stack-gtm)_25%,transparent)]"
+                }`}
+                style={{ width: `${widthPct}%` }}
               />
               {s.leakNote && (
-                <p className="mt-1 text-[10px] text-[#8b0e04]">⚠ {s.leakNote}</p>
+                <p className="mt-1 text-[10px] text-[var(--signal-red)]">⚠ {s.leakNote}</p>
               )}
             </div>
           );

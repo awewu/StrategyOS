@@ -184,11 +184,15 @@ export function OutlookEditor({
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="label-xs">利润影响 · 低情景（万）</span>
-                    {numInput(d.impactOnProfit.low, (v) => patchDriver(i, { impactOnProfit: { low: v } }))}
+                    {numInput(d.impactOnProfit.low, (v) =>
+                      patchDriver(i, { impactOnProfit: { ...d.impactOnProfit, low: v } }),
+                    )}
                   </label>
                   <label className="block">
                     <span className="label-xs">利润影响 · 高情景（万）</span>
-                    {numInput(d.impactOnProfit.high, (v) => patchDriver(i, { impactOnProfit: { high: v } }))}
+                    {numInput(d.impactOnProfit.high, (v) =>
+                      patchDriver(i, { impactOnProfit: { ...d.impactOnProfit, high: v } }),
+                    )}
                   </label>
                 </div>
               </div>

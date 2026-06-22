@@ -1,4 +1,4 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import {
   BEHAVIOR_GUIDELINES,
   CORE_VALUES_INTRO,
@@ -49,18 +49,19 @@ async function seedHandbookIfEmpty(period: string): Promise<void> {
   const existing = await prisma.cultureHandbook.findUnique({ where: { period } });
   if (existing) return;
   await prisma.cultureHandbook.create({
-    data: { period, contentJson: defaultHandbook() },
+    data: { period, contentJson: asDbJson(defaultHandbook()) },
   });
 }
 
 export async function getCultureHandbook(period = demo.CURRENT_PERIOD): Promise<CultureHandbookBundle> {
-  if (!(await dbAvailable())) {
-    return { handbook: defaultHandbook(), source: "demo" };
-  }
-  await seedHandbookIfEmpty(period);
-  const row = await prisma.cultureHandbook.findUnique({ where: { period } });
-  if (!row) return { handbook: defaultHandbook(), source: "demo" };
-  return { handbook: parseCultureHandbookJson(row.contentJson), source: "database" };
+  const fallback = { handbook: defaultHandbook(), source: "demo" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    await seedHandbookIfEmpty(period);
+    const row = await prisma.cultureHandbook.findUnique({ where: { period } });
+    if (!row) return fallback;
+    return { handbook: parseCultureHandbookJson(row.contentJson), source: "database" as const };
+  }, fallback);
 }
 
 export async function saveCultureHandbook(
@@ -78,7 +79,7 @@ export async function saveCultureHandbook(
 
   await prisma.cultureHandbook.update({
     where: { id: row.id },
-    data: { contentJson: handbook },
+    data: { contentJson: asDbJson(handbook) },
   });
   return { handbook, source: "database" };
 }

@@ -173,7 +173,7 @@ export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
                 <td className="py-2 font-data">{row.investment}</td>
                 <td className="py-2 font-data">{row.winRate}%</td>
                 <td
-                  className={`py-2 font-data ${row.runwayMonths < 3 ? "text-[#8b0e04]" : ""}`}
+                  className={`py-2 font-data ${row.runwayMonths < 3 ? "text-[var(--fpa-kpi-negative)]" : ""}`}
                 >
                   {row.runwayMonths}月
                 </td>
@@ -203,7 +203,7 @@ export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
       </div>
 
       {warnings.length > 0 && (
-        <ul className="space-y-1 rounded border border-[#8b0e04]/30 bg-[#8b0e04]/10 p-3 text-sm text-[#8b0e04]">
+        <ul className="space-y-1 rounded border border-[color-mix(in_srgb,var(--signal-red)_30%,transparent)] bg-[color-mix(in_srgb,var(--signal-red)_10%,transparent)] p-3 text-sm text-[var(--fpa-kpi-negative)]">
           {warnings.map((w) => (
             <li key={w}>⚠ {w}</li>
           ))}

@@ -133,7 +133,7 @@ export function SpbpScenarioEditor({
               style={{
                 width: `${sc.probability}%`,
                 backgroundColor:
-                  sc.name === "乐观" ? "#22c55e" : sc.name === "悲观" ? "#8b0e04" : "var(--color-accent)",
+                  sc.name === "乐观" ? "var(--signal-green)" : sc.name === "悲观" ? "var(--signal-red)" : "var(--color-accent)",
               }}
               title={`${sc.name} ${sc.probability}%`}
             />
@@ -153,9 +153,9 @@ export function SpbpScenarioEditor({
                 </label>
                 <textarea className="stratos-input" rows={3} value={sc.drivers.join("\n")} onChange={(e) => patchScenario(i, { drivers: e.target.value.split("\n").filter(Boolean) })} placeholder="驱动因素（每行一条）" />
                 <div className="grid grid-cols-3 gap-2">
-                  <input type="number" className="stratos-input" value={sc.fpaImpact.revenue} onChange={(e) => patchScenario(i, { fpaImpact: { revenue: +e.target.value } })} placeholder="营收" />
-                  <input type="number" className="stratos-input" value={sc.fpaImpact.profit} onChange={(e) => patchScenario(i, { fpaImpact: { profit: +e.target.value } })} placeholder="利润" />
-                  <input type="number" step="0.1" className="stratos-input" value={sc.fpaImpact.runwayMonths} onChange={(e) => patchScenario(i, { fpaImpact: { runwayMonths: +e.target.value } })} placeholder="Runway" />
+                  <input type="number" className="stratos-input" value={sc.fpaImpact.revenue} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, revenue: +e.target.value } })} placeholder="营收" />
+                  <input type="number" className="stratos-input" value={sc.fpaImpact.profit} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, profit: +e.target.value } })} placeholder="利润" />
+                  <input type="number" step="0.1" className="stratos-input" value={sc.fpaImpact.runwayMonths} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, runwayMonths: +e.target.value } })} placeholder="Runway" />
                 </div>
               </div>
             ) : (

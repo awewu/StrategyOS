@@ -1,4 +1,5 @@
-import { dbAvailable, prisma } from "@/lib/db";
+import { asDbJson, dbAvailable, prisma, safeDbQuery } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type { TimelineMilestone } from "@/lib/command/timeline";
 import type { DecisionItem } from "@/lib/panorama/scr";
 import * as demo from "@/lib/stratos-demo-data";
@@ -53,23 +54,25 @@ async function deleteRowIfEmpty(period: string) {
 export async function getCommandDecisionsConfig(
   period = demo.CURRENT_PERIOD,
 ): Promise<{ decisions: DecisionItem[] | null; source: "database" | "derived" }> {
-  if (!(await dbAvailable())) {
-    return { decisions: null, source: "derived" };
-  }
-  const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
-  if (!row?.decisionsJson) return { decisions: null, source: "derived" };
-  return { decisions: parseDecisionsJson(row.decisionsJson), source: "database" };
+  const fallback = { decisions: null, source: "derived" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
+    if (!row?.decisionsJson) return fallback;
+    return { decisions: parseDecisionsJson(row.decisionsJson), source: "database" as const };
+  }, fallback);
 }
 
 export async function getCommandTimelineConfig(
   period = demo.CURRENT_PERIOD,
 ): Promise<{ milestones: TimelineMilestone[] | null; source: "database" | "derived" }> {
-  if (!(await dbAvailable())) {
-    return { milestones: null, source: "derived" };
-  }
-  const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
-  if (!row?.timelineJson) return { milestones: null, source: "derived" };
-  return { milestones: parseTimelineJson(row.timelineJson), source: "database" };
+  const fallback = { milestones: null, source: "derived" as const };
+  if (!(await dbAvailable())) return fallback;
+  return safeDbQuery(async () => {
+    const row = await prisma.strategicCommandConfig.findUnique({ where: { period } });
+    if (!row?.timelineJson) return fallback;
+    return { milestones: parseTimelineJson(row.timelineJson), source: "database" as const };
+  }, fallback);
 }
 
 export async function saveCommandDecisions(
@@ -80,8 +83,8 @@ export async function saveCommandDecisions(
   if (decisions.length === 0) throw new Error("待决事项不能为空");
   await prisma.strategicCommandConfig.upsert({
     where: { period },
-    create: { period, decisionsJson: decisions },
-    update: { decisionsJson: decisions },
+    create: { period, decisionsJson: asDbJson(decisions) },
+    update: { decisionsJson: asDbJson(decisions) },
   });
   return { decisions, source: "database" };
 }
@@ -94,8 +97,8 @@ export async function saveCommandTimeline(
   if (milestones.length === 0) throw new Error("战略时间轴不能为空");
   await prisma.strategicCommandConfig.upsert({
     where: { period },
-    create: { period, timelineJson: milestones },
-    update: { timelineJson: milestones },
+    create: { period, timelineJson: asDbJson(milestones) },
+    update: { timelineJson: asDbJson(milestones) },
   });
   return { milestones, source: "database" };
 }
@@ -106,7 +109,7 @@ export async function clearCommandDecisions(period = demo.CURRENT_PERIOD): Promi
   if (!row?.decisionsJson) return;
   await prisma.strategicCommandConfig.update({
     where: { period },
-    data: { decisionsJson: null },
+    data: { decisionsJson: Prisma.DbNull },
   });
   await deleteRowIfEmpty(period);
 }
@@ -117,7 +120,7 @@ export async function clearCommandTimeline(period = demo.CURRENT_PERIOD): Promis
   if (!row?.timelineJson) return;
   await prisma.strategicCommandConfig.update({
     where: { period },
-    data: { timelineJson: null },
+    data: { timelineJson: Prisma.DbNull },
   });
   await deleteRowIfEmpty(period);
 }

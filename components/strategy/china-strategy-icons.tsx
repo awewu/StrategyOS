@@ -203,7 +203,7 @@ export function DoctrineRing({ active }: RingProps) {
 }
 
 export function RhauttWordmark() {
-  return <span className="ppt-brand">Rhautt</span>;
+  return <span className="ppt-brand">Rhautt.</span>;
 }
 
 export const STRATEGY_ICON_OPTIONS: { id: StrategyIconKey; label: string }[] = [

@@ -5,12 +5,22 @@
  * Theme: Ruud/Rheem light shell — white cards on #f5f5f5 canvas, teal interactive, red brand/risk.
  * @see docs/BRAND_VI.md · docs/UI_VI.md · docs/UI_VI_EVOLUTION.md
  */
+/** Rhautt group identity — from brand logo PDF (RGB 194·44·18) */
+export const rhauttBrand = {
+  wordmark: "Rhautt.",
+  taglineEn: "THE NEW DEGREE OF COMFORT.",
+  red: "#c22c12",
+  black: "#000000",
+  grey: "#efefef",
+} as const;
+
 export const brand = {
   name: "StratOS",
-  /** Sidebar logo mark (red icon text) */
-  markName: "Rhautt",
+  /** Group wordmark (capital R + period) */
+  markName: rhauttBrand.wordmark,
   /** Sidebar logo label under the mark */
   sidebarLabelZh: "瑞合瑞德",
+  rhautt: rhauttBrand,
   fullName: "Strategic Operating System",
   taglineZh: "战略是抉择",
   taglineEn: "Decide with clarity.",
@@ -53,6 +63,32 @@ export const colors = {
   printIvory: "#faf8f5",
   printNavy: "#0a1220",
   sidebarRailBg: "#1c1f24",
+} as const;
+
+/** Typography scale — mirrors `--type-*` / `--text-*` in globals.css (UI_VI §4.2) */
+export const typeScale = {
+  h1: "var(--text-h1)",
+  h2: "var(--text-h2)",
+  body: "var(--text-body)",
+  data: "var(--text-data)",
+  caption: "var(--text-caption)",
+  page: "var(--type-page)",
+  section: "var(--type-section)",
+  kpi: "var(--type-kpi)",
+  kpiHero: "var(--type-kpi-hero)",
+} as const;
+
+/** Layout spacing — UI_VI §4.3 */
+export const spacing = {
+  pageGutter: "var(--page-gutter)",
+  section: "var(--space-section)",
+  card: "var(--space-card)",
+} as const;
+
+/** FP&A KPI direction colors */
+export const fpaSemantic = {
+  positive: "var(--fpa-kpi-positive)",
+  negative: "var(--fpa-kpi-negative)",
 } as const;
 
 export const stacks = {

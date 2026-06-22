@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ThreeStackPanel } from "@/components/strategy/ThreeStackPanel";
+import { labelFor } from "@/lib/brand/display-labels";
 import type {
   CapStackPeriod,
   GtmBet,
@@ -114,7 +115,7 @@ export function StacksEditor({
               onTag={(id, tag) => setIcs((prev) => prev.map((x) => (x.id === id ? { ...x, budgetTag: tag } : x)))}
             />
             <StackEditColumn
-              title="产品栈"
+              title={`产品栈 · ${labelFor("productBets")}`}
               items={productBets.map((pb) => ({
                 id: pb.id,
                 title: pb.title,
@@ -126,7 +127,7 @@ export function StacksEditor({
               onTag={(id, tag) => setProductBets((prev) => prev.map((x) => (x.id === id ? { ...x, budgetTag: tag } : x)))}
             />
             <StackEditColumn
-              title="渠道栈"
+              title={`渠道栈 · ${labelFor("gtmBets")}`}
               items={gtmBets.map((gb) => ({
                 id: gb.id,
                 title: gb.title,
