@@ -8,7 +8,7 @@ Harness 是 StratOS 的统一质量门禁：环境能力、结构清单、数据
 |------|------|
 | `npm run harness` | **Quick** — 能力 + 文件清单 + 路由清单 + DB + 单元测试 |
 | `npm run harness:full` | **Full** — Quick + ESLint + `next build` + HTTP 冒烟（需 dev server） |
-| `npm run harness:ci` | **CI** — Quick + ESLint（不 build，由 CI job 单独 build） |
+| `npm run harness:ci` | **CI** — Quick + ESLint + build 由 CI `build` job 单独执行 |
 | `npm run check` | 别名 → `harness:ci` |
 
 ### 选项

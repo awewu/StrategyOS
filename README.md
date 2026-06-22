@@ -20,6 +20,8 @@ npm run dev
 
 **能力检查：** [http://localhost:3003/api/health](http://localhost:3003/api/health)
 
+**工程交付：** [docs/DELIVERY.md](./docs/DELIVERY.md) · `npm run harness:ci` · `npm run build` · GitLab CI
+
 **看战略一页纸：** [http://localhost:3003/strategy](http://localhost:3003/strategy)
 
 ## 页面路由

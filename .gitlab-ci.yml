@@ -1,0 +1,86 @@
+# StratOS · GitLab CI — engineering delivery gate
+# Requires: PostgreSQL service for harness DB checks; build runs without live DB (force-dynamic dashboard).
+
+stages:
+  - verify
+  - build
+  - e2e
+
+variables:
+  NODE_VERSION: "20"
+  POSTGRES_DB: stratos
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/stratos?connection_limit=3&pool_timeout=10"
+  NEXT_TELEMETRY_DISABLED: "1"
+  CI: "true"
+
+.default-node:
+  image: node:${NODE_VERSION}-bookworm
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+  before_script:
+    - npm ci
+    - npx prisma generate
+
+harness:
+  stage: verify
+  extends: .default-node
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+  variables:
+    POSTGRES_HOST_AUTH_METHOD: trust
+  script:
+    - npx prisma db push --skip-generate
+    - npm run db:seed
+    - npm run harness:ci
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+build:
+  stage: build
+  extends: .default-node
+  needs: ["harness"]
+  script:
+    - npm run build
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - .next/standalone/
+      - .next/static/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+e2e:
+  stage: e2e
+  extends: .default-node
+  needs: ["build"]
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+  variables:
+    POSTGRES_HOST_AUTH_METHOD: trust
+    PLAYWRIGHT_NO_SERVER: "1"
+  script:
+    - npx prisma db push --skip-generate
+    - npm run db:seed
+    - npm run build
+    - npx playwright install chromium --with-deps
+    - npm run start &
+    - |
+      for i in $(seq 1 60); do
+        if curl -sf http://127.0.0.1:3003/api/health > /dev/null; then break; fi
+        sleep 2
+      done
+    - curl -sf http://127.0.0.1:3003/api/health
+    - PLAYWRIGHT_BASE_URL=http://127.0.0.1:3003 npm run test:e2e
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  allow_failure: false
