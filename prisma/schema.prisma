@@ -1764,6 +1764,14 @@ enum ThreatLevel {
   low
 }
 
+enum FiveForce {
+  existing_rivalry
+  new_entrants
+  substitutes
+  supplier_power
+  buyer_power
+}
+
 enum CompetePosition {
   lead
   parity
@@ -2254,6 +2262,25 @@ model GateChecklistItem {
   @@unique([period, checklistId, itemId])
   @@index([period, checklistId])
   @@map("gate_checklist_items")
+}
+
+// Gate · 白话版波特五力（战略会风险项）
+model GateFiveForceRecord {
+  id                   String      @id @default(uuid())
+  period               String      @default("2026-FY") @db.VarChar(10)
+  force                FiveForce
+  threatLevel          ThreatLevel @default(low) @map("threat_level")
+  evidence             String?
+  linkedAssumptionCode String?     @map("linked_assumption_code") @db.VarChar(10)
+  owner                String?     @db.VarChar(50)
+  mitigated            Boolean     @default(false)
+  note                 String?
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+  createdAt            DateTime    @default(now()) @map("created_at")
+
+  @@unique([period, force])
+  @@index([period])
+  @@map("gate_five_force_records")
 }
 
 // 战略解码 · Hoshin X-Matrix 条目

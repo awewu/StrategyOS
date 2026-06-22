@@ -3,7 +3,7 @@ import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEffectiveRole, getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
-import { getProjectScope } from "@/lib/auth/scope";
+import { assertSliceAccess, getOrgScope, getProjectScope } from "@/lib/auth/scope";
 import { getExecutionBundle } from "@/lib/data/strategy-data";
 import { filterExecBundle, filterExecByProjectScope } from "@/lib/monitor/filter-exec";
 import { getSliceByIdGlobal } from "@/lib/monitor/org-slices";
@@ -17,9 +17,15 @@ export default async function ExecutionPage({
   const role = await getEffectiveRole();
   const session = await getEffectiveSession();
   const projectScope = getProjectScope(role, session);
+  const orgScope = getOrgScope(role, session);
   const { unit } = await searchParams;
   const data = await getExecutionBundle();
-  const resolved = getSliceByIdGlobal(unit);
+
+  const allowedUnit = assertSliceAccess(role, unit, session);
+  let resolved = getSliceByIdGlobal(allowedUnit ?? undefined);
+  if (!resolved && orgScope && orgScope.length > 0) {
+    resolved = getSliceByIdGlobal(orgScope[0]);
+  }
   let filtered = resolved ? filterExecBundle(data, resolved.slice) : data;
   filtered = filterExecByProjectScope(filtered, projectScope);
 
