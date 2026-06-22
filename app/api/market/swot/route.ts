@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { demoInternalSwot, demoSignals } from "@/lib/market-intel/demo-data";
 import { askSwotAi } from "@/lib/market-intel/market-ask-llm";
 import { buildSwot } from "@/lib/market-intel/swot";
@@ -6,6 +7,8 @@ import type { IntelSignal } from "@/lib/market-intel/types";
 import type { SwotItem } from "@/lib/market-intel/swot";
 
 export async function POST(req: Request) {
+  const denied = await requireApiMinLevel(2);
+  if (denied) return denied;
   let body: { signals?: IntelSignal[]; internal?: SwotItem[] };
   try {
     body = await req.json();
