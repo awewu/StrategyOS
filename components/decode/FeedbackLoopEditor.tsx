@@ -59,7 +59,7 @@ export function FeedbackLoopEditor({
   }
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-sm font-medium text-[var(--color-text-muted)]">系统反馈环 · R/B/D</h2>
@@ -68,7 +68,7 @@ export function FeedbackLoopEditor({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {msg ? <span className="text-xs text-[var(--color-accent-gold)]">{msg}</span> : null}
+          {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
           {editing ? (
             <>
               <button type="button" onClick={() => setEditing(false)} className="text-xs text-[var(--color-text-muted)]">
@@ -78,7 +78,7 @@ export function FeedbackLoopEditor({
                 type="button"
                 disabled={busy}
                 onClick={() => void save()}
-                className="rounded bg-[var(--color-accent-gold)] px-2 py-1 text-xs text-white"
+                className="rounded bg-[var(--color-accent)] px-2 py-1 text-xs text-white"
               >
                 保存
               </button>
@@ -91,7 +91,7 @@ export function FeedbackLoopEditor({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="text-xs text-[var(--color-accent-gold)]"
+                className="text-xs text-[var(--color-accent)]"
               >
                 编辑
               </button>
@@ -103,11 +103,11 @@ export function FeedbackLoopEditor({
         {loops.map((loop, i) => {
           const style = KIND_STYLE[loop.kind];
           return (
-            <div key={loop.id} className="rounded border border-black/10 p-4">
+            <div key={loop.id} className="rounded border border-[var(--surface-border)] p-4">
               {editing ? (
                 <div className="space-y-2">
                   <select
-                    className="w-full rounded border border-black/10 px-2 py-1 text-xs"
+                    className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-xs"
                     value={loop.kind}
                     onChange={(e) =>
                       setLoops((prev) =>
@@ -122,21 +122,21 @@ export function FeedbackLoopEditor({
                     ))}
                   </select>
                   <input
-                    className="w-full rounded border border-black/10 px-2 py-1 text-sm"
+                    className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={loop.label}
                     onChange={(e) =>
                       setLoops((prev) => prev.map((l, j) => (j === i ? { ...l, label: e.target.value } : l)))
                     }
                   />
                   <input
-                    className="w-full rounded border border-black/10 px-2 py-1 font-mono text-xs"
+                    className="w-full rounded border border-[var(--surface-border)] px-2 py-1 font-mono text-xs"
                     value={loop.chain}
                     onChange={(e) =>
                       setLoops((prev) => prev.map((l, j) => (j === i ? { ...l, chain: e.target.value } : l)))
                     }
                   />
                   <input
-                    className="w-full rounded border border-black/10 px-2 py-1 text-xs"
+                    className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-xs"
                     value={loop.bscDimension}
                     onChange={(e) =>
                       setLoops((prev) =>
@@ -169,7 +169,7 @@ export function FeedbackLoopEditor({
                   <div className="mt-2 text-sm font-medium">{loop.label}</div>
                   <p className="mt-1 font-mono text-xs text-[var(--color-text-muted)]">{loop.chain}</p>
                   {loop.fpaLinked ? (
-                    <span className="mt-2 inline-block text-[10px] text-[var(--color-accent-gold)]">↔ FPA 联动</span>
+                    <span className="mt-2 inline-block text-[10px] text-[var(--color-accent)]">↔ FPA 联动</span>
                   ) : null}
                 </>
               )}

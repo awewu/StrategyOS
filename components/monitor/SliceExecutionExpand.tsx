@@ -23,7 +23,7 @@ export function SliceExecutionExpand({
           <Link
             href={expertHref}
             onClick={(e) => e.stopPropagation()}
-            className="text-xs font-normal text-[var(--color-accent-gold)] hover:underline"
+            className="text-xs font-normal text-[var(--color-accent)] hover:underline"
           >
             独立页打开 →
           </Link>

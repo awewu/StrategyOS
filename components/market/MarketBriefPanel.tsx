@@ -40,14 +40,14 @@ export function MarketBriefPanel({ items }: { items: MarketBriefItem[] }) {
             </div>
             <p className="mt-2 text-sm font-medium">{signal.title}</p>
             <p className="mt-1 text-xs text-[var(--color-text-secondary)] line-clamp-2">{signal.summary}</p>
-            <p className="mt-2 text-xs text-[var(--color-accent-gold)]">So what · {soWhat}</p>
+            <p className="mt-2 text-xs text-[var(--color-accent)]">So what · {soWhat}</p>
             <div className="mt-2 flex flex-wrap gap-3 text-xs">
               {signal.linkedAssumptionCode ? (
-                <Link href="/decode" className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-gold)]">
+                <Link href="/decode" className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">
                   战略解码 →
                 </Link>
               ) : null}
-              <Link href="/versions" className="text-[var(--color-text-muted)] hover:text-[var(--color-accent-gold)]">
+              <Link href="/versions" className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">
                 历史对照 →
               </Link>
             </div>
@@ -94,7 +94,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
   }
 
   return (
-    <section className="rounded-xl border border-[var(--color-accent-gold)]/25 bg-[var(--color-accent-gold)]/[0.04] p-6">
+    <section className="rounded-xl border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.04] p-6">
       <h2 className="text-base font-semibold text-[var(--color-text-primary)]">问 AI · 市场推演</h2>
       <p className="mt-1 text-xs text-[var(--color-text-muted)]">
         自动带入 Top 信号上下文 · SCR 结构 · 链到解码 / FPA
@@ -110,7 +110,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
         <button
           type="submit"
           disabled={loading || q.trim().length < 4}
-          className="rounded-lg bg-[var(--color-accent-gold)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent-gold)] disabled:opacity-50"
+          className="rounded-lg bg-[var(--color-accent)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent)] disabled:opacity-50"
         >
           {loading ? "推演中…" : "推演"}
         </button>
@@ -136,7 +136,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
             <dd className="mt-1">{answer.resolution}</dd>
           </div>
           {answer.links?.length ? (
-            <ul className="text-xs text-[var(--color-accent-gold)]">
+            <ul className="text-xs text-[var(--color-accent)]">
               {answer.links.map((l) => (
                 <li key={l}>→ {l}</li>
               ))}

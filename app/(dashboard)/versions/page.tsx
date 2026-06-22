@@ -25,7 +25,7 @@ export default async function VersionsPage() {
         actions={
           <Link
             href="/strategy/input"
-            className="rounded-xl border border-[var(--color-accent-gold)]/35 bg-[var(--color-accent-gold)]/8 px-4 py-2.5 text-sm text-[var(--color-accent-gold)] transition-colors hover:bg-[var(--color-accent-gold)]/15"
+            className="rounded-xl border border-[var(--color-accent)]/35 bg-[var(--color-accent)]/8 px-4 py-2.5 text-sm text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)]/15"
           >
             去编制战略 →
           </Link>
@@ -38,17 +38,17 @@ export default async function VersionsPage() {
             key={s.code}
             className={`rounded-lg border p-4 ${
               s.status === "WORKING"
-                ? "border-[var(--color-accent-gold)]/50 bg-[var(--color-accent-gold)]/5"
-                : "border-black/10 bg-[var(--color-bg-surface)]"
+                ? "border-[var(--color-accent)]/50 bg-[var(--color-accent)]/5"
+                : "border-[var(--surface-border)] bg-[var(--color-bg-surface)]"
             }`}
           >
-            <div className="font-data text-[var(--color-accent-gold)]">{s.code}</div>
+            <div className="font-data text-[var(--color-accent)]">{s.code}</div>
             <div className="mt-1 text-sm text-[var(--color-text-muted)]">
               刻意实现率 {s.rate}%
             </div>
             <span
               className={`mt-2 inline-block text-xs ${
-                s.status === "FROZEN" ? "text-green-400" : "text-[var(--color-accent-gold)]"
+                s.status === "FROZEN" ? "text-green-400" : "text-[var(--color-accent)]"
               }`}
             >
               {s.status}
@@ -61,8 +61,8 @@ export default async function VersionsPage() {
       <CounterfactualPanel />
       <StrategyPatternPanel pattern={strategyPattern} />
 
-      <section className="rounded-lg border border-[var(--color-accent-gold)]/30 bg-[var(--color-bg-surface)] p-6">
-        <h2 className="mb-4 text-sm font-medium text-[var(--color-accent-gold)]">
+      <section className="rounded-lg border border-[var(--color-accent)]/30 bg-[var(--color-bg-surface)] p-6">
+        <h2 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
           Mintzberg diff (#15–18)
         </h2>
         <ul className="space-y-3">
@@ -72,7 +72,7 @@ export default async function VersionsPage() {
         </ul>
       </section>
 
-      <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <h2 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">
           全部变化清单 ({stratDiffs.length})
         </h2>

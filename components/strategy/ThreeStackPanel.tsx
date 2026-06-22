@@ -14,7 +14,7 @@ function StackItemChip({
   status: string;
 }) {
   return (
-    <div className="rounded border border-black/10 bg-[var(--surface-raised)] p-3">
+    <div className="rounded border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3">
       <div className="text-xs text-[#828c8d]">{label}</div>
       <div className="mt-1 font-medium">{title}</div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs">

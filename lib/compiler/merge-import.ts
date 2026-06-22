@@ -18,13 +18,6 @@ export type MergeImportReport = {
   northStarUpdated: boolean;
 };
 
-type ExistingObjective = {
-  id: string;
-  objective: string;
-  sortOrder: number;
-  keyResults: { id: string; keyResult: string; sortOrder: number }[];
-};
-
 function pickRicherString(existing: string | null | undefined, incoming: string | undefined): string | null {
   if (!incoming?.trim()) return existing ?? null;
   if (!existing?.trim()) return incoming.trim();

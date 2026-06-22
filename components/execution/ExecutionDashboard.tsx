@@ -30,7 +30,7 @@ export function ExecutionDashboard({
       {sliceLabel ? (
         <p className="text-xs text-[var(--color-text-muted)]">
           已过滤 · {sliceLabel} · 完整集团视图见{" "}
-          <a href="/execution" className="text-[var(--color-accent-gold)] hover:underline">
+          <a href="/execution" className="text-[var(--color-accent)] hover:underline">
             执行 · 全览
           </a>
         </p>
@@ -45,7 +45,7 @@ export function ExecutionDashboard({
       ) : null}
       <CommitmentLedger records={data.commitments} />
       {!compact ? (
-        <details className="group rounded-lg border border-black/10">
+        <details className="group rounded-lg border border-[var(--surface-border)]">
           <summary className="cursor-pointer px-5 py-4 text-sm font-medium text-[var(--color-text-muted)] transition-colors group-open:text-[var(--color-text-primary)]">
             展开执行明细 · Vx 看板 · 4DX 记分板 · 假设 · TechSignal
           </summary>
@@ -65,11 +65,11 @@ export function ExecutionDashboard({
                   <div
                     key={hx.id}
                     className={`rounded-lg border bg-[var(--color-bg-surface)] p-4 ${
-                      hx.result === "failed" ? "border-[var(--signal-red)]" : "border-black/10"
+                      hx.result === "failed" ? "border-[var(--signal-red)]" : "border-[var(--surface-border)]"
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-data text-[var(--color-accent-gold)]">{hx.code}</span>
+                      <span className="font-data text-[var(--color-accent)]">{hx.code}</span>
                       <CynefinBadge domain={hx.cynefinDomain} />
                     </div>
                     <p className="mt-2 text-sm">{hx.content}</p>

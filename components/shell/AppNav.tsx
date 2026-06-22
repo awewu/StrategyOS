@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -139,9 +138,11 @@ export function AppNav({
 
   return (
     <aside className="stratos-sidebar">
-      <Link href={home} className="stratos-sidebar__logo" title={brand.markName}>
-        <Image src="/logo-mark.svg" alt="" width={28} height={28} priority aria-hidden />
-        <span className="stratos-sidebar__wordmark">{brand.markName}</span>
+      <Link href={home} className="stratos-sidebar__logo" title={brand.sidebarLabelZh}>
+        <span className="stratos-sidebar__mark" aria-hidden>
+          {brand.markName}
+        </span>
+        <span className="stratos-sidebar__wordmark">{brand.sidebarLabelZh}</span>
       </Link>
 
       <nav className="stratos-sidebar__nav">

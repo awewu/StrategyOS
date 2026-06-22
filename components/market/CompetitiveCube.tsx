@@ -68,7 +68,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className="relative">
             <button onClick={() => setFilterOpen((v) => !v)}
-              className="flex items-center gap-1.5 rounded-md border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.04]">
+              className="flex items-center gap-1.5 rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.04]">
               竞品筛选
               {hiddenBrands.size > 0 && (
                 <span className="rounded-full bg-[var(--color-accent)] px-1.5 text-[10px] text-white">{data.brands.length - hiddenBrands.size}/{data.brands.length}</span>
@@ -89,7 +89,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
           {data.productLines.map((pl) => (
             <button key={pl.id} onClick={() => { setProductLineId(pl.id); setSelected(null); }}
               className={"rounded-md px-3 py-1.5 text-sm transition-colors " + (
-                productLineId === pl.id ? "bg-[var(--color-accent)] text-white" : "border border-black/10 hover:bg-black/[0.04]"
+                productLineId === pl.id ? "bg-[var(--color-accent)] text-white" : "border border-[var(--surface-border)] hover:bg-black/[0.04]"
               )}>
               {pl.name}
             </button>
@@ -147,7 +147,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                       ) : (
                         <button
                           onClick={() => setSelected({ regionId: row.id, competitorId: b.id })}
-                          className="w-full rounded border border-dashed border-black/10 py-2 text-[10px] text-[var(--color-text-muted)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition-colors">
+                          className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-[10px] text-[var(--color-text-muted)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition-colors">
                           + 建档
                         </button>
                       )}

@@ -24,7 +24,7 @@ export function ScenarioAdvisor({ scenarios, embedded = false }: { scenarios: Sc
         )}
         <li className="text-[var(--color-text-muted)]">· 下季更新概率 · 驱动变量联动 FPA 输入</li>
       </ul>
-      <a href="/finance?tab=scenarios" className="mt-3 inline-block text-sm text-[var(--color-accent-gold)] hover:underline">
+      <a href="/finance?tab=scenarios" className="mt-3 inline-block text-sm text-[var(--color-accent)] hover:underline">
         打开情景模型 →
       </a>
     </>
@@ -33,7 +33,7 @@ export function ScenarioAdvisor({ scenarios, embedded = false }: { scenarios: Sc
   if (embedded) return body;
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-3 text-sm font-medium text-[var(--color-text-muted)]">战略顾问 · SPBP 情景摘要</h2>
       {body}
     </section>

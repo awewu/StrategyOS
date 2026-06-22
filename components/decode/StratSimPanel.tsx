@@ -142,7 +142,7 @@ export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
         {loops.map((l) => (
           <span
             key={l.id}
-            className="rounded border border-black/10 px-2 py-1 text-[10px] text-[var(--color-text-muted)]"
+            className="rounded border border-[var(--surface-border)] px-2 py-1 text-[10px] text-[var(--color-text-muted)]"
           >
             {l.kind}: {l.label}
           </span>
@@ -165,8 +165,8 @@ export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
           </thead>
           <tbody>
             {trail.map((row) => (
-              <tr key={row.quarter} className="border-t border-black/[0.06]">
-                <td className="py-2 font-data text-[var(--color-accent-gold)]">{row.quarter}</td>
+              <tr key={row.quarter} className="border-t border-[var(--surface-border)]">
+                <td className="py-2 font-data text-[var(--color-accent)]">{row.quarter}</td>
                 <td className="py-2 font-data">{row.signings}</td>
                 <td className="py-2 font-data">{row.reputation}</td>
                 <td className="py-2 font-data">{row.profit}</td>
@@ -192,7 +192,7 @@ export function StratSimPanel({ loops }: { loops: FeedbackLoop[] }) {
           {trail.map((row) => (
             <div key={row.quarter} className="flex flex-1 flex-col items-center gap-1">
               <div
-                className="w-full rounded-t bg-[var(--color-accent-gold)]/60"
+                className="w-full rounded-t bg-[var(--color-accent)]/60"
                 style={{ height: `${Math.max(8, (row.profit / maxProfit) * 100)}%` }}
                 title={`${row.quarter}: ${row.profit}`}
               />

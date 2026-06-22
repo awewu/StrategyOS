@@ -12,8 +12,8 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-[var(--color-accent-gold)]/20 bg-[var(--color-bg-surface)] p-6">
-        <h3 className="mb-2 text-sm font-medium text-[var(--color-accent-gold)]">
+      <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[var(--color-bg-surface)] p-6">
+        <h3 className="mb-2 text-sm font-medium text-[var(--color-accent)]">
           SPBP 2.0 · 概率 Living Model
         </h3>
         <p className="mb-4 text-xs text-[var(--color-text-muted)]">
@@ -50,11 +50,11 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
         {scenarios.map((sc) => (
           <article
             key={sc.id}
-            className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-5"
+            className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5"
           >
             <div className="flex items-baseline justify-between">
               <h4 className="font-medium">{sc.name}</h4>
-              <span className="font-data text-2xl text-[var(--color-accent-gold)]">
+              <span className="font-data text-2xl text-[var(--color-accent)]">
                 {sc.probability}%
               </span>
             </div>
@@ -63,7 +63,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
                 <li key={d}>· {d}</li>
               ))}
             </ul>
-            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-black/[0.06] pt-3 text-xs">
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--surface-border)] pt-3 text-xs">
               <div>
                 <div className="text-[var(--color-text-muted)]">营收</div>
                 <div className="font-data">{sc.fpaImpact.revenue}</div>

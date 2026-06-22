@@ -1,4 +1,3 @@
-import { appleTypography, mckinseySections } from "@/lib/brand/apple-mckinsey";
 import { typography } from "@/lib/brand/typography";
 import type { DecisionItem } from "@/lib/panorama/scr";
 
@@ -21,48 +20,30 @@ export function DecisionsPanel({
 
   return (
     <section
-      className={
-        isPrint
-          ? "rounded-xl border border-[#0a1628]/10 bg-white p-5"
-          : "surface-elevated rounded-xl border border-black/[0.06] p-5 md:p-6"
-      }
+      className={isPrint ? "rounded-xl border border-[#0a1628]/10 bg-white p-5" : "stratos-card stratos-card--padded"}
       aria-labelledby="decisions-title"
     >
-      <header className="mb-4">
-        <h3
-          id="decisions-title"
-          className={`${appleTypography.label} ${
-            isPrint ? "text-[#828c8d]" : "text-[var(--color-text-muted)]"
-          }`}
-        >
-          {mckinseySections.decisions.id} · {mckinseySections.decisions.labelZh}
+      <header className="mb-3">
+        <h3 id="decisions-title" className="text-title text-[var(--color-text-primary)]">
+          待决事项
         </h3>
-        <p className={`${typography.caption} mt-1`}>{mckinseySections.decisions.hint}</p>
+        <p className={`${typography.caption} mt-0.5`}>董事会 / 指挥层需拍板的决策清单</p>
       </header>
-      <ul className="space-y-3">
+      <ul className="divide-y divide-[var(--surface-border)]">
         {decisions.map((d) => (
-          <li
-            key={d.id}
-            className={`flex flex-wrap items-start justify-between gap-2 border-t ${
-              isPrint ? "border-[#0a1628]/8 pt-3 first:border-0 first:pt-0" : "border-white/[0.04] pt-3 first:border-0 first:pt-0"
-            }`}
-          >
+          <li key={d.id} className="flex flex-wrap items-start justify-between gap-2 py-3 first:pt-0 last:pb-0">
             <div>
               <p className={`text-sm font-medium ${isPrint ? "text-[#0a1628]" : "text-[var(--color-text-primary)]"}`}>
                 {d.title}
               </p>
-              {(d.owner || d.deadline) && (
-                <p className={`${typography.caption} mt-1`}>
+              {(d.owner || d.deadline) ? (
+                <p className={`${typography.caption} mt-0.5`}>
                   {[d.owner, d.deadline].filter(Boolean).join(" · ")}
                 </p>
-              )}
+              ) : null}
             </div>
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                d.status === "open"
-                  ? "bg-[var(--color-accent-gold)]/15 text-[var(--color-accent-gold)]"
-                  : "bg-black/[0.05] text-[var(--color-text-muted)]"
-              }`}
+              className={`stratos-chip ${d.status === "open" ? "stratos-chip--warn" : ""}`}
             >
               {STATUS_ZH[d.status]}
             </span>

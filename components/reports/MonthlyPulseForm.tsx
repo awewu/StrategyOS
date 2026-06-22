@@ -98,12 +98,10 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
   }
 
   return (
-    <section className="surface-elevated rounded-xl border border-[var(--color-accent)]/20 p-5 space-y-4">
+    <section className="stratos-card stratos-card--padded space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">月度脉搏 · 3 字段</h3>
-        <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
-          提交前自动查重 — 同组织同月重复脉搏将被拦截
-        </p>
+        <h3 className="text-title text-[var(--color-text-primary)]">月度脉搏</h3>
+        <p className="text-caption mt-1">3 字段快速提交 · 同组织同月自动查重</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>

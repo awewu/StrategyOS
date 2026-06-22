@@ -63,7 +63,7 @@ export function GatesPageClient({
           {dataSource === "database" ? "DB" : "Demo"}
         </p>
         <div className="flex items-center gap-2">
-          {msg ? <span className="text-xs text-[var(--color-accent-gold)]">{msg}</span> : null}
+          {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
           {editing ? (
             <>
               <button type="button" onClick={() => setEditing(false)} className="text-xs">
@@ -73,7 +73,7 @@ export function GatesPageClient({
                 type="button"
                 disabled={busy}
                 onClick={() => void save()}
-                className="rounded bg-[var(--color-accent-gold)] px-2 py-1 text-xs text-white"
+                className="rounded bg-[var(--color-accent)] px-2 py-1 text-xs text-white"
               >
                 保存 Gate
               </button>
@@ -82,7 +82,7 @@ export function GatesPageClient({
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="text-xs text-[var(--color-accent-gold)]"
+              className="text-xs text-[var(--color-accent)]"
             >
               编辑门槛
             </button>
@@ -111,20 +111,20 @@ function EditableGatePanel({
 }) {
   const risks = checklist.items.filter((i) => i.status !== "pass");
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-5">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-medium">{checklist.title}</h3>
         {checklist.doctrine ? (
-          <span className="text-xs text-[var(--color-accent-gold)]">{checklist.doctrine}</span>
+          <span className="text-xs text-[var(--color-accent)]">{checklist.doctrine}</span>
         ) : null}
       </div>
       <ul className="space-y-2">
         {checklist.items.map((item) => (
-          <li key={item.id} className="rounded border border-black/[0.06] p-3 text-sm">
+          <li key={item.id} className="rounded border border-[var(--surface-border)] p-3 text-sm">
             <p className="mb-2">{item.label}</p>
             <div className="flex flex-wrap gap-2">
               <select
-                className="rounded border border-black/10 px-2 py-1 text-xs"
+                className="rounded border border-[var(--surface-border)] px-2 py-1 text-xs"
                 value={item.status}
                 onChange={(e) =>
                   onPatch(checklist.id, item.id, { status: e.target.value as GateStatus })
@@ -137,7 +137,7 @@ function EditableGatePanel({
                 ))}
               </select>
               <input
-                className="min-w-[160px] flex-1 rounded border border-black/10 px-2 py-1 text-xs"
+                className="min-w-[160px] flex-1 rounded border border-[var(--surface-border)] px-2 py-1 text-xs"
                 value={item.note ?? ""}
                 onChange={(e) => onPatch(checklist.id, item.id, { note: e.target.value || undefined })}
                 placeholder="备注 / 风险说明"

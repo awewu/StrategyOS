@@ -52,7 +52,7 @@ export async function OrgSlicePanel({
             <span className="text-xs text-[var(--color-text-muted)]">
               KPI 源 {kpiSource === "database" ? "DB" : "Demo"}
             </span>
-            <Link href={fpaHref} className="text-sm text-[var(--color-accent-gold)] hover:underline">
+            <Link href={fpaHref} className="text-sm text-[var(--color-accent)] hover:underline">
               FPA 深潜 →
             </Link>
           </div>
@@ -68,7 +68,7 @@ export async function OrgSlicePanel({
           </thead>
           <tbody>
             {kpis.map((k) => (
-              <tr key={k.name} className="border-t border-black/[0.06]">
+              <tr key={k.name} className="border-t border-[var(--surface-border)]">
                 <td className="py-2">{k.name}</td>
                 <td className="py-2 text-[var(--color-text-muted)]">{k.target}</td>
                 <td className="py-2">{k.value}</td>
@@ -88,7 +88,7 @@ export async function OrgSlicePanel({
           </h2>
           <Link
             href={executionHrefForSlice(slice.id)}
-            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent-gold)] hover:underline"
+            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:underline"
           >
             执行 · 全览（专家页）→
           </Link>
@@ -116,9 +116,9 @@ export async function OrgSlicePanel({
         {commitments.length > 0 ? (
           <CommitmentLedger records={commitments} />
         ) : (
-          <p className="rounded-lg border border-dashed border-black/10 p-4 text-sm text-[var(--color-text-muted)]">
+          <p className="rounded-lg border border-dashed border-[var(--surface-border)] p-4 text-sm text-[var(--color-text-muted)]">
             暂无匹配承诺 · OPS 月报归档后将归集至此 ·{" "}
-            <Link href="/execution" className="text-[var(--color-accent-gold)] hover:underline">
+            <Link href="/execution" className="text-[var(--color-accent)] hover:underline">
               查看集团承诺账本
             </Link>
           </p>

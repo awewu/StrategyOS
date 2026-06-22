@@ -4,12 +4,12 @@ import type { ReportSignal } from "@/lib/data/strategy-data";
 const SEVERITY_META: Record<ReportSignal["severity"], { label: string; color: string; bg: string; border: string }> = {
   high:   { label: "高", color: "var(--signal-red)",   bg: "bg-red-600/[0.06]",    border: "border-red-600/25" },
   medium: { label: "中", color: "var(--color-accent)", bg: "bg-[var(--color-accent-dim)]", border: "border-[var(--color-accent)]/25" },
-  low:    { label: "低", color: "#4e5758",             bg: "bg-black/[0.03]",      border: "border-black/10" },
+  low:    { label: "低", color: "#4e5758",             bg: "bg-black/[0.03]",      border: "border-[var(--surface-border)]" },
 };
 
 export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-5">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -25,7 +25,7 @@ export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
       </header>
 
       {signals.length === 0 ? (
-        <div className="rounded-md border border-dashed border-black/10 py-8 text-center">
+        <div className="rounded-md border border-dashed border-[var(--surface-border)] py-8 text-center">
           <p className="text-xs text-[var(--color-text-muted)]">
             暂无已存档报告产生的信号 · 在报告中心上传并存档报告后，红线与战略模式信号将在此汇聚
           </p>

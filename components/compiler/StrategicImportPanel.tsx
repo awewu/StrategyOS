@@ -30,7 +30,7 @@ type ImportResult = {
 
 function riskColor(level: string) {
   if (level === "block") return "text-[var(--signal-red)]";
-  if (level === "warn") return "text-amber-700";
+  if (level === "warn") return "text-amber-800";
   return "text-[var(--color-text-muted)]";
 }
 
@@ -44,7 +44,7 @@ type FilterAuditReport = {
   summary: string[];
 };
 
-export function StrategicImportPanel() {
+export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
   const [rawText, setRawText] = useState("");
   const [preview, setPreview] = useState<CompiledStrategicPayload | null>(null);
   const [quality, setQuality] = useState<QualityStats | null>(null);
@@ -55,7 +55,6 @@ export function StrategicImportPanel() {
   const [loading, setLoading] = useState(false);
   const [phase, setPhase] = useState<"idle" | "preview" | "done">("idle");
   const [mode, setMode] = useState<ImportMode>("merge");
-
   const [auditComparePlan, setAuditComparePlan] = useState(true);
 
   async function runAudit() {
@@ -109,192 +108,190 @@ export function StrategicImportPanel() {
     }
   }
 
+  const shellClass = embedded
+    ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+    : "stratos-card stratos-card--padded grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]";
+
   return (
-    <section className="surface-elevated rounded-2xl border border-[var(--color-accent-gold)]/25 p-5 md:p-6">
-      <div className="mb-4">
-        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">战略编译器</h2>
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-          上传资料 → 推演查重 → 确认后合并写入（默认不覆盖已有 OKR）
-        </p>
+    <section className={shellClass}>
+      {!embedded ? (
+        <div className="lg:col-span-2">
+          <h2 className="text-title text-[var(--color-text-primary)]">战略编译器</h2>
+          <p className="text-caption mt-1">
+            上传会议资料 → 推演查重 → 确认后合并写入（默认不覆盖已有 OKR）
+          </p>
+        </div>
+      ) : null}
+
+      <div className="space-y-4">
+        <div>
+          <label className="label-xs">导入模式</label>
+          <div className="stratos-segment mt-1">
+            <button
+              type="button"
+              onClick={() => setMode("merge")}
+              className={`stratos-segment__item ${mode === "merge" ? "stratos-segment__item--active" : ""}`}
+            >
+              合并追加
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("replace")}
+              className={`stratos-segment__item stratos-segment__item--danger ${mode === "replace" ? "stratos-segment__item--active" : ""}`}
+            >
+              全量替换
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="label-xs" htmlFor="strategic-import-file">
+            上传文件
+          </label>
+          <input
+            id="strategic-import-file"
+            type="file"
+            accept=".pdf,.xlsx,.xls,.txt,.docx"
+            className="stratos-input mt-1 cursor-pointer file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-[var(--color-accent-dim)] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[var(--color-accent)]"
+          />
+        </div>
+
+        <div>
+          <label className="label-xs" htmlFor="strategic-import-text">
+            或粘贴战略正文
+          </label>
+          <textarea
+            id="strategic-import-text"
+            className="stratos-input mt-1 min-h-[7.5rem]"
+            placeholder={"O1: 营收 6000 万路径\nKR1: 酒店签约 1200 家\n财务: EBIT 11.2%"}
+            value={rawText}
+            onChange={(e) => setRawText(e.target.value)}
+          />
+        </div>
+
+        <label className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+          <input
+            type="checkbox"
+            checked={!auditComparePlan}
+            onChange={(e) => setAuditComparePlan(!e.target.checked)}
+            className="rounded border-[var(--surface-border)]"
+          />
+          误杀审计：仅本批（不比对库）
+        </label>
+
+        <div className="flex flex-wrap gap-2 border-t border-[var(--surface-border)] pt-4">
+          <button type="button" disabled={loading} onClick={() => runCompile(false)} className="stratos-btn">
+            {loading ? "推演中…" : "推演预览"}
+          </button>
+          <button type="button" disabled={loading} onClick={() => void runAudit()} className="stratos-btn">
+            误杀审计
+          </button>
+          <button
+            type="button"
+            disabled={loading || (phase !== "preview" && !deduction?.safeToImport)}
+            onClick={() => runCompile(true)}
+            className="stratos-btn stratos-btn--primary"
+          >
+            确认导入
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-3">
-          <div>
-            <label className="label-xs">导入模式</label>
-            <div className="mt-1 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setMode("merge")}
-                className={`rounded-lg px-3 py-1.5 text-xs ${mode === "merge" ? "bg-[var(--color-accent)] text-white" : "border border-[var(--surface-border)]"}`}
-              >
-                合并（查重追加）
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("replace")}
-                className={`rounded-lg px-3 py-1.5 text-xs ${mode === "replace" ? "bg-[var(--signal-red)] text-white" : "border border-[var(--surface-border)]"}`}
-              >
-                全量替换
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className="label-xs">上传文件</label>
-            <input
-              id="strategic-import-file"
-              type="file"
-              accept=".pdf,.xlsx,.xls,.txt,.docx"
-              className="mt-1 block w-full text-sm text-[var(--color-text-muted)] file:mr-3 file:rounded file:border-0 file:bg-[var(--color-accent-dim)] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[var(--color-accent)]"
-            />
-          </div>
-          <div>
-            <label className="label-xs">或粘贴战略正文</label>
-            <textarea
-              className="stratos-input mt-1 min-h-[120px] w-full resize-y"
-              placeholder="O1: 营收 6000 万路径&#10;KR1: 酒店签约 1200 家&#10;财务: EBIT 11.2%"
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
-              <input
-                type="checkbox"
-                checked={!auditComparePlan}
-                onChange={(e) => setAuditComparePlan(!e.target.checked)}
-                className="rounded border-[var(--surface-border)]"
-              />
-              仅审计本批（不比对库）
-            </label>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => runCompile(false)}
-              className="rounded-lg border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.03] disabled:opacity-50"
-            >
-              {loading ? "推演中…" : "推演预览"}
-            </button>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => void runAudit()}
-              className="rounded-lg border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.03] disabled:opacity-50"
-            >
-              误杀审计
-            </button>
-            <button
-              type="button"
-              disabled={loading || (phase !== "preview" && !deduction?.safeToImport)}
-              onClick={() => runCompile(true)}
-              className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
-            >
-              确认导入
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-black/[0.06] bg-[var(--surface-panel)] p-4 text-sm">
-          {audit && (
-            <div className="mb-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs">
-              <p className="font-medium text-[var(--color-text-primary)]">误杀审计</p>
-              {audit.summary.map((s) => (
-                <p key={s} className="mt-1 text-[var(--color-text-muted)]">{s}</p>
+      <div className="stratos-card stratos-card--flat stratos-card--padded min-h-[12rem] bg-[var(--surface-raised)] text-sm">
+        {audit ? (
+          <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2.5 text-xs">
+            <p className="font-semibold text-[var(--color-text-primary)]">误杀审计</p>
+            {audit.summary.map((s) => (
+              <p key={s} className="mt-1 text-[var(--color-text-muted)]">{s}</p>
+            ))}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {Object.entries(audit.byReason).map(([k, n]) => (
+                <span key={k} className="stratos-chip">
+                  {audit.reasonLabels[k] ?? k}: {n}
+                </span>
               ))}
-              <div className="mt-2 flex flex-wrap gap-2">
-                {Object.entries(audit.byReason).map(([k, n]) => (
-                  <span key={k} className="rounded bg-black/[0.05] px-2 py-0.5 text-[10px]">
-                    {audit.reasonLabels[k] ?? k}: {n}
-                  </span>
+            </div>
+            {audit.reviewCandidates.length > 0 ? (
+              <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[11px] text-amber-900">
+                {audit.reviewCandidates.slice(0, 10).map((r, i) => (
+                  <li key={i}>
+                    [{r.reason}] {r.text.slice(0, 56)} — {r.reviewHint}
+                  </li>
                 ))}
-              </div>
-              {audit.reviewCandidates.length > 0 && (
-                <ul className="mt-2 max-h-32 space-y-1 overflow-y-auto text-[10px] text-amber-900">
-                  {audit.reviewCandidates.slice(0, 12).map((r, i) => (
-                    <li key={i}>⚠ [{r.reason}] {r.text.slice(0, 50)} — {r.reviewHint}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-          {deduction && (
-            <div className="mb-3 rounded-lg border border-[var(--color-accent-gold)]/20 bg-[var(--color-accent-dim)]/30 px-3 py-2 text-xs">
-              <p className="font-medium text-[var(--color-text-primary)]">导入推演</p>
-              <p className="mt-1">{deduction.recommendation}</p>
-              <p className="mt-2 text-[var(--color-text-muted)]">
-                库内 {deduction.planObjectiveCount} 目标 · 比对 {deduction.existingFingerprintCount} 指纹 →
-                新增 <span className="font-medium text-[var(--color-accent)]">{deduction.toAdd}</span>
-                {deduction.toMergeKr > 0 && <> · 补 KR {deduction.toMergeKr}</>}
-                {deduction.duplicateExisting > 0 && <> · 重复 {deduction.duplicateExisting}</>}
-                {deduction.noiseRejected > 0 && <> · 噪声 {deduction.noiseRejected}</>}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
+        {deduction ? (
+          <div className="mb-4 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] px-3 py-2.5 text-xs">
+            <p className="font-semibold text-[var(--color-text-primary)]">导入推演</p>
+            <p className="mt-1 leading-relaxed">{deduction.recommendation}</p>
+            <p className="mt-2 text-[var(--color-text-muted)]">
+              库内 {deduction.planObjectiveCount} 目标 · 指纹 {deduction.existingFingerprintCount} →
+              新增 <span className="font-semibold text-[var(--color-accent)]">{deduction.toAdd}</span>
+              {deduction.toMergeKr > 0 ? <> · 补 KR {deduction.toMergeKr}</> : null}
+              {deduction.duplicateExisting > 0 ? <> · 重复 {deduction.duplicateExisting}</> : null}
+            </p>
+            {deduction.risks.length > 0 ? (
+              <ul className="mt-2 space-y-0.5">
+                {deduction.risks.map((r) => (
+                  <li key={r.code} className={riskColor(r.level)}>
+                    [{r.level}] {r.message}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
+        {quality ? (
+          <div className="mb-4 text-xs">
+            <p className="font-semibold text-[var(--color-text-primary)]">质量过滤</p>
+            <p className="mt-1 text-[var(--color-text-muted)]">
+              原始 {quality.rawObjectives} → 接受 {quality.acceptedObjectives} · 剔除 {quality.rejectedCount}
+            </p>
+            {rejected.length > 0 ? (
+              <ul className="mt-2 max-h-24 space-y-0.5 overflow-y-auto text-[11px] text-[var(--color-text-muted)]">
+                {rejected.slice(0, 6).map((r, i) => (
+                  <li key={i}>[{r.reason}] {r.text.slice(0, 52)}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
+        {preview ? (
+          <div className="space-y-2 text-xs">
+            <p className="font-semibold text-[var(--color-text-muted)]">解析预览</p>
+            {preview.intent ? (
+              <p>
+                <span className="text-[var(--color-text-muted)]">意图 · </span>
+                {preview.intent}
               </p>
-              {deduction.risks.length > 0 && (
-                <ul className="mt-2 space-y-0.5">
-                  {deduction.risks.map((r) => (
-                    <li key={r.code} className={riskColor(r.level)}>
-                      [{r.level}] {r.message}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {deduction.semantic?.enabled && (
-                <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
-                  语义层: {deduction.semantic.engine === "llm"
-                    ? `已检 ${deduction.semantic.checked} · 语义去重 ${deduction.semantic.removedDuplicate} · 去噪 ${deduction.semantic.removedNoise}`
-                    : deduction.semantic.error ?? "等待 LLM 响应或检查 API Key"}
-                  {deduction.compileEngine !== "rules" && ` · 编译 ${deduction.compileEngine}`}
-                </p>
-              )}
-              {!deduction.semantic?.enabled && (
-                <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">语义层: 未配置 LLM（仅规则查重）</p>
-              )}
-              {deduction.samples.wouldAdd.length > 0 && (
-                <p className="mt-2 text-[10px] text-[var(--color-text-muted)]">
-                  将新增: {deduction.samples.wouldAdd.slice(0, 3).join(" · ")}
-                </p>
-              )}
-            </div>
-          )}
-          {quality && (
-            <div className="mb-3 rounded-lg bg-black/[0.03] px-3 py-2 text-xs">
-              <p className="font-medium text-[var(--color-text-primary)]">质量过滤</p>
-              <p className="mt-1 text-[var(--color-text-muted)]">
-                原始 {quality.rawObjectives} 目标 → 接受 {quality.acceptedObjectives} · 剔除 {quality.rejectedCount}
-              </p>
-              {rejected.length > 0 && (
-                <ul className="mt-2 max-h-24 space-y-0.5 overflow-y-auto text-[10px] text-[var(--color-text-muted)]">
-                  {rejected.slice(0, 8).map((r, i) => (
-                    <li key={i}>[{r.reason}] {r.text.slice(0, 48)}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-          {preview ? (
-            <div className="space-y-3">
-              <p className="text-xs font-medium text-[var(--color-text-muted)]">解析预览</p>
-              {preview.intent && <p><span className="text-[var(--color-text-muted)]">意图 · </span>{preview.intent}</p>}
-              {preview.northStar && <p><span className="text-[var(--color-text-muted)]">北极星 · </span>{preview.northStar}</p>}
-              {preview.objectives.length > 0 && (
-                <ul className="list-disc space-y-1 pl-4 text-xs max-h-36 overflow-y-auto">
-                  {preview.objectives.slice(0, 8).map((o, i) => (
-                    <li key={i}>[{o.dimension}] {o.objective ?? "—"}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-[var(--color-text-muted)]">点击「推演预览」或「误杀审计」</p>
-          )}
-          {result?.ok && result.imported && (
-            <div className="mt-4 rounded-lg bg-green-600/10 px-3 py-2 text-xs text-green-800">
-              已导入: {result.imported.join(" · ")}
-            </div>
-          )}
-          {result?.error && (
-            <p className="mt-3 text-xs text-[var(--signal-red)]">{result.error}</p>
-          )}
-        </div>
+            ) : null}
+            {preview.objectives.length > 0 ? (
+              <ul className="max-h-40 list-disc space-y-1 overflow-y-auto pl-4">
+                {preview.objectives.slice(0, 8).map((o, i) => (
+                  <li key={i}>
+                    [{o.dimension}] {o.objective ?? "—"}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : (
+          <p className="text-xs text-[var(--color-text-muted)]">运行推演或审计后，结果将显示在此面板。</p>
+        )}
+
+        {result?.ok && result.imported ? (
+          <div className="mt-4 rounded-lg border border-green-600/20 bg-green-600/5 px-3 py-2 text-xs text-green-900">
+            已导入：{result.imported.join(" · ")}
+          </div>
+        ) : null}
+        {result?.error ? (
+          <p className="mt-3 text-xs text-[var(--signal-red)]">{result.error}</p>
+        ) : null}
       </div>
     </section>
   );

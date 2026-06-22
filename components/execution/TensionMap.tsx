@@ -12,7 +12,7 @@ function TensionCard({ item, active, onClick }: { item: TensionItem; active: boo
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-lg border p-4 text-left transition-all ${active ? meta.bgColor + " " + meta.borderColor : "border-black/10 bg-[var(--color-bg-surface)] hover:border-black/15"}`}
+      className={`w-full rounded-lg border p-4 text-left transition-all ${active ? meta.bgColor + " " + meta.borderColor : "border-[var(--surface-border)] bg-[var(--color-bg-surface)] hover:border-black/15"}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export function TensionMap({ tensions }: { tensions: TensionItem[] }) {
           {tensions.map((t) => (
             <TensionCard key={t.id} item={t} active={selected === t.id} onClick={() => setSelected(t.id)} />
           ))}
-          <div className="mt-3 rounded-lg border border-black/[0.06] bg-black/[0.02] p-3">
+          <div className="mt-3 rounded-lg border border-[var(--surface-border)] bg-black/[0.02] p-3">
             <div className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">张力理论说明</div>
             <div className="space-y-1.5">
               {byType.map(({ type, meta }) => (
@@ -225,7 +225,7 @@ export function TensionMap({ tensions }: { tensions: TensionItem[] }) {
         </div>
         <div>
           {selectedItem ? <TensionDetail item={selectedItem} onEdit={() => setEditItem(selectedItem)} onDelete={() => remove(selectedItem.id)} /> : (
-            <div className="flex h-full items-center justify-center rounded-lg border border-black/10 text-sm text-[var(--color-text-muted)]">
+            <div className="flex h-full items-center justify-center rounded-lg border border-[var(--surface-border)] text-sm text-[var(--color-text-muted)]">
               选择左侧项目查看分析
             </div>
           )}

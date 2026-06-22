@@ -59,7 +59,7 @@ export function CommandPalette() {
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-lg rounded-lg border border-black/10 bg-[var(--color-bg-surface)] shadow-2xl"
+        className="w-full max-w-lg rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <input
@@ -67,7 +67,7 @@ export function CommandPalette() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="跳转模块… ⌘K"
-          className="w-full border-b border-black/10 bg-transparent px-4 py-3 text-sm outline-none"
+          className="w-full border-b border-[var(--surface-border)] bg-transparent px-4 py-3 text-sm outline-none"
         />
         <ul className="max-h-64 overflow-y-auto py-2">
           {filtered.map((l) => (

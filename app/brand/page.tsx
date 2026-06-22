@@ -15,14 +15,14 @@ export default function BrandGalleryPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-[var(--color-accent-gold)]">
+            <h1 className="text-2xl font-semibold text-[var(--color-accent)]">
               StratOS Brand Gallery
             </h1>
-            <p className="mt-1 text-sm font-medium text-[var(--color-accent-gold)]">{brand.taglineZh}</p>
+            <p className="mt-1 text-sm font-medium text-[var(--color-accent)]">{brand.taglineZh}</p>
             <p className="text-xs italic text-[var(--color-text-muted)]">{brand.taglineEn}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
               {brand.positioningZh} · {brand.fullName} · VI v1.1 ·{" "}
-              <Link href="/print/panorama" className="text-[var(--color-accent-gold)] hover:underline">
+              <Link href="/print/panorama" className="text-[var(--color-accent)] hover:underline">
                 打印一页纸 →
               </Link>
             </p>
@@ -32,20 +32,20 @@ export default function BrandGalleryPage() {
           </Link>
         </header>
 
-        <section className="mb-10 flex items-center gap-6 rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+        <section className="mb-10 flex items-center gap-6 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
           <Image src="/logo-mark.svg" alt="" width={80} height={80} />
           <Image src="/icon.svg" alt="" width={48} height={48} />
           <div>
             <p className="text-xl font-semibold">{brand.name}</p>
-            <p className="text-[var(--color-accent-gold)]">{brand.taglineZh}</p>
+            <p className="text-[var(--color-accent)]">{brand.taglineZh}</p>
             <p className="text-sm italic text-[var(--color-text-muted)]">{brand.taglineEn}</p>
           </div>
         </section>
 
         <div className="grid gap-8">
           {ASSETS.map((a) => (
-            <figure key={a.file} className="overflow-hidden rounded-lg border border-black/10">
-              <div className="border-b border-black/10 bg-[var(--color-bg-surface)] px-4 py-3">
+            <figure key={a.file} className="overflow-hidden rounded-lg border border-[var(--surface-border)]">
+              <div className="border-b border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-4 py-3">
                 <figcaption className="font-medium">{a.title}</figcaption>
                 <p className="text-xs text-[var(--color-text-muted)]">{a.desc}</p>
               </div>

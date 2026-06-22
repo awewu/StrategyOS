@@ -5,6 +5,7 @@ import { FeedbackLoopEditor } from "@/components/decode/FeedbackLoopEditor";
 import { StratSimPanel } from "@/components/decode/StratSimPanel";
 import { BscEditor } from "@/components/decode/BscEditor";
 import { HoshinEditor } from "@/components/decode/HoshinEditor";
+import { StratosTabButtons } from "@/components/ui/StratosTabNav";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { HoshinRowPayload } from "@/lib/decode/data-access";
 import type { FeedbackLoop } from "@/lib/types/stratos";
@@ -142,48 +143,39 @@ export function DecodeWorkspace({
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-3">
+      <div className="stratos-card stratos-card--padded flex flex-wrap items-center gap-3">
         <span className="text-xs text-[var(--color-text-muted)]">
-          数据源 {source === "database" ? "DB" : "Demo"} · 支持在线录入与 Excel 导入
+          数据源 {source === "database" ? "DB" : "Demo"} · 在线录入 / Excel 导入
         </span>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          {canEdit && !editing && (
-            <button
-              type="button"
-              className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-              onClick={() => setEditing(true)}
-            >
+          {canEdit && !editing ? (
+            <button type="button" className="stratos-btn px-3 py-1.5 text-xs" onClick={() => setEditing(true)}>
               编辑
             </button>
-          )}
-          {canEdit && editing && (
+          ) : null}
+          {canEdit && editing ? (
             <>
               <button
                 type="button"
                 disabled={busy}
-                className="rounded-lg bg-[var(--color-accent-gold)] px-3 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50"
+                className="stratos-btn stratos-btn--primary px-3 py-1.5 text-xs"
                 onClick={() => void saveCurrentTab()}
               >
                 保存
               </button>
-              <button
-                type="button"
-                disabled={busy}
-                className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.03]"
-                onClick={cancelEdit}
-              >
+              <button type="button" disabled={busy} className="stratos-btn px-3 py-1.5 text-xs" onClick={cancelEdit}>
                 取消
               </button>
             </>
-          )}
+          ) : null}
           <a
             href={`/api/decode/template?type=${tab === "hoshin" ? "hoshin" : tab === "bsc" ? "bsc" : "combined"}`}
-            className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-accent-gold)] hover:bg-black/[0.03]"
+            className="stratos-btn px-3 py-1.5 text-xs"
           >
             下载模板
           </a>
           <select
-            className="rounded-lg border border-[var(--surface-border)] px-2 py-1.5 text-xs"
+            className="stratos-input w-auto px-2 py-1.5 text-xs"
             value={importKind}
             onChange={(e) => setImportKind(e.target.value as typeof importKind)}
             aria-label="导入范围"
@@ -195,7 +187,7 @@ export function DecodeWorkspace({
           <button
             type="button"
             disabled={busy}
-            className="rounded-lg border border-[var(--color-accent-gold)]/40 px-3 py-1.5 text-sm text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/5 disabled:opacity-50"
+            className="stratos-btn stratos-btn--primary px-3 py-1.5 text-xs"
             onClick={() => fileRef.current?.click()}
           >
             Excel 导入
@@ -213,17 +205,18 @@ export function DecodeWorkspace({
         </div>
       </div>
 
-      <div className="flex gap-2 border-b border-black/10">
-        <TabBtn active={tab === "bsc"} onClick={() => { setEditing(false); setTab("bsc"); }}>
-          BSC 战略地图
-        </TabBtn>
-        <TabBtn active={tab === "hoshin"} onClick={() => { setEditing(false); setTab("hoshin"); }}>
-          Hoshin X-Matrix
-        </TabBtn>
-        <TabBtn active={tab === "stratsim"} onClick={() => { setEditing(false); setTab("stratsim"); }}>
-          反馈环 · StratSim
-        </TabBtn>
-      </div>
+      <StratosTabButtons
+        active={tab}
+        onChange={(id) => {
+          setEditing(false);
+          setTab(id as Tab);
+        }}
+        tabs={[
+          { id: "bsc", label: "BSC 战略地图" },
+          { id: "hoshin", label: "Hoshin X-Matrix" },
+          { id: "stratsim", label: "反馈环 · StratSim" },
+        ]}
+      />
 
       {tab === "bsc" && <BscEditor rows={bscRows} editing={editing} onChange={setBscRows} />}
       {tab === "hoshin" && (
@@ -236,29 +229,5 @@ export function DecodeWorkspace({
         </div>
       )}
     </div>
-  );
-}
-
-function TabBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`border-b-2 px-4 py-2 text-sm ${
-        active
-          ? "border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]"
-          : "border-transparent text-[var(--color-text-muted)]"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

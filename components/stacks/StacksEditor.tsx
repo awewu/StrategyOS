@@ -67,7 +67,7 @@ export function StacksEditor({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-[var(--color-text-muted)]">数据源 {source === "database" ? "DB" : "Demo"}</p>
         <div className="flex items-center gap-2">
-          {msg ? <span className="text-xs text-[var(--color-accent-gold)]">{msg}</span> : null}
+          {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
           {editing ? (
             <>
               <button type="button" onClick={() => setEditing(false)} className="text-xs">
@@ -77,13 +77,13 @@ export function StacksEditor({
                 type="button"
                 disabled={busy}
                 onClick={() => void save()}
-                className="rounded bg-[var(--color-accent-gold)] px-2 py-1 text-xs text-white"
+                className="rounded bg-[var(--color-accent)] px-2 py-1 text-xs text-white"
               >
                 保存三栈
               </button>
             </>
           ) : (
-            <button type="button" onClick={() => setEditing(true)} className="text-xs text-[var(--color-accent-gold)]">
+            <button type="button" onClick={() => setEditing(true)} className="text-xs text-[var(--color-accent)]">
               编辑三栈
             </button>
           )}
@@ -91,7 +91,7 @@ export function StacksEditor({
       </div>
 
       {editing ? (
-        <section className="space-y-4 rounded-lg border border-black/10 p-4">
+        <section className="space-y-4 rounded-lg border border-[var(--surface-border)] p-4">
           <h3 className="text-sm font-medium">CapStack 摘要</h3>
           <div className="grid gap-2 sm:grid-cols-3">
             {(["capexBudget", "capexActual", "capexForecast"] as const).map((key) => (
@@ -99,7 +99,7 @@ export function StacksEditor({
                 {key === "capexBudget" ? "B" : key === "capexActual" ? "A" : "F"}
                 <input
                   type="number"
-                  className="mt-1 w-full rounded border border-black/10 px-2 py-1"
+                  className="mt-1 w-full rounded border border-[var(--surface-border)] px-2 py-1"
                   value={capStack[key]}
                   onChange={(e) => setCapStack((p) => ({ ...p, [key]: Number(e.target.value) }))}
                 />
@@ -162,14 +162,14 @@ function StackEditColumn({
       <h4 className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">{title}</h4>
       <div className="space-y-2">
         {items.map((item) => (
-          <div key={item.id} className="rounded border border-black/10 p-2">
+          <div key={item.id} className="rounded border border-[var(--surface-border)] p-2">
             <input
-              className="w-full rounded border border-black/10 px-2 py-1 text-sm"
+              className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
               value={item.title}
               onChange={(e) => onTitle(item.id, e.target.value)}
             />
             <input
-              className="mt-1 w-full rounded border border-black/10 px-2 py-1 font-data text-xs"
+              className="mt-1 w-full rounded border border-[var(--surface-border)] px-2 py-1 font-data text-xs"
               value={item.tag}
               onChange={(e) => onTag(item.id, e.target.value)}
               placeholder="budget_tag"

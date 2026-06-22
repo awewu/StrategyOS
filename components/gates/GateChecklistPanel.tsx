@@ -9,7 +9,7 @@ const STATUS: Record<GateStatus, { label: string; className: string }> = {
 function GateItemRow({ item }: { item: GateItem }) {
   const s = STATUS[item.status];
   return (
-    <li className="flex gap-3 border-t border-black/[0.06] py-3 text-sm first:border-0">
+    <li className="flex gap-3 border-t border-[var(--surface-border)] py-3 text-sm first:border-0">
       <span className={`w-10 shrink-0 font-medium ${s.className}`}>{s.label}</span>
       <div>
         <span>{item.label}</span>
@@ -23,11 +23,11 @@ export function GateChecklistPanel({ checklist }: { checklist: GateChecklist }) 
   const risks = checklist.items.filter((i) => i.status !== "pass");
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-5">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-medium">{checklist.title}</h3>
         {checklist.doctrine && (
-          <span className="text-xs text-[var(--color-accent-gold)]">{checklist.doctrine}</span>
+          <span className="text-xs text-[var(--color-accent)]">{checklist.doctrine}</span>
         )}
       </div>
       <ul>

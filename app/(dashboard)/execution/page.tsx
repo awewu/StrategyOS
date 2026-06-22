@@ -37,14 +37,14 @@ export default async function ExecutionPage({
             {resolved ? (
               <Link
                 href="/execution"
-                className="rounded-xl border border-black/[0.06] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+                className="rounded-xl border border-[var(--surface-border)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
               >
                 清除过滤
               </Link>
             ) : null}
             <Link
               href="/monitor/bu"
-              className="rounded-xl border border-black/[0.06] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+              className="rounded-xl border border-[var(--surface-border)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
             >
               事业部监测 →
             </Link>

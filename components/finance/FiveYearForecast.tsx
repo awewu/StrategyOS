@@ -4,8 +4,8 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
   const maxRev = Math.max(...rows.map((r) => r.revenueBudget));
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-accent-gold)]">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
+      <h3 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
         5 年 FPA 展望 · B-A-F
       </h3>
       <div className="overflow-x-auto">
@@ -24,8 +24,8 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
               const revGap = r.revenueForecast - r.revenueBudget;
               const barW = Math.round((r.revenueBudget / maxRev) * 100);
               return (
-                <tr key={r.year} className="border-t border-black/[0.06]">
-                  <td className="py-3 font-data text-[var(--color-accent-gold)]">{r.year}</td>
+                <tr key={r.year} className="border-t border-[var(--surface-border)]">
+                  <td className="py-3 font-data text-[var(--color-accent)]">{r.year}</td>
                   <td className="py-3 font-data">
                     {r.revenueBudget} / {r.revenueForecast}
                     <span
@@ -42,7 +42,7 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
                   <td className="py-3">
                     <div className="h-2 w-24 overflow-hidden rounded-full bg-black/[0.06]">
                       <div
-                        className="h-full rounded-full bg-[var(--color-accent-gold)]"
+                        className="h-full rounded-full bg-[var(--color-accent)]"
                         style={{ width: `${barW}%` }}
                       />
                     </div>
@@ -59,7 +59,7 @@ export function FiveYearForecast({ rows }: { rows: FpaYearRow[] }) {
 
 export function SensitivityPanel({ drivers }: { drivers: SensitivityDriver[] }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h3 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">
         敏感性分析 · 利润影响（万）
       </h3>

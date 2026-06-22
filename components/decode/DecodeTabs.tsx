@@ -21,7 +21,7 @@ export function DecodeTabs({
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2 border-b border-black/10">
+      <div className="flex gap-2 border-b border-[var(--surface-border)]">
         <TabBtn active={tab === "bsc"} onClick={() => setTab("bsc")}>
           BSC 战略地图
         </TabBtn>
@@ -34,13 +34,13 @@ export function DecodeTabs({
       </div>
 
       {tab === "bsc" ? (
-        <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+        <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
           <h2 className="mb-4 text-sm font-medium">BSC 四维度 · Must-Win / Must-Not-Fail</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {BSC_MAP.map((row) => (
-              <div key={row.dim} className="rounded border border-black/10 p-4">
+              <div key={row.dim} className="rounded border border-[var(--surface-border)] p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-xs text-[var(--color-accent-gold)]">{row.dim}</div>
+                  <div className="text-xs text-[var(--color-accent)]">{row.dim}</div>
                 </div>
                 <div className="mt-1 font-medium">{row.objective}</div>
                 <div className="mt-3 space-y-2 text-xs">
@@ -70,8 +70,8 @@ export function DecodeTabs({
         </section>
       ) : tab === "hoshin" ? (
         <section className="space-y-6">
-          <div className="rounded-lg border border-[var(--color-accent-gold)]/30 bg-[var(--color-bg-surface)] p-6">
-            <h2 className="mb-2 text-sm font-medium text-[var(--color-accent-gold)]">
+          <div className="rounded-lg border border-[var(--color-accent)]/30 bg-[var(--color-bg-surface)] p-6">
+            <h2 className="mb-2 text-sm font-medium text-[var(--color-accent)]">
               Hoshin X-Matrix · I7
             </h2>
             <p className="mb-4 text-xs text-[var(--color-text-muted)]">
@@ -98,9 +98,9 @@ export function DecodeTabs({
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-black/10 bg-[var(--color-bg-surface)]">
+          <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)]">
             <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-black/10 text-xs text-[var(--color-text-muted)]">
+              <thead className="border-b border-[var(--surface-border)] text-xs text-[var(--color-text-muted)]">
                 <tr>
                   <th className="p-3">象限</th>
                   <th className="p-3">条目</th>
@@ -113,7 +113,7 @@ export function DecodeTabs({
               <tbody>
                 {HOSHIN_QUADRANTS.flatMap((q) =>
                   q.entries.map((e) => (
-                    <tr key={e.id} className="border-t border-black/[0.06]">
+                    <tr key={e.id} className="border-t border-[var(--surface-border)]">
                       <td className="p-3 text-xs text-[var(--color-text-muted)]">
                         {q.rowLabel}
                         <br />
@@ -121,7 +121,7 @@ export function DecodeTabs({
                       </td>
                       <td className="p-3 font-medium">
                         {e.correlated && (
-                          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-accent-gold)]" />
+                          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-accent)]" />
                         )}
                         {e.label}
                       </td>
@@ -161,7 +161,7 @@ function TabBtn({
       onClick={onClick}
       className={`border-b-2 px-4 py-2 text-sm ${
         active
-          ? "border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]"
+          ? "border-[var(--color-accent)] text-[var(--color-accent)]"
           : "border-transparent text-[var(--color-text-muted)]"
       }`}
     >
@@ -180,7 +180,7 @@ function MatrixQuadrant({
       {entries.map((entry) => (
         <div key={entry.id} className="text-xs">
           {entry.correlated && (
-            <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-accent-gold)]" />
+            <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-accent)]" />
           )}
           {entry.label}
         </div>

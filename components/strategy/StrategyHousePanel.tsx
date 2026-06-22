@@ -35,12 +35,12 @@ export function StrategyHousePanel({ mission, vision, bscCards, threeYearItems, 
       <div className="flex items-center px-3 py-2 text-white" style={{ background: "#1565c0" }}>
         <span className="text-xs font-semibold tracking-wider">三年战略目标</span>
       </div>
-      <div className="grid border-b border-black/10" style={{ gridTemplateColumns: `repeat(${n},1fr)` }}>
+      <div className="grid border-b border-[var(--surface-border)]" style={{ gridTemplateColumns: `repeat(${n},1fr)` }}>
         {COLS.map((k, i) => {
           const card = bscCards.find(c => c.key === k);
           const items = threeYearItems[k] ?? (card ? [card.target] : []);
           return (
-            <div key={k} className={`flex flex-col p-3 bg-[#e3f0fb] ${i < n-1 ? "border-r border-black/10" : ""}`}>
+            <div key={k} className={`flex flex-col p-3 bg-[#e3f0fb] ${i < n-1 ? "border-r border-[var(--surface-border)]" : ""}`}>
               <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#1565c0" }}>
                 {COL_LABEL[k]}
               </div>
@@ -60,11 +60,11 @@ export function StrategyHousePanel({ mission, vision, bscCards, threeYearItems, 
       <div className="flex items-center px-3 py-2 text-white" style={{ background: "#e65100" }}>
         <span className="text-xs font-semibold tracking-wider">年度重点工作</span>
       </div>
-      <div className="grid border-b border-black/10" style={{ gridTemplateColumns: `repeat(${n},1fr)` }}>
+      <div className="grid border-b border-[var(--surface-border)]" style={{ gridTemplateColumns: `repeat(${n},1fr)` }}>
         {COLS.map((k, i) => {
           const items = annualItems[k] ?? [];
           return (
-            <div key={k} className={`flex flex-col p-3 bg-[#fff8f3] ${i < n-1 ? "border-r border-black/10" : ""}`}>
+            <div key={k} className={`flex flex-col p-3 bg-[#fff8f3] ${i < n-1 ? "border-r border-[var(--surface-border)]" : ""}`}>
               <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#e65100" }}>
                 {COL_LABEL[k]}
               </div>

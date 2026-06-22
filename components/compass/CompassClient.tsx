@@ -37,7 +37,7 @@ function ConfidenceFragilityDot({ confidence, fragility }: { confidence: number;
 }
 
 export function CompassClient({ bundle }: { bundle: CompassBundle }) {
-  const { northStar, milestones, premises, currentRevenue, currentMargin, planBsc, planSource, planId } = bundle;
+  const { northStar, milestones, premises, currentRevenue, planBsc, planSource, planId } = bundle;
   const [tab, setTab] = useState<"path" | "premises">("path");
   const [editPremise, setEditPremise] = useState<PremiseAudit | null>(null);
   const [editMilestone, setEditMilestone] = useState<CompassMilestone | null>(null);
@@ -155,11 +155,11 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
     return (
       <div className="space-y-4">
         {toast && (
-          <div className="fixed right-6 top-6 z-50 rounded-lg bg-[var(--color-bg-surface)] border border-black/10 px-4 py-2 text-sm shadow-lg">
+          <div className="fixed right-6 top-6 z-50 rounded-lg bg-[var(--color-bg-surface)] border border-[var(--surface-border)] px-4 py-2 text-sm shadow-lg">
             {toast}
           </div>
         )}
-        <div className="flex h-48 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-black/15 text-sm text-[var(--color-text-muted)]">
+        <div className="flex h-48 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[var(--surface-border-strong)] text-sm text-[var(--color-text-muted)]">
           <span>尚未设定使命愿景。请先录入企业5年终极目标。</span>
           <button onClick={() => setEditNorthStar(true)}
             className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white">
@@ -183,7 +183,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
   return (
     <div className="space-y-6">
       {toast && (
-        <div className="fixed right-6 top-6 z-50 rounded-lg bg-[var(--color-bg-surface)] border border-black/10 px-4 py-2 text-sm shadow-lg">
+        <div className="fixed right-6 top-6 z-50 rounded-lg bg-[var(--color-bg-surface)] border border-[var(--surface-border)] px-4 py-2 text-sm shadow-lg">
           {toast}
         </div>
       )}
@@ -200,9 +200,9 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
         <p className="text-sm text-[var(--color-text-secondary)]">{northStar.vision}</p>
 
         {planBsc && planBsc.length > 0 ? (
-          <div className="mt-5 rounded-lg border border-[var(--color-accent-gold)]/25 bg-[var(--color-accent-gold)]/5 p-4">
+          <div className="mt-5 rounded-lg border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/5 p-4">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
                 BSC 目标 · 战略计划同源
               </span>
               <span className="text-xs text-[var(--color-text-muted)]">
@@ -296,7 +296,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             ) : null}
           </div>
           {milestones.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-black/15 py-10 text-sm text-[var(--color-text-muted)]">
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--surface-border-strong)] py-10 text-sm text-[var(--color-text-muted)]">
               <span>尚未生成路径里程碑。保存使命愿景后应自动生成；若仍为空可手动触发。</span>
               <button
                 type="button"
@@ -394,7 +394,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                   type="button"
                   disabled={saving}
                   onClick={() => syncCompassAudit("assumptions")}
-                  className="rounded-md border border-black/10 px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:bg-black/[0.04] disabled:opacity-60"
+                  className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:bg-black/[0.04] disabled:opacity-60"
                 >
                   从战略假设同步
                 </button>
@@ -410,7 +410,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             ) : null}
           </div>
           {premises.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-black/15 py-10 text-sm text-[var(--color-text-muted)]">
+            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--surface-border-strong)] py-10 text-sm text-[var(--color-text-muted)]">
               <span>尚未录入战略前提。系统将生成 P1–P6 模板，可逐条更新置信度与失效信号。</span>
               <button
                 type="button"
@@ -566,7 +566,7 @@ function MilestoneEditModal({ milestone, saving, onClose, onSave }: {
           <textarea rows={2} className={inp} value={form.progressNote ?? ""} onChange={(e) => setForm((f) => ({ ...f, progressNote: e.target.value || null }))} placeholder="进度说明（可选）" />
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-md border border-black/10 px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
+          <button type="button" onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
           <button type="button" disabled={saving || !form.label.trim()} onClick={() => onSave(form)}
             className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60">
             {saving ? "保存中…" : "保存"}
@@ -607,7 +607,7 @@ function PremiseEditModal({ premise, saving, onClose, onSave }: {
           <input className={inp} value={form.signalSource ?? ""} onChange={e => setForm(f => ({ ...f, signalSource: e.target.value || null }))} placeholder="信号来源（如有）" />
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-md border border-black/10 px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
+          <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
           <button disabled={saving} onClick={() => onSave(form)}
             className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60">
             {saving ? "保存中…" : "保存"}
@@ -692,7 +692,7 @@ function NorthStarEditModal({ northStar, saving, onClose, onSave }: {
           {validationHint ? (
             <p className="mr-auto text-xs text-[var(--signal-red)]">{validationHint}</p>
           ) : null}
-          <button onClick={onClose} className="rounded-md border border-black/10 px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
+          <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
           <button disabled={saving || !valid} onClick={() => onSave(form)}
             className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60">
             {saving ? "保存中…" : "保存"}

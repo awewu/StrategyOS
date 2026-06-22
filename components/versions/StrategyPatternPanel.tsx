@@ -2,8 +2,8 @@ import type { StrategyPattern } from "@/lib/types/stratos";
 
 export function StrategyPatternPanel({ pattern }: { pattern: StrategyPattern }) {
   return (
-    <section className="rounded-lg border border-[var(--color-accent-gold)]/30 bg-[var(--color-bg-surface)] p-6">
-      <h2 className="mb-4 text-sm font-medium text-[var(--color-accent-gold)]">
+    <section className="rounded-lg border border-[var(--color-accent)]/30 bg-[var(--color-bg-surface)] p-6">
+      <h2 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
         Mintzberg · StrategyPattern
       </h2>
       <p className="mb-4 font-data text-sm">

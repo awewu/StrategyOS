@@ -127,7 +127,7 @@ export function CulturePageClient({
           数据源 {source === "database" ? "DB" : "Demo"}
         </span>
         {msg ? (
-          <span className="text-xs text-[var(--color-accent-gold)]">{msg}</span>
+          <span className="text-xs text-[var(--color-accent)]">{msg}</span>
         ) : null}
         {editing ? (
           <>
@@ -135,7 +135,7 @@ export function CulturePageClient({
               type="button"
               disabled={busy}
               onClick={() => setEditing(false)}
-              className="rounded-lg border border-black/10 px-3 py-1.5 text-sm"
+              className="rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm"
             >
               取消
             </button>
@@ -143,7 +143,7 @@ export function CulturePageClient({
               type="button"
               disabled={busy}
               onClick={() => void handleSaveAll()}
-              className="rounded-lg bg-[var(--color-accent-gold)] px-3 py-1.5 text-sm text-white"
+              className="rounded-lg bg-[var(--color-accent)] px-3 py-1.5 text-sm text-white"
             >
               {busy ? "保存中…" : "保存公示"}
             </button>
@@ -152,7 +152,7 @@ export function CulturePageClient({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-lg border border-[var(--color-accent-gold)]/35 px-3 py-1.5 text-sm text-[var(--color-accent-gold)]"
+            className="rounded-lg border border-[var(--color-accent)]/35 px-3 py-1.5 text-sm text-[var(--color-accent)]"
           >
             编辑公示
           </button>
@@ -179,7 +179,7 @@ export function CulturePageClient({
             <tbody className="divide-y divide-[var(--surface-border)]">
               {VALUES_AWARD_CATALOG.map((a) => (
                 <tr key={a.id}>
-                  <td className="whitespace-nowrap px-4 py-3 font-medium text-[var(--color-accent-gold)]">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium text-[var(--color-accent)]">
                     {a.name}
                   </td>
                   <td className="px-4 py-3 text-[var(--color-text-secondary)]">{a.criteria}</td>
@@ -194,7 +194,7 @@ export function CulturePageClient({
               近期获奖公示
             </p>
             {editing ? (
-              <button type="button" onClick={addWinner} className="text-xs text-[var(--color-accent-gold)]">
+              <button type="button" onClick={addWinner} className="text-xs text-[var(--color-accent)]">
                 + 新增获奖
               </button>
             ) : null}
@@ -202,12 +202,12 @@ export function CulturePageClient({
           {winners.map((w, i) => (
             <article
               key={w.id}
-              className="rounded-xl border border-[var(--color-accent-gold)]/25 bg-gradient-to-br from-[var(--color-accent-gold)]/[0.06] to-transparent px-5 py-4"
+              className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent-gold)]/[0.06] to-transparent px-5 py-4"
             >
               {editing ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={w.period}
                     onChange={(e) =>
                       setWinners((prev) => prev.map((x, j) => (j === i ? { ...x, period: e.target.value } : x)))
@@ -216,7 +216,7 @@ export function CulturePageClient({
                   />
                   <input
                     type="number"
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={w.year}
                     onChange={(e) =>
                       setWinners((prev) =>
@@ -225,7 +225,7 @@ export function CulturePageClient({
                     }
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm sm:col-span-2"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
                     value={w.awardName}
                     onChange={(e) =>
                       setWinners((prev) =>
@@ -235,7 +235,7 @@ export function CulturePageClient({
                     placeholder="奖项名称"
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={w.winner}
                     onChange={(e) =>
                       setWinners((prev) => prev.map((x, j) => (j === i ? { ...x, winner: e.target.value } : x)))
@@ -243,7 +243,7 @@ export function CulturePageClient({
                     placeholder="获奖人/团队"
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={w.unit}
                     onChange={(e) =>
                       setWinners((prev) => prev.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)))
@@ -251,7 +251,7 @@ export function CulturePageClient({
                     placeholder="单位"
                   />
                   <textarea
-                    className="rounded border border-black/10 px-2 py-1 text-sm sm:col-span-2"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
                     rows={2}
                     value={w.citation}
                     onChange={(e) =>
@@ -263,7 +263,7 @@ export function CulturePageClient({
               ) : (
                 <>
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
+                    <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
                       {w.period} · {w.year}
                     </p>
                     {w.awardName !== "—" ? (
@@ -292,7 +292,7 @@ export function CulturePageClient({
         </p>
         <div className="mb-3 flex justify-end">
           {editing ? (
-            <button type="button" onClick={addRecord} className="text-xs text-[var(--color-accent-gold)]">
+            <button type="button" onClick={addRecord} className="text-xs text-[var(--color-accent)]">
               + 新增案例
             </button>
           ) : null}
@@ -303,14 +303,14 @@ export function CulturePageClient({
               {editing ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={r.date}
                     onChange={(e) =>
                       setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))
                     }
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={r.unit}
                     onChange={(e) =>
                       setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)))
@@ -318,7 +318,7 @@ export function CulturePageClient({
                     placeholder="单位"
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm sm:col-span-2"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
                     value={r.title}
                     onChange={(e) =>
                       setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))
@@ -326,7 +326,7 @@ export function CulturePageClient({
                     placeholder="标题"
                   />
                   <textarea
-                    className="rounded border border-black/10 px-2 py-1 text-sm sm:col-span-2"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
                     rows={3}
                     value={r.summary}
                     onChange={(e) =>
@@ -335,7 +335,7 @@ export function CulturePageClient({
                     placeholder="摘要"
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={r.author}
                     onChange={(e) =>
                       setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, author: e.target.value } : x)))
@@ -343,7 +343,7 @@ export function CulturePageClient({
                     placeholder="发布人"
                   />
                   <input
-                    className="rounded border border-black/10 px-2 py-1 text-sm"
+                    className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                     value={r.relatedPrinciple ?? ""}
                     onChange={(e) =>
                       setRecords((prev) =>
@@ -372,7 +372,7 @@ export function CulturePageClient({
             </li>
           ))}
         </ul>
-        <div className="mt-5 rounded-xl border border-dashed border-black/12 bg-black/[0.02] px-5 py-4">
+        <div className="mt-5 rounded-xl border border-dashed border-[var(--surface-border-strong)] bg-black/[0.02] px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
             {CI_CONTINUOUS_IMPROVEMENT.title}
           </p>

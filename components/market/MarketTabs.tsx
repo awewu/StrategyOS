@@ -21,7 +21,7 @@ export function MarketTabs({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2 border-b border-black/10">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
         <button type="button" onClick={() => setTab("landscape")} className={tabClass(tab === "landscape")}>
           格局快照
         </button>

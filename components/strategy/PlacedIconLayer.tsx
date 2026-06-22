@@ -167,7 +167,7 @@ export function PlacedIconLayer({
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
-  function onPaletteChipMove(e: ReactPointerEvent<HTMLDivElement>) {
+  function onPaletteChipMove(_e: ReactPointerEvent<HTMLDivElement>) {
     if (!paletteDrag.current) return;
   }
 

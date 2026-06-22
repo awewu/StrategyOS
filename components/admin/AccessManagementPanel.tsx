@@ -54,14 +54,14 @@ export function AccessManagementPanel({
             type="button"
             disabled={loggingOut}
             onClick={handleLogout}
-            className="rounded border border-black/10 px-4 py-2 text-sm hover:bg-black/[0.04] disabled:opacity-50"
+            className="rounded border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.04] disabled:opacity-50"
           >
             {loggingOut ? "登出中…" : "登出当前会话"}
           </button>
         )}
       </div>
 
-      <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <h2 className="mb-4 text-sm font-medium">当前会话</h2>
         {session ? (
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
@@ -89,12 +89,12 @@ export function AccessManagementPanel({
         )}
       </section>
 
-      <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <h2 className="mb-4 text-sm font-medium">用户列表</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-black/10 text-[var(--color-text-muted)]">
+              <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
                 <th className="pb-2 pr-4 font-normal">姓名</th>
                 <th className="pb-2 pr-4 font-normal">邮箱</th>
                 <th className="pb-2 pr-4 font-normal">角色</th>
@@ -102,7 +102,7 @@ export function AccessManagementPanel({
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-black/[0.06]">
+                <tr key={u.id} className="border-b border-[var(--surface-border)]">
                   <td className="py-2 pr-4">{u.name}</td>
                   <td className="py-2 pr-4 font-mono text-xs">{u.email}</td>
                   <td className="py-2 pr-4">{ROLES[u.role]?.label ?? u.role}</td>
@@ -113,7 +113,7 @@ export function AccessManagementPanel({
         </div>
       </section>
 
-      <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <h2 className="mb-4 text-sm font-medium">使用审计日志</h2>
         {logs.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)]">暂无日志记录</p>
@@ -121,7 +121,7 @@ export function AccessManagementPanel({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-black/10 text-[var(--color-text-muted)]">
+                <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
                   <th className="pb-2 pr-3 font-normal">时间</th>
                   <th className="pb-2 pr-3 font-normal">用户</th>
                   <th className="pb-2 pr-3 font-normal">操作</th>
@@ -131,7 +131,7 @@ export function AccessManagementPanel({
               </thead>
               <tbody>
                 {logs.map((log) => (
-                  <tr key={log.id} className="border-b border-black/[0.06]">
+                  <tr key={log.id} className="border-b border-[var(--surface-border)]">
                     <td className="py-2 pr-3 whitespace-nowrap font-mono text-xs">
                       {formatTime(log.createdAt)}
                     </td>

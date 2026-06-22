@@ -7,7 +7,7 @@ const VERDICT_META = {
   effective:        { label: "执行有效",   color: "#22c55e", bg: "bg-green-900/20",  border: "border-green-500/30"  },
   assumption_failed:{ label: "假设失效",   color: "#ef4444", bg: "bg-red-900/20",    border: "border-red-500/30"    },
   inconclusive:     { label: "证据不足",   color: "#eab308", bg: "bg-yellow-900/20", border: "border-yellow-500/30" },
-  empty:            { label: "待录入",     color: "#4e5758", bg: "bg-black/[0.03]",  border: "border-black/10 border-dashed" },
+  empty:            { label: "待录入",     color: "#4e5758", bg: "bg-black/[0.03]",  border: "border-[var(--surface-border)] border-dashed" },
 } as const;
 
 const inputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
@@ -213,9 +213,9 @@ function CompetitiveTable({ positions, onEdit }: {
           <span className="text-xs text-[#4e5758]">{missingCount} 项对标数据缺失</span>
         )}
       </div>
-      <div className="overflow-x-auto rounded-lg border border-black/10">
+      <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-black/10 bg-black/[0.03]">
+          <thead className="border-b border-[var(--surface-border)] bg-black/[0.03]">
             <tr>
               <th className="px-3 py-2.5 font-normal text-[var(--color-text-muted)]">对标维度</th>
               <th className="px-3 py-2.5 font-normal text-[var(--color-text-muted)]">竞品</th>
@@ -230,7 +230,7 @@ function CompetitiveTable({ positions, onEdit }: {
             {positions.map((p) => {
               const missing = !p.ourValue || !p.theirValue;
               return (
-                <tr key={p.id} className={`border-b border-black/[0.06] ${missing ? "bg-black/[0.015]" : ""}`}>
+                <tr key={p.id} className={`border-b border-[var(--surface-border)] ${missing ? "bg-black/[0.015]" : ""}`}>
                   <td className="px-3 py-2.5">{p.dimension}</td>
                   <td className="px-3 py-2.5 text-[var(--color-text-muted)]">{p.competitor}</td>
                   <td className="px-3 py-2.5 font-medium">{p.ourValue ?? <span className="text-[#4e5758]">待录入</span>}</td>
@@ -321,11 +321,11 @@ export function MarketResponsePanel({
         </div>
       )}
 
-      <div className="flex gap-1 border-b border-black/10 pb-0">
+      <div className="flex gap-1 border-b border-[var(--surface-border)] pb-0">
         {(["response", "position"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 text-xs transition-colors border-b-2 -mb-px ${
-              tab === t ? "border-[var(--color-accent-gold)] text-[var(--color-text-primary)]" : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              tab === t ? "border-[var(--color-accent)] text-[var(--color-text-primary)]" : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
             }`}>
             {t === "response" ? `市场反馈 (${totalSlots})` : `竞争位移 (${positions.length})`}
           </button>

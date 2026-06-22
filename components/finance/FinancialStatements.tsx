@@ -15,8 +15,8 @@ function StatementTable({
   sections?: { heading: string; lines: StatementLine[] }[];
 }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--surface-panel)] overflow-hidden">
-      <div className="border-b border-black/10 px-6 py-3">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] overflow-hidden">
+      <div className="border-b border-[var(--surface-border)] px-6 py-3">
         <h3 className="text-sm font-medium">{title}</h3>
       </div>
       <div className="overflow-x-auto">
@@ -50,7 +50,7 @@ function StatementTable({
 function Row({ row }: { row: StatementLine }) {
   const pad = row.level ? "pl-10" : "pl-6";
   return (
-    <tr className={`border-t border-black/[0.06] ${row.emphasis ? "bg-black/[0.02]" : ""}`}>
+    <tr className={`border-t border-[var(--surface-border)] ${row.emphasis ? "bg-black/[0.02]" : ""}`}>
       <td className={`${pad} py-2.5 ${row.emphasis ? "font-medium" : "text-[#828c8d]"}`}>
         {row.label}
       </td>

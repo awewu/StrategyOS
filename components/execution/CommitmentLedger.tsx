@@ -7,7 +7,7 @@ const STATUS_META = {
   completed:   { label: "已完成", color: "#22c55e", bg: "bg-green-900/20",  border: "border-green-500/30"  },
   overdue:     { label: "逾期",   color: "#ef4444", bg: "bg-red-900/20",    border: "border-red-500/30"    },
   in_progress: { label: "进行中", color: "#3b82f6", bg: "bg-blue-900/20",   border: "border-blue-500/30"   },
-  pending:     { label: "待启动", color: "#828c8d", bg: "bg-black/[0.04]",       border: "border-black/10"      },
+  pending:     { label: "待启动", color: "#828c8d", bg: "bg-black/[0.04]",       border: "border-[var(--surface-border)]"      },
 } as const;
 const cInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
@@ -121,7 +121,7 @@ function OwnerHeatmap({ records }: { records: CommitmentRecord[] }) {
             const overdueCount = ownerRecs.filter((r) => r.status === "overdue").length;
             const overdueRate = ownerRecs.length ? Math.round(overdueCount / ownerRecs.length * 100) : 0;
             return (
-              <tr key={owner} className="border-t border-black/[0.06]">
+              <tr key={owner} className="border-t border-[var(--surface-border)]">
                 <td className="py-2 pr-4 font-medium">{owner}</td>
                 {deadlines.map((d) => {
                   const cell = ownerRecs.filter((r) => r.deadline === d);
@@ -211,7 +211,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
       </div>
 
       {/* Heatmap */}
-      <div className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-4">
+      <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
         <div className="mb-3 text-xs font-medium text-[var(--color-text-muted)]">逾期模式热力图（责任人 × 时段）</div>
         <OwnerHeatmap records={records} />
       </div>

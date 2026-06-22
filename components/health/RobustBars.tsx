@@ -32,13 +32,13 @@ export function RobustBars({
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-black/[0.06]">
             <div
-              className="h-full rounded-full bg-[var(--color-accent-gold)]"
+              className="h-full rounded-full bg-[var(--color-accent)]"
               style={{ width: `${value}%` }}
             />
           </div>
         </div>
       ))}
-      <div className="pt-2 text-center font-data text-3xl font-semibold text-[var(--color-accent-gold)]">
+      <div className="pt-2 text-center font-data text-3xl font-semibold text-[var(--color-accent)]">
         {overall}
       </div>
       <p className="text-center text-[10px] text-[var(--color-text-muted)]">

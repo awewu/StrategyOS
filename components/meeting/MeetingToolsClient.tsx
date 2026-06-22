@@ -93,7 +93,7 @@ export function MeetingToolsClient() {
         </p>
         <div className="mt-4 space-y-3">
           <select
-            className="rounded-md border border-black/10 px-3 py-2 text-sm"
+            className="rounded-md border border-[var(--surface-border)] px-3 py-2 text-sm"
             value={pollType}
             onChange={(e) => setPollType(e.target.value as typeof pollType)}
           >
@@ -102,12 +102,12 @@ export function MeetingToolsClient() {
             <option value="PULSE">会中脉搏 1–5</option>
           </select>
           <input
-            className="w-full rounded-md border border-black/10 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-[var(--surface-border)] px-3 py-2 text-sm"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
           />
           <input
-            className="w-full rounded-md border border-black/10 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-[var(--surface-border)] px-3 py-2 text-sm"
             placeholder="关联 Inbox sourceKey（可选，关闭表决时自动关议题）"
             value={linkedInbox}
             onChange={(e) => setLinkedInbox(e.target.value)}
@@ -143,7 +143,7 @@ export function MeetingToolsClient() {
                         key={n}
                         type="button"
                         onClick={() => vote(poll.id, undefined, n)}
-                        className="rounded border border-black/10 px-3 py-1 text-sm hover:bg-black/[0.04]"
+                        className="rounded border border-[var(--surface-border)] px-3 py-1 text-sm hover:bg-black/[0.04]"
                       >
                         {n}
                       </button>
@@ -156,7 +156,7 @@ export function MeetingToolsClient() {
                         key={o}
                         type="button"
                         onClick={() => vote(poll.id, o)}
-                        className="rounded border border-black/10 px-3 py-1 text-sm hover:bg-black/[0.04]"
+                        className="rounded border border-[var(--surface-border)] px-3 py-1 text-sm hover:bg-black/[0.04]"
                       >
                         {o}
                       </button>
@@ -177,7 +177,7 @@ export function MeetingToolsClient() {
       </section>
 
       <div className="flex flex-wrap gap-3 text-sm">
-        <Link href="/inbox" className="text-[var(--color-accent-gold)] hover:underline">
+        <Link href="/inbox" className="text-[var(--color-accent)] hover:underline">
           议题 Inbox →
         </Link>
         <Link href="/rehearsal" className="text-[var(--color-text-muted)] hover:underline">

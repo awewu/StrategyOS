@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { roleHomePath } from "@/lib/auth/permissions";
 import { ROLES, type RoleKey } from "@/lib/constants";
 
 interface RoleContextValue {

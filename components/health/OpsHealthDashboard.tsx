@@ -75,7 +75,7 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
   const splitMonth = ALL_MONTHS[historyEndIdx + 1];
 
   return (
-    <div className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-4">
+    <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ function DomainSummaryRow({ domain, onClick, active, seriesMap }: {
       className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
         active
           ? "border-black/15 bg-black/[0.06]"
-          : "border-black/10 bg-[var(--color-bg-surface)] hover:bg-black/[0.04]"
+          : "border-[var(--surface-border)] bg-[var(--color-bg-surface)] hover:bg-black/[0.04]"
       }`}
     >
       <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: domain.color }} />

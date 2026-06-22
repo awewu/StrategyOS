@@ -11,13 +11,11 @@ export async function PulseOpsPanel() {
   if (!stats) return null;
 
   return (
-    <section className="surface-elevated rounded-xl border border-black/[0.06] p-5 md:p-6">
+    <section className="stratos-card stratos-card--padded">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">脉搏与导入 · Ops</h2>
-          <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
-            查重拦截统计与最近档案入库摘要
-          </p>
+          <h2 className="text-title text-[var(--color-text-primary)]">脉搏与导入 · Ops</h2>
+          <p className="text-caption mt-0.5">查重拦截统计与最近档案入库摘要</p>
         </div>
         <div className="flex flex-wrap gap-2 text-[11px]">
           {stats.byType.slice(0, 5).map((row) => (

@@ -2,19 +2,19 @@ import type { PostInvestDeviation, RealOptionTag } from "@/lib/types/stratos";
 
 export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-accent-gold)]">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
+      <h3 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
         Real Options · 分阶段投资
       </h3>
       <div className="space-y-3">
         {options.map((o) => (
           <div
             key={o.icCode}
-            className="rounded border border-black/10 p-4"
+            className="rounded border border-[var(--surface-border)] p-4"
           >
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <span className="font-data text-xs text-[var(--color-accent-gold)]">{o.icCode}</span>
+                <span className="font-data text-xs text-[var(--color-accent)]">{o.icCode}</span>
                 <div className="text-sm font-medium">{o.title}</div>
               </div>
               {o.abandonRight && (
@@ -27,7 +27,7 @@ export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
             <div className="mt-2 flex flex-wrap gap-4 text-sm">
               <span>
                 下期 commit{" "}
-                <span className="font-data text-[var(--color-accent-gold)]">
+                <span className="font-data text-[var(--color-accent)]">
                   {o.nextCommitAmount} 万
                 </span>
               </span>
@@ -42,7 +42,7 @@ export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
 
 export function PostInvestPanel({ deviations }: { deviations: PostInvestDeviation[] }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h3 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">
         投后偏离追踪 · CAPEX vs IRR
       </h3>
@@ -59,9 +59,9 @@ export function PostInvestPanel({ deviations }: { deviations: PostInvestDeviatio
           </thead>
           <tbody>
             {deviations.map((d) => (
-              <tr key={d.icCode} className="border-t border-black/[0.06]">
+              <tr key={d.icCode} className="border-t border-[var(--surface-border)]">
                 <td className="py-3">
-                  <div className="font-data text-xs text-[var(--color-accent-gold)]">{d.icCode}</div>
+                  <div className="font-data text-xs text-[var(--color-accent)]">{d.icCode}</div>
                   <div>{d.title}</div>
                 </td>
                 <td className="py-3 font-data">

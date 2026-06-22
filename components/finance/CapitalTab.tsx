@@ -15,7 +15,7 @@ function KanbanColumn({
         {items.map((ic) => (
           <div
             key={ic.id}
-            className="cursor-pointer rounded border border-black/10 bg-[var(--surface-panel)] p-3 transition hover:border-[var(--color-accent)]/40"
+            className="cursor-pointer rounded border border-[var(--surface-border)] bg-[var(--surface-panel)] p-3 transition hover:border-[var(--color-accent)]/40"
           >
             <div className="font-data text-xs text-[var(--color-accent)]">{ic.code}</div>
             <div className="mt-1 text-sm font-medium">{ic.title}</div>
@@ -103,7 +103,7 @@ export function CapitalTab({
 
       {/* Three-stack allocation breakdown */}
       <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-4">
+        <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
           <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[#828c8d]">品牌分配</h3>
           <div className="space-y-2">
             {Object.entries(capStack.byBrand ?? {}).map(([brand, pct]) => (
@@ -117,7 +117,7 @@ export function CapitalTab({
             ))}
           </div>
         </div>
-        <div className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-4">
+        <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
           <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[#828c8d]">投入类型</h3>
           <div className="space-y-2">
             {Object.entries(capStack.byType ?? {}).map(([type, pct]) => (
@@ -143,7 +143,7 @@ export function CapitalTab({
         </div>
       </section>
 
-      <section className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-6">
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
         <h3 className="mb-3 text-sm font-medium text-[#828c8d]">产能缺口反推</h3>
         <div className="grid gap-2 font-data text-sm md:grid-cols-4">
           <div>需求 {capacity.demandUnits.toLocaleString()} 台</div>

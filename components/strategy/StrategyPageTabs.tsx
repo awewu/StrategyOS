@@ -24,26 +24,18 @@ export function StrategyPageTabs({
 
   return (
     <div className="stratos-section-gap flex flex-col">
-      <div className="flex gap-2 border-b border-black/[0.06] pb-2">
+      <div className="stratos-segment">
         <button
           type="button"
           onClick={() => setTab("view")}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            tab === "view"
-              ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
-              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-          }`}
+          className={`stratos-segment__item ${tab === "view" ? "stratos-segment__item--active" : ""}`}
         >
           看战略
         </button>
         <button
           type="button"
           onClick={() => setTab("onepager")}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            tab === "onepager"
-              ? "bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
-              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-          }`}
+          className={`stratos-segment__item ${tab === "onepager" ? "stratos-segment__item--active" : ""}`}
         >
           董事会一页纸
         </button>

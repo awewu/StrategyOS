@@ -1,4 +1,3 @@
-import { appleTypography, mckinseySections } from "@/lib/brand/apple-mckinsey";
 import { typography } from "@/lib/brand/typography";
 
 export function ImplicationsBar({
@@ -17,7 +16,7 @@ export function ImplicationsBar({
       className={
         isPrint
           ? "rounded-xl border border-[#0a1628]/10 bg-[#faf8f5] px-5 py-4"
-          : "surface-glass rounded-xl border border-white/[0.06] px-5 py-4"
+          : "stratos-card stratos-card--padded"
       }
       aria-labelledby="implications-title"
     >
@@ -25,28 +24,23 @@ export function ImplicationsBar({
         <div className="min-w-[7rem] shrink-0">
           <h3
             id="implications-title"
-            className={`${appleTypography.label} ${
-              isPrint ? "text-[var(--color-accent)]" : "text-[var(--color-accent-gold)]"
-            }`}
+            className={`text-title ${isPrint ? "text-[var(--color-accent)]" : "text-[var(--color-text-primary)]"}`}
           >
-            {mckinseySections.implications.id} · {mckinseySections.implications.labelZh}
+            战略含义
           </h3>
-          <p className={`${typography.caption} mt-1 ${isPrint ? "text-[#828c8d]" : ""}`}>
-            {mckinseySections.implications.hint}
+          <p className={`${typography.caption} mt-0.5 ${isPrint ? "text-[#828c8d]" : ""}`}>
+            对组织与资源的连带影响
           </p>
         </div>
         <ul className="flex flex-1 flex-col gap-2">
           {items.map((item) => (
             <li
               key={item}
-              className={`${appleTypography.bodyQuiet} text-sm ${
-                isPrint ? "text-[#cdd1d2]" : "text-[var(--color-text-primary)]/85"
+              className={`text-sm leading-relaxed ${
+                isPrint ? "text-[#cdd1d2]" : "text-[var(--color-text-secondary)]"
               }`}
             >
-              <span
-                className={`mr-2 ${isPrint ? "text-[var(--color-accent)]" : "text-[var(--color-accent-gold)]"}`}
-                aria-hidden
-              >
+              <span className="mr-2 text-[var(--color-accent)]" aria-hidden>
                 →
               </span>
               {item}

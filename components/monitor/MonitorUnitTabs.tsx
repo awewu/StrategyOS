@@ -22,7 +22,7 @@ export function MonitorUnitTabs({
             href={`${basePath}?unit=${s.id}`}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               active
-                ? "bg-[var(--color-accent-gold)]/12 text-[var(--color-accent-gold)]"
+                ? "bg-[var(--color-accent)]/12 text-[var(--color-accent)]"
                 : "text-[var(--color-text-muted)] hover:bg-black/[0.04] hover:text-[var(--color-text-primary)]"
             }`}
             aria-current={active ? "page" : undefined}

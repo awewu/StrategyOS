@@ -8,7 +8,7 @@ const KIND_STYLE: Record<string, { bg: string; label: string }> = {
 
 export function FeedbackLoopPanel({ loops }: { loops: FeedbackLoop[] }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-2 text-sm font-medium text-[var(--color-text-muted)]">
         系统反馈环 · R/B/D
       </h2>
@@ -19,7 +19,7 @@ export function FeedbackLoopPanel({ loops }: { loops: FeedbackLoop[] }) {
         {loops.map((loop) => {
           const style = KIND_STYLE[loop.kind];
           return (
-            <div key={loop.id} className="rounded border border-black/10 p-4">
+            <div key={loop.id} className="rounded border border-[var(--surface-border)] p-4">
               <div className="flex items-center gap-2">
                 <span className={`rounded px-2 py-0.5 text-[10px] font-medium ${style.bg}`}>
                   {style.label}
@@ -29,7 +29,7 @@ export function FeedbackLoopPanel({ loops }: { loops: FeedbackLoop[] }) {
               <div className="mt-2 text-sm font-medium">{loop.label}</div>
               <p className="mt-1 font-mono text-xs text-[var(--color-text-muted)]">{loop.chain}</p>
               {loop.fpaLinked && (
-                <span className="mt-2 inline-block text-[10px] text-[var(--color-accent-gold)]">
+                <span className="mt-2 inline-block text-[10px] text-[var(--color-accent)]">
                   ↔ FPA 联动
                 </span>
               )}

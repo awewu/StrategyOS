@@ -48,7 +48,7 @@ export function AgentOrchestrationPanel() {
 
       <div className="mb-4 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
         {STRAT_AGENTS.map((a) => (
-          <div key={a.id} className="rounded border border-black/[0.06] px-2 py-1.5 text-[10px]">
+          <div key={a.id} className="rounded border border-[var(--surface-border)] px-2 py-1.5 text-[10px]">
             <span className="text-violet-400">{a.name}</span>
             <span className="ml-2 text-[var(--color-text-muted)]">{a.role}</span>
           </div>
@@ -56,7 +56,7 @@ export function AgentOrchestrationPanel() {
       </div>
 
       {steps && (
-        <ol className="space-y-2 border-t border-black/10 pt-4">
+        <ol className="space-y-2 border-t border-[var(--surface-border)] pt-4">
           {steps.map((s) => (
             <li key={s.agentId} className="flex gap-3 text-xs">
               <span
@@ -83,7 +83,7 @@ export function AgentOrchestrationPanel() {
       )}
 
       {recommendations.length > 0 && (
-        <div className="mt-4 border-t border-black/10 pt-3">
+        <div className="mt-4 border-t border-[var(--surface-border)] pt-3">
           <div className="text-xs text-[var(--color-text-muted)]">Recommendations</div>
           <ul className="mt-1 text-sm">
             {recommendations.map((r) => (

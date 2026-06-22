@@ -115,7 +115,7 @@ export function RehearsalPresentMode({
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--print-navy)] text-white">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-black/10 px-8 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--surface-border)] px-8 py-4">
         <div>
           <p className="text-sm text-[#828c8d]">
             StratOS Q3 战略会 · 环节 {active + 1}/{Q3_REHEARSAL_AGENDA.length} ·{" "}
@@ -201,7 +201,7 @@ export function RehearsalPresentMode({
                     className={`flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                       done
                         ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-                        : "border-black/10 bg-black/[0.04]"
+                        : "border-[var(--surface-border)] bg-black/[0.04]"
                     }`}
                   >
                     <span>{done ? "☑" : "☐"}</span>
@@ -211,7 +211,7 @@ export function RehearsalPresentMode({
               );
             })}
           </ul>
-          <div className="rounded-lg border border-black/10 p-4 text-xs text-[#828c8d]">
+          <div className="rounded-lg border border-[var(--surface-border)] p-4 text-xs text-[#828c8d]">
             ← → 切换环节 · Space 暂停 · 超时会标橙 · 清单写入审计
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.06]">
               <div
@@ -228,7 +228,7 @@ export function RehearsalPresentMode({
         </aside>
       </main>
 
-      <footer className="flex justify-between border-t border-black/10 px-8 py-4">
+      <footer className="flex justify-between border-t border-[var(--surface-border)] px-8 py-4">
         <button
           type="button"
           disabled={active === 0}

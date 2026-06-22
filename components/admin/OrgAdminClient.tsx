@@ -213,7 +213,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setEdit(null)}
-                className="rounded-md border border-black/10 px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
+                className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
               <button disabled={saving} onClick={save}
                 className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60">
                 {saving ? "保存中…" : "保存"}

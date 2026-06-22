@@ -17,14 +17,14 @@ export function HorizonBubbleChart({ items }: { items: HorizonBubble[] }) {
   const maxBudget = Math.max(...items.map((i) => i.budget), 1);
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-2 text-sm font-medium text-[var(--color-text-muted)]">
         三层面组合 · I6 Horizon Bubble
       </h2>
       <p className="mb-4 text-xs text-[var(--color-text-muted)]">
         X = 预算投入 · Y = 预期回报 · 大小 = 预算 · H3 禁止绑年度财务 OKR
       </p>
-      <div className="relative h-64 rounded border border-black/[0.06] bg-[var(--color-bg-deep)]">
+      <div className="relative h-64 rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)]">
         {items.map((item) => {
           const x = (item.budget / maxBudget) * 85 + 5;
           const y = 90 - item.expectedReturn * 0.8;

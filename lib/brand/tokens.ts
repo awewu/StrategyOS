@@ -7,8 +7,10 @@
  */
 export const brand = {
   name: "StratOS",
-  /** Sidebar logo / wordmark hover label */
+  /** Sidebar logo mark (red icon text) */
   markName: "Rhautt",
+  /** Sidebar logo label under the mark */
+  sidebarLabelZh: "瑞合瑞德",
   fullName: "Strategic Operating System",
   taglineZh: "战略是抉择",
   taglineEn: "Decide with clarity.",

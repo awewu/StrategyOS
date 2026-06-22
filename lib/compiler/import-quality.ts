@@ -48,6 +48,26 @@ const DISCUSSION_PROMPT = /(?:先制造|财务|业务).{0,20}(?:vs|VS|同步|？
 const NOISE_OBJECTIVE =
   /^(?:老客户|新客户|O\d+|KR\d+|目标\d*|\d+\s*%?|待改进点|\(\s*待改进点\s*\))$/i;
 
+/** 常见 OKR / 岗位目标用语 — 用于放宽 Day3 类长标题 */
+const OKR_SIGNAL =
+  /(?:达成|目标|渠道|销售|布局|体系|团队|签约|毛利|营收|增长|拓展|赋能|数字化|提升|优化|建设|打造|推进|完成|实现|确保|驱动|客户|区域|酒店|商用|品类|预算|资源|效率|专业|高效)/;
+
+function countCjk(text: string): number {
+  return text.match(/[\u4e00-\u9fff]/g)?.length ?? 0;
+}
+
+function hasSubstantiveChinese(text: string): boolean {
+  return countCjk(text) >= 3;
+}
+
+function looksLikeOkrTitle(text: string): boolean {
+  const t = text.replace(/[，,、；;]+$/g, "").trim();
+  if (!hasSubstantiveChinese(t)) return false;
+  if (t.length >= 8 && OKR_SIGNAL.test(t)) return true;
+  if (t.length >= 4 && OKR_SIGNAL.test(t)) return true;
+  return false;
+}
+
 /** Strip slide chrome and collapse whitespace for fingerprinting. */
 export function normalizeForMatch(text: string): string {
   return text
@@ -105,15 +125,19 @@ function isPunctuationOnly(text: string): boolean {
 }
 
 export function classifyObjectiveNoise(text: string): RejectReason | null {
-  const t = text.trim();
+  const t = text.replace(/[，,、；;]+$/g, "").trim();
   if (!t) return "too_short";
   if (NOISE_OBJECTIVE.test(t)) return "low_signal";
-  if (t.length < 6) return "too_short";
+  // 有效 OKR 常带（待改进点）后缀，保留（须在长度/标点检测之前）
+  if (/^(.{4,})[（(]\s*待改进点\s*[)）]\s*$/.test(t)) return null;
+  if (looksLikeOkrTitle(t)) return null;
+  if (t.length < 6) {
+    if (t.length >= 4 && hasSubstantiveChinese(t)) return null;
+    return "too_short";
+  }
   if (SLIDE_LINE.test(t)) return "slide_boilerplate";
   if (DISCUSSION_PROMPT.test(t)) return "discussion_prompt";
   if (/^[\d\s.%]+$/.test(t)) return "numeric_only";
-  // 有效 OKR 常带（待改进点）后缀，保留（须在标点-only 检测之前）
-  if (/^(.{4,})[（(]\s*待改进点\s*[)）]\s*$/.test(t)) return null;
   if (isPunctuationOnly(t)) return "low_signal";
   return null;
 }

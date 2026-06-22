@@ -184,7 +184,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
       </div>
 
       <div className="grid grid-cols-[1fr_260px] gap-4">
-        <div className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-4">
+        <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
@@ -229,19 +229,19 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">主要张力</span>
                   <span style={{ color: meta.color }}>{meta.label}</span>
                 </div>
-                <div className="mt-3 border-t border-black/10 pt-3">
+                <div className="mt-3 border-t border-[var(--surface-border)] pt-3">
                   <div className="mb-1 text-[var(--color-text-muted)]">建议对策</div>
                   <p>{meta.rightResponse}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="flex h-48 items-center justify-center rounded-lg border border-black/10 text-xs text-[var(--color-text-muted)]">
+            <div className="flex h-48 items-center justify-center rounded-lg border border-[var(--surface-border)] text-xs text-[var(--color-text-muted)]">
               点击矩阵中的项目查看详情
             </div>
           )}
 
-          <div className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-3">
+          <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-3">
             <div className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">图例</div>
             <div className="space-y-1.5">
               {points.map((p) => (

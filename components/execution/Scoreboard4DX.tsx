@@ -8,7 +8,7 @@ export function Scoreboard4DX({
   leadingKrs: KeyResult[];
 }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
       <div className="mb-4 text-xs uppercase tracking-wider text-[#828c8d]">4DX 记分板 · WIG</div>
       <p className="mb-4 text-lg font-medium text-[var(--color-accent)]">WIG：{diagnosis.crux}</p>
       <div className="grid gap-4 md:grid-cols-2">

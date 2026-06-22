@@ -9,7 +9,7 @@ import type { PipelineStatus } from "@/lib/inbox/aggregate";
 const SEV_STYLE = {
   critical: "border-[var(--signal-red)]/35 bg-[var(--signal-red)]/6",
   warning: "border-[var(--signal-yellow)]/35 bg-[var(--signal-yellow)]/6",
-  info: "border-black/10 bg-black/[0.02]",
+  info: "border-[var(--surface-border)] bg-black/[0.02]",
 };
 
 const STATUS_LABEL = {
@@ -42,7 +42,7 @@ export function PipelineStatusBar({ status }: { status: PipelineStatus }) {
         type="button"
         disabled={syncing}
         onClick={syncRunway}
-        className="rounded border border-black/10 px-2 py-0.5 text-[var(--color-accent)] hover:bg-black/[0.04] disabled:opacity-60"
+        className="rounded border border-[var(--surface-border)] px-2 py-0.5 text-[var(--color-accent)] hover:bg-black/[0.04] disabled:opacity-60"
       >
         {syncing ? "同步中…" : "同步 Runway"}
       </button>
@@ -50,7 +50,7 @@ export function PipelineStatusBar({ status }: { status: PipelineStatus }) {
       <span>
         月报 {status.approvedReports} 存档 · {status.orgBoundReports} 已绑 org
       </span>
-      <Link href="/reports" className="ml-auto text-[var(--color-accent-gold)] hover:underline">
+      <Link href="/reports" className="ml-auto text-[var(--color-accent)] hover:underline">
         OPS 导入 →
       </Link>
     </section>
@@ -91,7 +91,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
 
   if (items.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-black/15 p-8 text-center text-sm text-[var(--color-text-muted)]">
+      <p className="rounded-xl border border-dashed border-[var(--surface-border-strong)] p-8 text-center text-sm text-[var(--color-text-muted)]">
         暂无待议议题 · 告警与失效信号将自动汇入
       </p>
     );
@@ -127,7 +127,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
                 type="button"
                 disabled={busy === item.sourceKey}
                 onClick={() => dispose(item.sourceKey, "close", { resolution: "已议" })}
-                className="rounded-md border border-black/10 px-2.5 py-1 text-xs hover:bg-black/[0.04] disabled:opacity-60"
+                className="rounded-md border border-[var(--surface-border)] px-2.5 py-1 text-xs hover:bg-black/[0.04] disabled:opacity-60"
               >
                 已议
               </button>
@@ -135,7 +135,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
                 type="button"
                 disabled={busy === item.sourceKey}
                 onClick={() => dispose(item.sourceKey, "defer")}
-                className="rounded-md border border-black/10 px-2.5 py-1 text-xs hover:bg-black/[0.04] disabled:opacity-60"
+                className="rounded-md border border-[var(--surface-border)] px-2.5 py-1 text-xs hover:bg-black/[0.04] disabled:opacity-60"
               >
                 推迟
               </button>
@@ -150,11 +150,11 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
             </div>
           </div>
           {assignFor === item.sourceKey ? (
-            <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-black/10 pt-3">
+            <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-[var(--surface-border)] pt-3">
               <label className="text-xs">
                 负责人
                 <input
-                  className="ml-1 rounded border border-black/10 px-2 py-1 text-sm"
+                  className="ml-1 rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   placeholder="姓名"
@@ -164,7 +164,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
                 截止
                 <input
                   type="date"
-                  className="ml-1 rounded border border-black/10 px-2 py-1 text-sm"
+                  className="ml-1 rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
                 />

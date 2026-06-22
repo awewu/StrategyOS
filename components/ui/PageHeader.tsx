@@ -15,17 +15,19 @@ export function PageHeader({
   accent?: "gold" | "white";
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-6 border-b border-black/[0.06] pb-8">
-      <div className="max-w-3xl space-y-2">
-        {eyebrow && (
-          <p className={`${typography.eyebrow} ${accent === "gold" ? "text-[var(--color-accent-gold)]" : "text-[var(--color-text-primary)]"}`}>
+    <header className="mb-1 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--surface-border)] pb-6">
+      <div className="max-w-3xl space-y-1.5">
+        {eyebrow ? (
+          <p
+            className={`${typography.eyebrow} ${accent === "gold" ? "text-[var(--color-accent)]" : "text-[var(--color-text-primary)]"}`}
+          >
             {eyebrow}
           </p>
-        )}
+        ) : null}
         <h1 className={`${typography.h1} text-[var(--color-text-primary)]`}>{title}</h1>
-        {subtitle && <p className={`${typography.caption} mt-2 max-w-2xl`}>{subtitle}</p>}
+        {subtitle ? <p className={`${typography.caption} max-w-2xl`}>{subtitle}</p> : null}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      {actions ? <div className="flex flex-wrap items-center gap-2 pb-0.5">{actions}</div> : null}
     </header>
   );
 }

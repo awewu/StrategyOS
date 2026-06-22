@@ -68,10 +68,10 @@ export function LoginForm({
     <div className="mx-auto w-full max-w-md space-y-8">
       <div className="text-center">
         <Image src="/logo-mark.svg" alt="" width={56} height={56} className="mx-auto" />
-        <h1 className="mt-4 text-2xl font-semibold text-[var(--color-accent-gold)]">
+        <h1 className="mt-4 text-2xl font-semibold text-[var(--color-accent)]">
           {brand.name}
         </h1>
-        <p className="text-sm text-[var(--color-accent-gold)]">{brand.taglineZh}</p>
+        <p className="text-sm text-[var(--color-accent)]">{brand.taglineZh}</p>
         <p className="text-xs italic text-[var(--color-text-muted)]">{brand.taglineEn}</p>
         <p className="mt-2 text-sm text-[var(--color-text-muted)]">战略网络登录 · 30 人核心层</p>
       </div>
@@ -96,7 +96,7 @@ export function LoginForm({
       {showWorkos && (
         <a
           href={`/api/auth/workos?next=${encodeURIComponent(next)}`}
-          className="flex w-full items-center justify-center rounded-lg border border-[var(--color-accent-gold)]/50 bg-[var(--color-accent-gold)]/10 py-3 text-sm font-medium text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/20"
+          className="flex w-full items-center justify-center rounded-lg border border-[var(--color-accent)]/50 bg-[var(--color-accent)]/10 py-3 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/20"
         >
           Enterprise SSO · WorkOS
         </a>
@@ -111,13 +111,13 @@ export function LoginForm({
               type="button"
               disabled={loading !== null}
               onClick={() => signIn(u.email)}
-              className="flex w-full items-center justify-between rounded-lg border border-black/10 bg-[var(--color-bg-surface)] px-4 py-3 text-left text-sm hover:border-[var(--color-accent-gold)]/40 disabled:opacity-50"
+              className="flex w-full items-center justify-between rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-4 py-3 text-left text-sm hover:border-[var(--color-accent)]/40 disabled:opacity-50"
             >
               <span>
                 {u.name}
                 <span className="ml-2 text-[var(--color-text-muted)]">{u.email}</span>
               </span>
-              <span className="text-xs text-[var(--color-accent-gold)]">{u.role}</span>
+              <span className="text-xs text-[var(--color-accent)]">{u.role}</span>
             </button>
           ))}
         </div>
@@ -129,7 +129,7 @@ export function LoginForm({
         </p>
       )}
 
-      <div className="rounded-lg border border-black/10 p-4 text-xs text-[var(--color-text-muted)]">
+      <div className="rounded-lg border border-[var(--surface-border)] p-4 text-xs text-[var(--color-text-muted)]">
         <p className="font-medium text-[var(--color-text-primary)]">Enterprise SSO</p>
         {workosReady ? (
           <p className="mt-1">WorkOS 已配置 — AuthKit SSO 可用。</p>
@@ -141,9 +141,9 @@ export function LoginForm({
           </p>
         )}
         <p className="mt-2">
-          强制登录：<code className="text-[var(--color-accent-gold)]">STRATOS_REQUIRE_AUTH=1</code>
+          强制登录：<code className="text-[var(--color-accent)]">STRATOS_REQUIRE_AUTH=1</code>
           {requireAuth && (
-            <span className="ml-1 text-[var(--color-accent-gold)]">（已启用）</span>
+            <span className="ml-1 text-[var(--color-accent)]">（已启用）</span>
           )}
         </p>
       </div>

@@ -8,7 +8,7 @@ function BafRow({ label, budget, actual, forecast }: {
   const w = (v: number) => `${Math.round((Math.abs(v) / max) * 100)}%`;
   const fmt = (v: number) => v.toLocaleString("zh-CN");
   const bars: { key: string; value: number; cls: string }[] = [
-    { key: "B", value: budget,   cls: "bg-[var(--color-accent-gold)] opacity-70" },
+    { key: "B", value: budget,   cls: "bg-[var(--color-accent)] opacity-70" },
     { key: "A", value: actual,   cls: "bg-sky-400" },
     { key: "F", value: forecast, cls: "bg-violet-400 opacity-75" },
   ];
@@ -32,7 +32,7 @@ function BafRow({ label, budget, actual, forecast }: {
 
 export function BafBar({ fpa }: { fpa: FpaSummary }) {
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--surface-panel)] p-6 space-y-5">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6 space-y-5">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">B·A·F 三段对比</h3>
         <span className={`font-data text-sm ${fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}`}>

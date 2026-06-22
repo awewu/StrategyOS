@@ -19,7 +19,7 @@ export function TopAlertsPanel({ alerts, embedded = false }: { alerts: AlertItem
   if (embedded) return list;
 
   return (
-    <div className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">Top 预警 · ≤3</h2>
       {list}
     </div>

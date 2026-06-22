@@ -61,8 +61,8 @@ export function HoshinEditor({
 
   return (
     <section className="space-y-6">
-      <div className="rounded-lg border border-[var(--color-accent-gold)]/30 bg-[var(--color-bg-surface)] p-6">
-        <h2 className="mb-2 text-sm font-medium text-[var(--color-accent-gold)]">Hoshin X-Matrix · I7</h2>
+      <div className="stratos-card stratos-card--padded border-l-[3px] border-l-[var(--color-accent)]">
+        <h2 className="mb-2 text-sm font-medium text-[var(--color-accent)]">Hoshin X-Matrix · I7</h2>
         <p className="mb-4 text-xs text-[var(--color-text-muted)]">
           南=长期突破 · 西=年度突破 · 北=改善项目 · 东=指标 · ● = correlation_dot
         </p>
@@ -83,9 +83,9 @@ export function HoshinEditor({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-black/10 bg-[var(--color-bg-surface)]">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-black/10 text-xs text-[var(--color-text-muted)]">
+      <div className="stratos-table-wrap">
+        <table className="stratos-table">
+          <thead className="border-b border-[var(--surface-border)] text-xs text-[var(--color-text-muted)]">
             <tr>
               <th className="p-3">行标签</th>
               <th className="p-3">列标签</th>
@@ -100,12 +100,12 @@ export function HoshinEditor({
           </thead>
           <tbody>
             {rows.map((e, i) => (
-              <tr key={e.id} className="border-t border-black/[0.06]">
+              <tr key={e.id} className="border-t border-[var(--surface-border)]">
                 {(["rowLabel", "colLabel", "label", "tti", "okr", "action", "owner"] as const).map((field) => (
                   <td key={field} className="p-2">
                     {editing ? (
                       <input
-                        className="w-full min-w-[80px] rounded border border-black/10 px-2 py-1 text-xs"
+                        className="w-full min-w-[80px] rounded border border-[var(--surface-border)] px-2 py-1 text-xs"
                         value={e[field]}
                         onChange={(ev) => patch(i, { [field]: ev.target.value })}
                       />
@@ -122,7 +122,7 @@ export function HoshinEditor({
                       onChange={(ev) => patch(i, { correlated: ev.target.checked })}
                     />
                   ) : e.correlated ? (
-                    <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent-gold)]" />
+                    <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent)]" />
                   ) : null}
                 </td>
                 {editing && (
@@ -141,10 +141,10 @@ export function HoshinEditor({
           </tbody>
         </table>
         {editing && (
-          <div className="border-t border-black/10 p-3">
+          <div className="border-t border-[var(--surface-border)] p-3">
             <button
               type="button"
-              className="rounded-lg border border-dashed border-black/15 px-3 py-2 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.03]"
+              className="rounded-lg border border-dashed border-[var(--surface-border-strong)] px-3 py-2 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.03]"
               onClick={addRow}
             >
               + 添加 X-Matrix 行
@@ -162,7 +162,7 @@ function MatrixCell({ entries }: { entries: HoshinQuadrant["entries"] }) {
       {entries.map((entry) => (
         <div key={entry.id} className="text-xs">
           {entry.correlated && (
-            <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-accent-gold)]" />
+            <span className="mr-1 inline-block h-2 w-2 rounded-full bg-[var(--color-accent)]" />
           )}
           {entry.label}
         </div>

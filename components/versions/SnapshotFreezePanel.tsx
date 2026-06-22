@@ -45,7 +45,7 @@ export function SnapshotFreezePanel() {
   }
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-2 text-sm font-medium">快照定稿 · Snapshot Freeze</h2>
       <p className="mb-4 text-xs text-[var(--color-text-muted)]">
         战略会定稿后只读 · 含 FPA + 三栈 + HealthAssertion · 断言未解除则硬阻断 · 有 DB 时持久化
@@ -55,7 +55,7 @@ export function SnapshotFreezePanel() {
           type="button"
           disabled={loading}
           onClick={() => handleFreeze(true)}
-          className="rounded bg-[var(--color-accent-gold)] px-4 py-2 text-sm font-medium text-[var(--color-bg-deep)] disabled:opacity-50"
+          className="rounded bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-bg-deep)] disabled:opacity-50"
         >
           冻结 2026-FY-STRATEGIC（已例外）
         </button>

@@ -49,13 +49,13 @@ export function CounterfactualPanel() {
         ))}
       </div>
 
-      <div className="mb-4 flex flex-wrap items-end gap-3 rounded border border-black/10 p-3">
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded border border-[var(--surface-border)] p-3">
         <label className="text-xs text-[var(--color-text-muted)]">
           类型
           <select
             value={customType}
             onChange={(e) => setCustomType(e.target.value as CounterfactualType)}
-            className="mt-1 block rounded border border-black/10 bg-[var(--color-bg-deep)] px-2 py-1 text-sm"
+            className="mt-1 block rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-2 py-1 text-sm"
           >
             <option value="v4_delay">V4 延迟（季）</option>
             <option value="hotel_beat">酒店超额（0–0.5）</option>
@@ -71,7 +71,7 @@ export function CounterfactualPanel() {
             max={4}
             value={magnitude}
             onChange={(e) => setMagnitude(Number(e.target.value))}
-            className="mt-1 block w-24 rounded border border-black/10 bg-[var(--color-bg-deep)] px-2 py-1 text-sm"
+            className="mt-1 block w-24 rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-2 py-1 text-sm"
           />
         </label>
         <button
@@ -95,7 +95,7 @@ export function CounterfactualPanel() {
               metrics: { revenueDeltaM: 0, runwayMonths: 0 },
             }))
         ).map((s) => (
-          <div key={s.id} className="rounded border border-black/10 p-4">
+          <div key={s.id} className="rounded border border-[var(--surface-border)] p-4">
             <div className="text-sm font-medium">{s.premise}</div>
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">{s.impact}</p>
             {s.linkedDiff.length > 0 && (

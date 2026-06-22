@@ -33,17 +33,17 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
                 {col.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded border border-black/10 bg-[var(--color-bg-surface)] p-3"
+                    className="rounded border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-3"
                   >
                     <div className="text-sm font-medium">{item.name}</div>
-                    <div className="mt-1 text-xs text-[var(--color-accent-gold)]">
+                    <div className="mt-1 text-xs text-[var(--color-accent)]">
                       {DIR_LABEL[item.direction]} · {item.valuationRange}
                     </div>
                     <p className="mt-2 text-xs text-[var(--color-text-muted)]">
                       {item.synergyThesis}
                     </p>
                     {item.integrationMilestone100d && (
-                      <p className="mt-2 border-t border-black/[0.06] pt-2 text-[10px] text-emerald-400/90">
+                      <p className="mt-2 border-t border-[var(--surface-border)] pt-2 text-[10px] text-emerald-400/90">
                         D100: {item.integrationMilestone100d}
                       </p>
                     )}

@@ -58,50 +58,44 @@ export default async function CommandPage() {
         subtitle={`${brand.positioningZh} · 2026-Q2 · 数据源 ${deck.source === "database" ? "DB" : "Demo"}`}
         actions={
           <>
-            <Link
-              href="/inbox"
-              className="relative rounded-xl border border-[var(--color-accent-gold)]/35 bg-[var(--color-accent-gold)]/8 px-4 py-2.5 text-sm text-[var(--color-accent-gold)] transition-colors hover:bg-[var(--color-accent-gold)]/15"
-            >
+            <Link href="/inbox" className="stratos-btn stratos-btn--ghost relative">
               议题 Inbox
               {inbox.open > 0 ? (
-                <span className="ml-2 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-[var(--signal-red)] px-1.5 py-0.5 text-[0.65rem] font-semibold text-white">
+                <span className="ml-1 inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-[var(--signal-red)] px-1.5 py-0.5 text-[0.625rem] font-semibold text-white">
                   {inbox.open}
                 </span>
               ) : null}
             </Link>
-            <Link
-              href="/print/panorama"
-              className="rounded-xl border border-[var(--color-accent-gold)]/35 bg-[var(--color-accent-gold)]/8 px-4 py-2.5 text-sm text-[var(--color-accent-gold)] transition-colors hover:bg-[var(--color-accent-gold)]/15"
-            >
+            <Link href="/print/panorama" className="stratos-btn stratos-btn--primary">
               董事会一页纸
             </Link>
-            <Link
-              href="/rehearsal"
-              className="rounded-xl border border-black/[0.06] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-black/10 hover:text-[var(--color-text-primary)]"
-            >
+            <Link href="/rehearsal" className="stratos-btn">
               Q3 彩排
             </Link>
           </>
         }
       />
 
-      <StrategicImportPanel />
+      <details className="stratos-disclosure">
+        <summary>战略资料导入 · PDF / Excel 编译</summary>
+        <div className="stratos-disclosure__body">
+          <StrategicImportPanel embedded />
+        </div>
+      </details>
 
       <ExecutiveSummary scr={scr} />
 
       {hardBlock ? (
         <section
-          className="rounded-2xl border border-[var(--signal-red)]/35 bg-[var(--signal-red)]/8 px-6 py-5"
+          className="stratos-card stratos-card--padded border-[var(--signal-red)]/30 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]"
           aria-label="HardBlock"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--signal-red)]">
-            HardBlock · 硬阻断
-          </p>
+          <p className="text-label text-[var(--signal-red)]">HardBlock · 硬阻断</p>
           <div className="mt-2">
             <TopAlertsPanel alerts={[hardBlock]} embedded />
           </div>
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
-            <Link href="/finance?tab=overview" className="text-[var(--color-accent-gold)] hover:underline">
+            <Link href="/finance?tab=overview" className="text-[var(--color-accent)] hover:underline">
               FPA Runway →
             </Link>
             <Link href="/gates" className="text-[var(--color-text-muted)] hover:underline">
@@ -116,28 +110,24 @@ export default async function CommandPage() {
       <ImplicationsBar items={implications} />
 
       <nav
-        className="flex flex-wrap items-center gap-x-1 gap-y-2 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-3 text-sm"
+        className="stratos-card stratos-card--padded flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
         aria-label="模块快捷跳转"
       >
-        <span className="mr-2 text-xs text-[var(--color-text-muted)]">深入查看</span>
-        {QUICK_LINKS.map((link, i) => (
-          <span key={link.href} className="inline-flex items-center">
-            {i > 0 ? <span className="mx-2 text-[var(--color-text-muted)]">·</span> : null}
-            <Link
-              href={link.href}
-              className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent-gold)]"
-            >
-              {link.label}
-            </Link>
-          </span>
+        <span className="mr-1 text-xs font-medium text-[var(--color-text-muted)]">深入</span>
+        {QUICK_LINKS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="stratos-btn stratos-btn--ghost px-2.5 py-1 text-xs"
+          >
+            {link.label}
+          </Link>
         ))}
       </nav>
 
-      <details className="surface-glass group rounded-2xl border border-black/[0.06] p-5 open:p-6">
-        <summary className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors group-open:text-[var(--color-text-primary)]">
-          展开 · 工作流 · FPA 快照 · 全部预警
-        </summary>
-        <div className="mt-6 space-y-6">
+      <details className="stratos-disclosure">
+        <summary>展开 · 工作流 · FPA · 预警</summary>
+        <div className="stratos-disclosure__body space-y-6">
           <SectionCard title="战略工作流" subtitle="编制 → 解码 → 一页纸">
             <div className="grid gap-3 sm:grid-cols-3">
               {[
@@ -148,9 +138,9 @@ export default async function CommandPage() {
                 <Link
                   key={step.href}
                   href={step.href}
-                  className="group rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-4 transition-colors hover:border-[var(--color-accent-gold)]/40 hover:bg-[var(--color-accent-gold)]/5"
+                  className="group rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-4 transition-colors hover:border-[var(--color-accent)]/40 hover:bg-[var(--color-accent)]/5"
                 >
-                  <div className="text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-gold)]">
+                  <div className="text-sm font-medium text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">
                     {step.title}
                   </div>
                   <div className="mt-1 text-xs text-[var(--color-text-muted)]">{step.desc}</div>
@@ -163,7 +153,7 @@ export default async function CommandPage() {
             title="FPA 管理报表"
             subtitle={`${kpis.period} · ROS / EBITDA / 利润桥`}
             action={
-              <Link href="/finance" className="text-sm text-[var(--color-accent-gold)] hover:underline">
+              <Link href="/finance" className="text-sm text-[var(--color-accent)] hover:underline">
                 完整报表 →
               </Link>
             }
@@ -182,11 +172,9 @@ export default async function CommandPage() {
         </div>
       </details>
 
-      <details className="surface-glass group rounded-2xl border border-black/[0.06] p-5 open:p-6">
-        <summary className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors group-open:text-[var(--color-text-primary)]">
-          展开 · BSC · 稳健性 · StratDiff · SPBP
-        </summary>
-        <div className="mt-6 space-y-6">
+      <details className="stratos-disclosure">
+        <summary>展开 · BSC · 稳健性 · StratDiff</summary>
+        <div className="stratos-disclosure__body space-y-6">
           <BscLights lights={deck.bscLights} />
           <section className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
             <SectionCard title="StratRobust" subtitle="战略稳健性五维" accent="violet">
@@ -204,7 +192,7 @@ export default async function CommandPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/versions" className="mt-4 inline-block text-sm text-[var(--color-accent-gold)] hover:underline">
+              <Link href="/versions" className="mt-4 inline-block text-sm text-[var(--color-accent)] hover:underline">
                 查看全部 diff →
               </Link>
             </SectionCard>

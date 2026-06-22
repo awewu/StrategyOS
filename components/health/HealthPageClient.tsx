@@ -47,13 +47,13 @@ export function HealthPageClient({
           <div className="flex flex-wrap gap-2">
             <Link
               href="/finance"
-              className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+              className="rounded-xl border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
             >
               FPA 管理报表 →
             </Link>
             <Link
               href="/outlook"
-              className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+              className="rounded-xl border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
             >
               战略展望 →
             </Link>
@@ -63,13 +63,13 @@ export function HealthPageClient({
         <div className="flex flex-wrap justify-end gap-2">
           <Link
             href="/finance"
-            className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+            className="rounded-xl border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
           >
             FPA 管理报表 →
           </Link>
           <Link
             href="/outlook"
-            className="rounded-xl border border-black/[0.06] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-gold)]/35 hover:text-[var(--color-accent-gold)]"
+            className="rounded-xl border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
           >
             战略展望 →
           </Link>
@@ -78,7 +78,7 @@ export function HealthPageClient({
 
       <BscLights lights={bscLights} />
 
-      <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <div className="mb-4 flex items-baseline gap-4">
           <span className="text-xs text-[var(--color-text-muted)]">综合参考分（非掩盖四灯）</span>
           <span className="font-data text-3xl">{healthOverview.score}</span>
@@ -95,7 +95,7 @@ export function HealthPageClient({
           </thead>
           <tbody>
             {healthOverview.kpis.map((k) => (
-              <tr key={k.name} className="border-t border-black/[0.06]">
+              <tr key={k.name} className="border-t border-[var(--surface-border)]">
                 <td className="py-2">{k.name}</td>
                 <td className="py-2 text-[#828c8d]">{k.target}</td>
                 <td className="py-2">{k.value}</td>
@@ -113,7 +113,7 @@ export function HealthPageClient({
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs text-[var(--color-text-muted)]">B·A·F 与 FPA 联动</span>
-          <Link href="/finance?tab=overview" className="text-sm text-[var(--color-accent-gold)] hover:underline">
+          <Link href="/finance?tab=overview" className="text-sm text-[var(--color-accent)] hover:underline">
             FPA B-A-F 总览 →
           </Link>
         </div>

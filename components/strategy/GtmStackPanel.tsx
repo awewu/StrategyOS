@@ -28,9 +28,9 @@ export function GtmStackPanel({
           </thead>
           <tbody>
             {segments.map((s) => (
-              <tr key={s.code} className="border-t border-black/[0.06]">
+              <tr key={s.code} className="border-t border-[var(--surface-border)]">
                 <td className="py-2">
-                  <span className="font-data text-xs text-[var(--color-accent-gold)]">{s.code}</span>
+                  <span className="font-data text-xs text-[var(--color-accent)]">{s.code}</span>
                   <div>{s.name}</div>
                 </td>
                 <td className="py-2">{s.priority}</td>

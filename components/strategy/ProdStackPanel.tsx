@@ -26,7 +26,7 @@ export function ProdStackPanel({
       </div>
       <div className="mb-4 grid gap-3 md:grid-cols-3">
         {lanes.map((lane) => (
-          <div key={lane} className="rounded border border-black/10 bg-[var(--color-bg-deep)] p-3">
+          <div key={lane} className="rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] p-3">
             <div className="mb-2 text-xs uppercase text-[var(--color-text-muted)]">{laneLabel[lane]}</div>
             {roadmap
               .filter((r) => r.lane === lane)
@@ -44,7 +44,7 @@ export function ProdStackPanel({
           <div className="mb-2 text-xs text-[var(--color-text-muted)]">JTBD</div>
           {jtbd.map((j) => (
             <p key={j.product} className="text-sm">
-              <span className="text-[var(--color-accent-gold)]">{j.product}</span> · {j.statement}
+              <span className="text-[var(--color-accent)]">{j.product}</span> · {j.statement}
             </p>
           ))}
         </div>

@@ -23,7 +23,7 @@ function EditableRow({
     const w = (v: number) => `${Math.round((Math.abs(v) / max) * 100)}%`;
     const fmt = (v: number) => v.toLocaleString("zh-CN");
     const bars = [
-      { key: "B", value: budget, cls: "bg-[var(--color-accent-gold)] opacity-70" },
+      { key: "B", value: budget, cls: "bg-[var(--color-accent)] opacity-70" },
       { key: "A", value: actual, cls: "bg-sky-400" },
       { key: "F", value: forecast, cls: "bg-violet-400 opacity-75" },
     ];
@@ -54,7 +54,7 @@ function EditableRow({
               <span className="text-[var(--color-text-muted)]">{keyLabel}</span>
               <input
                 type="number"
-                className="mt-0.5 w-full rounded border border-black/10 px-2 py-1 font-data text-xs"
+                className="mt-0.5 w-full rounded border border-[var(--surface-border)] px-2 py-1 font-data text-xs"
                 value={val}
                 onChange={(e) => onChange(field, Number(e.target.value))}
               />
@@ -104,14 +104,14 @@ export function FpaEditor({ initial, source }: { initial: FpaSummary; source: "d
   }
 
   return (
-    <section className="space-y-5 rounded-lg border border-black/10 bg-[var(--surface-panel)] p-6">
+    <section className="space-y-5 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">B·A·F 三段对比</h3>
           <p className="text-xs text-[var(--color-text-muted)]">数据源 {source === "database" ? "DB" : "Demo"}</p>
         </div>
         <div className="flex items-center gap-2">
-          {msg ? <span className="text-xs text-[var(--color-accent-gold)]">{msg}</span> : null}
+          {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
           {editing ? (
             <>
               <button type="button" onClick={() => setEditing(false)} className="text-xs">
@@ -121,13 +121,13 @@ export function FpaEditor({ initial, source }: { initial: FpaSummary; source: "d
                 type="button"
                 disabled={busy}
                 onClick={() => void save()}
-                className="rounded bg-[var(--color-accent-gold)] px-2 py-1 text-xs text-white"
+                className="rounded bg-[var(--color-accent)] px-2 py-1 text-xs text-white"
               >
                 保存
               </button>
             </>
           ) : (
-            <button type="button" onClick={() => setEditing(true)} className="text-xs text-[var(--color-accent-gold)]">
+            <button type="button" onClick={() => setEditing(true)} className="text-xs text-[var(--color-accent)]">
               编辑 B-A-F
             </button>
           )}
@@ -138,7 +138,7 @@ export function FpaEditor({ initial, source }: { initial: FpaSummary; source: "d
               <input
                 type="number"
                 step="0.1"
-                className="ml-1 w-14 rounded border border-black/10 px-1 font-data text-sm"
+                className="ml-1 w-14 rounded border border-[var(--surface-border)] px-1 font-data text-sm"
                 value={fpa.cashRunwayMonths}
                 onChange={(e) => setFpa((p) => ({ ...p, cashRunwayMonths: Number(e.target.value) }))}
               />

@@ -64,14 +64,14 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
           type="button"
           disabled={loading}
           onClick={() => applyEvidence("reset")}
-          className="rounded border border-black/10 px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04] disabled:opacity-50"
+          className="rounded border border-[var(--surface-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04] disabled:opacity-50"
         >
           重置
         </button>
         {note && <span className="text-xs text-[var(--color-text-muted)]">{note}</span>}
       </div>
 
-      <section className="rounded-lg border border-[var(--color-accent-gold)]/20 bg-[var(--color-bg-surface)] p-6">
+      <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[var(--color-bg-surface)] p-6">
         <p className="mb-4 text-xs text-[var(--color-text-muted)]">
           加权期望 · 营收 {Math.round(weightedRev)} 万 · runway {wr.toFixed(1)} 月
         </p>
@@ -98,11 +98,11 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
         {scenarios.map((sc) => (
           <article
             key={sc.id}
-            className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-5"
+            className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5"
           >
             <div className="flex items-baseline justify-between">
               <h4 className="font-medium">{sc.name}</h4>
-              <span className="font-data text-2xl text-[var(--color-accent-gold)]">
+              <span className="font-data text-2xl text-[var(--color-accent)]">
                 {sc.probability}%
               </span>
             </div>
@@ -111,7 +111,7 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
                 <li key={d}>· {d}</li>
               ))}
             </ul>
-            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-black/[0.06] pt-3 text-xs">
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--surface-border)] pt-3 text-xs">
               <div>
                 <div className="text-[var(--color-text-muted)]">营收</div>
                 <div className="font-data">{sc.fpaImpact.revenue}</div>

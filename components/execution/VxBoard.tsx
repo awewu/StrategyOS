@@ -3,9 +3,9 @@ import { CynefinBadge } from "@/components/ui/CynefinBadge";
 
 export function VxBoard({ projects }: { projects: Project[] }) {
   return (
-    <section className="overflow-x-auto rounded-lg border border-black/10">
+    <section className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
       <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="border-b border-black/10 bg-[var(--surface-panel)] text-[#828c8d]">
+        <thead className="border-b border-[var(--surface-border)] bg-[var(--surface-panel)] text-[#828c8d]">
           <tr>
             <th className="px-4 py-3">Vx</th>
             <th className="px-4 py-3">进度</th>
@@ -21,7 +21,7 @@ export function VxBoard({ projects }: { projects: Project[] }) {
               ? Math.round((vx.budgetSpent / vx.budgetTotal) * 100)
               : 0;
             return (
-              <tr key={vx.id} className="border-b border-black/[0.06] hover:bg-black/[0.02]">
+              <tr key={vx.id} className="border-b border-[var(--surface-border)] hover:bg-black/[0.02]">
                 <td className="px-4 py-3">
                   <div className="font-medium">{vx.code}</div>
                   <div className="text-xs text-[#828c8d]">{vx.name}</div>

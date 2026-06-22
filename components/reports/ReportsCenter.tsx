@@ -129,7 +129,7 @@ export function ReportsCenter({
         )}
       </p>
 
-      <section className="surface-elevated rounded-2xl border border-black/[0.06] p-6 md:p-8">
+      <section className="surface-elevated rounded-2xl border border-[var(--surface-border)] p-6 md:p-8">
         <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]">导入报告</h2>
@@ -140,7 +140,7 @@ export function ReportsCenter({
           <button
             type="button"
             onClick={() => setShowTemplate((v) => !v)}
-            className="rounded-xl border border-black/[0.06] px-3 py-2 text-xs text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-primary)]"
+            className="rounded-xl border border-[var(--surface-border)] px-3 py-2 text-xs text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-primary)]"
           >
             {showTemplate ? "隐藏章节指南" : "章节指南"}
           </button>
@@ -148,8 +148,8 @@ export function ReportsCenter({
 
         {showTemplate && (
           <div className="mb-5 grid gap-4 md:grid-cols-2">
-            <div className="surface-glass rounded-xl border border-black/[0.06] p-4">
-              <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-accent-gold)]">
+            <div className="surface-glass rounded-xl border border-[var(--surface-border)] p-4">
+              <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-accent)]">
                 MON-RPT 结构
               </h3>
               <ul className="mt-3 space-y-1.5 text-sm text-[var(--color-text-muted)]">
@@ -158,15 +158,15 @@ export function ReportsCenter({
                 ))}
               </ul>
             </div>
-            <div className="surface-glass rounded-xl border border-black/[0.06] p-4">
+            <div className="surface-glass rounded-xl border border-[var(--surface-border)] p-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-accent-gold)]">
+                <h3 className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-accent)]">
                   McKinsey 叙事头模板
                 </h3>
                 <button
                   type="button"
                   onClick={insertTemplate}
-                  className="text-xs text-[var(--color-accent-gold)] hover:underline"
+                  className="text-xs text-[var(--color-accent)] hover:underline"
                 >
                   插入编辑器
                 </button>
@@ -182,7 +182,7 @@ export function ReportsCenter({
           Report ID
         </label>
         <input
-          className="mt-2 w-full rounded-xl border border-black/[0.06] bg-[var(--color-bg-deep)]/60 px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[var(--color-accent-gold)]/40"
+          className="mt-2 w-full rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-deep)]/60 px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition-colors focus:border-[var(--color-accent)]/40"
           value={importId}
           onChange={(e) => setImportId(e.target.value)}
           placeholder="MON-RPT-SALES-2026-05"
@@ -191,7 +191,7 @@ export function ReportsCenter({
           报告正文
         </label>
         <textarea
-          className="mt-2 min-h-[160px] w-full resize-y rounded-xl border border-black/[0.06] bg-[var(--color-bg-deep)]/60 px-4 py-3 text-[15px] leading-relaxed outline-none transition-colors focus:border-[var(--color-accent-gold)]/40"
+          className="mt-2 min-h-[160px] w-full resize-y rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-deep)]/60 px-4 py-3 text-[15px] leading-relaxed outline-none transition-colors focus:border-[var(--color-accent)]/40"
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
           placeholder="§S 背景…&#10;§1 本月一句话…&#10;§8 涌现…"
@@ -201,14 +201,14 @@ export function ReportsCenter({
             type="button"
             disabled={loading || !importText.trim()}
             onClick={runImportParse}
-            className="rounded-xl bg-[var(--color-accent-gold)] px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-xl bg-[var(--color-accent)] px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {loading ? "解析中…" : "解析并入库"}
           </button>
           <button
             type="button"
             onClick={insertTemplate}
-            className="rounded-xl border border-black/[0.06] px-4 py-2.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+            className="rounded-xl border border-[var(--surface-border)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
           >
             插入 McKinsey 头
           </button>
@@ -219,11 +219,11 @@ export function ReportsCenter({
         {reports.map((r) => (
           <article
             key={r.id}
-            className="surface-glass rounded-xl border border-black/[0.06] p-5"
+            className="surface-glass rounded-xl border border-[var(--surface-border)] p-5"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <span className="font-data text-xs text-[var(--color-accent-gold)]">{r.type}</span>
+                <span className="font-data text-xs text-[var(--color-accent)]">{r.type}</span>
                 <h2 className="font-medium">{r.title}</h2>
                 <p className="text-xs text-[var(--color-text-muted)]">
                   {r.period} · {r.id}
@@ -244,7 +244,7 @@ export function ReportsCenter({
                     type="button"
                     disabled={loading}
                     onClick={() => runAgent(r.id)}
-                    className="rounded-lg bg-[var(--color-accent-gold)]/15 px-3 py-1 text-xs text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/25 disabled:opacity-50"
+                    className="rounded-lg bg-[var(--color-accent)]/15 px-3 py-1 text-xs text-[var(--color-accent)] hover:bg-[var(--color-accent)]/25 disabled:opacity-50"
                   >
                     {loading ? "解析中…" : "Agent 解析"}
                   </button>
@@ -282,8 +282,8 @@ export function ReportsCenter({
             ))}
           </ul>
           {parseResult.mckinsey && (
-            <div className="mt-4 border-t border-black/[0.06] pt-4">
-              <h4 className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-accent-gold)]">
+            <div className="mt-4 border-t border-[var(--surface-border)] pt-4">
+              <h4 className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--color-accent)]">
                 McKinsey 章节预览
               </h4>
               <dl className="mt-3 grid gap-3 text-sm md:grid-cols-2">
@@ -322,14 +322,14 @@ export function ReportsCenter({
           )}
           <Link
             href="/command"
-            className="mt-4 inline-block text-sm text-[var(--color-accent-gold)] hover:underline"
+            className="mt-4 inline-block text-sm text-[var(--color-accent)] hover:underline"
           >
             查看指挥舱 SCR →
           </Link>
         </section>
       )}
 
-      <Link href="/gates" className="text-sm text-[var(--color-accent-gold)] hover:underline">
+      <Link href="/gates" className="text-sm text-[var(--color-accent)] hover:underline">
         查看 Gate 风险清单 →
       </Link>
     </div>

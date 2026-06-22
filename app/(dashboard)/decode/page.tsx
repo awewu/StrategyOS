@@ -1,6 +1,5 @@
 import { DecodeWorkspace } from "@/components/decode/DecodeWorkspace";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DataSourceBanner } from "@/components/ui/DataSourceBanner";
 import { getDecodeBundle } from "@/lib/data/strategy-data";
 
 export default async function DecodePage({
@@ -20,7 +19,6 @@ export default async function DecodePage({
         title="战略解码"
         subtitle={`战略地图与执行对齐 · 在线录入 / Excel 导入 · 数据源 ${source === "database" ? "战略计划 DB" : "Demo"}`}
       />
-      <DataSourceBanner />
       <DecodeWorkspace
         initial={{ bsc, hoshinFlat, loops, source }}
         initialTab={initialTab}

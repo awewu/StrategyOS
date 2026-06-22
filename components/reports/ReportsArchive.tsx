@@ -139,7 +139,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
         <h2 className="text-base font-semibold text-[var(--color-text-primary)]">报告档案库</h2>
       </div>
 
-      <details className="surface-elevated rounded-xl border border-black/[0.06] p-5">
+      <details className="surface-elevated rounded-xl border border-[var(--surface-border)] p-5">
         <summary className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
           高级 / 完整月报上传（Word · Excel · PDF · 七章节）
         </summary>
@@ -280,7 +280,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
       {loading ? (
         <p className="text-sm text-[var(--color-text-muted)]">加载中…</p>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-black/[0.08] py-12 text-center">
+        <div className="rounded-xl border border-dashed border-[var(--surface-border-strong)] py-12 text-center">
           <p className="text-sm text-[var(--color-text-muted)]">暂无报告 · 点击「上传报告」提交第一份</p>
         </div>
       ) : (
@@ -288,7 +288,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           {rows.map((r) => (
             <article
               key={r.id}
-              className="surface-glass flex flex-wrap items-start gap-3 rounded-xl border border-black/[0.06] px-4 py-3"
+              className="surface-glass flex flex-wrap items-start gap-3 rounded-xl border border-[var(--surface-border)] px-4 py-3"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

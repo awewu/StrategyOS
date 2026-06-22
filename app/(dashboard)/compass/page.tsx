@@ -1,6 +1,5 @@
 import { getCompassBundle } from "@/lib/compass/data";
 import { CompassClient } from "@/components/compass/CompassClient";
-import { DataSourceBanner } from "@/components/ui/DataSourceBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export default async function CompassPage() {
@@ -12,7 +11,6 @@ export default async function CompassPage() {
         title="战略罗盘"
         subtitle="从5年终极目标反推当前路径风险 · 假设前提实时审计"
       />
-      <DataSourceBanner />
       <CompassClient bundle={bundle} />
     </div>
   );

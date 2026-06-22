@@ -19,6 +19,7 @@ import {
   replaceStrategicPlan,
 } from "@/lib/compiler/merge-import";
 import { planObjectivesToBscRows } from "@/lib/data/strategic-plan-data";
+import { assertPlanWritable } from "@/lib/strategy/plan-lifecycle";
 import { CURRENT_PERIOD } from "@/lib/stratos-demo-data";
 
 export const runtime = "nodejs";
@@ -182,6 +183,13 @@ export async function POST(req: Request) {
           `质量: 原始 ${sanitized.stats.rawObjectives} → 接受 ${sanitized.stats.acceptedObjectives} · 剔除 ${sanitized.stats.rejectedCount}`,
         ].filter(Boolean),
       });
+    }
+
+    if (!previewOnly) {
+      const writable = await assertPlanWritable(planId);
+      if (!writable.ok) {
+        return NextResponse.json({ error: writable.error, deduction }, { status: 423 });
+      }
     }
 
     if (!deduction.safeToImport) {

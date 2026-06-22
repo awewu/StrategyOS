@@ -81,7 +81,7 @@ export function MandatesClient({ bundle }: { bundle: MandateBundle }) {
         <div className="space-y-4">
           <p className="text-xs text-[var(--color-text-muted)]">每条职责是跨会议延续的主线。下方时间线显示历次会议谁认领、交账或移交——人变,线不断。</p>
           {bundle.mandates.length === 0 && (
-            <div className="rounded-xl border border-dashed border-black/15 p-8 text-center text-sm text-[var(--color-text-muted)]">
+            <div className="rounded-xl border border-dashed border-[var(--surface-border-strong)] p-8 text-center text-sm text-[var(--color-text-muted)]">
               尚无战略职责。点击右上角「+ 新建职责」建立第一条主线。
             </div>
           )}
@@ -262,7 +262,7 @@ function Modal({ title, children, onClose }: { title: string; children: React.Re
 function ModalActions({ saving, onCancel, onSave }: { saving: boolean; onCancel: () => void; onSave: () => void }) {
   return (
     <div className="mt-5 flex justify-end gap-2">
-      <button onClick={onCancel} className="rounded-md border border-black/10 px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
+      <button onClick={onCancel} className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
       <button disabled={saving} onClick={onSave} className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60">{saving ? "保存中…" : "保存"}</button>
     </div>
   );

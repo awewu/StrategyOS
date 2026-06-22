@@ -280,7 +280,7 @@ export function StrategyInputClient({ orgUnits }: Props) {
       </div>
 
       {/* 右侧表单 */}
-      <div className="relative rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+      <div className="relative rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         {toast && (
           <div
             className={'absolute right-4 top-4 z-10 rounded-md px-3 py-2 text-sm shadow-lg ' + (
@@ -303,7 +303,7 @@ export function StrategyInputClient({ orgUnits }: Props) {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-black/10 pb-4">
+            <div className="flex items-center justify-between border-b border-[var(--surface-border)] pb-4">
               <div>
                 <h2 className="text-lg font-semibold">{selectedOrg.name}</h2>
                 <p className="text-xs text-[var(--color-text-muted)]">
@@ -331,7 +331,7 @@ export function StrategyInputClient({ orgUnits }: Props) {
             </div>
 
             {/* 步骤导航 */}
-            <div className="flex flex-wrap gap-2 border-b border-black/10">
+            <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
               {STEPS.map((s) => (
                 <button
                   key={s.id}
@@ -371,11 +371,11 @@ export function StrategyInputClient({ orgUnits }: Props) {
               </div>
             )}
 
-            <div className="flex justify-end gap-3 border-t border-black/10 pt-4">
+            <div className="flex justify-end gap-3 border-t border-[var(--surface-border)] pt-4">
               <button
                 onClick={() => persist(false)}
                 disabled={saving}
-                className="rounded-lg border border-black/10 px-4 py-2 text-sm hover:bg-black/[0.04] disabled:opacity-50"
+                className="rounded-lg border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.04] disabled:opacity-50"
               >
                 {saving ? "保存中…" : "保存草稿"}
               </button>
@@ -462,7 +462,7 @@ function hydrate(plan: any): PlanForm {
 // ─── 子表单（受控） ────────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full rounded-lg border border-black/10 bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none";
+  "w-full rounded-lg border border-[var(--surface-border)] bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none";
 
 function IntentForm({
   form,
@@ -503,13 +503,13 @@ function IntentForm({
       </div>
 
       {/* PPT / 附件上传 */}
-      <div className="rounded-lg border border-dashed border-black/15 p-4">
+      <div className="rounded-lg border border-dashed border-[var(--surface-border-strong)] p-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm font-medium">战略 PPT / 附件</div>
             <div className="text-xs text-[var(--color-text-muted)]">支持上传已有战略报告（PPT/PDF/Word），作为录入参考存档</div>
           </div>
-          <label className="cursor-pointer rounded-lg border border-black/10 px-3 py-1.5 text-sm hover:bg-black/[0.04]">
+          <label className="cursor-pointer rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.04]">
             上传文件
             <input
               ref={fileRef}
@@ -525,7 +525,7 @@ function IntentForm({
             {attachments.map((a) => (
               <li
                 key={a.id}
-                className="flex items-center justify-between rounded border border-black/10 bg-black/[0.02] px-3 py-1.5 text-sm"
+                className="flex items-center justify-between rounded border border-[var(--surface-border)] bg-black/[0.02] px-3 py-1.5 text-sm"
               >
                 <span className="truncate">
                   {a.filename}
@@ -575,12 +575,12 @@ function ObjectivesForm({
     <div className="space-y-4">
       <p className="text-xs text-[var(--color-text-muted)]">BSC 四维度，每维 1 个目标 + 关键结果</p>
       {form.objectives.map((obj, oIdx) => (
-        <div key={obj.dimension} className="rounded border border-black/10 p-4">
+        <div key={obj.dimension} className="rounded border border-[var(--surface-border)] p-4">
           <div className="mb-2 text-sm font-medium text-[var(--color-accent)]">
             {DIMENSIONS.find((d) => d.key === obj.dimension)?.label}
           </div>
           <textarea
-            className="w-full rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-sm"
+            className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
             rows={2}
             value={obj.objective}
             onChange={(e) => setObjective(oIdx, e.target.value)}
@@ -591,14 +591,14 @@ function ObjectivesForm({
               <div key={kIdx} className="grid grid-cols-[1fr_140px] gap-2">
                 <input
                   type="text"
-                  className="w-full rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-xs"
+                  className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
                   value={kr.keyResult}
                   onChange={(e) => setKr(oIdx, kIdx, "keyResult", e.target.value)}
                   placeholder={"KR " + (kIdx + 1)}
                 />
                 <input
                   type="text"
-                  className="w-full rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-xs"
+                  className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
                   value={kr.target}
                   onChange={(e) => setKr(oIdx, kIdx, "target", e.target.value)}
                   placeholder="目标值"
@@ -631,17 +631,17 @@ function InitiativesForm({
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">年度必赢之战 (WIG) 与关键举措</p>
       {form.initiatives.map((ini, idx) => (
-        <div key={idx} className="rounded border border-black/10 p-3">
+        <div key={idx} className="rounded border border-[var(--surface-border)] p-3">
           <input
             type="text"
-            className="mb-2 w-full rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-sm"
+            className="mb-2 w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
             value={ini.title}
             onChange={(e) => set(idx, "title", e.target.value)}
             placeholder={"举措 " + (idx + 1) + ": 标题"}
           />
           <input
             type="text"
-            className="mb-2 w-full rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-xs"
+            className="mb-2 w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
             value={ini.ownerName}
             onChange={(e) => set(idx, "ownerName", e.target.value)}
             placeholder="负责人"
@@ -651,7 +651,7 @@ function InitiativesForm({
               <input
                 key={q}
                 type="text"
-                className="rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-xs"
+                className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
                 value={ini[q]}
                 onChange={(e) => set(idx, q, e.target.value)}
                 placeholder={"Q" + (qi + 1) + " 里程碑"}
@@ -686,14 +686,14 @@ function ResourcesForm({
           <div className="w-24 text-sm">{r.resourceType}</div>
           <input
             type="text"
-            className="flex-1 rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-sm"
+            className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
             value={r.amount}
             onChange={(e) => set(idx, "amount", e.target.value)}
             placeholder="金额/人数"
           />
           <input
             type="text"
-            className="flex-[2] rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-sm"
+            className="flex-[2] rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
             value={r.justification}
             onChange={(e) => set(idx, "justification", e.target.value)}
             placeholder="理由"
@@ -731,7 +731,7 @@ function AssumptionsForm({
             onChange={(e) => set(idx, "critical", e.target.checked)}
           />
           <textarea
-            className="flex-1 rounded border border-black/10 bg-black/[0.04] px-2 py-1 text-sm"
+            className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
             rows={2}
             value={a.assumption}
             onChange={(e) => set(idx, "assumption", e.target.value)}

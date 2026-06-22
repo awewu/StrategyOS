@@ -14,17 +14,11 @@ export default async function OutlookPage() {
         subtitle={`5 年轨迹摘要 · 完整模型与敏感性分析在 FPA · 数据源 ${data.source === "database" ? "DB" : "Demo"}`}
         actions={
           <>
-            <Link
-              href="/finance?tab=forecast"
-              className="rounded-xl border border-[var(--color-accent-gold)]/35 bg-[var(--color-accent-gold)]/8 px-4 py-2.5 text-sm text-[var(--color-accent-gold)] transition-colors hover:bg-[var(--color-accent-gold)]/15"
-            >
-              FPA 5 年全模型 →
+            <Link href="/finance?tab=forecast" className="stratos-btn stratos-btn--primary">
+              FPA 5 年全模型
             </Link>
-            <Link
-              href="/finance?tab=scenarios"
-              className="rounded-xl border border-black/[0.06] px-4 py-2.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-black/10 hover:text-[var(--color-text-primary)]"
-            >
-              SPBP 情景 →
+            <Link href="/finance?tab=scenarios" className="stratos-btn">
+              SPBP 情景
             </Link>
           </>
         }

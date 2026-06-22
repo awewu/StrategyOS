@@ -74,6 +74,13 @@ describe("import-quality", () => {
     assert.equal(result.stats.acceptedKeyResults, 0);
   });
 
+  it("accepts short Chinese KPI fragments with OKR signal words", () => {
+    assert.equal(classifyObjectiveNoise("渠道拓展"), null);
+    assert.equal(classifyObjectiveNoise("区域销售"), null);
+    assert.equal(classifyObjectiveNoise("渠道拓展(设计师/行业/系统集成商)，"), null);
+    assert.equal(classifyObjectiveNoise("打造一支专业、高效的酒店渠道销售团"), null);
+  });
+
   it("similarity scores substring overlap", () => {
     assert.ok(textSimilarity("商用容积式品类达成4000万", "商用容积式品类达成4000万 40%") >= 0.9);
   });

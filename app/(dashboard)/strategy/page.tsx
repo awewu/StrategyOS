@@ -1,3 +1,4 @@
+import { PlanLifecycleBar } from "@/components/strategy/PlanLifecycleBar";
 import { StrategyPageTabs } from "@/components/strategy/StrategyPageTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCapitalSummaryLine } from "@/lib/data/entity-getters";
@@ -21,6 +22,7 @@ export default async function StrategyPage() {
         title="战略总览"
         subtitle={`${CURRENT_PERIOD} · 数据源 ${bundle.source === "database" ? "DB" : "Demo"}`}
       />
+      <PlanLifecycleBar />
       <StrategyPageTabs
         bundle={bundle}
         onePager={onePager}

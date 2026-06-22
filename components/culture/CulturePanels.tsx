@@ -34,11 +34,11 @@ export function MissionVisionPanel({ northStar }: { northStar: NorthStar | null 
   return (
     <SectionCard title="使命愿景" subtitle="North Star · 文化手册同源" accent="gold">
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">使命 · 为何存在</p>
+        <div className="rounded-xl border border-[var(--surface-border)] bg-black/[0.02] px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">使命 · 为何存在</p>
           <p className={`${typography.body} mt-3 text-[var(--color-text-primary)]`}>{mission}</p>
         </div>
-        <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-5 py-4">
+        <div className="rounded-xl border border-[var(--surface-border)] bg-black/[0.02] px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
             愿景{targetYear ? ` · ${targetYear}` : ""} · 渴望抵达的远方
           </p>
@@ -46,7 +46,7 @@ export function MissionVisionPanel({ northStar }: { northStar: NorthStar | null 
         </div>
       </div>
       <div className="mt-5 flex flex-wrap gap-3 text-sm">
-        <Link href="/compass" className="text-[var(--color-accent-gold)] hover:underline">
+        <Link href="/compass" className="text-[var(--color-accent)] hover:underline">
           战略罗盘中编辑 →
         </Link>
         <Link href="/strategy" className="text-[var(--color-text-muted)] hover:underline">
@@ -80,7 +80,7 @@ export function DoctrinesPanel() {
       </div>
       <p className={`${typography.caption} mt-5`}>
         每笔重大决策须挂 Doctrine 审计 · 见{" "}
-        <Link href="/gates" className="text-[var(--color-accent-gold)] hover:underline">
+        <Link href="/gates" className="text-[var(--color-accent)] hover:underline">
           战略会准入
         </Link>
       </p>
@@ -105,16 +105,16 @@ export function CoreValuesPanel() {
           </div>
         ))}
       </div>
-      <p className={`${typography.h3} mt-5 text-[var(--color-accent-gold)]`}>{CORE_VALUES_INTRO.headline}</p>
+      <p className={`${typography.h3} mt-5 text-[var(--color-accent)]`}>{CORE_VALUES_INTRO.headline}</p>
       <ul className="mt-3 space-y-2">
         {CORE_VALUES_INTRO.principles.map((p) => (
           <li key={p} className="flex gap-2 text-sm text-[var(--color-text-secondary)]">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--color-accent-gold)]" aria-hidden />
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[var(--color-accent)]" aria-hidden />
             {p}
           </li>
         ))}
       </ul>
-      <blockquote className="mt-5 rounded-xl border border-[var(--color-accent-gold)]/20 bg-[var(--color-accent-gold)]/[0.05] px-4 py-3 text-sm italic text-[var(--color-text-primary)]">
+      <blockquote className="mt-5 rounded-xl border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/[0.05] px-4 py-3 text-sm italic text-[var(--color-text-primary)]">
         决策自检：{CORE_VALUES_INTRO.decisionTest}
       </blockquote>
     </SectionCard>
@@ -140,7 +140,7 @@ export function BehaviorGuidelinesPanel() {
             <ul className="mt-3 space-y-2">
               {g.items.map((item) => (
                 <li key={item} className="flex gap-2 text-sm text-[var(--color-text-secondary)]">
-                  <span className="mt-0.5 shrink-0 text-[var(--color-accent-gold)]" aria-hidden>
+                  <span className="mt-0.5 shrink-0 text-[var(--color-accent)]" aria-hidden>
                     ✓
                   </span>
                   {item}
@@ -171,7 +171,7 @@ export function ValuesAwardPanel() {
           <tbody className="divide-y divide-[var(--surface-border)]">
             {VALUES_AWARD_CATALOG.map((a) => (
               <tr key={a.id}>
-                <td className="whitespace-nowrap px-4 py-3 font-medium text-[var(--color-accent-gold)]">{a.name}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-medium text-[var(--color-accent)]">{a.name}</td>
                 <td className="px-4 py-3 text-[var(--color-text-secondary)]">{a.criteria}</td>
               </tr>
             ))}
@@ -183,10 +183,10 @@ export function ValuesAwardPanel() {
         {VALUES_AWARD_WINNERS.map((w) => (
           <article
             key={w.id}
-            className="rounded-xl border border-[var(--color-accent-gold)]/25 bg-gradient-to-br from-[var(--color-accent-gold)]/[0.06] to-transparent px-5 py-4"
+            className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent-gold)]/[0.06] to-transparent px-5 py-4"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent-gold)]">
+              <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
                 {w.period} · {w.year}
               </p>
               {w.awardName !== "—" ? (
@@ -229,7 +229,7 @@ export function ValuesUnderstandingPanel() {
           </li>
         ))}
       </ul>
-      <div className="mt-5 rounded-xl border border-dashed border-black/12 bg-black/[0.02] px-5 py-4">
+      <div className="mt-5 rounded-xl border border-dashed border-[var(--surface-border-strong)] bg-black/[0.02] px-5 py-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
           {CI_CONTINUOUS_IMPROVEMENT.title}
         </p>
@@ -265,7 +265,7 @@ export function CultureLinksBar() {
           {i > 0 ? <span className="mx-2 text-[var(--color-text-muted)]">·</span> : null}
           <Link
             href={link.href}
-            className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent-gold)]"
+            className="text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
           >
             {link.label}
           </Link>

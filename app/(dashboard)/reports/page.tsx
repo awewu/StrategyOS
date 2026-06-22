@@ -36,33 +36,33 @@ export default async function ReportsPage() {
   return (
     <div className="stratos-section-gap flex flex-col">
       <PageHeader
-        eyebrow="经营档案 · AI 解析 · 反哺执行审计"
+        eyebrow="经营档案 · AI 解析 · 反哺执行"
         title="OPS 运营"
-        subtitle="经营档案 · AI 解析 · 反哺执行审计与指挥舱 · 各部门/体系/事业部月报与会议纪要"
+        subtitle="部门/体系/事业部月报、MON_PULSE 与会议纪要"
       />
 
-      <MonthlyPulseForm orgUnits={visibleOrgUnits} />
-
-      <PulseOpsPanel />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <MonthlyPulseForm orgUnits={visibleOrgUnits} />
+        <PulseOpsPanel />
+      </div>
 
       <ReportsArchive orgUnits={visibleOrgUnits} />
 
-      <section className="surface-elevated rounded-2xl border border-black/[0.06] p-6 md:p-8">
-        <h2 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">
-          AI 解析管道与经营全景
-        </h2>
+      <section className="stratos-card stratos-card--padded">
+        <h2 className="text-title text-[var(--color-text-primary)]">AI 解析与经营全景</h2>
+        <p className="text-caption mt-1 mb-5">管道编排 · FPA 快照 · 跨模块反哺</p>
         <div className="space-y-6">
           <AgentOrchestrationPanel />
           <ReportsPanorama fpa={fpa} kpis={mgmt.kpis} />
         </div>
       </section>
 
-      <div className="flex flex-wrap gap-4 text-sm">
-        <Link href="/monitor/bu" className="text-[var(--color-accent)] hover:underline">
-          事业部监测 →
+      <div className="flex flex-wrap gap-3 text-sm">
+        <Link href="/monitor/bu" className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-xs">
+          事业部监测
         </Link>
-        <Link href="/command" className="text-[var(--color-text-muted)] hover:underline">
-          指挥舱 SCR →
+        <Link href="/command" className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-xs">
+          指挥舱 SCR
         </Link>
       </div>
     </div>

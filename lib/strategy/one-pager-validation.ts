@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import type { ChinaStrategySummaryData, StrategySubmodule } from "./china-strategy-summary";
 
 export type OnePagerValidationResult = {

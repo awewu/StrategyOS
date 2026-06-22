@@ -84,7 +84,7 @@ export default async function MarketPage() {
     </div>
   ) : (
     <div className="space-y-8">
-      <p className="rounded-lg border border-dashed border-black/15 p-6 text-sm text-[var(--color-text-muted)]">
+      <p className="rounded-lg border border-dashed border-[var(--surface-border-strong)] p-6 text-sm text-[var(--color-text-muted)]">
         竞争研究工作台需要数据库支持。运行 db push + seed 后展示三维竞争立方体。下方仍可使用竞品矩阵。
       </p>
       <CompetitorMatrix tracks={tracks} />

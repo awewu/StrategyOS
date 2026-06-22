@@ -8,10 +8,10 @@ import type { RehearsalLiveContext } from "@/lib/rehearsal/live-context";
 
 function LiveBanner({ live }: { live: RehearsalLiveContext }) {
   return (
-    <section className="grid gap-3 rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-4 text-sm md:grid-cols-4">
+    <section className="grid gap-3 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4 text-sm md:grid-cols-4">
       <div>
         <div className="text-xs text-[var(--color-text-muted)]">Crux · 数据源 {live.source}</div>
-        <div className="font-medium text-[var(--color-accent-gold)]">{live.crux}</div>
+        <div className="font-medium text-[var(--color-accent)]">{live.crux}</div>
       </div>
       <div>
         <div className="text-xs text-[var(--color-text-muted)]">Runway · Robust</div>
@@ -52,7 +52,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs text-[var(--color-text-muted)]">2026 Q3 · 战略会标准包 · EVOLUTION §9.3</p>
-          <h1 className="text-2xl font-semibold text-[var(--color-accent-gold)]">彩排 Walkthrough</h1>
+          <h1 className="text-2xl font-semibold text-[var(--color-accent)]">彩排 Walkthrough</h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             总时长 {REHEARSAL_TOTAL_MIN} 分钟 · 6 环节 · 30 人核心层 · 实时数据驱动
           </p>
@@ -61,19 +61,19 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
           <button
             type="button"
             onClick={() => setPresent(true)}
-            className="rounded bg-[var(--color-accent-gold)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)]/30"
+            className="rounded bg-[var(--color-accent)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/30"
           >
             进入投屏模式 →
           </button>
           <Link
             href="/print/panorama"
-            className="rounded border border-[var(--color-accent-gold)]/40 px-4 py-2 text-sm text-[var(--color-accent-gold)]"
+            className="rounded border border-[var(--color-accent)]/40 px-4 py-2 text-sm text-[var(--color-accent)]"
           >
             打印签到一页纸
           </Link>
           <Link
             href="/admin/access"
-            className="rounded border border-black/10 px-4 py-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+            className="rounded border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
           >
             访问管理
           </Link>
@@ -84,7 +84,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
 
       <div className="h-2 overflow-hidden rounded-full bg-black/[0.06]">
         <div
-          className="h-full bg-[var(--color-accent-gold)] transition-all"
+          className="h-full bg-[var(--color-accent)] transition-all"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -97,7 +97,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
             onClick={() => setActive(i)}
             className={`rounded px-3 py-1.5 text-xs ${
               i === active
-                ? "bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)]"
+                ? "bg-[var(--color-accent)]/20 text-[var(--color-accent)]"
                 : "bg-black/[0.04] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
             }`}
           >
@@ -106,9 +106,9 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
         ))}
       </nav>
 
-      <article className="rounded-lg border border-[var(--color-accent-gold)]/30 bg-[var(--color-bg-surface)] p-6">
+      <article className="rounded-lg border border-[var(--color-accent)]/30 bg-[var(--color-bg-surface)] p-6">
         <div className="mb-4 flex flex-wrap items-baseline gap-3">
-          <span className="font-data text-3xl text-[var(--color-accent-gold)]">{step.durationMin}′</span>
+          <span className="font-data text-3xl text-[var(--color-accent)]">{step.durationMin}′</span>
           <div>
             <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">
               {step.segment}
@@ -122,7 +122,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
             <Link
               key={r.href}
               href={r.href}
-              className="rounded border border-black/10 px-3 py-1.5 text-sm hover:border-[var(--color-accent-gold)]/40 hover:text-[var(--color-accent-gold)]"
+              className="rounded border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent)]"
             >
               {r.label} →
             </Link>
@@ -151,7 +151,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
             <ul className="space-y-1 text-sm">
               {step.checklist.map((c) => (
                 <li key={c} className="flex gap-2">
-                  <span className="text-[var(--color-accent-gold)]">☐</span>
+                  <span className="text-[var(--color-accent)]">☐</span>
                   {c}
                 </li>
               ))}
@@ -159,7 +159,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
           </section>
         </div>
 
-        <div className="mt-6 flex justify-between border-t border-black/10 pt-4">
+        <div className="mt-6 flex justify-between border-t border-[var(--surface-border)] pt-4">
           <button
             type="button"
             disabled={active === 0}
@@ -172,7 +172,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
             type="button"
             disabled={active === Q3_REHEARSAL_AGENDA.length - 1}
             onClick={() => setActive((a) => a + 1)}
-            className="text-sm text-[var(--color-accent-gold)] disabled:opacity-30"
+            className="text-sm text-[var(--color-accent)] disabled:opacity-30"
           >
             下一环节 →
           </button>

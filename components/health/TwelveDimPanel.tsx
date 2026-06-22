@@ -12,17 +12,17 @@ export function TwelveDimPanel() {
   const pillars = ["commitment", "values", "operations"] as const;
 
   return (
-    <section className="rounded-lg border border-black/10 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <div className="mb-4 flex items-baseline justify-between">
         <h2 className="text-sm font-medium text-[var(--color-text-muted)]">
           十二维健康度 · Phase 2 战略部下钻
         </h2>
-        <span className="font-data text-2xl text-[var(--color-accent-gold)]">{score}</span>
+        <span className="font-data text-2xl text-[var(--color-accent)]">{score}</span>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         {pillars.map((pillar) => (
           <div key={pillar}>
-            <h3 className="mb-3 text-xs text-[var(--color-accent-gold)]">
+            <h3 className="mb-3 text-xs text-[var(--color-accent)]">
               {pillarLabels[pillar]}
             </h3>
             <ul className="space-y-2">
