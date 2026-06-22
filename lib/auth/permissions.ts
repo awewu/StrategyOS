@@ -10,8 +10,16 @@
  */
 
 import type { RoleKey } from "@/lib/constants";
+import {
+  effectiveMinLevel,
+  getPermissionConfig,
+  isAdminRole,
+  isExecutiveRole,
+  type PermissionConfig,
+} from "./permission-config";
 
 export type { RoleKey };
+export type { PermissionConfig };
 export type AccessLevel = 0 | 1 | 2 | 3 | 4;
 
 export type RoutePermissionRule = {
@@ -84,12 +92,12 @@ export function roleToLevel(role: RoleKey): AccessLevel {
   }
 }
 
-export function isAdmin(role: RoleKey): boolean {
-  return role === "ceo" || role === "cfo";
+export function isAdmin(role: RoleKey, config = getPermissionConfig()): boolean {
+  return isAdminRole(role, config);
 }
 
-export function isExecutive(role: RoleKey): boolean {
-  return role === "ceo" || role === "cfo" || role === "vp" || role === "system_head";
+export function isExecutive(role: RoleKey, config = getPermissionConfig()): boolean {
+  return isExecutiveRole(role, config);
 }
 
 export function roleHomePath(role: RoleKey): string {
@@ -136,20 +144,20 @@ export function minRoleForPath(pathname: string): RoleKey | null {
   return roles.find((r) => roleToLevel(r) >= level) ?? "ceo";
 }
 
-export function canAccessRoute(role: RoleKey, pathname: string): boolean {
+export function canAccessRoute(role: RoleKey, pathname: string, config = getPermissionConfig()): boolean {
   const rule = getMatchingRule(pathname);
   if (!rule) return true;
 
-  if (rule.adminOnly) return isAdmin(role);
+  if (rule.adminOnly) return isAdmin(role, config);
 
-  return roleToLevel(role) >= rule.minLevel;
+  return roleToLevel(role) >= effectiveMinLevel(rule.minLevel, config);
 }
 
-export function canAccessHub(role: RoleKey, hubId: string): boolean {
+export function canAccessHub(role: RoleKey, hubId: string, config = getPermissionConfig()): boolean {
   const minLevel = HUB_MIN_LEVEL[hubId];
   if (minLevel == null) return true;
-  if (hubId === "access") return isAdmin(role);
-  return roleToLevel(role) >= minLevel;
+  if (hubId === "access") return isAdmin(role, config);
+  return roleToLevel(role) >= effectiveMinLevel(minLevel, config);
 }
 
 /** Draft one-pager content visible to editors (ceo/cfo), not read-only roles. */

@@ -8,6 +8,7 @@ import type { ChainVerification } from "@/lib/audit/verify-chain";
 import type { AccessUser } from "@/lib/data/access-data";
 import { ROLES, type RoleKey } from "@/lib/constants";
 import { roleLabel } from "@/lib/context/role-context";
+import type { PermissionConfig } from "@/lib/auth/permission-config";
 
 function formatTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -50,15 +51,33 @@ export function AccessManagementPanel({
   integrity,
   session,
   effectiveRole,
+  permissionConfig,
 }: {
   users: AccessUser[];
   logs: UsageLogRecord[];
   integrity: ChainVerification;
   session: SessionPayload | null;
   effectiveRole: RoleKey;
+  permissionConfig: PermissionConfig;
 }) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [openMode, setOpenMode] = useState(permissionConfig.openMode);
+  const [savingOpenMode, setSavingOpenMode] = useState(false);
+
+  async function handleOpenModeToggle(next: boolean) {
+    setSavingOpenMode(true);
+    const r = await fetch("/api/admin/permissions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ openMode: next }),
+    });
+    if (r.ok) {
+      setOpenMode(next);
+      router.refresh();
+    }
+    setSavingOpenMode(false);
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -114,6 +133,36 @@ export function AccessManagementPanel({
             未登录 · 演示模式（导航角色：{roleLabel(effectiveRole)}）
           </p>
         )}
+      </section>
+
+      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-medium">权限开关</h2>
+            <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+              开放模式开启后，路由级别自动降低一档（observer 仍只读），用于 workshop / demo。
+            </p>
+          </div>
+          <label className="inline-flex cursor-pointer items-center gap-3">
+            <span className="text-sm text-[var(--color-text-muted)]">开放模式</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={openMode}
+              disabled={savingOpenMode}
+              onClick={() => handleOpenModeToggle(!openMode)}
+              className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
+                openMode ? "bg-[var(--color-accent)]" : "bg-[var(--surface-border-strong)]"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${
+                  openMode ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </label>
+        </div>
       </section>
 
       <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
