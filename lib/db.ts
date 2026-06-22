@@ -102,6 +102,34 @@ export const prisma = new Proxy({} as PrismaClient, {
 
 let dbReady: boolean | null = null;
 
+/** Whether demo fallback is allowed in the current runtime. */
+export function demoFallbackAllowed(): boolean {
+  // In production, demo fallback is opt-in via explicit emergency flag.
+  if (process.env.NODE_ENV === "production") {
+    return process.env.STRATOS_ALLOW_DEMO_FALLBACK === "1";
+  }
+  // Dev/test allow demo fallback by default to ease local setup.
+  return true;
+}
+
+/** Throws a clear error when the database is required but unavailable in production. */
+export function assertDbAvailable(): void {
+  if (dbReady === false) {
+    if (!demoFallbackAllowed()) {
+      throw new Error(
+        "StratOS production: database unavailable and demo fallback is disabled. " +
+          "Set STRATOS_ALLOW_DEMO_FALLBACK=1 only as an emergency bypass, or restore the database connection.",
+      );
+    }
+  }
+}
+
+/** Probes DB and throws in production if it is unavailable and demo fallback is disabled. */
+export async function requireDbAvailable(): Promise<void> {
+  await dbAvailable();
+  assertDbAvailable();
+}
+
 function isPrismaDelegateError(err: unknown): boolean {
   return (
     err instanceof TypeError &&
@@ -153,9 +181,17 @@ export async function dbAvailable(): Promise<boolean> {
   return dbReady;
 }
 
-/** Run a DB query; on failure fall back to demo data and mark DB unavailable for this process. */
+/** Run a DB query; on failure fall back to demo data only when allowed. */
 export async function safeDbQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
-  if (!(await dbAvailable())) return fallback;
+  if (!(await dbAvailable())) {
+    if (!demoFallbackAllowed()) {
+      throw new Error(
+        "StratOS production: database is unavailable and demo fallback is disabled. " +
+          "Restore the database connection or set STRATOS_ALLOW_DEMO_FALLBACK=1 as an emergency bypass.",
+      );
+    }
+    return fallback;
+  }
   try {
     return await fn();
   } catch (err) {
@@ -163,11 +199,14 @@ export async function safeDbQuery<T>(fn: () => Promise<T>, fallback: T): Promise
       invalidateDbCache();
     }
     dbReady = false;
-    if (process.env.NODE_ENV === "production") {
-      console.error("[StratOS] DB query failed — using demo fallback (production):", err);
-    } else {
-      console.warn("[StratOS] DB query failed — using demo fallback:", err);
+    if (!demoFallbackAllowed()) {
+      throw new Error(
+        `StratOS production: database query failed and demo fallback is disabled. ` +
+          `Restore the database connection or set STRATOS_ALLOW_DEMO_FALLBACK=1 as an emergency bypass. ` +
+          `Original error: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
+    console.warn("[StratOS] DB query failed — using demo fallback:", err);
     return fallback;
   }
 }

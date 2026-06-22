@@ -5,6 +5,7 @@ import type { RoleKey } from "@/lib/constants";
 import { RoleProvider, useRole } from "@/lib/context/role-context";
 import { AppNav } from "@/components/shell/AppNav";
 import { AccessDeniedBanner } from "@/components/shell/AccessDeniedBanner";
+import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { CommandPalette } from "@/components/shell/CommandPalette";
 import { HubSubNav } from "@/components/shell/HubSubNav";
 
@@ -47,6 +48,7 @@ function ShellInner({
             <Suspense fallback={null}>
               <AccessDeniedBanner />
             </Suspense>
+            <DataSourceBanner />
             <HubSubNav />
             {children}
           </div>

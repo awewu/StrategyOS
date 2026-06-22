@@ -7,10 +7,60 @@ import { planStatusLabel, type PlanLifecycleView } from "@/lib/strategy/plan-lif
 const ORG_UNIT_ID = DEFAULT_GROUP_ORG_UNIT_ID;
 const HORIZON = "2026–2028";
 
+const LIFECYCLE_STEPS = [
+  { status: "DRAFT", label: "草稿" },
+  { status: "SUBMITTED", label: "已提交" },
+  { status: "LOCKED", label: "已定稿锁定" },
+] as const;
+
 function statusChip(status: PlanLifecycleView["status"]): string {
   if (status === "LOCKED") return "stratos-chip stratos-chip--ok";
   if (status === "SUBMITTED") return "stratos-chip stratos-chip--warn";
   return "stratos-chip";
+}
+
+function PlanLifecycleHeader() {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">战略计划生命周期</h3>
+      <span className="rounded bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-muted)]">{HORIZON}</span>
+    </div>
+  );
+}
+
+function PlanLifecycleTimeline({ activeIndex }: { activeIndex: number }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {LIFECYCLE_STEPS.map((s, i) => {
+        const active = i <= activeIndex;
+        const current = i === activeIndex;
+        return (
+          <div key={s.status} className="flex items-center gap-2">
+            <div
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                current
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white"
+                  : active
+                    ? "border-[var(--color-accent)] text-[var(--color-accent)]"
+                    : "border-[var(--surface-border)] text-[var(--color-text-muted)]"
+              }`}
+            >
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{
+                  background: current ? "white" : active ? "var(--color-accent)" : "var(--color-text-muted)",
+                }}
+              />
+              {s.label}
+            </div>
+            {i < LIFECYCLE_STEPS.length - 1 ? (
+              <div className={`h-px w-6 ${active ? "bg-[var(--color-accent)]" : "bg-[var(--surface-border)]"}`} />
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function PlanLifecycleBar() {
@@ -62,28 +112,57 @@ export function PlanLifecycleBar() {
     }
   }
 
+  const currentStep = lifecycle ? LIFECYCLE_STEPS.findIndex((s) => s.status === lifecycle.status) : -1;
+
   if (loading) {
     return (
-      <div className="stratos-card stratos-card--padded text-xs text-[var(--color-text-muted)]">加载计划状态…</div>
+      <div className="stratos-card stratos-card--padded space-y-4">
+        <PlanLifecycleHeader />
+        <div className="flex flex-wrap items-center gap-2">
+          {LIFECYCLE_STEPS.map((s, i) => (
+            <div key={s.status} className="flex items-center gap-2">
+              <div className="h-7 w-20 animate-pulse rounded-full bg-[var(--surface-border)]" />
+              {i < LIFECYCLE_STEPS.length - 1 ? <div className="h-px w-6 bg-[var(--surface-border)]" /> : null}
+            </div>
+          ))}
+        </div>
+        <div className="h-3 w-48 animate-pulse rounded bg-[var(--surface-border)]" />
+      </div>
     );
   }
 
   if (!lifecycle) {
     return (
-      <div className="stratos-card stratos-card--padded border-dashed text-xs text-[var(--color-text-muted)]">
-        暂无 {HORIZON} 战略计划记录
+      <div className="stratos-card stratos-card--padded space-y-4">
+        <PlanLifecycleHeader />
+        <PlanLifecycleTimeline activeIndex={-1} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-[var(--color-text-muted)]">
+            暂无 {HORIZON} 战略计划。在「战略一页纸」或「战略解码」完成规划后，此处会自动识别生命周期状态。
+          </p>
+          <button type="button" disabled className="stratos-btn px-3 py-1.5 text-xs opacity-50">
+            等待规划中
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="stratos-card stratos-card--padded flex flex-col gap-3">
+    <div className="stratos-card stratos-card--padded space-y-4">
+      <PlanLifecycleHeader />
+      <PlanLifecycleTimeline activeIndex={currentStep} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className={statusChip(lifecycle.status)}>{planStatusLabel(lifecycle.status)}</span>
           <span className="text-[var(--color-text-muted)]">
-            {lifecycle.objectiveCount} 目标 · {lifecycle.keyResultCount} KR · {HORIZON}
+            {lifecycle.objectiveCount} 目标 · {lifecycle.keyResultCount} KR
           </span>
+          {lifecycle.submittedAt ? (
+            <span className="text-[var(--color-text-muted)]">
+              提交于 {new Date(lifecycle.submittedAt).toLocaleString("zh-CN")}
+            </span>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

@@ -21,6 +21,7 @@ import {
 import { planObjectivesToBscRows } from "@/lib/data/strategic-plan-data";
 import { assertPlanWritable } from "@/lib/strategy/plan-lifecycle";
 import { getActivePeriod } from "@/lib/data/active-period";
+import { persistHealthAssertionsFromContext } from "@/lib/data/health-assertion-data";
 
 export const runtime = "nodejs";
 
@@ -240,10 +241,15 @@ export async function POST(req: Request) {
     }
 
     if (compiled.fpa) {
+      const period = await getActivePeriod();
       const existing = await prisma.fpaPeriod.findFirst({
-        where: { period: await getActivePeriod(), scope: "company" },
+        where: { period, scope: "company" },
       });
-      await saveFpaEditable(
+      const existingCash = await prisma.cashPosition.findFirst({
+        where: { period },
+        orderBy: { asOfDate: "desc" },
+      });
+      const savedFpa = await saveFpaEditable(
         {
           revenueBudget: compiled.fpa.revenueBudget ?? Number(existing?.revenueBudget ?? 0),
           revenueActual: Number(existing?.revenueActual ?? 0),
@@ -251,11 +257,15 @@ export async function POST(req: Request) {
           profitBudget: compiled.fpa.profitBudget ?? Number(existing?.profitBudget ?? 0),
           profitActual: Number(existing?.profitActual ?? 0),
           profitForecast: compiled.fpa.profitForecast ?? Number(existing?.profitForecast ?? 0),
-          cashRunwayMonths: 3,
+          cashRunwayMonths: existingCash ? Number(existingCash.runwayMonths) : 3,
         },
-        await getActivePeriod(),
+        period,
       );
       imported.push("FPA 数字已更新");
+      await persistHealthAssertionsFromContext({
+        trigger: "SHEET1_IMPORT",
+        cashRunwayMonths: savedFpa.cashRunwayMonths,
+      }).catch(() => undefined);
     }
 
     return NextResponse.json({

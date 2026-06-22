@@ -15,7 +15,7 @@ export function TwelveDimPanel() {
     <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <div className="mb-4 flex items-baseline justify-between">
         <h2 className="text-sm font-medium text-[var(--color-text-muted)]">
-          十二维健康度 · Phase 2 战略部下钻
+          十二维健康度 · 战略部下钻
         </h2>
         <span className="font-data text-2xl text-[var(--color-accent)]">{score}</span>
       </div>

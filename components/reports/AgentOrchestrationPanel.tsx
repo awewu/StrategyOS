@@ -31,9 +31,9 @@ export function AgentOrchestrationPanel() {
     <section className="rounded-lg border border-violet-500/30 bg-[var(--color-bg-surface)] p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-violet-400">11-Agent 编排 · Phase 3</h2>
+          <h2 className="text-sm font-medium text-violet-400">11-Agent 编排</h2>
           <p className="text-xs text-[var(--color-text-muted)]">
-            {STRAT_AGENTS.length} agents · 规则引擎 MVP · LLM 层 V6.3+
+            {STRAT_AGENTS.length} agents · LLM 优先 · 无 key 时规则兜底
           </p>
         </div>
         <button

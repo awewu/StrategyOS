@@ -147,6 +147,35 @@ export function DecodeWorkspace({
         </p>
       )}
 
+      <StratosTabButtons
+        active={tab}
+        onChange={(id) => {
+          setEditing(false);
+          setTab(id as Tab);
+        }}
+        tabs={[
+          { id: "bsc", label: "BSC 战略地图" },
+          { id: "hoshin", label: "Hoshin X-Matrix" },
+          { id: "stratsim", label: "反馈环 · StratSim" },
+        ]}
+      />
+
+      {tab === "bsc" && <BscEditor rows={bscRows} editing={editing} onChange={setBscRows} />}
+      {tab === "hoshin" && (
+        <HoshinEditor rows={hoshinRows} editing={editing} onChange={setHoshinRows} />
+      )}
+      {tab === "stratsim" && (
+        <div className="space-y-6">
+          <FeedbackLoopEditor initialLoops={initial.loops} source={source} />
+          <StratSimPanel
+            loops={initial.loops}
+            seed={initial.simSeed}
+            initial={initial.simInitial}
+            source={initial.source}
+          />
+        </div>
+      )}
+
       <div className="stratos-card stratos-card--padded flex flex-wrap items-center gap-3">
         <span className="text-xs text-[var(--color-text-muted)]">
           数据源 {source === "database" ? "DB" : "Demo"} · 在线录入 / Excel 导入
@@ -208,35 +237,6 @@ export function DecodeWorkspace({
           />
         </div>
       </div>
-
-      <StratosTabButtons
-        active={tab}
-        onChange={(id) => {
-          setEditing(false);
-          setTab(id as Tab);
-        }}
-        tabs={[
-          { id: "bsc", label: "BSC 战略地图" },
-          { id: "hoshin", label: "Hoshin X-Matrix" },
-          { id: "stratsim", label: "反馈环 · StratSim" },
-        ]}
-      />
-
-      {tab === "bsc" && <BscEditor rows={bscRows} editing={editing} onChange={setBscRows} />}
-      {tab === "hoshin" && (
-        <HoshinEditor rows={hoshinRows} editing={editing} onChange={setHoshinRows} />
-      )}
-      {tab === "stratsim" && (
-        <div className="space-y-6">
-          <FeedbackLoopEditor initialLoops={initial.loops} source={source} />
-          <StratSimPanel
-            loops={initial.loops}
-            seed={initial.simSeed}
-            initial={initial.simInitial}
-            source={initial.source}
-          />
-        </div>
-      )}
     </div>
   );
 }

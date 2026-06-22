@@ -30,9 +30,9 @@ export function CounterfactualPanel() {
 
   return (
     <section className="rounded-lg border border-violet-500/30 bg-[var(--color-bg-surface)] p-6">
-      <h2 className="mb-2 text-sm font-medium text-violet-400">反事实 diff · Phase 3</h2>
+      <h2 className="mb-2 text-sm font-medium text-violet-400">反事实 diff</h2>
       <p className="mb-4 text-xs text-[var(--color-text-muted)]">
-        「如果当时选了 B 路径」— 基于 FY26 基线推演，与 StratDiff 联动
+        「如果当时选了 B 路径」— 基于当前工作版本基线 + 历史校准推演
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">

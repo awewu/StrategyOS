@@ -1,5 +1,4 @@
-import { CulturePageClient } from "@/components/culture/CulturePageClient";
-import { WushiPanel } from "@/components/culture/WushiPanel";
+import { CultureTabs } from "@/components/culture/CultureTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCompassBundle } from "@/lib/compass/data";
 import { getCultureAwards, getCultureUnderstanding } from "@/lib/culture/data-access";
@@ -20,20 +19,17 @@ export default async function CulturePage() {
       <PageHeader
         eyebrow="Normative · 精神与文化"
         title="企业文化"
-        subtitle="使命愿景 · 三大信条 · 四个满意 · 六项基本原则 · 七大奖项 · 公示与 CI"
+        subtitle="企业文化 · 价值观评选 · 组织评估（五事七计）"
       />
-      <CulturePageClient
+      <CultureTabs
         northStar={northStar}
         initialHandbook={handbook.handbook}
         handbookSource={handbook.source}
         initialWinners={awards.winners}
         initialRecords={understanding.records}
         source={awards.source === "database" ? "database" : understanding.source}
+        wushi={wushi}
       />
-
-      <div className="mt-10 border-t border-[var(--surface-border)] pt-8">
-        <WushiPanel assessment={wushi.assessment} source={wushi.source} />
-      </div>
     </div>
   );
 }

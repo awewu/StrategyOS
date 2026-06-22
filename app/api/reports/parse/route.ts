@@ -5,6 +5,7 @@ import { llmConfigured, parseReportSmart } from "@/lib/stratos/llm-agent";
 import { DEMO_SHEET_IMPORT, parseReportContent } from "@/lib/stratos/report-agent";
 import { updateScenarioProbabilities } from "@/lib/stratos/spbp-bayes";
 import { getActivePeriod } from "@/lib/data/active-period";
+import { persistHealthAssertionsFromTriggers } from "@/lib/data/health-assertion-data";
 import * as demo from "@/lib/stratos-demo-data";
 
 export const runtime = "nodejs";
@@ -46,21 +47,7 @@ export async function POST(request: Request) {
     }
 
     if (parsed.assertionTriggers.length > 0) {
-      const active = await prisma.healthAssertion.findFirst({
-        where: { assertionType: "runway", active: true },
-      });
-      if (!active) {
-        await prisma.healthAssertion.create({
-          data: {
-            assertionType: "runway",
-            active: true,
-            triggeredAt: new Date(),
-            message: "一票否决：现金 runway 2.1 月（Agent 触发）",
-            metricValue: 2.1,
-            thresholdValue: 3,
-          },
-        });
-      }
+      await persistHealthAssertionsFromTriggers(parsed.assertionTriggers, reportId);
     }
 
     const rows = await prisma.spbpScenario.findMany({ where: { period: await getActivePeriod() } });

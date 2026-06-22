@@ -11,12 +11,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { buildMarketBrief } from "@/lib/market-intel/brief";
 import { demoSources, demoSignals, demoTracks, demoInternalSwot } from "@/lib/market-intel/demo-data";
 import { HERMES, runHermesScan, sourceHealth, blindSpots, rankSignals } from "@/lib/market-intel/hermes";
-import { buildSwot, buildPositioning, generateTows, internalSwotFromPremises } from "@/lib/market-intel/swot";
+import { buildSwot, generateTows, internalSwotFromPremises } from "@/lib/market-intel/swot";
 import { getMarketSelfScores } from "@/lib/market-intel/swot-access";
 import { loadWorkbench } from "@/lib/market-intel/workbench-data";
 import { getCompassBundle } from "@/lib/compass/data";
 import { prisma } from "@/lib/db";
 import type { IntelSource, IntelSignal, CompetitorTrack } from "@/lib/market-intel/types";
+import { Suspense } from "react";
 
 async function loadMarketData() {
   try {
@@ -114,13 +115,8 @@ export default async function MarketPage({
   const internalSwot = premiseSwot.length > 0 ? premiseSwot : demoInternalSwot;
   const swotSource = premiseSwot.length > 0 ? "战略罗盘前提" : "Demo 基线";
   const swotBoard = buildSwot(signals, internalSwot);
-  const positioning = buildPositioning(signals, momentumByEntity, {
-    selfScores,
-    selfLabel: "我方",
-  });
   const swotView = (
     <SwotPanel
-      positioning={positioning}
       board={swotBoard}
       initialTows={generateTows(swotBoard, 2)}
       initialEngine="rule"
@@ -160,7 +156,9 @@ export default async function MarketPage({
         <MarketAskAiPanel signals={signals} />
       </div>
 
-      <MarketTabs landscape={landscapeView} workbench={workbenchView} swot={swotView} intel={intelView} initialTab={initialTab} />
+      <Suspense fallback={<div className="h-10 rounded-lg border border-dashed border-[var(--surface-border-strong)]" />}>
+        <MarketTabs landscape={landscapeView} workbench={workbenchView} swot={swotView} intel={intelView} initialTab={initialTab} />
+      </Suspense>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { syncRunwayFromFpa } from "@/lib/fpa/runway-sync";
 import { refreshCompassAudit } from "@/lib/compass/sync-audit";
 import { ingestReportExecutionSignals } from "@/lib/delivery/report-ingest";
+import { persistHealthAssertionsFromContext } from "@/lib/data/health-assertion-data";
 
 /** 月报存档后：解析张力 + runway 同步 + 罗盘审计刷新 */
 export async function onReportApproved(reportId: string): Promise<void> {
@@ -18,6 +19,15 @@ export async function onReportApproved(reportId: string): Promise<void> {
   } else if (report.reportType === "SHEET_IMPORT" || report.reportType === "MON_RPT" || report.reportType === "MON_PULSE") {
     await syncRunwayFromFpa();
   }
+
+  const triggerType =
+    report.reportType === "QTR_REV" ? "QTR_REV" :
+    report.reportType === "SHEET_IMPORT" ? "SHEET1_IMPORT" : "MON_RPT";
+  await persistHealthAssertionsFromContext({
+    trigger: triggerType,
+    reportId,
+    cashRunwayMonths: runwayFromParse,
+  }).catch(() => undefined);
 
   const ns = await prisma.companyNorthStar.findFirst({ where: { active: true } });
   if (ns) {

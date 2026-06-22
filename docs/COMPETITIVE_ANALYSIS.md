@@ -191,7 +191,7 @@ WorkBoard、Betterworks、Profit.co、Workpath、Mooncamp、Lattice、Asana 等�
 
 - **引擎：** `lib/culture/wushi.ts` — 纯函数，输出风险清单 + 就绪度计数。
   - 五事：`dao` / `tian` / `di` / `jiang` / `fa`；`tian` / `di` 为外部只读引用，`dao` / `jiang` / `fa` 可本页编辑。
-  - 七计：7 组敌我对比，当前 verdict 默认 `unknown`（下一步接入 Hermes 信号自动推导）。
+  - 七计：7 组敌我对比，verdict 由 `deriveQijiVerdicts` 从 Hermes 信号自动推导。
 - **持久化：**
   - 模型：`prisma/schema.prisma` 的 `CultureWushiAssessment`（按 `period` 唯一，JSON 存储内部五事状态与七计 verdict）。
   - 数据访问：`lib/culture/wushi-access.ts` 的 `getWushiAssessment` / `saveWushiAssessment`。
@@ -199,10 +199,10 @@ WorkBoard、Betterworks、Profit.co、Workpath、Mooncamp、Lattice、Asana 等�
   - UI：`components/culture/WushiPanel.tsx` 提供 `道/将/法` 状态下拉 + 备注输入，保存后写入 DB。
 - **展示页：** `/culture` 页面底部渲染五事七计面板、风险清单与就绪度统计。
 
-### 7.3 与 Hermes 的后续勾连（B/C 待做）
+### 7.3 与 Hermes 的后续勾连
 
-- **七计 verdict（B）：** 计划从 `IntelSignal` 与 `CompetitorTrack` 自动推导"我方 vs 对手"对比，替代当前的 `unknown` 占位。
-- **五力 Gate（C）：** 在 `/market` 或 `/gates` 补白话版波特五力清单，用五力承载七计精神，并作为 Gate 风险项来源。
+- **七计 verdict（B）：** 已从 `IntelSignal` / `CompetitorTrack` 自动推导，见 `lib/culture/wushi.ts` 的 `deriveQijiVerdicts`。
+- **五力 Gate（C）：** 落地在 `/gates` 页面底部，模型为 `GateFiveForceRecord`（`prisma/schema.prisma`），数据访问 `lib/gates/five-forces.ts`，API `app/api/gates/five-forces/route.ts`，UI `components/gates/FiveForcesPanel.tsx`。五力作为独立风险清单，可与 `/compass` 假设编号关联，成为战略会准入的风险项来源。
 
 ---
 

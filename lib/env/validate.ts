@@ -39,6 +39,12 @@ export function collectProductionEnvIssues(): EnvValidationResult {
     );
   }
 
+  if (process.env.STRATOS_ALLOW_DEMO_FALLBACK === "1") {
+    warnings.push(
+      "STRATOS_ALLOW_DEMO_FALLBACK=1: demo fallback is enabled in production — this is an emergency bypass only",
+    );
+  }
+
   return { ok: errors.length === 0, errors, warnings };
 }
 

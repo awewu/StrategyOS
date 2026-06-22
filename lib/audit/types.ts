@@ -16,6 +16,7 @@ export const USAGE_ACTIONS = [
   "fpa_view",
   "admin_view",
   "audit_export",
+  "data_source_read",
 ] as const;
 
 export type UsageAction = (typeof USAGE_ACTIONS)[number];
@@ -52,4 +53,5 @@ export const ACTION_LABELS: Record<UsageAction, string> = {
   fpa_view: "FPA 财务查看",
   admin_view: "管理后台查看",
   audit_export: "审计日志导出",
+  data_source_read: "数据来源查看",
 };
