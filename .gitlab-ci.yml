@@ -82,5 +82,6 @@ e2e:
     - curl -sf http://127.0.0.1:3003/api/health
     - PLAYWRIGHT_BASE_URL=http://127.0.0.1:3003 npm run test:e2e
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   allow_failure: false

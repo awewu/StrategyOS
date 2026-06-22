@@ -163,7 +163,9 @@ export async function safeDbQuery<T>(fn: () => Promise<T>, fallback: T): Promise
       invalidateDbCache();
     }
     dbReady = false;
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[StratOS] DB query failed — using demo fallback (production):", err);
+    } else {
       console.warn("[StratOS] DB query failed — using demo fallback:", err);
     }
     return fallback;

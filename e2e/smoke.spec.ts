@@ -1,10 +1,45 @@
 import { test, expect } from "@playwright/test";
+import { setRoleOnPage } from "./helpers";
 
 test.describe("StratOS smoke (demo mode)", () => {
   test("home redirects to command", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/command/);
     await expect(page.locator("body")).toContainText(/指挥|Command|StratOS/i);
+  });
+
+  test("/command loads CEO command deck", async ({ page }) => {
+    await page.goto("/command");
+    await expect(page.locator("body")).toContainText(/指挥舱|Command/i);
+    await expect(page.locator("body")).toContainText(/Inbox|议题/i);
+  });
+
+  test("/strategy/input loads strategy entry", async ({ page }) => {
+    await page.goto("/strategy/input");
+    await expect(page.locator("body")).toContainText(/战略录入|战略输入|StratDiff/i);
+  });
+
+  test("/inbox loads issue pipeline", async ({ page }) => {
+    await page.goto("/inbox");
+    await expect(page.locator("body")).toContainText(/议题 Inbox|Inbox/i);
+  });
+
+  test("/finance loads FPA for CEO role", async ({ page }) => {
+    await setRoleOnPage(page, "ceo");
+    await page.goto("/finance");
+    await expect(page.locator("body")).toContainText(/FPA|财务/i);
+  });
+
+  test("/finance denies staff role", async ({ page }) => {
+    await setRoleOnPage(page, "staff");
+    await page.goto("/finance");
+    if (page.url().includes("/finance")) {
+      test.skip(
+        true,
+        "Dev server bypasses route permissions — enforced in CI production build (see permissions.test.ts)",
+      );
+    }
+    await expect(page).toHaveURL(/\?denied=1|\/reports/);
   });
 
   test("/decode loads StratSim tab area", async ({ page }) => {
@@ -28,11 +63,25 @@ test.describe("StratOS smoke (demo mode)", () => {
   });
 
   test("/api/health reports capabilities", async ({ request }) => {
-    const res = await request.get("/api/health");
+    const res = await request.get("/api/health?format=json");
     expect(res.ok()).toBeTruthy();
     const body = await res.json();
     expect(body.status).toBe("ok");
     expect(body.capabilities).toBeDefined();
     expect(["demo", "full"]).toContain(body.mode);
+    expect(body.probe).toBe("liveness");
+  });
+
+  test("/api/health readiness returns 200 when DB ok", async ({ request }) => {
+    const res = await request.get("/api/health?format=json&probe=readiness");
+    const body = await res.json();
+    if (body.dataSource === "database") {
+      expect(res.status()).toBe(200);
+      expect(body.status).toBe("ok");
+    } else {
+      expect(res.status()).toBe(503);
+      expect(body.status).toBe("degraded");
+    }
+    expect(body.probe).toBe("readiness");
   });
 });

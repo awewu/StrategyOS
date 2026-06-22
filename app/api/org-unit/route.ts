@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOrgUnitsFlat } from "@/lib/data/org-units-access";
-import { prisma, safeDbQuery } from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 

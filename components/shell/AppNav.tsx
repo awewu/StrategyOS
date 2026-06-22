@@ -9,7 +9,6 @@ import { RhauttSidebarLogo } from "@/components/brand/RhauttSidebarLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import type { SessionPayload } from "@/lib/auth/config";
 import { canAccessHub, canAccessRoute, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand/tokens";
 import { RoleSwitcher } from "@/components/shell/RoleSwitcher";
@@ -139,11 +138,9 @@ function HubNavItem({
 }
 
 export function AppNav({
-  session,
   secureMode = false,
   devBypassAuth = false,
 }: {
-  session?: SessionPayload | null;
   secureMode?: boolean;
   devBypassAuth?: boolean;
 }) {
@@ -204,7 +201,7 @@ export function AppNav({
       </nav>
 
       <div className="stratos-sidebar__foot">
-        <RoleSwitcher compact hidden={secureMode && Boolean(session) && !devBypassAuth} />
+        <RoleSwitcher compact hidden={secureMode && !devBypassAuth} />
         <kbd className="stratos-sidebar__kbd" title="⌘K 命令面板">
           ⌘K
         </kbd>

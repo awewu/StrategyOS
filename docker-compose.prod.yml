@@ -1,0 +1,60 @@
+# StratOS production stack — app + PostgreSQL
+# Usage:
+#   cp .env.example .env.prod   # fill production values
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stratos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-stratos}
+    volumes:
+      - stratos_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-stratos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stratos-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-stratos}?connection_limit=10&pool_timeout=10
+      STRATOS_PUBLIC_URL: ${STRATOS_PUBLIC_URL:?Set STRATOS_PUBLIC_URL}
+      STRATOS_REQUIRE_AUTH: ${STRATOS_REQUIRE_AUTH:-1}
+      STRATOS_SESSION_SECRET: ${STRATOS_SESSION_SECRET:?Set STRATOS_SESSION_SECRET}
+      WORKOS_CLIENT_ID: ${WORKOS_CLIENT_ID:-}
+      WORKOS_API_KEY: ${WORKOS_API_KEY:-}
+      WORKOS_REDIRECT_URI: ${WORKOS_REDIRECT_URI:-}
+      WORKOS_ORGANIZATION_ID: ${WORKOS_ORGANIZATION_ID:-}
+      WORKOS_WEBHOOK_SECRET: ${WORKOS_WEBHOOK_SECRET:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ORG_UNIT_ID: ${ORG_UNIT_ID:-org-group-rhautt}
+      HORIZON_START: ${HORIZON_START:-2026}
+      HORIZON_END: ${HORIZON_END:-2028}
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:3000/api/health?format=json&probe=readiness"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+volumes:
+  stratos_pgdata:
