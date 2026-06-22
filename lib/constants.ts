@@ -52,6 +52,7 @@ export const PROJECT_CODES = [
 
 export const ROLES = {
   ceo: { label: "CEO", desc: "全部可见，批准战略、确认预警" },
+  cfo: { label: "CFO", desc: "财务全景，预算/FP&A/资本配置" },
   vp: { label: "事业部负责人", desc: "本事业部全可见，设定 OKR" },
   system_head: { label: "体系负责人", desc: "本职能体系全可见，协调资源与能力" },
   pm: { label: "项目经理", desc: "本项目进度/预算/里程碑" },

@@ -11,6 +11,7 @@ import {
 /** Demo org-unit scope when User.orgUnitId is not set. */
 const DEMO_ORG_SCOPE: Record<RoleKey, string[] | null> = {
   ceo: null,
+  cfo: ["org-exec-finance"],
   staff: null,
   vp: ["org-exec-hw"],
   system_head: ["org-exec-rd"],
@@ -20,6 +21,7 @@ const DEMO_ORG_SCOPE: Record<RoleKey, string[] | null> = {
 
 const DEMO_PROJECT_SCOPE: Record<RoleKey, string[] | null> = {
   ceo: null,
+  cfo: null,
   staff: null,
   vp: null,
   system_head: null,

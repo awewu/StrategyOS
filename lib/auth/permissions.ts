@@ -5,8 +5,8 @@
  * L0 observer — published one-pager, own-unit monitor (read-only)
  * L1 pm       — + execution, commitments, own project Vx
  * L2 vp/system_head/staff — + own slice monitor, own org OPS, draft strategy input
- * L3 ceo      — command deck, inbox, FPA, compass, market, version diff (full company)
- * L4 admin    — access management, org master, system config (ceo + staff)
+ * L3 ceo/cfo  — command deck, inbox, FPA, compass, market, version diff (full company)
+ * L4 admin    — access management, org master, system config (ceo + cfo)
  */
 
 import type { RoleKey } from "@/lib/constants";
@@ -75,6 +75,7 @@ export function roleToLevel(role: RoleKey): AccessLevel {
     case "staff":
       return 2;
     case "ceo":
+    case "cfo":
       return 3;
     default: {
       const _exhaustive: never = role;
@@ -84,17 +85,19 @@ export function roleToLevel(role: RoleKey): AccessLevel {
 }
 
 export function isAdmin(role: RoleKey): boolean {
-  return role === "ceo" || role === "staff";
+  return role === "ceo" || role === "cfo";
 }
 
 export function isExecutive(role: RoleKey): boolean {
-  return role === "ceo" || role === "vp" || role === "system_head";
+  return role === "ceo" || role === "cfo" || role === "vp" || role === "system_head";
 }
 
 export function roleHomePath(role: RoleKey): string {
   switch (role) {
     case "ceo":
       return "/command";
+    case "cfo":
+      return "/finance";
     case "observer":
       return "/strategy";
     case "vp":
@@ -129,7 +132,7 @@ export function getRequiredLevel(pathname: string): AccessLevel | null {
 export function minRoleForPath(pathname: string): RoleKey | null {
   const level = getRequiredLevel(pathname);
   if (level == null) return null;
-  const roles: RoleKey[] = ["observer", "pm", "vp", "system_head", "staff", "ceo"];
+  const roles: RoleKey[] = ["observer", "pm", "vp", "system_head", "staff", "cfo", "ceo"];
   return roles.find((r) => roleToLevel(r) >= level) ?? "ceo";
 }
 
@@ -149,9 +152,9 @@ export function canAccessHub(role: RoleKey, hubId: string): boolean {
   return roleToLevel(role) >= minLevel;
 }
 
-/** Draft one-pager content visible to editors (ceo/staff), not read-only roles. */
+/** Draft one-pager content visible to editors (ceo/cfo), not read-only roles. */
 export function canViewDraftOnePager(role: RoleKey): boolean {
-  return role === "ceo" || role === "staff";
+  return role === "ceo" || role === "cfo";
 }
 
 export function filterNavHref(role: RoleKey, href: string): boolean {

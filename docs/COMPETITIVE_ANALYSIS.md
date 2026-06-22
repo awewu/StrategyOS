@@ -169,4 +169,41 @@ WorkBoard、Betterworks、Profit.co、Workpath、Mooncamp、Lattice、Asana 等�
 
 ---
 
+## 七、SWOT / 五事七计工具接入位置
+
+> 本节记录竞争分析工具在 StratOS 中的代码落地位置，便于后续把分析结果与产品能力对齐。
+
+### 7.1 SWOT 推演（`/market`）
+
+- **引擎：** `lib/market-intel/swot.ts` — 纯函数，可单测。
+  - `buildSwot`：把 Hermes 信号归集为 O/T，与内部 S/W 合并。
+  - `buildPositioning`：按四维度（product / gtm / brand / strategy）把「我方」与竞品定位到十字象限。
+  - `generateTows` / `buildSwotPrompt`：规则引擎兜底 + LLM 推演。
+- **内部 S/W 来源：** 优先从 `/compass` 战略前提审计派生（`internalSwotFromPremises`），无数据时回退 `lib/market-intel/demo-data.ts` 的 `demoInternalSwot`。
+- **我方自评分：**
+  - 模型：`prisma/schema.prisma` 的 `MarketSelfScores`（按 `period` 唯一，JSON 存储四维度分数）。
+  - 数据访问：`lib/market-intel/swot-access.ts` 的 `getMarketSelfScores` / `saveMarketSelfScores`（DB 不可用时回退 demo）。
+  - API：`app/api/market/self-scores/route.ts`（GET/PUT，level 2 鉴权）。
+  - UI：`components/market/SwotPanel.tsx` 中的「我方自评分」滑块，实时重算定位图并保存。
+- **展示页：** `/market` 的 `swot` Tab 展示竞争定位十字轴、SWOT 盘面、TOWS 建议。
+
+### 7.2 五事七计（`/culture`）
+
+- **引擎：** `lib/culture/wushi.ts` — 纯函数，输出风险清单 + 就绪度计数。
+  - 五事：`dao` / `tian` / `di` / `jiang` / `fa`；`tian` / `di` 为外部只读引用，`dao` / `jiang` / `fa` 可本页编辑。
+  - 七计：7 组敌我对比，当前 verdict 默认 `unknown`（下一步接入 Hermes 信号自动推导）。
+- **持久化：**
+  - 模型：`prisma/schema.prisma` 的 `CultureWushiAssessment`（按 `period` 唯一，JSON 存储内部五事状态与七计 verdict）。
+  - 数据访问：`lib/culture/wushi-access.ts` 的 `getWushiAssessment` / `saveWushiAssessment`。
+  - API：`app/api/culture/wushi/route.ts`（GET/PUT，level 2 鉴权）。
+  - UI：`components/culture/WushiPanel.tsx` 提供 `道/将/法` 状态下拉 + 备注输入，保存后写入 DB。
+- **展示页：** `/culture` 页面底部渲染五事七计面板、风险清单与就绪度统计。
+
+### 7.3 与 Hermes 的后续勾连（B/C 待做）
+
+- **七计 verdict（B）：** 计划从 `IntelSignal` 与 `CompetitorTrack` 自动推导"我方 vs 对手"对比，替代当前的 `unknown` 占位。
+- **五力 Gate（C）：** 在 `/market` 或 `/gates` 补白话版波特五力清单，用五力承载七计精神，并作为 Gate 风险项来源。
+
+---
+
 *v1.0 · 2026-06-22 · strategy-driven-platform · 企业自用*

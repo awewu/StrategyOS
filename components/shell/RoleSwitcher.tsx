@@ -8,6 +8,7 @@ import { ROLES, type RoleKey } from "@/lib/constants";
 /** Rail-width friendly labels (sidebar is 72px) */
 const ROLE_SHORT: Record<RoleKey, string> = {
   ceo: "CEO",
+  cfo: "CFO",
   vp: "负责人",
   system_head: "体系",
   pm: "项目",

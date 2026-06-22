@@ -1405,6 +1405,7 @@ model IntelReport {
 
 enum UserRole {
   ceo
+  cfo
   vp
   system_head
   pm

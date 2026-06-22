@@ -144,6 +144,7 @@ export async function syncWorkOSUser(input: {
 
 function inferRoleFromEmail(email: string): RoleKey {
   if (email.includes("ceo")) return "ceo";
+  if (email.includes("cfo")) return "cfo";
   if (email.includes("vp")) return "vp";
   if (email.includes("system")) return "system_head";
   if (email.includes("pm")) return "pm";

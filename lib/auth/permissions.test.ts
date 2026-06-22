@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { canAccessRoute, filterNavHref, roleHomePath } from "./permissions";
+import { canAccessRoute, filterNavHref, roleHomePath, isAdmin, isExecutive } from "./permissions";
 import { flattenNavLinks } from "@/lib/nav/hubs";
 
 const CEO_MAIN_ROUTES = [
@@ -46,5 +46,22 @@ describe("permissions · CEO role", () => {
 
   it("roleHomePath is command deck", () => {
     assert.equal(roleHomePath("ceo"), "/command");
+  });
+});
+
+describe("permissions · CFO role", () => {
+  it("isExecutive and isAdmin", () => {
+    assert.equal(isExecutive("cfo"), true);
+    assert.equal(isAdmin("cfo"), true);
+  });
+
+  it("canAccessRoute grants L3 and admin paths", () => {
+    for (const path of ["/finance", "/fpa", "/command", "/admin/access", "/admin/org"]) {
+      assert.equal(canAccessRoute("cfo", path), true, `CFO should access ${path}`);
+    }
+  });
+
+  it("roleHomePath is finance", () => {
+    assert.equal(roleHomePath("cfo"), "/finance");
   });
 });
