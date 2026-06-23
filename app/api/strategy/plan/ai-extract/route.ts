@@ -95,7 +95,7 @@ const EXTRACT_SYSTEM = `你是战略编制助手。用户提供战略文件/PPT/
 你需要从中提取结构化战略信息，输出严格 JSON，不要输出任何其他内容。`;
 
 const EXTRACT_PROMPT = (text: string) => `
-从以下战略文件中提取信息，输出 JSON，结构如下（找不到的字段留空字符串）：
+从以下战略文件中提取信息，输出严格 JSON，结构如下（找不到的字段留空字符串，数组留空数组）：
 {
   "intent": "三年战略意图一句话",
   "northStar": "北极星指标",
@@ -113,6 +113,26 @@ const EXTRACT_PROMPT = (text: string) => `
     { "quadrant": "strength|weakness|opportunity|threat", "content": "描述" }
   ],
   "assumptions": [{ "assumption": "假设描述", "critical": true }],
+  "marketInsights": [
+    { "category": "TAM|SAM|SOM|TREND|CUSTOMER|TECH|COMPETE",
+      "title": "一句话结论", "content": "详细描述",
+      "dataPoint": "关键数据点", "source": "数据来源" }
+  ],
+  "actionItems": [
+    { "initiativeTitle": "关联举措", "year": 2026, "quarter": 1,
+      "action": "具体行动", "ownerName": "负责人",
+      "acceptanceCriteria": "验收标准", "checkDate": "MM-DD", "status": "PLAN" }
+  ],
+  "budgetItems": [
+    { "category": "CAPEX|OPEX|HC", "initiativeTitle": "关联举措", "department": "部门",
+      "description": "项目描述", "year1Amount": "", "year2Amount": "", "year3Amount": "",
+      "totalAmount": "", "roiEstimate": "", "justification": "" }
+  ],
+  "roadmapItems": [
+    { "track": "举措|产品|组织|技术|渠道", "title": "节点名称",
+      "startYear": 2026, "startQ": 1, "endYear": 2026, "endQ": 4,
+      "milestone": "关键里程碑", "color": "" }
+  ],
   "productQuarterly": [
     { "productName": "产品名", "unit": "单位",
       "q1Qty": "", "q1Revenue": "", "q2Qty": "", "q2Revenue": "",

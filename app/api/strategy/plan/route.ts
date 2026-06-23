@@ -26,6 +26,10 @@ type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; head
 type ChannelPlanInput = { channelType?: string; currentState?: string; targetState?: string; q1Action?: string; q2Action?: string; q3Action?: string; q4Action?: string; revenueTarget?: string; partnerCount?: number; note?: string };
 type CustomerPlanInput = { customerSegment?: string; isNew?: boolean; currentCount?: number; targetCount?: number; q1Count?: number; q2Count?: number; q3Count?: number; q4Count?: number; revenuePerCustomer?: string; acquisitionStrategy?: string; retentionStrategy?: string; note?: string };
 type ProductQuarterlyInput = { productName?: string; unit?: string; q1Qty?: string; q1Revenue?: string; q2Qty?: string; q2Revenue?: string; q3Qty?: string; q3Revenue?: string; q4Qty?: string; q4Revenue?: string; annualQty?: string; annualRevenue?: string; note?: string };
+type MarketInsightInput = { category?: string; title?: string; content?: string; dataPoint?: string; source?: string };
+type ActionItemInput = { initiativeTitle?: string; year?: number; quarter?: number; action?: string; ownerName?: string; acceptanceCriteria?: string; checkDate?: string; status?: string };
+type BudgetItemInput = { category?: string; initiativeTitle?: string; department?: string; description?: string; year1Amount?: string; year2Amount?: string; year3Amount?: string; totalAmount?: string; roiEstimate?: string; justification?: string };
+type RoadmapItemInput = { track?: string; title?: string; startYear?: number; startQ?: number; endYear?: number; endQ?: number; milestone?: string; color?: string };
 
 const VALID_DIMENSIONS = ["FINANCIAL", "CUSTOMER", "PROCESS", "LEARNING"];
 
@@ -62,6 +66,10 @@ export async function POST(req: Request) {
       channelPlans = [],
       customerPlans = [],
       productQuarterly = [],
+      marketInsights = [],
+      actionItems = [],
+      budgetItems = [],
+      roadmapItems = [],
       submit,
     } = body as {
       orgUnitId?: string;
@@ -78,6 +86,10 @@ export async function POST(req: Request) {
       channelPlans?: ChannelPlanInput[];
       customerPlans?: CustomerPlanInput[];
       productQuarterly?: ProductQuarterlyInput[];
+      marketInsights?: MarketInsightInput[];
+      actionItems?: ActionItemInput[];
+      budgetItems?: BudgetItemInput[];
+      roadmapItems?: RoadmapItemInput[];
       submit?: boolean;
     };
 
@@ -135,6 +147,10 @@ export async function POST(req: Request) {
       await tx.planChannelPlan.deleteMany({ where: { planId: plan.id } });
       await tx.planCustomerPlan.deleteMany({ where: { planId: plan.id } });
       await tx.planProductQuarterly.deleteMany({ where: { planId: plan.id } });
+      await tx.planMarketInsight.deleteMany({ where: { planId: plan.id } });
+      await tx.planActionItem.deleteMany({ where: { planId: plan.id } });
+      await tx.planBudgetItem.deleteMany({ where: { planId: plan.id } });
+      await tx.planRoadmapItem.deleteMany({ where: { planId: plan.id } });
 
       // 目标 + KR
       let oSort = 0;
@@ -282,6 +298,85 @@ export async function POST(req: Request) {
         });
       }
 
+      // 市场洞察
+      let miSort = 0;
+      for (const mi of marketInsights) {
+        if (!mi.title?.trim() && !mi.content?.trim()) continue;
+        await tx.planMarketInsight.create({
+          data: {
+            planId: plan.id,
+            category: mi.category?.trim() || "TREND",
+            title: mi.title?.trim() || "",
+            content: mi.content?.trim() || "",
+            dataPoint: mi.dataPoint?.trim() || null,
+            source: mi.source?.trim() || null,
+            sortOrder: miSort++,
+          },
+        });
+      }
+
+      // 年度作战计划
+      let aiSort = 0;
+      for (const ai of actionItems) {
+        if (!ai.action?.trim()) continue;
+        await tx.planActionItem.create({
+          data: {
+            planId: plan.id,
+            initiativeTitle: ai.initiativeTitle?.trim() || null,
+            year: ai.year ?? 2026,
+            quarter: ai.quarter ?? 1,
+            action: ai.action.trim(),
+            ownerName: ai.ownerName?.trim() || null,
+            acceptanceCriteria: ai.acceptanceCriteria?.trim() || null,
+            checkDate: ai.checkDate?.trim() || null,
+            status: ai.status?.trim() || "PLAN",
+            sortOrder: aiSort++,
+          },
+        });
+      }
+
+      // 资源预算
+      let biSort = 0;
+      for (const bi of budgetItems) {
+        if (!bi.description?.trim()) continue;
+        await tx.planBudgetItem.create({
+          data: {
+            planId: plan.id,
+            category: bi.category?.trim() || "OPEX",
+            initiativeTitle: bi.initiativeTitle?.trim() || null,
+            department: bi.department?.trim() || null,
+            description: bi.description.trim(),
+            year1Amount: bi.year1Amount?.trim() || null,
+            year2Amount: bi.year2Amount?.trim() || null,
+            year3Amount: bi.year3Amount?.trim() || null,
+            totalAmount: bi.totalAmount?.trim() || null,
+            roiEstimate: bi.roiEstimate?.trim() || null,
+            justification: bi.justification?.trim() || null,
+            sortOrder: biSort++,
+          },
+        });
+      }
+
+      // 路线图
+      let rmSort = 0;
+      for (const rm of roadmapItems) {
+        if (!rm.title?.trim()) continue;
+        await tx.planRoadmapItem.create({
+          data: {
+            planId: plan.id,
+            track: rm.track?.trim() || "举措",
+            title: rm.title.trim(),
+            startYear: rm.startYear ?? 2026,
+            startQ: rm.startQ ?? 1,
+            endYear: rm.endYear ?? 2026,
+            endQ: rm.endQ ?? 4,
+            milestone: rm.milestone?.trim() || null,
+            color: rm.color?.trim() || null,
+            sortOrder: rmSort++,
+          },
+        });
+      }
+
       // 资源
       for (const r of resources) {
         const amount = parseAmount(r.amount);
@@ -345,6 +440,10 @@ export async function GET(req: Request) {
         channelPlans: { orderBy: { sortOrder: "asc" } },
         customerPlans: { orderBy: { sortOrder: "asc" } },
         productQuarterly: { orderBy: { sortOrder: "asc" } },
+        marketInsights: { orderBy: { sortOrder: "asc" } },
+        actionItems: { orderBy: { sortOrder: "asc" } },
+        budgetItems: { orderBy: { sortOrder: "asc" } },
+        roadmapItems: { orderBy: { sortOrder: "asc" } },
       },
     });
 

@@ -9,19 +9,23 @@ interface Props {
   orgUnits: OrgUnitWithChildren[];
 }
 
-type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions";
+type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions" | "market" | "action" | "budget" | "roadmap" | "onepager";
 
 const ALL_STEPS: { id: Step; label: string; buHint?: boolean }[] = [
-  { id: "intent", label: "战略意图" },
-  { id: "objectives", label: "BSC目标/OKR" },
-  { id: "initiatives", label: "关键举措" },
-  { id: "swot", label: "SWOT分析" },
-  { id: "product", label: "产品季度计划", buHint: true },
-  { id: "channel", label: "渠道发展", buHint: true },
-  { id: "customer", label: "客户发展", buHint: true },
-  { id: "org", label: "组织规划" },
-  { id: "resources", label: "资源请求" },
-  { id: "assumptions", label: "关键假设" },
+  { id: "intent",    label: "战略意图" },
+  { id: "market",    label: "市场洞察" },
+  { id: "swot",      label: "SWOT分析" },
+  { id: "objectives",label: "BSC目标/OKR" },
+  { id: "initiatives",label:"关键举措" },
+  { id: "action",    label: "作战计划" },
+  { id: "product",   label: "产品季度", buHint: true },
+  { id: "channel",   label: "渠道发展", buHint: true },
+  { id: "customer",  label: "客户发展", buHint: true },
+  { id: "org",       label: "组织规划" },
+  { id: "budget",    label: "资源预算" },
+  { id: "assumptions",label:"关键假设" },
+  { id: "roadmap",   label: "路线图" },
+  { id: "onepager",  label: "一页纸摘要" },
 ];
 
 const DIMENSIONS = [
@@ -105,6 +109,45 @@ interface ProductQuarterlyDraft {
   annualRevenue: string;
   note: string;
 }
+interface MarketInsightDraft {
+  category: string;
+  title: string;
+  content: string;
+  dataPoint: string;
+  source: string;
+}
+interface ActionItemDraft {
+  initiativeTitle: string;
+  year: string;
+  quarter: string;
+  action: string;
+  ownerName: string;
+  acceptanceCriteria: string;
+  checkDate: string;
+  status: string;
+}
+interface BudgetItemDraft {
+  category: string;
+  initiativeTitle: string;
+  department: string;
+  description: string;
+  year1Amount: string;
+  year2Amount: string;
+  year3Amount: string;
+  totalAmount: string;
+  roiEstimate: string;
+  justification: string;
+}
+interface RoadmapItemDraft {
+  track: string;
+  title: string;
+  startYear: string;
+  startQ: string;
+  endYear: string;
+  endQ: string;
+  milestone: string;
+  color: string;
+}
 interface ResourceDraft {
   resourceType: string;
   amount: string;
@@ -133,6 +176,10 @@ interface PlanForm {
   channelPlans: ChannelPlanDraft[];
   customerPlans: CustomerPlanDraft[];
   productQuarterly: ProductQuarterlyDraft[];
+  marketInsights: MarketInsightDraft[];
+  actionItems: ActionItemDraft[];
+  budgetItems: BudgetItemDraft[];
+  roadmapItems: RoadmapItemDraft[];
 }
 
 function emptyInitiative(): InitiativeDraft {
@@ -149,6 +196,18 @@ function emptyProduct(): ProductQuarterlyDraft {
 }
 function emptyOrg(): OrgChartNodeDraft {
   return { name: "", role: "", headcount: "", headcountNew: "", note: "" };
+}
+function emptyMarketInsight(): MarketInsightDraft {
+  return { category: "TREND", title: "", content: "", dataPoint: "", source: "" };
+}
+function emptyActionItem(): ActionItemDraft {
+  return { initiativeTitle: "", year: "2026", quarter: "1", action: "", ownerName: "", acceptanceCriteria: "", checkDate: "", status: "PLAN" };
+}
+function emptyBudgetItem(category = "OPEX"): BudgetItemDraft {
+  return { category, initiativeTitle: "", department: "", description: "", year1Amount: "", year2Amount: "", year3Amount: "", totalAmount: "", roiEstimate: "", justification: "" };
+}
+function emptyRoadmapItem(): RoadmapItemDraft {
+  return { track: "举措", title: "", startYear: "2026", startQ: "1", endYear: "2026", endQ: "4", milestone: "", color: "" };
 }
 
 function emptyForm(): PlanForm {
@@ -180,6 +239,15 @@ function emptyForm(): PlanForm {
     channelPlans: [emptyChannel(), emptyChannel()],
     customerPlans: [emptyCustomer(false), emptyCustomer(false), emptyCustomer(true), emptyCustomer(true)],
     productQuarterly: [emptyProduct(), emptyProduct()],
+    marketInsights: [
+      { category: "TAM", title: "", content: "", dataPoint: "", source: "" },
+      { category: "TREND", title: "", content: "", dataPoint: "", source: "" },
+      { category: "CUSTOMER", title: "", content: "", dataPoint: "", source: "" },
+      { category: "TECH", title: "", content: "", dataPoint: "", source: "" },
+    ],
+    actionItems: [emptyActionItem(), emptyActionItem(), emptyActionItem()],
+    budgetItems: [emptyBudgetItem("CAPEX"), emptyBudgetItem("OPEX"), emptyBudgetItem("HC")],
+    roadmapItems: [emptyRoadmapItem(), emptyRoadmapItem()],
   };
 }
 
@@ -268,6 +336,10 @@ export function StrategyInputClient({ orgUnits }: Props) {
           channelPlans: form.channelPlans,
           customerPlans: form.customerPlans,
           productQuarterly: form.productQuarterly,
+          marketInsights: form.marketInsights,
+          actionItems: form.actionItems.map((a) => ({ ...a, year: Number(a.year) || 2026, quarter: Number(a.quarter) || 1 })),
+          budgetItems: form.budgetItems,
+          roadmapItems: form.roadmapItems.map((r) => ({ ...r, startYear: Number(r.startYear) || 2026, startQ: Number(r.startQ) || 1, endYear: Number(r.endYear) || 2026, endQ: Number(r.endQ) || 4 })),
           submit,
         }),
       });
@@ -445,6 +517,11 @@ export function StrategyInputClient({ orgUnits }: Props) {
               {step === "org" && <OrgChartForm form={form} setForm={setForm} />}
               {step === "resources" && <ResourcesForm form={form} setForm={setForm} />}
               {step === "assumptions" && <AssumptionsForm form={form} setForm={setForm} />}
+              {step === "market" && <MarketInsightForm form={form} setForm={setForm} />}
+              {step === "action" && <ActionPlanForm form={form} setForm={setForm} />}
+              {step === "budget" && <BudgetForm form={form} setForm={setForm} />}
+              {step === "roadmap" && <RoadmapForm form={form} setForm={setForm} />}
+              {step === "onepager" && <OnePagerView form={form} selectedOrg={selectedOrg} />}
             </div>
 
             {/* 校验提示 */}
@@ -539,6 +616,22 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? ea.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: String(n.headcount ?? ""), headcountNew: String(n.headcountNew ?? ""), note: n.note ?? "" }))
       : f.orgChartNodes,
+    marketInsights: Array.isArray(ea.marketInsights) && ea.marketInsights.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.marketInsights.map((m: any) => ({ category: m.category ?? "TREND", title: m.title ?? "", content: m.content ?? "", dataPoint: m.dataPoint ?? "", source: m.source ?? "" }))
+      : f.marketInsights,
+    actionItems: Array.isArray(ea.actionItems) && ea.actionItems.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.actionItems.map((a: any) => ({ initiativeTitle: a.initiativeTitle ?? "", year: String(a.year ?? 2026), quarter: String(a.quarter ?? 1), action: a.action ?? "", ownerName: a.ownerName ?? "", acceptanceCriteria: a.acceptanceCriteria ?? "", checkDate: a.checkDate ?? "", status: a.status ?? "PLAN" }))
+      : f.actionItems,
+    budgetItems: Array.isArray(ea.budgetItems) && ea.budgetItems.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.budgetItems.map((b: any) => ({ category: b.category ?? "OPEX", initiativeTitle: b.initiativeTitle ?? "", department: b.department ?? "", description: b.description ?? "", year1Amount: b.year1Amount ?? "", year2Amount: b.year2Amount ?? "", year3Amount: b.year3Amount ?? "", totalAmount: b.totalAmount ?? "", roiEstimate: b.roiEstimate ?? "", justification: b.justification ?? "" }))
+      : f.budgetItems,
+    roadmapItems: Array.isArray(ea.roadmapItems) && ea.roadmapItems.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.roadmapItems.map((r: any) => ({ track: r.track ?? "举措", title: r.title ?? "", startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: r.milestone ?? "", color: r.color ?? "" }))
+      : f.roadmapItems,
   };
 }
 
@@ -753,6 +846,26 @@ function hydrate(plan: any): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? plan.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty?.toString() ?? "", q1Revenue: p.q1Revenue?.toString() ?? "", q2Qty: p.q2Qty?.toString() ?? "", q2Revenue: p.q2Revenue?.toString() ?? "", q3Qty: p.q3Qty?.toString() ?? "", q3Revenue: p.q3Revenue?.toString() ?? "", q4Qty: p.q4Qty?.toString() ?? "", q4Revenue: p.q4Revenue?.toString() ?? "", annualQty: p.annualQty?.toString() ?? "", annualRevenue: p.annualRevenue?.toString() ?? "", note: p.note ?? "" }))
       : base.productQuarterly;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const marketInsights: MarketInsightDraft[] = (plan.marketInsights ?? []).length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? plan.marketInsights.map((m: any) => ({ category: m.category ?? "TREND", title: m.title ?? "", content: m.content ?? "", dataPoint: m.dataPoint ?? "", source: m.source ?? "" }))
+    : base.marketInsights;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const actionItems: ActionItemDraft[] = (plan.actionItems ?? []).length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? plan.actionItems.map((a: any) => ({ initiativeTitle: a.initiativeTitle ?? "", year: String(a.year ?? 2026), quarter: String(a.quarter ?? 1), action: a.action ?? "", ownerName: a.ownerName ?? "", acceptanceCriteria: a.acceptanceCriteria ?? "", checkDate: a.checkDate ?? "", status: a.status ?? "PLAN" }))
+    : base.actionItems;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const budgetItems: BudgetItemDraft[] = (plan.budgetItems ?? []).length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? plan.budgetItems.map((b: any) => ({ category: b.category ?? "OPEX", initiativeTitle: b.initiativeTitle ?? "", department: b.department ?? "", description: b.description ?? "", year1Amount: b.year1Amount ?? "", year2Amount: b.year2Amount ?? "", year3Amount: b.year3Amount ?? "", totalAmount: b.totalAmount ?? "", roiEstimate: b.roiEstimate ?? "", justification: b.justification ?? "" }))
+    : base.budgetItems;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const roadmapItems: RoadmapItemDraft[] = (plan.roadmapItems ?? []).length > 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? plan.roadmapItems.map((r: any) => ({ track: r.track ?? "举措", title: r.title ?? "", startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: r.milestone ?? "", color: r.color ?? "" }))
+    : base.roadmapItems;
   return {
     intent: plan.intent ?? "",
     northStar: plan.northStar ?? "",
@@ -765,6 +878,10 @@ function hydrate(plan: any): PlanForm {
     channelPlans,
     customerPlans,
     productQuarterly,
+    marketInsights,
+    actionItems,
+    budgetItems,
+    roadmapItems,
   };
 }
 
@@ -1256,6 +1373,428 @@ function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
       {renderGroup(existing, "现有客户", false)}
       <hr className="border-[var(--surface-border)]" />
       {renderGroup(newCustomers, "新增客户", true)}
+    </div>
+  );
+}
+
+// ─── 市场洞察 ─────────────────────────────────────────────────────────────────
+const MARKET_CATS: { key: string; label: string; placeholder: string }[] = [
+  { key: "TAM", label: "市场规模（TAM/SAM/SOM）", placeholder: "描述目标市场总量、可服务市场、可获得市场规模及增长率…" },
+  { key: "TREND", label: "行业趋势", placeholder: "描述技术变革、政策变化、行业整合等重大趋势…" },
+  { key: "CUSTOMER", label: "客户需求变化", placeholder: "描述客户痛点变化、购买行为、决策链变化…" },
+  { key: "TECH", label: "技术洞察", placeholder: "描述关键技术趋势对业务的影响与机会…" },
+  { key: "COMPETE", label: "竞争态势", placeholder: "主要竞争对手现状、差异化定位、市场份额变化…" },
+];
+
+function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
+
+  function getOrCreate(cat: string): MarketInsightDraft {
+    return form.marketInsights.find((m) => m.category === cat) ?? { category: cat, title: "", content: "", dataPoint: "", source: "" };
+  }
+
+  function update(cat: string, field: keyof MarketInsightDraft, value: string) {
+    setForm((f) => {
+      const exists = f.marketInsights.findIndex((m) => m.category === cat);
+      const item = { ...getOrCreate(cat), [field]: value };
+      if (exists >= 0) {
+        const arr = [...f.marketInsights];
+        arr[exists] = item;
+        return { ...f, marketInsights: arr };
+      }
+      return { ...f, marketInsights: [...f.marketInsights, item] };
+    });
+  }
+
+  return (
+    <div className="space-y-5">
+      <p className="text-xs text-[var(--color-text-muted)]">市场洞察 — 战略意图的依据，填写真实数据与趋势判断</p>
+      {MARKET_CATS.map((cat) => {
+        const item = getOrCreate(cat.key);
+        return (
+          <div key={cat.key} className="rounded-lg border border-[var(--surface-border)] p-4 space-y-2">
+            <div className="text-sm font-medium">{cat.label}</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="text-xs text-[var(--color-text-muted)] mb-1">标题 / 结论</div>
+                <input type="text" className={inp} value={item.title} onChange={(e) => update(cat.key, "title", e.target.value)} placeholder="一句话结论" />
+              </div>
+              <div>
+                <div className="text-xs text-[var(--color-text-muted)] mb-1">关键数据点</div>
+                <input type="text" className={inp} value={item.dataPoint} onChange={(e) => update(cat.key, "dataPoint", e.target.value)} placeholder="如：市场规模 500 亿，增速 12%" />
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-[var(--color-text-muted)] mb-1">详细描述</div>
+              <textarea className={inp} rows={3} value={item.content} onChange={(e) => update(cat.key, "content", e.target.value)} placeholder={cat.placeholder} />
+            </div>
+            <div>
+              <div className="text-xs text-[var(--color-text-muted)] mb-1">数据来源</div>
+              <input type="text" className={inp} value={item.source} onChange={(e) => update(cat.key, "source", e.target.value)} placeholder="如：IDC 2025 报告、内部调研" />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── 作战计划 ─────────────────────────────────────────────────────────────────
+function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof ActionItemDraft, value: string) {
+    setForm((f) => { const arr = [...f.actionItems]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, actionItems: arr }; });
+  }
+  function addRow() { setForm((f) => ({ ...f, actionItems: [...f.actionItems, emptyActionItem()] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, actionItems: f.actionItems.filter((_, i) => i !== idx) })); }
+  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
+  const sel = inp;
+  const STATUS_OPTS = [
+    { value: "PLAN", label: "计划中" },
+    { value: "ON_TRACK", label: "进行中" },
+    { value: "AT_RISK", label: "有风险" },
+    { value: "DONE", label: "完成" },
+  ];
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-[var(--color-text-muted)]">年度作战计划 — 关键举措拆解到年度 / 季度具体行动，填写验收标准</p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
+              <th className="px-2 py-1.5 text-left font-medium w-28">关联举措</th>
+              <th className="px-2 py-1.5 text-center font-medium w-14">年份</th>
+              <th className="px-2 py-1.5 text-center font-medium w-10">季度</th>
+              <th className="px-2 py-1.5 text-left font-medium">具体行动</th>
+              <th className="px-2 py-1.5 text-left font-medium w-20">负责人</th>
+              <th className="px-2 py-1.5 text-left font-medium">验收标准</th>
+              <th className="px-2 py-1.5 text-center font-medium w-20">检查日期</th>
+              <th className="px-2 py-1.5 text-center font-medium w-16">状态</th>
+              <th className="px-1 w-6" />
+            </tr>
+          </thead>
+          <tbody>
+            {form.actionItems.map((ai, idx) => (
+              <tr key={idx} className="border-b border-[var(--surface-border)]/50">
+                <td className="px-1 py-1"><input type="text" className={inp} value={ai.initiativeTitle} onChange={(e) => set(idx, "initiativeTitle", e.target.value)} placeholder="举措标题" /></td>
+                <td className="px-1 py-1">
+                  <select className={sel} value={ai.year} onChange={(e) => set(idx, "year", e.target.value)}>
+                    {[2026, 2027, 2028].map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1">
+                  <select className={sel} value={ai.quarter} onChange={(e) => set(idx, "quarter", e.target.value)}>
+                    {[1, 2, 3, 4].map((q) => <option key={q} value={q}>Q{q}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={ai.action} onChange={(e) => set(idx, "action", e.target.value)} placeholder="具体行动描述" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={ai.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="姓名" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={ai.acceptanceCriteria} onChange={(e) => set(idx, "acceptanceCriteria", e.target.value)} placeholder="完成标准/交付物" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={ai.checkDate} onChange={(e) => set(idx, "checkDate", e.target.value)} placeholder="MM-DD" /></td>
+                <td className="px-1 py-1">
+                  <select className={sel} value={ai.status} onChange={(e) => set(idx, "status", e.target.value)}>
+                    {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                </td>
+                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增行动项</button>
+    </div>
+  );
+}
+
+// ─── 资源预算 ─────────────────────────────────────────────────────────────────
+function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof BudgetItemDraft, value: string) {
+    setForm((f) => { const arr = [...f.budgetItems]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, budgetItems: arr }; });
+  }
+  function addRow(cat: string) { setForm((f) => ({ ...f, budgetItems: [...f.budgetItems, emptyBudgetItem(cat)] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, budgetItems: f.budgetItems.filter((_, i) => i !== idx) })); }
+  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
+  const CATS = ["CAPEX", "OPEX", "HC"] as const;
+  const catLabel: Record<string, string> = { CAPEX: "资本性支出（Capex）", OPEX: "运营费用（Opex）", HC: "人员编制（HC）" };
+  return (
+    <div className="space-y-5">
+      <p className="text-xs text-[var(--color-text-muted)]">资源预算 — 按 Capex / Opex / HC 三类，关联举措，填写三年投入与产出估算</p>
+      {CATS.map((cat) => {
+        const rows = form.budgetItems.map((b, i) => ({ b, i })).filter(({ b }) => b.category === cat);
+        return (
+          <div key={cat} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{catLabel[cat]}</span>
+              <button onClick={() => addRow(cat)} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
+                    <th className="px-2 py-1 text-left font-medium">描述</th>
+                    <th className="px-2 py-1 text-left font-medium">关联举措</th>
+                    <th className="px-2 py-1 text-left font-medium">部门</th>
+                    <th className="px-2 py-1 text-center font-medium">2026</th>
+                    <th className="px-2 py-1 text-center font-medium">2027</th>
+                    <th className="px-2 py-1 text-center font-medium">2028</th>
+                    <th className="px-2 py-1 text-center font-medium">合计</th>
+                    <th className="px-2 py-1 text-left font-medium">ROI估算</th>
+                    <th className="px-1 w-6" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(({ b, i }) => (
+                    <tr key={i} className="border-b border-[var(--surface-border)]/50">
+                      <td className="px-1 py-1"><input type="text" className={inp} value={b.description} onChange={(e) => set(i, "description", e.target.value)} placeholder="项目描述" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp} value={b.initiativeTitle} onChange={(e) => set(i, "initiativeTitle", e.target.value)} placeholder="举措名" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp} value={b.department} onChange={(e) => set(i, "department", e.target.value)} placeholder="部门" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year1Amount} onChange={(e) => set(i, "year1Amount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year2Amount} onChange={(e) => set(i, "year2Amount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year3Amount} onChange={(e) => set(i, "year3Amount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.totalAmount} onChange={(e) => set(i, "totalAmount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><input type="text" className={inp} value={b.roiEstimate} onChange={(e) => set(i, "roiEstimate", e.target.value)} placeholder="如：18个月回本" /></td>
+                      <td className="px-1"><button onClick={() => removeRow(i)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+                    </tr>
+                  ))}
+                  {rows.length === 0 && (
+                    <tr><td colSpan={9} className="px-2 py-3 text-center text-[var(--color-text-muted)]">暂无条目，点击「+ 新增」添加</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── 路线图 ───────────────────────────────────────────────────────────────────
+const TRACKS = ["举措", "产品", "组织", "技术", "渠道"] as const;
+const COLORS: { value: string; label: string; cls: string }[] = [
+  { value: "", label: "默认", cls: "bg-[var(--color-accent)]/20" },
+  { value: "green", label: "绿", cls: "bg-[var(--signal-green)]/20" },
+  { value: "yellow", label: "黄", cls: "bg-[var(--signal-yellow)]/20" },
+  { value: "red", label: "红", cls: "bg-[var(--signal-red)]/20" },
+];
+
+function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof RoadmapItemDraft, value: string) {
+    setForm((f) => { const arr = [...f.roadmapItems]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, roadmapItems: arr }; });
+  }
+  function addRow() { setForm((f) => ({ ...f, roadmapItems: [...f.roadmapItems, emptyRoadmapItem()] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, roadmapItems: f.roadmapItems.filter((_, i) => i !== idx) })); }
+  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
+  const YEARS = [2026, 2027, 2028];
+  const QS = [1, 2, 3, 4];
+
+  // 可视化甘特区域
+  const quarters = YEARS.flatMap((y) => QS.map((q) => ({ y, q, label: `${y} Q${q}` })));
+
+  function qIndex(year: number, q: number) { return (year - 2026) * 4 + (q - 1); }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-[var(--color-text-muted)]">战略路线图 — 三年时间轴，按轨道展示关键节点</p>
+
+      {/* 甘特可视化 */}
+      {form.roadmapItems.some((r) => r.title.trim()) && (
+        <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)] p-3">
+          <div className="text-xs font-medium mb-2">预览</div>
+          <div className="relative" style={{ minWidth: 700 }}>
+            <div className="grid text-[10px] text-[var(--color-text-muted)] mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
+              <div />
+              {quarters.map((q) => (
+                <div key={q.label} className={"text-center border-l border-[var(--surface-border)] " + (q.q === 1 ? "font-semibold" : "")}>{q.label}</div>
+              ))}
+            </div>
+            {form.roadmapItems.filter((r) => r.title.trim()).map((r, idx) => {
+              const si = qIndex(Number(r.startYear) || 2026, Number(r.startQ) || 1);
+              const ei = qIndex(Number(r.endYear) || 2026, Number(r.endQ) || 4);
+              const span = Math.max(1, ei - si + 1);
+              const colorCls = COLORS.find((c) => c.value === r.color)?.cls ?? COLORS[0].cls;
+              return (
+                <div key={idx} className="grid items-center mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
+                  <div className="text-[10px] truncate pr-2 text-[var(--color-text-secondary)]">{r.track} · {r.title}</div>
+                  {Array.from({ length: quarters.length }).map((_, ci) => (
+                    ci === si
+                      ? <div key={ci} className={"rounded text-[10px] px-1 py-0.5 truncate " + colorCls} style={{ gridColumn: `span ${span}` }}>{r.milestone || r.title}</div>
+                      : ci > si && ci <= ei ? null
+                      : <div key={ci} />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 输入表格 */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
+              <th className="px-2 py-1.5 text-left font-medium">轨道</th>
+              <th className="px-2 py-1.5 text-left font-medium">标题</th>
+              <th className="px-2 py-1.5 text-center font-medium">开始年</th>
+              <th className="px-2 py-1.5 text-center font-medium">Q</th>
+              <th className="px-2 py-1.5 text-center font-medium">结束年</th>
+              <th className="px-2 py-1.5 text-center font-medium">Q</th>
+              <th className="px-2 py-1.5 text-left font-medium">关键里程碑</th>
+              <th className="px-2 py-1.5 text-center font-medium">颜色</th>
+              <th className="px-1 w-6" />
+            </tr>
+          </thead>
+          <tbody>
+            {form.roadmapItems.map((r, idx) => (
+              <tr key={idx} className="border-b border-[var(--surface-border)]/50">
+                <td className="px-1 py-1">
+                  <select className={inp} value={r.track} onChange={(e) => set(idx, "track", e.target.value)}>
+                    {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={r.title} onChange={(e) => set(idx, "title", e.target.value)} placeholder="举措/产品/项目名称" /></td>
+                <td className="px-1 py-1">
+                  <select className={inp + " text-center"} value={r.startYear} onChange={(e) => set(idx, "startYear", e.target.value)}>
+                    {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1">
+                  <select className={inp + " text-center"} value={r.startQ} onChange={(e) => set(idx, "startQ", e.target.value)}>
+                    {QS.map((q) => <option key={q} value={q}>Q{q}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1">
+                  <select className={inp + " text-center"} value={r.endYear} onChange={(e) => set(idx, "endYear", e.target.value)}>
+                    {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1">
+                  <select className={inp + " text-center"} value={r.endQ} onChange={(e) => set(idx, "endQ", e.target.value)}>
+                    {QS.map((q) => <option key={q} value={q}>Q{q}</option>)}
+                  </select>
+                </td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={r.milestone} onChange={(e) => set(idx, "milestone", e.target.value)} placeholder="里程碑描述" /></td>
+                <td className="px-1 py-1">
+                  <select className={inp} value={r.color} onChange={(e) => set(idx, "color", e.target.value)}>
+                    {COLORS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </td>
+                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增节点</button>
+    </div>
+  );
+}
+
+// ─── 一页纸摘要 ───────────────────────────────────────────────────────────────
+function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgUnit | undefined }) {
+  const topObjectives = form.objectives.filter((o) => o.objective.trim()).slice(0, 4);
+  const topInitiatives = form.initiatives.filter((i) => i.title.trim()).slice(0, 5);
+  const swotByQ = (q: string) => form.swotItems.filter((s) => s.quadrant === q && s.content.trim()).map((s) => s.content);
+  const criticalAssumptions = form.assumptions.filter((a) => a.critical && a.assumption.trim());
+  const topMarket = form.marketInsights.find((m) => m.title.trim() || m.content.trim());
+
+  return (
+    <div className="space-y-4 print:text-xs">
+      <div className="flex items-start justify-between border-b border-[var(--surface-border)] pb-3">
+        <div>
+          <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest">战略规划摘要 · 董事会版</div>
+          <h2 className="text-lg font-bold mt-0.5">{selectedOrg?.name ?? "—"} · 2026–2028 三年战略</h2>
+        </div>
+        <div className="text-xs text-[var(--color-text-muted)] text-right">
+          <div>StratOS · 战略编制系统</div>
+          <div>保密 · 仅供内部</div>
+        </div>
+      </div>
+
+      {/* 战略意图 */}
+      <div className="rounded-lg bg-[var(--color-accent)]/[0.06] border border-[var(--color-accent)]/20 px-4 py-3">
+        <div className="text-xs font-semibold text-[var(--color-accent)] uppercase mb-1">战略意图</div>
+        <p className="text-sm font-medium">{form.intent || "—"}</p>
+        {form.northStar && <p className="text-xs text-[var(--color-text-muted)] mt-1">北极星指标：{form.northStar}</p>}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* 市场背景 */}
+        {topMarket && (
+          <div className="rounded-lg border border-[var(--surface-border)] p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">市场背景</div>
+            <p className="text-xs">{topMarket.title}</p>
+            {topMarket.dataPoint && <p className="text-xs text-[var(--color-text-muted)] mt-1">{topMarket.dataPoint}</p>}
+          </div>
+        )}
+
+        {/* 战略目标 */}
+        <div className="rounded-lg border border-[var(--surface-border)] p-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">战略目标</div>
+          <ul className="space-y-1">
+            {topObjectives.length > 0 ? topObjectives.map((o, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-xs">
+                <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-[var(--color-accent)] flex-shrink-0" />
+                <span>{o.objective}</span>
+              </li>
+            )) : <li className="text-xs text-[var(--color-text-muted)]">尚未填写目标</li>}
+          </ul>
+        </div>
+      </div>
+
+      {/* 关键举措 */}
+      <div className="rounded-lg border border-[var(--surface-border)] p-3">
+        <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">关键举措（Top {topInitiatives.length}）</div>
+        <div className="grid grid-cols-1 gap-1.5">
+          {topInitiatives.length > 0 ? topInitiatives.map((ini, i) => (
+            <div key={i} className="flex items-start gap-2 text-xs">
+              <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[var(--color-accent)] font-medium flex-shrink-0">I{i + 1}</span>
+              <div>
+                <span className="font-medium">{ini.title}</span>
+                {ini.ownerName && <span className="text-[var(--color-text-muted)] ml-1">· {ini.ownerName}</span>}
+                {ini.okrKeyResult && <p className="text-[var(--color-text-muted)] mt-0.5">KR：{ini.okrKeyResult} {ini.okrTarget && `→ ${ini.okrTarget}`}</p>}
+              </div>
+            </div>
+          )) : <p className="text-xs text-[var(--color-text-muted)]">尚未填写举措</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* SWOT 简版 */}
+        <div className="rounded-lg border border-[var(--surface-border)] p-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">SWOT</div>
+          <div className="grid grid-cols-2 gap-1 text-xs">
+            {[["strength", "优势"], ["weakness", "劣势"], ["opportunity", "机会"], ["threat", "威胁"]].map(([q, label]) => (
+              <div key={q} className="space-y-0.5">
+                <div className="font-medium text-[10px] text-[var(--color-text-muted)]">{label}</div>
+                {swotByQ(q).slice(0, 2).map((c, i) => <div key={i} className="line-clamp-1">{c}</div>)}
+                {swotByQ(q).length === 0 && <div className="text-[var(--color-text-muted)]">—</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 关键假设 */}
+        <div className="rounded-lg border border-[var(--surface-border)] p-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">关键假设</div>
+          <ul className="space-y-1">
+            {criticalAssumptions.length > 0 ? criticalAssumptions.slice(0, 4).map((a, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-xs">
+                <span className="mt-0.5 text-[var(--signal-yellow)]">⚠</span>
+                <span>{a.assumption}</span>
+              </li>
+            )) : form.assumptions.filter((a) => a.assumption.trim()).slice(0, 4).map((a, i) => (
+              <li key={i} className="text-xs">{a.assumption}</li>
+            ))}
+            {form.assumptions.filter((a) => a.assumption.trim()).length === 0 && <li className="text-xs text-[var(--color-text-muted)]">—</li>}
+          </ul>
+        </div>
+      </div>
+
+      <div className="text-center text-[10px] text-[var(--color-text-muted)] border-t border-[var(--surface-border)] pt-2">
+        本文件由 StratOS 战略编制系统生成 · 草稿版本 · 内部保密
+      </div>
     </div>
   );
 }
