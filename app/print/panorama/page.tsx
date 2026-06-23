@@ -4,6 +4,8 @@ import { DownloadPdfButton } from "@/components/brand/DownloadPdfButton";
 import { PanoramaPrintLayout } from "@/components/print/PanoramaPrintLayout";
 import { getCommandDeckBundle } from "@/lib/data/strategy-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function PanoramaPrintPage() {
   const deck = await getCommandDeckBundle();
 

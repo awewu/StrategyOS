@@ -19,7 +19,43 @@ import {
 
 const prisma = new PrismaClient();
 
+async function seedOrgUnits() {
+  const group = await prisma.orgUnit.upsert({
+    where: { id: "org-group-rhautt" },
+    update: {},
+    create: {
+      id: "org-group-rhautt",
+      name: "RHAUTT Group",
+      nameEn: "RHAUTT GROUP",
+      level: "GROUP",
+      sortOrder: 1,
+    },
+  });
+
+  const executives = [
+    { id: "org-exec-ac", name: "Air Conditioning BU", nameEn: "Air Conditioning BU", sortOrder: 10 },
+    { id: "org-exec-hw", name: "Hot Water BU", nameEn: "Hot Water BU", sortOrder: 20 },
+    { id: "org-exec-bd", name: "Business Development BU", nameEn: "Business Development BU", sortOrder: 25 },
+    { id: "org-exec-brand", name: "Brand BU", nameEn: "Brand BU", sortOrder: 30 },
+    { id: "org-exec-rd", name: "R&D Center", nameEn: "R&D Center", sortOrder: 40 },
+    { id: "org-exec-mfg", name: "Manufacturing BU", nameEn: "Manufacturing BU", sortOrder: 50 },
+    { id: "org-exec-cmo", name: "CMO", nameEn: "Chief Marketing Officer", sortOrder: 60 },
+    { id: "org-exec-hr", name: "HR", nameEn: "Human Resources", sortOrder: 70 },
+    { id: "org-exec-finance", name: "Finance", nameEn: "Finance", sortOrder: 80 },
+  ];
+
+  for (const exec of executives) {
+    await prisma.orgUnit.upsert({
+      where: { id: exec.id },
+      update: {},
+      create: { ...exec, level: "EXECUTIVE", parentId: group.id },
+    });
+  }
+}
+
 async function main() {
+  await seedOrgUnits();
+
   const ceo = await prisma.user.upsert({
     where: { email: "ceo@rheem.cn" },
     update: { orgUnitId: null, projectCode: null },
@@ -769,6 +805,12 @@ async function main() {
   for (const t of trackSeeds) {
     await prisma.competitorTrack.upsert({ where: { competitor: t.competitor }, update: t, create: t });
   }
+
+  await prisma.competitorProduct.upsert({
+    where: { id: "smith-hp-ai" },
+    update: {},
+    create: { id: "smith-hp-ai", name: "A.O.Smith AI heat pump", tracked: true },
+  });
 
 
   // 爆款产品信号（史密斯热泵更新）

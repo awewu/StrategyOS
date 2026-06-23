@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import type { SessionPayload } from "@/lib/auth/config";
 import { ROLE_COOKIE, SESSION_COOKIE } from "@/lib/auth/config";
-import { getOrgScope, orgScopeWhere } from "@/lib/auth/scope";
 import { resolveEffectiveRole } from "@/lib/auth/resolve-role";
+import { getOrgScope, orgScopeWhere } from "@/lib/auth/scope";
 import { dbAvailable } from "@/lib/db";
-import { listReports } from "@/lib/reports/report-queries";
+import { getReportDetail } from "@/lib/reports/report-queries";
 
 export const runtime = "nodejs";
 
@@ -30,40 +30,22 @@ async function sessionFromRequest(): Promise<{ role: ReturnType<typeof resolveEf
   return { role, session };
 }
 
-export async function GET(req: Request) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
 
-  const { searchParams } = new URL(req.url);
-  const orgUnitId = searchParams.get("orgUnitId") ?? undefined;
-  const reportType = searchParams.get("reportType") ?? undefined;
-  const period = searchParams.get("period") ?? undefined;
-  const approval = searchParams.get("approval") ?? undefined;
-  const page = searchParams.get("page");
-  const pageSize = searchParams.get("pageSize");
-
   if (!(await dbAvailable())) {
-    return NextResponse.json({ rows: [], db: false });
+    return NextResponse.json({ error: "db unavailable" }, { status: 503 });
   }
 
+  const { id } = await params;
   const { role, session } = await sessionFromRequest();
   const orgScope = getOrgScope(role, session);
-  const scopeWhere = orgScopeWhere(orgScope);
+  const report = await getReportDetail({ id, scopeWhere: orgScopeWhere(orgScope) });
 
-  if (orgUnitId && orgScope != null && !orgScope.includes(orgUnitId)) {
-    return NextResponse.json({ rows: [], db: true, scoped: true });
+  if (!report) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
-  const result = await listReports({
-    filters: { orgUnitId, reportType, period, approval },
-    page,
-    pageSize,
-    scopeWhere,
-  });
-
-  return NextResponse.json({
-    db: true,
-    rows: result.rows,
-    pagination: result.pagination,
-  });
+  return NextResponse.json({ db: true, report });
 }

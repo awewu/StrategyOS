@@ -17,15 +17,41 @@ export async function GET() {
 }
 
 function isPersistedNorthStarId(id: unknown): id is string {
-  return typeof id === "string" && id.length > 0 && !id.startsWith("demo");
+  return typeof id === "string" && id.length > 0 && !id.startsWith("demo") && !id.startsWith("plan-");
+}
+
+function planIdFromNorthStarId(id: unknown): string | null {
+  if (typeof id !== "string" || !id.startsWith("plan-")) return null;
+  const planId = id.slice("plan-".length).trim();
+  return planId.length > 0 ? planId : null;
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const planId = planIdFromNorthStarId(body.id);
+    if (planId) {
+      const result = await prisma.strategicPlan.updateMany({
+        where: { id: planId },
+        data: {
+          intent: body.mission,
+          northStar: body.vision,
+          targetYear: body.targetYear,
+          revenueTarget: body.revenueTarget,
+          profitMarginTarget: body.profitMarginTarget,
+          marketPositionDesc: body.marketPositionDesc ?? null,
+          geographyDesc: body.geographyDesc ?? null,
+          brandDesc: body.brandDesc ?? null,
+        },
+      });
+      if (result.count === 0) {
+        return NextResponse.json({ error: "strategic plan not found" }, { status: 404 });
+      }
+      return NextResponse.json({ id: `plan-${planId}`, planId });
+    }
     // 编辑既有版本：原地更新，保留已绑定的里程碑与前提审计
     if (isPersistedNorthStarId(body.id)) {
-      const ns = await prisma.companyNorthStar.update({
+      const result = await prisma.companyNorthStar.updateMany({
         where: { id: body.id },
         data: {
           mission: body.mission,
@@ -38,7 +64,10 @@ export async function POST(req: Request) {
           brandDesc: body.brandDesc ?? null,
         },
       });
-      return NextResponse.json({ id: ns.id });
+      if (result.count === 0) {
+        return NextResponse.json({ error: "north star not found" }, { status: 404 });
+      }
+      return NextResponse.json({ id: body.id });
     }
     // 新建版本：旧版本置为非激活，保留历史
     await prisma.companyNorthStar.updateMany({ where: { active: true }, data: { active: false } });

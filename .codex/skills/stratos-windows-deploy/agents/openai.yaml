@@ -1,0 +1,3 @@
+display_name: StratOS Windows Deploy
+short_description: Package StratOS for Windows deployment.
+default_prompt: Package StratOS for Windows Server deployment and prepare the deployment scripts.

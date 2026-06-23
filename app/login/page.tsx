@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { authRequired, demoLoginAllowed, workosConfigured } from "@/lib/auth/config";
+import { authRequired, demoLoginAllowed, tandemConfigured, workosConfigured } from "@/lib/auth/config";
 
 export default function LoginPage() {
   return (
@@ -8,6 +8,7 @@ export default function LoginPage() {
       <Suspense fallback={<div className="text-sm text-[var(--color-text-muted)]">加载…</div>}>
         <LoginForm
           workosReady={workosConfigured()}
+          tandemReady={tandemConfigured()}
           demoLoginAllowed={demoLoginAllowed()}
           requireAuth={authRequired()}
         />

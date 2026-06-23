@@ -15,6 +15,7 @@ const PUBLIC = [
   "/api/auth/workos",
   "/api/auth/callback",
   "/api/auth/workos/webhook",
+  "/api/auth/tandem",
   "/api/health",
   "/api/harness",
   "/api/audit/log",

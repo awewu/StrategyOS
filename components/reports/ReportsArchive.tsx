@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 
 type OrgUnit = { id: string; name: string; level: string };
@@ -14,6 +15,20 @@ type ReportRow = {
   fileOrigName: string | null;
   fileSizeBytes: number | null;
   hasParsed: boolean;
+  parseEngine: "llm" | "rules" | "unknown";
+  hasSignals: boolean;
+  parseWarning: string | null;
+  textExtracted: boolean;
+  signalCount: number;
+};
+
+type Pagination = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasPrev: boolean;
+  hasNext: boolean;
 };
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -42,10 +57,27 @@ function fmtBytes(n: number) {
   return (n / 1024 / 1024).toFixed(1) + " MB";
 }
 
+function parseStatusLabel(r: ReportRow) {
+  if (!r.hasParsed) return null;
+  if (!r.textExtracted) return "未抽取正文";
+  const engine = r.parseEngine === "llm" ? "AI 解析" : r.parseEngine === "rules" ? "规则解析" : "已解析";
+  if (!r.hasSignals) return `${engine} · 无命中信号`;
+  return `${engine} · ${r.signalCount} 条信号`;
+}
+
 export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({ orgUnitId: "", reportType: "", period: "", approval: "" });
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+    hasPrev: false,
+    hasNext: false,
+  });
 
   // Upload form state
   const [uploading, setUploading] = useState(false);
@@ -59,7 +91,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
   });
   const fileRef = useRef<HTMLInputElement>(null);
 
-  async function fetchRows() {
+  async function fetchRows(targetPage = page) {
     setLoading(true);
     try {
       const p = new URLSearchParams();
@@ -67,9 +99,16 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
       if (filters.reportType) p.set("reportType", filters.reportType);
       if (filters.period) p.set("period", filters.period);
       if (filters.approval) p.set("approval", filters.approval);
+      p.set("page", String(targetPage));
+      p.set("pageSize", "10");
       const res = await fetch("/api/reports/list?" + p.toString());
-      const data = (await res.json()) as { rows: ReportRow[]; db: boolean };
+      const data = (await res.json()) as { rows: ReportRow[]; db: boolean; pagination?: Pagination };
+      if (targetPage > 1 && data.rows.length === 0) {
+        setPage(targetPage - 1);
+        return;
+      }
       setRows(data.rows);
+      if (data.pagination) setPagination(data.pagination);
     } finally {
       setLoading(false);
     }
@@ -82,14 +121,22 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
     if (filters.reportType) p.set("reportType", filters.reportType);
     if (filters.period) p.set("period", filters.period);
     if (filters.approval) p.set("approval", filters.approval);
+    p.set("page", String(page));
+    p.set("pageSize", "10");
     fetch("/api/reports/list?" + p.toString())
       .then((r) => r.json())
-      .then((data: { rows: ReportRow[]; db: boolean }) => {
-        if (active) setRows(data.rows);
+      .then((data: { rows: ReportRow[]; db: boolean; pagination?: Pagination }) => {
+        if (!active) return;
+        if (page > 1 && data.rows.length === 0) {
+          setPage(page - 1);
+          return;
+        }
+        setRows(data.rows);
+        if (data.pagination) setPagination(data.pagination);
       })
       .catch(() => { /* ignore */ });
     return () => { active = false; };
-  }, [filters]);
+  }, [filters, page]);
 
   async function submitReport() {
     if (!form.title.trim()) { setUploadMsg("标题必填"); return; }
@@ -115,7 +162,8 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
       setUploadMsg(`已提交 · ${data.reportId}${data.reportId && " · 待上级审批"}`);
       setForm((f) => ({ ...f, title: "", rawContent: "" }));
       if (fileRef.current) fileRef.current.value = "";
-      await fetchRows();
+      setPage(1);
+      await fetchRows(1);
     } finally {
       setUploading(false);
     }
@@ -130,8 +178,10 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
     await fetchRows();
   }
 
-  const f = (key: keyof typeof filters, v: string) =>
+  const f = (key: keyof typeof filters, v: string) => {
+    setPage(1);
     setFilters((prev) => ({ ...prev, [key]: v }));
+  };
 
   return (
     <div className="space-y-6">
@@ -269,7 +319,10 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
         </select>
         <button
           type="button"
-          onClick={() => setFilters({ orgUnitId: "", reportType: "", period: "", approval: "" })}
+          onClick={() => {
+            setPage(1);
+            setFilters({ orgUnitId: "", reportType: "", period: "", approval: "" });
+          }}
           className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
         >
           清除筛选
@@ -290,7 +343,10 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
               key={r.id}
               className="surface-glass flex flex-wrap items-start gap-3 rounded-xl border border-[var(--surface-border)] px-4 py-3"
             >
-              <div className="flex-1 min-w-0">
+              <Link
+                href={`/reports/${r.id}`}
+                className="flex-1 min-w-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-accent)]">
                     {REPORT_TYPE_LABELS[r.reportType] ?? r.reportType}
@@ -310,9 +366,10 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                   {r.fileOrigName && (
                     <span>· {r.fileOrigName} {r.fileSizeBytes ? `(${fmtBytes(r.fileSizeBytes)})` : ""}</span>
                   )}
-                  {r.hasParsed && <span>· AI 已解析</span>}
+                  {parseStatusLabel(r) && <span>· {parseStatusLabel(r)}</span>}
+                  {r.parseWarning && <span className="text-[var(--signal-yellow)]">· {r.parseWarning}</span>}
                 </div>
-              </div>
+              </Link>
               <div className="flex shrink-0 items-center gap-2">
                 <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${APPROVAL_STYLE[r.approvalStatus]}`}>
                   {APPROVAL_LABEL[r.approvalStatus]}
@@ -340,6 +397,30 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           ))}
         </div>
       )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+        <span>
+          共 {pagination.total} 条 · 第 {pagination.page} / {pagination.totalPages} 页
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            disabled={!pagination.hasPrev || loading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="rounded border border-[var(--surface-border)] px-3 py-1.5 hover:bg-black/[0.03] disabled:opacity-40"
+          >
+            上一页
+          </button>
+          <button
+            type="button"
+            disabled={!pagination.hasNext || loading}
+            onClick={() => setPage((p) => p + 1)}
+            className="rounded border border-[var(--surface-border)] px-3 py-1.5 hover:bg-black/[0.03] disabled:opacity-40"
+          >
+            下一页
+          </button>
+        </div>
+      </div>
 
       <p className="text-[11px] text-[var(--color-text-muted)]">
         已存档报告由 AI 解析后数据自动反哺至执行审计和指挥舱

@@ -16,15 +16,18 @@ const ERROR_MESSAGES: Record<string, string> = {
   state_mismatch: "SSO 状态校验失败，请重试。",
   missing_code: "SSO 未返回授权码。",
   workos_exchange_failed: "SSO 登录交换失败，请检查 WorkOS 配置。",
+  tandem_exchange_failed: "Tandem SSO 登录交换失败，请稍后重试或联系管理员。",
   demo_disabled: "演示登录已禁用，请使用企业 SSO。",
 };
 
 export function LoginForm({
   workosReady,
+  tandemReady,
   demoLoginAllowed,
   requireAuth,
 }: {
   workosReady: boolean;
+  tandemReady: boolean;
   demoLoginAllowed: boolean;
   requireAuth: boolean;
 }) {
@@ -93,6 +96,15 @@ export function LoginForm({
         </div>
       )}
 
+      {tandemReady && (
+        <a
+          href={`/api/auth/tandem?next=${encodeURIComponent(next)}`}
+          className="flex w-full items-center justify-center rounded-lg border border-[var(--color-accent)]/50 bg-[var(--color-accent)]/10 py-3 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/20"
+        >
+          企业 SSO · Tandem
+        </a>
+      )}
+
       {showWorkos && (
         <a
           href={`/api/auth/workos?next=${encodeURIComponent(next)}`}
@@ -123,7 +135,7 @@ export function LoginForm({
         </div>
       )}
 
-      {!showDemo && showWorkos && (
+      {!showDemo && (showWorkos || tandemReady) && (
         <p className="text-center text-xs text-[var(--color-text-muted)]">
           演示登录已关闭 — 请使用上方企业 SSO 登录。
         </p>

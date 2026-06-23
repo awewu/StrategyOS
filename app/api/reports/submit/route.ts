@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { dbAvailable, prisma } from "@/lib/db";
 import { onReportApproved } from "@/lib/delivery/hooks";
+import { extractTextFromPdf } from "@/lib/compiler/strategic-compiler";
+import { buildParseMeta } from "@/lib/reports/parse-status";
 import { parseReportSmart } from "@/lib/stratos/llm-agent";
 import { formatMonthlyPulse, parseReportContent } from "@/lib/stratos/report-agent";
 import { checkPulseDuplicate } from "@/lib/reports/pulse-dedup";
@@ -17,6 +19,9 @@ const ALLOWED_EXT = /\.(docx|xlsx|pdf|pptx|doc|xls|ppt)$/i;
 /** Best-effort text extraction from OOXML zip formats (docx/xlsx/pptx) — no extra deps */
 async function extractText(bytes: Buffer, ext: string): Promise<string> {
   try {
+    if (/pdf/i.test(ext)) {
+      return (await extractTextFromPdf(bytes)).trim().slice(0, 40000);
+    }
     if (/docx/i.test(ext)) {
       return (await readZipEntry(bytes, "word/document.xml"))
         .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 40000);
@@ -178,7 +183,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, reportId, extracted: extractedText.length, duplicateChecked: true });
     }
 
-    const { parsed } = await parseReportSmart(reportId, extractedText || title, period, false);
+    const parseWarnings: string[] = [];
+    const textExtracted = Boolean(extractedText.trim());
+    if (file && !textExtracted) {
+      parseWarnings.push("未抽取到原始文本，解析仅使用标题或手工输入。");
+    }
+
+    const { parsed, engine } = await parseReportSmart(reportId, extractedText || title, period, true);
+    const parsedPayload = {
+      ...parsed,
+      ...buildParseMeta({
+        parsed,
+        engine,
+        textExtracted,
+        parseWarnings,
+      }),
+    };
 
     if (await dbAvailable()) {
       await prisma.report.create({
@@ -188,7 +208,7 @@ export async function POST(req: Request) {
           period,
           title,
           rawContent: extractedText || undefined,
-          parsedJson: parsed as object,
+          parsedJson: parsedPayload as object,
           orgUnitId: orgUnitId || undefined,
           approvalStatus: "PENDING",
           filePath,
@@ -199,7 +219,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ ok: true, reportId, extracted: extractedText.length });
+    return NextResponse.json({ ok: true, reportId, extracted: extractedText.length, engine });
   } catch (e) {
     console.error("report submit error", e);
     return NextResponse.json({ error: e instanceof Error ? e.message : "上传失败" }, { status: 500 });

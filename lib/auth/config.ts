@@ -21,9 +21,31 @@ export function workosConfigured(): boolean {
   return Boolean(process.env.WORKOS_CLIENT_ID && process.env.WORKOS_API_KEY);
 }
 
+export function tandemConfigured(): boolean {
+  return Boolean(process.env.TANDEM_CLIENT_ID && process.env.TANDEM_CLIENT_SECRET);
+}
+
 /** Demo email login — disabled when production auth requires WorkOS SSO. */
 export function demoLoginAllowed(): boolean {
   return !(authRequired() && workosConfigured());
+}
+
+/**
+ * Public-facing origin for building auth redirects. Behind a reverse proxy the
+ * request host is the internal address (e.g. localhost:3050), so prefer the
+ * configured public URL, then forwarded headers, then the request origin.
+ */
+export function resolvePublicOrigin(request: Request): string {
+  const configured = process.env.STRATOS_PUBLIC_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (forwardedHost) {
+    const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+    return `${proto}://${forwardedHost.split(",")[0]?.trim()}`;
+  }
+
+  return new URL(request.url).origin;
 }
 
 /** Demo users when DB unavailable */
