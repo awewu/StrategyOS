@@ -15,9 +15,21 @@ type InitiativeInput = {
   q2Milestone?: string;
   q3Milestone?: string;
   q4Milestone?: string;
+  okrKeyResult?: string;
+  okrTarget?: string;
+  okrBaseline?: string;
 };
 type ResourceInput = { resourceType: string; amount?: string; justification?: string };
 type AssumptionInput = { assumption?: string; critical?: boolean };
+type SwotItemInput = { quadrant: "strength" | "weakness" | "opportunity" | "threat"; content?: string };
+type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; headcount?: number; headcountNew?: number; note?: string };
+type ChannelPlanInput = { channelType?: string; currentState?: string; targetState?: string; q1Action?: string; q2Action?: string; q3Action?: string; q4Action?: string; revenueTarget?: string; partnerCount?: number; note?: string };
+type CustomerPlanInput = { customerSegment?: string; isNew?: boolean; currentCount?: number; targetCount?: number; q1Count?: number; q2Count?: number; q3Count?: number; q4Count?: number; revenuePerCustomer?: string; acquisitionStrategy?: string; retentionStrategy?: string; note?: string };
+type ProductQuarterlyInput = { productName?: string; unit?: string; q1Qty?: string; q1Revenue?: string; q2Qty?: string; q2Revenue?: string; q3Qty?: string; q3Revenue?: string; q4Qty?: string; q4Revenue?: string; annualQty?: string; annualRevenue?: string; note?: string };
+type MarketInsightInput = { category?: string; title?: string; content?: string; dataPoint?: string; source?: string };
+type ActionItemInput = { initiativeTitle?: string; year?: number; quarter?: number; action?: string; ownerName?: string; acceptanceCriteria?: string; checkDate?: string; status?: string };
+type BudgetItemInput = { category?: string; initiativeTitle?: string; department?: string; description?: string; year1Amount?: string; year2Amount?: string; year3Amount?: string; totalAmount?: string; roiEstimate?: string; justification?: string };
+type RoadmapItemInput = { track?: string; title?: string; startYear?: number; startQ?: number; endYear?: number; endQ?: number; milestone?: string; color?: string };
 
 const VALID_DIMENSIONS = ["FINANCIAL", "CUSTOMER", "PROCESS", "LEARNING"];
 
@@ -49,6 +61,15 @@ export async function POST(req: Request) {
       initiatives = [],
       resources = [],
       assumptions = [],
+      swotItems = [],
+      orgChartNodes = [],
+      channelPlans = [],
+      customerPlans = [],
+      productQuarterly = [],
+      marketInsights = [],
+      actionItems = [],
+      budgetItems = [],
+      roadmapItems = [],
       submit,
     } = body as {
       orgUnitId?: string;
@@ -60,6 +81,15 @@ export async function POST(req: Request) {
       initiatives?: InitiativeInput[];
       resources?: ResourceInput[];
       assumptions?: AssumptionInput[];
+      swotItems?: SwotItemInput[];
+      orgChartNodes?: OrgChartNodeInput[];
+      channelPlans?: ChannelPlanInput[];
+      customerPlans?: CustomerPlanInput[];
+      productQuarterly?: ProductQuarterlyInput[];
+      marketInsights?: MarketInsightInput[];
+      actionItems?: ActionItemInput[];
+      budgetItems?: BudgetItemInput[];
+      roadmapItems?: RoadmapItemInput[];
       submit?: boolean;
     };
 
@@ -112,6 +142,15 @@ export async function POST(req: Request) {
       await tx.planInitiative.deleteMany({ where: { planId: plan.id } });
       await tx.resourceRequest.deleteMany({ where: { planId: plan.id } });
       await tx.planAssumption.deleteMany({ where: { planId: plan.id } });
+      await tx.planSwotItem.deleteMany({ where: { planId: plan.id } });
+      await tx.planOrgChartNode.deleteMany({ where: { planId: plan.id } });
+      await tx.planChannelPlan.deleteMany({ where: { planId: plan.id } });
+      await tx.planCustomerPlan.deleteMany({ where: { planId: plan.id } });
+      await tx.planProductQuarterly.deleteMany({ where: { planId: plan.id } });
+      await tx.planMarketInsight.deleteMany({ where: { planId: plan.id } });
+      await tx.planActionItem.deleteMany({ where: { planId: plan.id } });
+      await tx.planBudgetItem.deleteMany({ where: { planId: plan.id } });
+      await tx.planRoadmapItem.deleteMany({ where: { planId: plan.id } });
 
       // 目标 + KR
       let oSort = 0;
@@ -140,7 +179,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // 举措
+      // 举措（OKR关键举措级成果）
       let iSort = 0;
       for (const i of initiatives) {
         if (!i.title?.trim()) continue;
@@ -153,7 +192,187 @@ export async function POST(req: Request) {
             q2Milestone: i.q2Milestone?.trim() || null,
             q3Milestone: i.q3Milestone?.trim() || null,
             q4Milestone: i.q4Milestone?.trim() || null,
+            okrKeyResult: i.okrKeyResult?.trim() || null,
+            okrTarget: i.okrTarget?.trim() || null,
+            okrBaseline: i.okrBaseline?.trim() || null,
             sortOrder: iSort++,
+          },
+        });
+      }
+
+      // SWOT
+      let swSort = 0;
+      for (const sw of swotItems) {
+        if (!sw.content?.trim()) continue;
+        await tx.planSwotItem.create({
+          data: { planId: plan.id, quadrant: sw.quadrant, content: sw.content.trim(), sortOrder: swSort++ },
+        });
+      }
+
+      // 组织规划
+      let orgSort = 0;
+      for (const node of orgChartNodes) {
+        if (!node.name?.trim()) continue;
+        await tx.planOrgChartNode.create({
+          data: {
+            planId: plan.id,
+            parentId: node.parentId?.trim() || null,
+            name: node.name.trim(),
+            role: node.role?.trim() || null,
+            headcount: node.headcount ?? null,
+            headcountNew: node.headcountNew ?? null,
+            note: node.note?.trim() || null,
+            sortOrder: orgSort++,
+          },
+        });
+      }
+
+      // 渠道发展
+      let chSort = 0;
+      for (const ch of channelPlans) {
+        if (!ch.channelType?.trim()) continue;
+        await tx.planChannelPlan.create({
+          data: {
+            planId: plan.id,
+            channelType: ch.channelType.trim(),
+            currentState: ch.currentState?.trim() || null,
+            targetState: ch.targetState?.trim() || null,
+            q1Action: ch.q1Action?.trim() || null,
+            q2Action: ch.q2Action?.trim() || null,
+            q3Action: ch.q3Action?.trim() || null,
+            q4Action: ch.q4Action?.trim() || null,
+            revenueTarget: parseAmount(ch.revenueTarget),
+            partnerCount: ch.partnerCount ?? null,
+            note: ch.note?.trim() || null,
+            sortOrder: chSort++,
+          },
+        });
+      }
+
+      // 客户发展
+      let custSort = 0;
+      for (const cu of customerPlans) {
+        if (!cu.customerSegment?.trim()) continue;
+        await tx.planCustomerPlan.create({
+          data: {
+            planId: plan.id,
+            customerSegment: cu.customerSegment.trim(),
+            isNew: !!cu.isNew,
+            currentCount: cu.currentCount ?? null,
+            targetCount: cu.targetCount ?? null,
+            q1Count: cu.q1Count ?? null,
+            q2Count: cu.q2Count ?? null,
+            q3Count: cu.q3Count ?? null,
+            q4Count: cu.q4Count ?? null,
+            revenuePerCustomer: parseAmount(cu.revenuePerCustomer),
+            acquisitionStrategy: cu.acquisitionStrategy?.trim() || null,
+            retentionStrategy: cu.retentionStrategy?.trim() || null,
+            note: cu.note?.trim() || null,
+            sortOrder: custSort++,
+          },
+        });
+      }
+
+      // 产品季度推进
+      let pqSort = 0;
+      for (const pq of productQuarterly) {
+        if (!pq.productName?.trim()) continue;
+        await tx.planProductQuarterly.create({
+          data: {
+            planId: plan.id,
+            productName: pq.productName.trim(),
+            unit: pq.unit?.trim() || null,
+            q1Qty: parseAmount(pq.q1Qty),
+            q1Revenue: parseAmount(pq.q1Revenue),
+            q2Qty: parseAmount(pq.q2Qty),
+            q2Revenue: parseAmount(pq.q2Revenue),
+            q3Qty: parseAmount(pq.q3Qty),
+            q3Revenue: parseAmount(pq.q3Revenue),
+            q4Qty: parseAmount(pq.q4Qty),
+            q4Revenue: parseAmount(pq.q4Revenue),
+            annualQty: parseAmount(pq.annualQty),
+            annualRevenue: parseAmount(pq.annualRevenue),
+            note: pq.note?.trim() || null,
+            sortOrder: pqSort++,
+          },
+        });
+      }
+
+      // 市场洞察
+      let miSort = 0;
+      for (const mi of marketInsights) {
+        if (!mi.title?.trim() && !mi.content?.trim()) continue;
+        await tx.planMarketInsight.create({
+          data: {
+            planId: plan.id,
+            category: mi.category?.trim() || "TREND",
+            title: mi.title?.trim() || "",
+            content: mi.content?.trim() || "",
+            dataPoint: mi.dataPoint?.trim() || null,
+            source: mi.source?.trim() || null,
+            sortOrder: miSort++,
+          },
+        });
+      }
+
+      // 年度作战计划
+      let aiSort = 0;
+      for (const ai of actionItems) {
+        if (!ai.action?.trim()) continue;
+        await tx.planActionItem.create({
+          data: {
+            planId: plan.id,
+            initiativeTitle: ai.initiativeTitle?.trim() || null,
+            year: ai.year ?? 2026,
+            quarter: ai.quarter ?? 1,
+            action: ai.action.trim(),
+            ownerName: ai.ownerName?.trim() || null,
+            acceptanceCriteria: ai.acceptanceCriteria?.trim() || null,
+            checkDate: ai.checkDate?.trim() || null,
+            status: ai.status?.trim() || "PLAN",
+            sortOrder: aiSort++,
+          },
+        });
+      }
+
+      // 资源预算
+      let biSort = 0;
+      for (const bi of budgetItems) {
+        if (!bi.description?.trim()) continue;
+        await tx.planBudgetItem.create({
+          data: {
+            planId: plan.id,
+            category: bi.category?.trim() || "OPEX",
+            initiativeTitle: bi.initiativeTitle?.trim() || null,
+            department: bi.department?.trim() || null,
+            description: bi.description.trim(),
+            year1Amount: bi.year1Amount?.trim() || null,
+            year2Amount: bi.year2Amount?.trim() || null,
+            year3Amount: bi.year3Amount?.trim() || null,
+            totalAmount: bi.totalAmount?.trim() || null,
+            roiEstimate: bi.roiEstimate?.trim() || null,
+            justification: bi.justification?.trim() || null,
+            sortOrder: biSort++,
+          },
+        });
+      }
+
+      // 路线图
+      let rmSort = 0;
+      for (const rm of roadmapItems) {
+        if (!rm.title?.trim()) continue;
+        await tx.planRoadmapItem.create({
+          data: {
+            planId: plan.id,
+            track: rm.track?.trim() || "举措",
+            title: rm.title.trim(),
+            startYear: rm.startYear ?? 2026,
+            startQ: rm.startQ ?? 1,
+            endYear: rm.endYear ?? 2026,
+            endQ: rm.endQ ?? 4,
+            milestone: rm.milestone?.trim() || null,
+            color: rm.color?.trim() || null,
+            sortOrder: rmSort++,
           },
         });
       }
@@ -216,6 +435,15 @@ export async function GET(req: Request) {
         resourceReqs: true,
         assumptions: true,
         attachments: { orderBy: { uploadedAt: "asc" } },
+        swotItems: { orderBy: { sortOrder: "asc" } },
+        orgChartNodes: { orderBy: { sortOrder: "asc" } },
+        channelPlans: { orderBy: { sortOrder: "asc" } },
+        customerPlans: { orderBy: { sortOrder: "asc" } },
+        productQuarterly: { orderBy: { sortOrder: "asc" } },
+        marketInsights: { orderBy: { sortOrder: "asc" } },
+        actionItems: { orderBy: { sortOrder: "asc" } },
+        budgetItems: { orderBy: { sortOrder: "asc" } },
+        roadmapItems: { orderBy: { sortOrder: "asc" } },
       },
     });
 

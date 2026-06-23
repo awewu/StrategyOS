@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import { dbAvailable, prisma } from "@/lib/db";
 import { autoPersistDiffsForSnapshot, persistDiffsBetweenSnapshots } from "@/lib/stratos/persist-diff";
@@ -6,6 +7,8 @@ import type { SnapshotStatePayload } from "@/lib/types/stratos";
 import * as demo from "@/lib/stratos-demo-data";
 
 export async function POST(request: NextRequest) {
+  const denied = await requireApiMinLevel(2);
+  if (denied) return denied;
   const body = (await request.json()) as {
     fromCode?: string;
     toCode?: string;

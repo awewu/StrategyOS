@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import {
   runCounterfactual,
@@ -14,6 +15,8 @@ import type { SnapshotStatePayload } from "@/lib/types/stratos";
 const VALID_TYPES: CounterfactualType[] = ["v4_delay", "hotel_beat", "price_cut"];
 
 export async function POST(request: NextRequest) {
+  const denied = await requireApiMinLevel(2);
+  if (denied) return denied;
   const body = (await request.json()) as Partial<CounterfactualInput>;
 
   if (!body.type || !VALID_TYPES.includes(body.type)) {

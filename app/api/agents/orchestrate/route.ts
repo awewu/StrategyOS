@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import { dbAvailable, prisma } from "@/lib/db";
 import { llmConfigured } from "@/lib/stratos/llm-agent";
@@ -10,6 +11,8 @@ import { persistHealthAssertionsFromTriggers } from "@/lib/data/health-assertion
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const denied = await requireApiMinLevel(2);
+  if (denied) return denied;
   const body = (await request.json()) as {
     reportId?: string;
     rawContent?: string;
