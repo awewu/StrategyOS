@@ -680,10 +680,12 @@ function AiExtractBar({
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState<1 | 2 | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function runExtract(body: FormData | string) {
     setLoading(true);
+    setLoadingStage(1);
     try {
       const isFormData = body instanceof FormData;
       const res = await fetch("/api/strategy/plan/ai-extract", {
@@ -693,6 +695,8 @@ function AiExtractBar({
           body: JSON.stringify({ text: body }),
         }),
       });
+      // 请求返回时两阶段已完成，stage2标记
+      setLoadingStage(2);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "提取失败");
       setForm((f) => applyExtracted(f, data.extracted));
@@ -704,6 +708,7 @@ function AiExtractBar({
       flash("err", err instanceof Error ? err.message : "提取失败");
     } finally {
       setLoading(false);
+      setLoadingStage(null);
     }
   }
 
@@ -730,7 +735,13 @@ function AiExtractBar({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-[var(--color-accent)]">✨ AI 自动填充</span>
-          <span className="text-xs text-[var(--color-text-muted)]">上传文件或粘贴文档内容，AI 一键提取所有字段</span>
+          {loading ? (
+            <span className="text-xs text-[var(--color-accent)] animate-pulse">
+              {loadingStage === 1 ? "⏳ 阶段 1/2 · 降噪摘要中…" : "⚙️ 阶段 2/2 · 结构化提取中…"}
+            </span>
+          ) : (
+            <span className="text-xs text-[var(--color-text-muted)]">上传文件或粘贴文档内容，AI 两阶段智能提取</span>
+          )}
         </div>
         <button onClick={() => setOpen((o) => !o)} className="text-xs text-[var(--color-accent)] hover:underline">
           {open ? "收起" : "展开"}
@@ -766,7 +777,9 @@ function AiExtractBar({
                     ? "border-[var(--surface-border)] text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
                     : "border-[var(--color-accent)] text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white")
                 }>
-                  {loading ? "AI 提取中…" : "选择文件并提取"}
+                  {loading
+                    ? (loadingStage === 1 ? "阶段 1/2 降噪中…" : "阶段 2/2 提取中…")
+                    : "选择文件并提取"}
                   <input
                     ref={fileRef}
                     type="file"

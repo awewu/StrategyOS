@@ -121,26 +121,49 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
   return buf.toString("utf8", 0, Math.min(buf.length, 30000));
 }
 
-// ─── Prompt ───────────────────────────────────────────────────────────────────
-const EXTRACT_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计分卡）、OKR、SWOT、波特五力、市场规模分析（TAM/SAM/SOM）等战略框架。
-用户上传的是企业内部战略文件、年度规划PPT或战略报告。
+// ─── 两阶段 Prompt ────────────────────────────────────────────────────────────
 
-你的任务是从文档中高质量提取结构化战略信息，遵循以下规则：
-1. **战略意图**：用一句话概括3-5年核心战略方向，保留原文关键词，不超过60字
-2. **北极星指标**：找最核心的量化目标，如"3年收入达XX亿"或"市占率从X%提升至Y%"
-3. **BSC目标**：按 FINANCIAL/CUSTOMER/PROCESS/LEARNING 四维度分类，每维度1-3个目标，每个目标附上KR
-4. **关键举措**：提取具体战略举措/项目，尽量关联负责人、OKR成果指标、季度里程碑
-5. **SWOT**：即使文档没有明确写SWOT，也要从文档语境推断优势/劣势/机会/威胁
-6. **市场洞察**：提取市场规模数据、行业趋势、竞争对手信息、客户需求变化，标注数据来源
-7. **作战计划**：提取有明确时间节点的具体行动，关联到举措，注明负责人和验收标准
-8. **预算**：提取投资金额、资源配置、ROI预估
-9. **路线图**：提取时间线节点，标注所属 track（举措/产品/组织/技术/渠道）
-10. 如果文档确实没有某类信息，返回空数组 []，**不要捏造**
-11. 只输出 JSON，不要有任何解释、注释或 markdown 代码块`;
+// 第一阶段：降噪摘要 —— 把混乱原文浓缩成干净的战略信号文本
+const STAGE1_SYSTEM = `你是一位资深战略顾问。用户上传的是企业内部战略PPT、年度规划或战略报告的原始文字提取内容，可能包含大量噪音（封面、目录、页码、装饰性文字、重复标题、图表注释等）。
 
-const EXTRACT_PROMPT = (text: string) => `
-请从以下战略文件中提取信息。严格按照 JSON 结构输出，字段说明见 system 消息。
-结构如下（找不到的字段留空字符串，无法提取的数组留 []，不要捏造内容）：
+你的任务：阅读全部内容，输出一份干净的「战略信号摘要」（纯文本，约800-1500字），只保留以下有价值的信息：
+- 战略方向、愿景、使命
+- 量化目标、KPI、收入/市占/增长目标
+- 具体举措、项目名称、负责人
+- 市场数据、竞争格局、客户信息
+- 时间节点、里程碑、季度计划
+- 预算金额、资源配置
+- 组织变化、渠道策略、产品计划
+
+过滤掉：封面文字、目录、"汇报人：XXX"、"机密"、"版权"、重复的公司名称、无意义的装饰文字。
+
+直接输出摘要文本，不要任何解释。`;
+
+const STAGE1_PROMPT = (text: string) => `
+请提炼以下战略文件的核心战略信号（文件总长 ${text.length} 字符）：
+
+${text.slice(0, 40000)}
+`;
+
+// 第二阶段：结构化提取 —— 用干净摘要精准填充14个模块
+const STAGE2_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计分卡）、OKR、SWOT、TAM/SAM/SOM 等战略框架。
+你将收到一份已经过降噪处理的战略信号摘要，从中精准提取结构化信息。
+
+提取规则：
+1. **intent**：一句话概括3-5年战略方向，保留原文关键词，≤60字
+2. **northStar**：最核心的量化目标，如"3年收入达XX亿"
+3. **objectives**：严格按 FINANCIAL/CUSTOMER/PROCESS/LEARNING 四维度分类，每维1-3个，含KR
+4. **initiatives**：具体举措，关联负责人、OKR成果、季度里程碑（从摘要中推断Q1-Q4节点）
+5. **swotItems**：即使摘要未明确写SWOT，也从语境推断四象限
+6. **marketInsights**：市场规模数据、趋势、竞争、客户，标注原文数据来源
+7. **actionItems**：有时间节点的具体行动，关联举措，写验收标准
+8. **budgetItems**：投资金额、资源，分CAPEX/OPEX/HC类
+9. **roadmapItems**：时间线节点，标注track
+10. 文档没有的信息 → 返回 []，**绝不捏造**
+11. 只输出 JSON，不要解释`;
+
+const STAGE2_PROMPT = (summary: string) => `
+请从以下战略信号摘要中提取结构化信息，输出严格 JSON（找不到留空字符串，无法提取留[]）：
 {
   "intent": "三年战略意图一句话",
   "northStar": "北极星指标",
@@ -154,19 +177,15 @@ const EXTRACT_PROMPT = (text: string) => `
       "q1Milestone": "Q1里程碑", "q2Milestone": "Q2里程碑",
       "q3Milestone": "Q3里程碑", "q4Milestone": "Q4里程碑" }
   ],
-  "swotItems": [
-    { "quadrant": "strength|weakness|opportunity|threat", "content": "描述" }
-  ],
+  "swotItems": [{ "quadrant": "strength|weakness|opportunity|threat", "content": "描述" }],
   "assumptions": [{ "assumption": "假设描述", "critical": true }],
   "marketInsights": [
     { "category": "TAM|SAM|SOM|TREND|CUSTOMER|TECH|COMPETE",
-      "title": "一句话结论", "content": "详细描述",
-      "dataPoint": "关键数据点", "source": "数据来源" }
+      "title": "一句话结论", "content": "详细描述", "dataPoint": "关键数据点", "source": "来源" }
   ],
   "actionItems": [
     { "initiativeTitle": "关联举措", "year": 2026, "quarter": 1,
-      "action": "具体行动", "ownerName": "负责人",
-      "acceptanceCriteria": "验收标准", "checkDate": "MM-DD", "status": "PLAN" }
+      "action": "具体行动", "ownerName": "负责人", "acceptanceCriteria": "验收标准", "checkDate": "MM-DD", "status": "PLAN" }
   ],
   "budgetItems": [
     { "category": "CAPEX|OPEX|HC", "initiativeTitle": "关联举措", "department": "部门",
@@ -175,8 +194,7 @@ const EXTRACT_PROMPT = (text: string) => `
   ],
   "roadmapItems": [
     { "track": "举措|产品|组织|技术|渠道", "title": "节点名称",
-      "startYear": 2026, "startQ": 1, "endYear": 2026, "endQ": 4,
-      "milestone": "关键里程碑", "color": "" }
+      "startYear": 2026, "startQ": 1, "endYear": 2026, "endQ": 4, "milestone": "关键里程碑", "color": "" }
   ],
   "productQuarterly": [
     { "productName": "产品名", "unit": "单位",
@@ -188,17 +206,14 @@ const EXTRACT_PROMPT = (text: string) => `
       "revenueTarget": "", "q1Action": "", "q2Action": "", "q3Action": "", "q4Action": "" }
   ],
   "customerPlans": [
-    { "customerSegment": "客户类型", "isNew": false,
-      "currentCount": "", "targetCount": "",
+    { "customerSegment": "客户类型", "isNew": false, "currentCount": "", "targetCount": "",
       "acquisitionStrategy": "", "retentionStrategy": "" }
   ],
-  "orgChartNodes": [
-    { "name": "部门/岗位名", "role": "职能描述", "headcount": "", "headcountNew": "" }
-  ]
+  "orgChartNodes": [{ "name": "部门/岗位名", "role": "职能描述", "headcount": "", "headcountNew": "" }]
 }
 
-文件内容（总长 ${text.length} 字符，截取前 30000 字符）：
-${text.slice(0, 30000)}
+战略信号摘要：
+${summary}
 `;
 
 // ─── Route handler ────────────────────────────────────────────────────────────
@@ -254,9 +269,19 @@ export async function POST(req: Request) {
   }
 
   try {
+    // ── 第一阶段：降噪摘要 ──────────────────────────────────────────────────
+    const summary = await callLlm([
+      { role: "system", content: STAGE1_SYSTEM },
+      { role: "user", content: STAGE1_PROMPT(text) },
+    ]);
+    if (!summary || summary.trim().length < 30) {
+      return NextResponse.json({ error: "文件内容过少，无法提取战略信息" }, { status: 422 });
+    }
+
+    // ── 第二阶段：结构化提取 ─────────────────────────────────────────────────
     const raw = await callLlm([
-      { role: "system", content: EXTRACT_SYSTEM },
-      { role: "user", content: EXTRACT_PROMPT(text) },
+      { role: "system", content: STAGE2_SYSTEM },
+      { role: "user", content: STAGE2_PROMPT(summary) },
     ]);
 
     let extracted: Record<string, unknown> = {};
@@ -267,7 +292,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw }, { status: 422 });
     }
 
-    return NextResponse.json({ ok: true, extracted });
+    return NextResponse.json({ ok: true, extracted, summary });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "LLM 调用失败";
     return NextResponse.json({ error: msg }, { status: 500 });
