@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
@@ -77,6 +78,8 @@ async function readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<str
 }
 
 export async function POST(req: Request) {
+  const denied = await requireApiMinLevel(1);
+  if (denied) return denied;
   try {
     const form = await req.formData();
     const file = form.get("file") as File | null;
