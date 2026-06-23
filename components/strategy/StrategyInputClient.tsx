@@ -11,14 +11,14 @@ interface Props {
 
 type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions";
 
-const ALL_STEPS: { id: Step; label: string; buOnly?: boolean }[] = [
+const ALL_STEPS: { id: Step; label: string; buHint?: boolean }[] = [
   { id: "intent", label: "战略意图" },
   { id: "objectives", label: "BSC目标/OKR" },
   { id: "initiatives", label: "关键举措" },
   { id: "swot", label: "SWOT分析" },
-  { id: "product", label: "产品季度计划", buOnly: true },
-  { id: "channel", label: "渠道发展", buOnly: true },
-  { id: "customer", label: "客户发展", buOnly: true },
+  { id: "product", label: "产品季度计划", buHint: true },
+  { id: "channel", label: "渠道发展", buHint: true },
+  { id: "customer", label: "客户发展", buHint: true },
   { id: "org", label: "组织规划" },
   { id: "resources", label: "资源请求" },
   { id: "assumptions", label: "关键假设" },
@@ -201,9 +201,7 @@ export function StrategyInputClient({ orgUnits }: Props) {
   const executiveUnits = orgUnits.filter((u) => u.level === "EXECUTIVE");
   const operatingUnits = orgUnits.filter((u) => u.level === "OPERATING_UNIT");
   const selectedOrg = orgUnits.find((u) => u.id === selectedOrgId);
-  // 业务BU（OPERATING_UNIT或EXECUTIVE）才需要填渠道/客户/产品
   const isBuUnit = selectedOrg ? selectedOrg.level === "OPERATING_UNIT" || selectedOrg.level === "EXECUTIVE" : false;
-  const STEPS = ALL_STEPS.filter((s) => !s.buOnly || isBuUnit);
 
   const flash = useCallback((kind: "ok" | "err", msg: string) => {
     setToast({ kind, msg });
@@ -427,17 +425,20 @@ export function StrategyInputClient({ orgUnits }: Props) {
 
             {/* 步骤导航 */}
             <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
-              {STEPS.map((s) => (
+              {ALL_STEPS.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setStep(s.id)}
-                  className={'border-b-2 px-4 py-2 text-sm transition-colors ' + (
+                  className={'relative border-b-2 px-4 py-2 text-sm transition-colors ' + (
                     step === s.id
                       ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
                       : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                   )}
                 >
                   {s.label}
+                  {s.buHint && !isBuUnit && (
+                    <span className="ml-1 text-[10px] text-[var(--signal-yellow)] opacity-70">BU</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -509,6 +510,56 @@ function validate(form: PlanForm): { ok: boolean; step: Step; message: string } 
 }
 
 // ─── AI 一键提取栏 ────────────────────────────────────────────────────────────
+function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ea = e as any;
+  return {
+    ...f,
+    intent: ea.intent?.trim() || f.intent,
+    northStar: ea.northStar?.trim() || f.northStar,
+    objectives: Array.isArray(ea.objectives) && ea.objectives.length > 0
+      ? DIMENSIONS.map((d) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const m = ea.objectives.find((o: any) => o.dimension === d.key);
+          const base = f.objectives.find((b) => b.dimension === d.key)!;
+          if (!m) return base;
+          const krs = (m.keyResults ?? []).map((k: { keyResult?: string; target?: string }) => ({ keyResult: k.keyResult ?? "", target: k.target ?? "" }));
+          while (krs.length < 2) krs.push({ keyResult: "", target: "" });
+          return { dimension: d.key, objective: m.objective ?? "", keyResults: krs };
+        })
+      : f.objectives,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initiatives: Array.isArray(ea.initiatives) && ea.initiatives.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.initiatives.map((i: any) => ({ title: i.title ?? "", ownerName: i.ownerName ?? "", okrKeyResult: i.okrKeyResult ?? "", okrTarget: i.okrTarget ?? "", okrBaseline: i.okrBaseline ?? "", q1Milestone: i.q1Milestone ?? "", q2Milestone: i.q2Milestone ?? "", q3Milestone: i.q3Milestone ?? "", q4Milestone: i.q4Milestone ?? "" }))
+      : f.initiatives,
+    swotItems: Array.isArray(ea.swotItems) && ea.swotItems.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "" }))
+      : f.swotItems,
+    assumptions: Array.isArray(ea.assumptions) && ea.assumptions.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.assumptions.map((a: any) => ({ assumption: a.assumption ?? "", critical: !!a.critical }))
+      : f.assumptions,
+    productQuarterly: Array.isArray(ea.productQuarterly) && ea.productQuarterly.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty ?? "", q1Revenue: p.q1Revenue ?? "", q2Qty: p.q2Qty ?? "", q2Revenue: p.q2Revenue ?? "", q3Qty: p.q3Qty ?? "", q3Revenue: p.q3Revenue ?? "", q4Qty: p.q4Qty ?? "", q4Revenue: p.q4Revenue ?? "", annualQty: p.annualQty ?? "", annualRevenue: p.annualRevenue ?? "", note: p.note ?? "" }))
+      : f.productQuarterly,
+    channelPlans: Array.isArray(ea.channelPlans) && ea.channelPlans.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.channelPlans.map((c: any) => ({ channelType: c.channelType ?? "", currentState: c.currentState ?? "", targetState: c.targetState ?? "", q1Action: c.q1Action ?? "", q2Action: c.q2Action ?? "", q3Action: c.q3Action ?? "", q4Action: c.q4Action ?? "", revenueTarget: c.revenueTarget ?? "", partnerCount: c.partnerCount ?? "", note: c.note ?? "" }))
+      : f.channelPlans,
+    customerPlans: Array.isArray(ea.customerPlans) && ea.customerPlans.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.customerPlans.map((c: any) => ({ customerSegment: c.customerSegment ?? "", isNew: !!c.isNew, currentCount: String(c.currentCount ?? ""), targetCount: String(c.targetCount ?? ""), q1Count: String(c.q1Count ?? ""), q2Count: String(c.q2Count ?? ""), q3Count: String(c.q3Count ?? ""), q4Count: String(c.q4Count ?? ""), revenuePerCustomer: c.revenuePerCustomer ?? "", acquisitionStrategy: c.acquisitionStrategy ?? "", retentionStrategy: c.retentionStrategy ?? "", note: c.note ?? "" }))
+      : f.customerPlans,
+    orgChartNodes: Array.isArray(ea.orgChartNodes) && ea.orgChartNodes.length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ea.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: String(n.headcount ?? ""), headcountNew: String(n.headcountNew ?? ""), note: n.note ?? "" }))
+      : f.orgChartNodes,
+  };
+}
+
 function AiExtractBar({
   form, setForm, flash,
 }: {
@@ -517,72 +568,30 @@ function AiExtractBar({
   flash: (kind: "ok" | "err", msg: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"file" | "text">("file");
   const [text, setText] = useState("");
+  const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  async function extract() {
-    if (!text.trim() || text.trim().length < 50) {
-      flash("err", "请粘贴至少 50 字的战略文档内容");
-      return;
-    }
+  async function runExtract(body: FormData | string) {
     setLoading(true);
     try {
+      const isFormData = body instanceof FormData;
       const res = await fetch("/api/strategy/plan/ai-extract", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        ...(isFormData ? { body } : {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: body }),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "提取失败");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const e = data.extracted as any;
-      setForm((f) => ({
-        ...f,
-        intent: e.intent?.trim() || f.intent,
-        northStar: e.northStar?.trim() || f.northStar,
-        objectives: Array.isArray(e.objectives) && e.objectives.length > 0
-          ? DIMENSIONS.map((d) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const m = e.objectives.find((o: any) => o.dimension === d.key);
-              const base = f.objectives.find((b) => b.dimension === d.key)!;
-              if (!m) return base;
-              const krs = (m.keyResults ?? []).map((k: {keyResult?:string;target?:string}) => ({ keyResult: k.keyResult ?? "", target: k.target ?? "" }));
-              while (krs.length < 2) krs.push({ keyResult: "", target: "" });
-              return { dimension: d.key, objective: m.objective ?? "", keyResults: krs };
-            })
-          : f.objectives,
-        initiatives: Array.isArray(e.initiatives) && e.initiatives.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.initiatives.map((i: any) => ({ title: i.title ?? "", ownerName: i.ownerName ?? "", okrKeyResult: i.okrKeyResult ?? "", okrTarget: i.okrTarget ?? "", okrBaseline: i.okrBaseline ?? "", q1Milestone: i.q1Milestone ?? "", q2Milestone: i.q2Milestone ?? "", q3Milestone: i.q3Milestone ?? "", q4Milestone: i.q4Milestone ?? "" }))
-          : f.initiatives,
-        swotItems: Array.isArray(e.swotItems) && e.swotItems.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "" }))
-          : f.swotItems,
-        assumptions: Array.isArray(e.assumptions) && e.assumptions.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.assumptions.map((a: any) => ({ assumption: a.assumption ?? "", critical: !!a.critical }))
-          : f.assumptions,
-        productQuarterly: Array.isArray(e.productQuarterly) && e.productQuarterly.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty ?? "", q1Revenue: p.q1Revenue ?? "", q2Qty: p.q2Qty ?? "", q2Revenue: p.q2Revenue ?? "", q3Qty: p.q3Qty ?? "", q3Revenue: p.q3Revenue ?? "", q4Qty: p.q4Qty ?? "", q4Revenue: p.q4Revenue ?? "", annualQty: p.annualQty ?? "", annualRevenue: p.annualRevenue ?? "", note: p.note ?? "" }))
-          : f.productQuarterly,
-        channelPlans: Array.isArray(e.channelPlans) && e.channelPlans.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.channelPlans.map((c: any) => ({ channelType: c.channelType ?? "", currentState: c.currentState ?? "", targetState: c.targetState ?? "", q1Action: c.q1Action ?? "", q2Action: c.q2Action ?? "", q3Action: c.q3Action ?? "", q4Action: c.q4Action ?? "", revenueTarget: c.revenueTarget ?? "", partnerCount: c.partnerCount ?? "", note: c.note ?? "" }))
-          : f.channelPlans,
-        customerPlans: Array.isArray(e.customerPlans) && e.customerPlans.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.customerPlans.map((c: any) => ({ customerSegment: c.customerSegment ?? "", isNew: !!c.isNew, currentCount: c.currentCount?.toString() ?? "", targetCount: c.targetCount?.toString() ?? "", q1Count: c.q1Count?.toString() ?? "", q2Count: c.q2Count?.toString() ?? "", q3Count: c.q3Count?.toString() ?? "", q4Count: c.q4Count?.toString() ?? "", revenuePerCustomer: c.revenuePerCustomer ?? "", acquisitionStrategy: c.acquisitionStrategy ?? "", retentionStrategy: c.retentionStrategy ?? "", note: c.note ?? "" }))
-          : f.customerPlans,
-        orgChartNodes: Array.isArray(e.orgChartNodes) && e.orgChartNodes.length > 0
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? e.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: n.headcount?.toString() ?? "", headcountNew: n.headcountNew?.toString() ?? "", note: n.note ?? "" }))
-          : f.orgChartNodes,
-      }));
-      flash("ok", "AI 提取完成，请检查并修订各页内容");
+      setForm((f) => applyExtracted(f, data.extracted));
+      flash("ok", "AI 提取完成，请逐页检查并修订内容");
       setOpen(false);
       setText("");
+      setFileName("");
     } catch (err) {
       flash("err", err instanceof Error ? err.message : "提取失败");
     } finally {
@@ -590,38 +599,103 @@ function AiExtractBar({
     }
   }
 
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileName(file.name);
+    const fd = new FormData();
+    fd.append("file", file);
+    void runExtract(fd);
+    e.target.value = "";
+  }
+
+  function onTextExtract() {
+    if (!text.trim() || text.trim().length < 50) {
+      flash("err", "请粘贴至少 50 字的内容");
+      return;
+    }
+    void runExtract(text.trim());
+  }
+
   return (
     <div className="rounded-lg border border-dashed border-[var(--color-accent)]/40 bg-[var(--color-accent)]/[0.03] p-3">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-[var(--color-accent)]">✨ AI 自动填充</span>
-          <span className="ml-2 text-xs text-[var(--color-text-muted)]">粘贴战略文档原文，一键提取结构化内容</span>
+          <span className="text-xs text-[var(--color-text-muted)]">上传文件或粘贴文档内容，AI 一键提取所有字段</span>
         </div>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="text-xs text-[var(--color-accent)] hover:underline"
-        >
+        <button onClick={() => setOpen((o) => !o)} className="text-xs text-[var(--color-accent)] hover:underline">
           {open ? "收起" : "展开"}
         </button>
       </div>
+
       {open && (
-        <div className="mt-3 space-y-2">
-          <textarea
-            className="w-full rounded-lg border border-[var(--surface-border)] bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none"
-            rows={6}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="粘贴战略报告/PPT文字内容（支持中英文），AI 将自动识别战略意图、OKR、SWOT、产品计划、渠道、客户规划等字段..."
-          />
-          <div className="flex justify-end">
-            <button
-              onClick={extract}
-              disabled={loading}
-              className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
-            >
-              {loading ? "AI 提取中…" : "开始提取"}
-            </button>
+        <div className="mt-3 space-y-3">
+          {/* 模式切换 */}
+          <div className="flex gap-1 rounded-lg border border-[var(--surface-border)] p-0.5 w-fit">
+            {(["file", "text"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={"rounded-md px-3 py-1 text-xs transition-colors " + (
+                  mode === m
+                    ? "bg-[var(--color-accent)] text-white"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                )}
+              >
+                {m === "file" ? "📎 上传文件" : "📋 粘贴文本"}
+              </button>
+            ))}
           </div>
+
+          {mode === "file" ? (
+            <div className="space-y-2">
+              <p className="text-xs text-[var(--color-text-muted)]">支持 PPTX · DOCX · XLSX · PDF，最大 20 MB</p>
+              <div className="flex items-center gap-3">
+                <label className={
+                  "cursor-pointer rounded-lg border px-4 py-2 text-sm transition-colors " +
+                  (loading
+                    ? "border-[var(--surface-border)] text-[var(--color-text-muted)] opacity-50 cursor-not-allowed"
+                    : "border-[var(--color-accent)] text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white")
+                }>
+                  {loading ? "AI 提取中…" : "选择文件并提取"}
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    className="hidden"
+                    accept=".pptx,.ppt,.docx,.doc,.xlsx,.xls,.pdf"
+                    disabled={loading}
+                    onChange={onFileChange}
+                  />
+                </label>
+                {fileName && !loading && (
+                  <span className="text-xs text-[var(--color-text-muted)] truncate max-w-[200px]">{fileName}</span>
+                )}
+                {loading && (
+                  <span className="text-xs text-[var(--color-accent)] animate-pulse">正在提取内容并分析，请稍候…</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <textarea
+                className="w-full rounded-lg border border-[var(--surface-border)] bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none"
+                rows={6}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="粘贴战略报告/PPT 文字内容（支持中英文），AI 将自动识别战略意图、OKR、SWOT、产品计划、渠道、客户规划等所有字段…"
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={onTextExtract}
+                  disabled={loading}
+                  className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
+                >
+                  {loading ? "AI 提取中…" : "开始提取"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
