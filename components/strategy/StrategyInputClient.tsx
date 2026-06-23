@@ -9,12 +9,17 @@ interface Props {
   orgUnits: OrgUnitWithChildren[];
 }
 
-type Step = "intent" | "objectives" | "initiatives" | "resources" | "assumptions";
+type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions";
 
-const STEPS: { id: Step; label: string }[] = [
+const ALL_STEPS: { id: Step; label: string; buOnly?: boolean }[] = [
   { id: "intent", label: "战略意图" },
-  { id: "objectives", label: "BSC 目标" },
+  { id: "objectives", label: "BSC目标/OKR" },
   { id: "initiatives", label: "关键举措" },
+  { id: "swot", label: "SWOT分析" },
+  { id: "product", label: "产品季度计划", buOnly: true },
+  { id: "channel", label: "渠道发展", buOnly: true },
+  { id: "customer", label: "客户发展", buOnly: true },
+  { id: "org", label: "组织规划" },
   { id: "resources", label: "资源请求" },
   { id: "assumptions", label: "关键假设" },
 ];
@@ -40,10 +45,65 @@ interface ObjectiveDraft {
 interface InitiativeDraft {
   title: string;
   ownerName: string;
+  okrKeyResult: string;
+  okrTarget: string;
+  okrBaseline: string;
   q1Milestone: string;
   q2Milestone: string;
   q3Milestone: string;
   q4Milestone: string;
+}
+interface SwotItemDraft {
+  quadrant: "strength" | "weakness" | "opportunity" | "threat";
+  content: string;
+}
+interface OrgChartNodeDraft {
+  name: string;
+  role: string;
+  headcount: string;
+  headcountNew: string;
+  note: string;
+}
+interface ChannelPlanDraft {
+  channelType: string;
+  currentState: string;
+  targetState: string;
+  q1Action: string;
+  q2Action: string;
+  q3Action: string;
+  q4Action: string;
+  revenueTarget: string;
+  partnerCount: string;
+  note: string;
+}
+interface CustomerPlanDraft {
+  customerSegment: string;
+  isNew: boolean;
+  currentCount: string;
+  targetCount: string;
+  q1Count: string;
+  q2Count: string;
+  q3Count: string;
+  q4Count: string;
+  revenuePerCustomer: string;
+  acquisitionStrategy: string;
+  retentionStrategy: string;
+  note: string;
+}
+interface ProductQuarterlyDraft {
+  productName: string;
+  unit: string;
+  q1Qty: string;
+  q1Revenue: string;
+  q2Qty: string;
+  q2Revenue: string;
+  q3Qty: string;
+  q3Revenue: string;
+  q4Qty: string;
+  q4Revenue: string;
+  annualQty: string;
+  annualRevenue: string;
+  note: string;
 }
 interface ResourceDraft {
   resourceType: string;
@@ -68,6 +128,27 @@ interface PlanForm {
   initiatives: InitiativeDraft[];
   resources: ResourceDraft[];
   assumptions: AssumptionDraft[];
+  swotItems: SwotItemDraft[];
+  orgChartNodes: OrgChartNodeDraft[];
+  channelPlans: ChannelPlanDraft[];
+  customerPlans: CustomerPlanDraft[];
+  productQuarterly: ProductQuarterlyDraft[];
+}
+
+function emptyInitiative(): InitiativeDraft {
+  return { title: "", ownerName: "", okrKeyResult: "", okrTarget: "", okrBaseline: "", q1Milestone: "", q2Milestone: "", q3Milestone: "", q4Milestone: "" };
+}
+function emptyChannel(): ChannelPlanDraft {
+  return { channelType: "", currentState: "", targetState: "", q1Action: "", q2Action: "", q3Action: "", q4Action: "", revenueTarget: "", partnerCount: "", note: "" };
+}
+function emptyCustomer(isNew: boolean): CustomerPlanDraft {
+  return { customerSegment: "", isNew, currentCount: "", targetCount: "", q1Count: "", q2Count: "", q3Count: "", q4Count: "", revenuePerCustomer: "", acquisitionStrategy: "", retentionStrategy: "", note: "" };
+}
+function emptyProduct(): ProductQuarterlyDraft {
+  return { productName: "", unit: "", q1Qty: "", q1Revenue: "", q2Qty: "", q2Revenue: "", q3Qty: "", q3Revenue: "", q4Qty: "", q4Revenue: "", annualQty: "", annualRevenue: "", note: "" };
+}
+function emptyOrg(): OrgChartNodeDraft {
+  return { name: "", role: "", headcount: "", headcountNew: "", note: "" };
 }
 
 function emptyForm(): PlanForm {
@@ -82,20 +163,23 @@ function emptyForm(): PlanForm {
         { keyResult: "", target: "" },
       ],
     })),
-    initiatives: [1, 2, 3].map(() => ({
-      title: "",
-      ownerName: "",
-      q1Milestone: "",
-      q2Milestone: "",
-      q3Milestone: "",
-      q4Milestone: "",
-    })),
+    initiatives: [1, 2, 3].map(() => emptyInitiative()),
     resources: ["Capex", "Opex", "Headcount"].map((t) => ({
       resourceType: t,
       amount: "",
       justification: "",
     })),
     assumptions: [1, 2, 3].map(() => ({ assumption: "", critical: false })),
+    swotItems: [
+      { quadrant: "strength", content: "" },
+      { quadrant: "weakness", content: "" },
+      { quadrant: "opportunity", content: "" },
+      { quadrant: "threat", content: "" },
+    ],
+    orgChartNodes: [emptyOrg()],
+    channelPlans: [emptyChannel(), emptyChannel()],
+    customerPlans: [emptyCustomer(false), emptyCustomer(false), emptyCustomer(true), emptyCustomer(true)],
+    productQuarterly: [emptyProduct(), emptyProduct()],
   };
 }
 
@@ -117,6 +201,9 @@ export function StrategyInputClient({ orgUnits }: Props) {
   const executiveUnits = orgUnits.filter((u) => u.level === "EXECUTIVE");
   const operatingUnits = orgUnits.filter((u) => u.level === "OPERATING_UNIT");
   const selectedOrg = orgUnits.find((u) => u.id === selectedOrgId);
+  // 业务BU（OPERATING_UNIT或EXECUTIVE）才需要填渠道/客户/产品
+  const isBuUnit = selectedOrg ? selectedOrg.level === "OPERATING_UNIT" || selectedOrg.level === "EXECUTIVE" : false;
+  const STEPS = ALL_STEPS.filter((s) => !s.buOnly || isBuUnit);
 
   const flash = useCallback((kind: "ok" | "err", msg: string) => {
     setToast({ kind, msg });
@@ -178,6 +265,11 @@ export function StrategyInputClient({ orgUnits }: Props) {
           initiatives: form.initiatives,
           resources: form.resources,
           assumptions: form.assumptions,
+          swotItems: form.swotItems,
+          orgChartNodes: form.orgChartNodes,
+          channelPlans: form.channelPlans,
+          customerPlans: form.customerPlans,
+          productQuarterly: form.productQuarterly,
           submit,
         }),
       });
@@ -330,6 +422,9 @@ export function StrategyInputClient({ orgUnits }: Props) {
               </div>
             </div>
 
+            {/* AI 一键提取 */}
+            <AiExtractBar form={form} setForm={setForm} flash={flash} />
+
             {/* 步骤导航 */}
             <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
               {STEPS.map((s) => (
@@ -360,6 +455,11 @@ export function StrategyInputClient({ orgUnits }: Props) {
               )}
               {step === "objectives" && <ObjectivesForm form={form} setForm={setForm} />}
               {step === "initiatives" && <InitiativesForm form={form} setForm={setForm} />}
+              {step === "swot" && <SwotForm form={form} setForm={setForm} />}
+              {step === "product" && <ProductQuarterlyForm form={form} setForm={setForm} />}
+              {step === "channel" && <ChannelForm form={form} setForm={setForm} />}
+              {step === "customer" && <CustomerForm form={form} setForm={setForm} />}
+              {step === "org" && <OrgChartForm form={form} setForm={setForm} />}
               {step === "resources" && <ResourcesForm form={form} setForm={setForm} />}
               {step === "assumptions" && <AssumptionsForm form={form} setForm={setForm} />}
             </div>
@@ -408,6 +508,126 @@ function validate(form: PlanForm): { ok: boolean; step: Step; message: string } 
   return { ok: true, step: "intent", message: "" };
 }
 
+// ─── AI 一键提取栏 ────────────────────────────────────────────────────────────
+function AiExtractBar({
+  form, setForm, flash,
+}: {
+  form: PlanForm;
+  setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
+  flash: (kind: "ok" | "err", msg: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function extract() {
+    if (!text.trim() || text.trim().length < 50) {
+      flash("err", "请粘贴至少 50 字的战略文档内容");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/strategy/plan/ai-extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "提取失败");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const e = data.extracted as any;
+      setForm((f) => ({
+        ...f,
+        intent: e.intent?.trim() || f.intent,
+        northStar: e.northStar?.trim() || f.northStar,
+        objectives: Array.isArray(e.objectives) && e.objectives.length > 0
+          ? DIMENSIONS.map((d) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const m = e.objectives.find((o: any) => o.dimension === d.key);
+              const base = f.objectives.find((b) => b.dimension === d.key)!;
+              if (!m) return base;
+              const krs = (m.keyResults ?? []).map((k: {keyResult?:string;target?:string}) => ({ keyResult: k.keyResult ?? "", target: k.target ?? "" }));
+              while (krs.length < 2) krs.push({ keyResult: "", target: "" });
+              return { dimension: d.key, objective: m.objective ?? "", keyResults: krs };
+            })
+          : f.objectives,
+        initiatives: Array.isArray(e.initiatives) && e.initiatives.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.initiatives.map((i: any) => ({ title: i.title ?? "", ownerName: i.ownerName ?? "", okrKeyResult: i.okrKeyResult ?? "", okrTarget: i.okrTarget ?? "", okrBaseline: i.okrBaseline ?? "", q1Milestone: i.q1Milestone ?? "", q2Milestone: i.q2Milestone ?? "", q3Milestone: i.q3Milestone ?? "", q4Milestone: i.q4Milestone ?? "" }))
+          : f.initiatives,
+        swotItems: Array.isArray(e.swotItems) && e.swotItems.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "" }))
+          : f.swotItems,
+        assumptions: Array.isArray(e.assumptions) && e.assumptions.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.assumptions.map((a: any) => ({ assumption: a.assumption ?? "", critical: !!a.critical }))
+          : f.assumptions,
+        productQuarterly: Array.isArray(e.productQuarterly) && e.productQuarterly.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty ?? "", q1Revenue: p.q1Revenue ?? "", q2Qty: p.q2Qty ?? "", q2Revenue: p.q2Revenue ?? "", q3Qty: p.q3Qty ?? "", q3Revenue: p.q3Revenue ?? "", q4Qty: p.q4Qty ?? "", q4Revenue: p.q4Revenue ?? "", annualQty: p.annualQty ?? "", annualRevenue: p.annualRevenue ?? "", note: p.note ?? "" }))
+          : f.productQuarterly,
+        channelPlans: Array.isArray(e.channelPlans) && e.channelPlans.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.channelPlans.map((c: any) => ({ channelType: c.channelType ?? "", currentState: c.currentState ?? "", targetState: c.targetState ?? "", q1Action: c.q1Action ?? "", q2Action: c.q2Action ?? "", q3Action: c.q3Action ?? "", q4Action: c.q4Action ?? "", revenueTarget: c.revenueTarget ?? "", partnerCount: c.partnerCount ?? "", note: c.note ?? "" }))
+          : f.channelPlans,
+        customerPlans: Array.isArray(e.customerPlans) && e.customerPlans.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.customerPlans.map((c: any) => ({ customerSegment: c.customerSegment ?? "", isNew: !!c.isNew, currentCount: c.currentCount?.toString() ?? "", targetCount: c.targetCount?.toString() ?? "", q1Count: c.q1Count?.toString() ?? "", q2Count: c.q2Count?.toString() ?? "", q3Count: c.q3Count?.toString() ?? "", q4Count: c.q4Count?.toString() ?? "", revenuePerCustomer: c.revenuePerCustomer ?? "", acquisitionStrategy: c.acquisitionStrategy ?? "", retentionStrategy: c.retentionStrategy ?? "", note: c.note ?? "" }))
+          : f.customerPlans,
+        orgChartNodes: Array.isArray(e.orgChartNodes) && e.orgChartNodes.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ? e.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: n.headcount?.toString() ?? "", headcountNew: n.headcountNew?.toString() ?? "", note: n.note ?? "" }))
+          : f.orgChartNodes,
+      }));
+      flash("ok", "AI 提取完成，请检查并修订各页内容");
+      setOpen(false);
+      setText("");
+    } catch (err) {
+      flash("err", err instanceof Error ? err.message : "提取失败");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-dashed border-[var(--color-accent)]/40 bg-[var(--color-accent)]/[0.03] p-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-sm font-medium text-[var(--color-accent)]">✨ AI 自动填充</span>
+          <span className="ml-2 text-xs text-[var(--color-text-muted)]">粘贴战略文档原文，一键提取结构化内容</span>
+        </div>
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="text-xs text-[var(--color-accent)] hover:underline"
+        >
+          {open ? "收起" : "展开"}
+        </button>
+      </div>
+      {open && (
+        <div className="mt-3 space-y-2">
+          <textarea
+            className="w-full rounded-lg border border-[var(--surface-border)] bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none"
+            rows={6}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="粘贴战略报告/PPT文字内容（支持中英文），AI 将自动识别战略意图、OKR、SWOT、产品计划、渠道、客户规划等字段..."
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={extract}
+              disabled={loading}
+              className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {loading ? "AI 提取中…" : "开始提取"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function hydrate(plan: any): PlanForm {
   const base = emptyForm();
@@ -429,6 +649,9 @@ function hydrate(plan: any): PlanForm {
       ? plan.initiatives.map((i: any) => ({
           title: i.title ?? "",
           ownerName: i.ownerName ?? "",
+          okrKeyResult: i.okrKeyResult ?? "",
+          okrTarget: i.okrTarget ?? "",
+          okrBaseline: i.okrBaseline ?? "",
           q1Milestone: i.q1Milestone ?? "",
           q2Milestone: i.q2Milestone ?? "",
           q3Milestone: i.q3Milestone ?? "",
@@ -449,6 +672,31 @@ function hydrate(plan: any): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? plan.assumptions.map((a: any) => ({ assumption: a.assumption ?? "", critical: !!a.critical }))
       : base.assumptions;
+  const swotItems: SwotItemDraft[] =
+    (plan.swotItems ?? []).length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? plan.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "" }))
+      : base.swotItems;
+  const orgChartNodes: OrgChartNodeDraft[] =
+    (plan.orgChartNodes ?? []).length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? plan.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: n.headcount?.toString() ?? "", headcountNew: n.headcountNew?.toString() ?? "", note: n.note ?? "" }))
+      : base.orgChartNodes;
+  const channelPlans: ChannelPlanDraft[] =
+    (plan.channelPlans ?? []).length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? plan.channelPlans.map((c: any) => ({ channelType: c.channelType ?? "", currentState: c.currentState ?? "", targetState: c.targetState ?? "", q1Action: c.q1Action ?? "", q2Action: c.q2Action ?? "", q3Action: c.q3Action ?? "", q4Action: c.q4Action ?? "", revenueTarget: c.revenueTarget?.toString() ?? "", partnerCount: c.partnerCount?.toString() ?? "", note: c.note ?? "" }))
+      : base.channelPlans;
+  const customerPlans: CustomerPlanDraft[] =
+    (plan.customerPlans ?? []).length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? plan.customerPlans.map((c: any) => ({ customerSegment: c.customerSegment ?? "", isNew: !!c.isNew, currentCount: c.currentCount?.toString() ?? "", targetCount: c.targetCount?.toString() ?? "", q1Count: c.q1Count?.toString() ?? "", q2Count: c.q2Count?.toString() ?? "", q3Count: c.q3Count?.toString() ?? "", q4Count: c.q4Count?.toString() ?? "", revenuePerCustomer: c.revenuePerCustomer?.toString() ?? "", acquisitionStrategy: c.acquisitionStrategy ?? "", retentionStrategy: c.retentionStrategy ?? "", note: c.note ?? "" }))
+      : base.customerPlans;
+  const productQuarterly: ProductQuarterlyDraft[] =
+    (plan.productQuarterly ?? []).length > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? plan.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty?.toString() ?? "", q1Revenue: p.q1Revenue?.toString() ?? "", q2Qty: p.q2Qty?.toString() ?? "", q2Revenue: p.q2Revenue?.toString() ?? "", q3Qty: p.q3Qty?.toString() ?? "", q3Revenue: p.q3Revenue?.toString() ?? "", q4Qty: p.q4Qty?.toString() ?? "", q4Revenue: p.q4Revenue?.toString() ?? "", annualQty: p.annualQty?.toString() ?? "", annualRevenue: p.annualRevenue?.toString() ?? "", note: p.note ?? "" }))
+      : base.productQuarterly;
   return {
     intent: plan.intent ?? "",
     northStar: plan.northStar ?? "",
@@ -456,6 +704,11 @@ function hydrate(plan: any): PlanForm {
     initiatives,
     resources,
     assumptions,
+    swotItems,
+    orgChartNodes,
+    channelPlans,
+    customerPlans,
+    productQuarterly,
   };
 }
 
@@ -626,40 +879,53 @@ function InitiativesForm({
       return { ...f, initiatives };
     });
   }
-  const quarters: (keyof InitiativeDraft)[] = ["q1Milestone", "q2Milestone", "q3Milestone", "q4Milestone"];
+  function addRow() {
+    setForm((f) => ({ ...f, initiatives: [...f.initiatives, emptyInitiative()] }));
+  }
+  function removeRow(idx: number) {
+    setForm((f) => ({ ...f, initiatives: f.initiatives.filter((_, i) => i !== idx) }));
+  }
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">年度必赢之战 (WIG) 与关键举措</p>
+      <p className="text-xs text-[var(--color-text-muted)]">OKR 关键举措级成果 — 每项举措对应一个可衡量关键结果</p>
       {form.initiatives.map((ini, idx) => (
-        <div key={idx} className="rounded border border-[var(--surface-border)] p-3">
-          <input
-            type="text"
-            className="mb-2 w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
-            value={ini.title}
-            onChange={(e) => set(idx, "title", e.target.value)}
-            placeholder={"举措 " + (idx + 1) + ": 标题"}
-          />
-          <input
-            type="text"
-            className="mb-2 w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
-            value={ini.ownerName}
-            onChange={(e) => set(idx, "ownerName", e.target.value)}
-            placeholder="负责人"
-          />
-          <div className="grid grid-cols-4 gap-2">
-            {quarters.map((q, qi) => (
+        <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <div className="flex-1 space-y-2">
               <input
-                key={q}
                 type="text"
-                className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
-                value={ini[q]}
-                onChange={(e) => set(idx, q, e.target.value)}
-                placeholder={"Q" + (qi + 1) + " 里程碑"}
+                className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm font-medium"
+                value={ini.title}
+                onChange={(e) => set(idx, "title", e.target.value)}
+                placeholder={"举措 " + (idx + 1) + " 标题（必赢之战）"}
               />
-            ))}
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" value={ini.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="负责人" />
+                <div />
+              </div>
+              <div className="rounded bg-[var(--color-accent)]/[0.04] p-2 space-y-1">
+                <div className="text-xs font-medium text-[var(--color-accent)]">KR · 关键成果</div>
+                <input type="text" className="w-full rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrKeyResult} onChange={(e) => set(idx, "okrKeyResult", e.target.value)} placeholder="关键成果描述（可衡量）" />
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrBaseline} onChange={(e) => set(idx, "okrBaseline", e.target.value)} placeholder="基线值（现状）" />
+                  <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrTarget} onChange={(e) => set(idx, "okrTarget", e.target.value)} placeholder="目标值" />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(["q1Milestone", "q2Milestone", "q3Milestone", "q4Milestone"] as const).map((q, qi) => (
+                  <input key={q} type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" value={ini[q]} onChange={(e) => set(idx, q, e.target.value)} placeholder={"Q" + (qi + 1) + " 里程碑"} />
+                ))}
+              </div>
+            </div>
+            {form.initiatives.length > 1 && (
+              <button onClick={() => removeRow(idx)} className="mt-0.5 text-xs text-[var(--signal-red)] hover:underline">删除</button>
+            )}
           </div>
         </div>
       ))}
+      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">
+        + 新增举措
+      </button>
     </div>
   );
 }
@@ -718,27 +984,264 @@ function AssumptionsForm({
       return { ...f, assumptions };
     });
   }
+  function addRow() { setForm((f) => ({ ...f, assumptions: [...f.assumptions, { assumption: "", critical: false }] })); }
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">战略成立的关键前提假设（勾选 = 关键假设）</p>
       {form.assumptions.map((a, idx) => (
         <div key={idx} className="flex gap-2">
-          <input
-            type="checkbox"
-            className="mt-1"
-            title="标记为关键假设"
-            checked={a.critical}
-            onChange={(e) => set(idx, "critical", e.target.checked)}
-          />
-          <textarea
-            className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
-            rows={2}
-            value={a.assumption}
-            onChange={(e) => set(idx, "assumption", e.target.value)}
-            placeholder={"假设 " + (idx + 1)}
-          />
+          <input type="checkbox" className="mt-1" title="标记为关键假设" checked={a.critical} onChange={(e) => set(idx, "critical", e.target.checked)} />
+          <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm" rows={2} value={a.assumption} onChange={(e) => set(idx, "assumption", e.target.value)} placeholder={"假设 " + (idx + 1)} />
         </div>
       ))}
+      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增假设</button>
+    </div>
+  );
+}
+
+// ─── SWOT 分析 ────────────────────────────────────────────────────────────────
+const SWOT_META = [
+  { key: "strength" as const, label: "S · 优势", color: "text-[var(--signal-green)]" },
+  { key: "weakness" as const, label: "W · 劣势", color: "text-[var(--signal-red)]" },
+  { key: "opportunity" as const, label: "O · 机会", color: "text-[var(--color-accent)]" },
+  { key: "threat" as const, label: "T · 威胁", color: "text-[var(--signal-yellow)]" },
+];
+
+function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, content: string) {
+    setForm((f) => { const swotItems = [...f.swotItems]; swotItems[idx] = { ...swotItems[idx], content }; return { ...f, swotItems }; });
+  }
+  function addItem(quadrant: SwotItemDraft["quadrant"]) {
+    setForm((f) => ({ ...f, swotItems: [...f.swotItems, { quadrant, content: "" }] }));
+  }
+  function removeItem(idx: number) {
+    setForm((f) => ({ ...f, swotItems: f.swotItems.filter((_, i) => i !== idx) }));
+  }
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      {SWOT_META.map((m) => {
+        const items = form.swotItems.map((s, i) => ({ ...s, _idx: i })).filter((s) => s.quadrant === m.key);
+        return (
+          <div key={m.key} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
+            <div className={"text-sm font-semibold " + m.color}>{m.label}</div>
+            {items.map((s) => (
+              <div key={s._idx} className="flex gap-1">
+                <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" rows={2} value={s.content} onChange={(e) => set(s._idx, e.target.value)} placeholder="输入条目" />
+                <button onClick={() => removeItem(s._idx)} className="text-xs text-[var(--signal-red)] hover:underline">×</button>
+              </div>
+            ))}
+            <button onClick={() => addItem(m.key)} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── 产品季度推进表 ────────────────────────────────────────────────────────────
+function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof ProductQuarterlyDraft, value: string) {
+    setForm((f) => { const productQuarterly = [...f.productQuarterly]; productQuarterly[idx] = { ...productQuarterly[idx], [field]: value }; return { ...f, productQuarterly }; });
+  }
+  function addRow() { setForm((f) => ({ ...f, productQuarterly: [...f.productQuarterly, emptyProduct()] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, productQuarterly: f.productQuarterly.filter((_, i) => i !== idx) })); }
+  const cellCls = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs text-right";
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-[var(--color-text-muted)]">产品数量与金额季度推进计划（万元）</p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
+              <th className="px-2 py-1.5 text-left font-medium">产品</th>
+              <th className="px-2 py-1.5 text-center font-medium">单位</th>
+              {["Q1","Q2","Q3","Q4"].map(q => (
+                <th key={q} colSpan={2} className="px-2 py-1.5 text-center font-medium border-l border-[var(--surface-border)]">{q}</th>
+              ))}
+              <th className="px-2 py-1.5 text-center font-medium border-l border-[var(--surface-border)]">全年收入</th>
+              <th className="px-1" />
+            </tr>
+            <tr className="text-[var(--color-text-muted)] bg-black/[0.02]">
+              <th /><th />
+              {["Q1","Q2","Q3","Q4"].map(q => (
+                <>
+                  <th key={q+"qty"} className="px-2 py-1 text-center border-l border-[var(--surface-border)]">数量</th>
+                  <th key={q+"rev"} className="px-2 py-1 text-center">收入</th>
+                </>
+              ))}
+              <th className="border-l border-[var(--surface-border)] px-2">万元</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {form.productQuarterly.map((p, idx) => (
+              <tr key={idx} className="border-b border-[var(--surface-border)]/50">
+                <td className="px-1 py-1"><input type="text" className={cellCls + " text-left w-24"} value={p.productName} onChange={(e) => set(idx, "productName", e.target.value)} placeholder="产品名" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-12"} value={p.unit} onChange={(e) => set(idx, "unit", e.target.value)} placeholder="台/套" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q1Qty} onChange={(e) => set(idx, "q1Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q1Revenue} onChange={(e) => set(idx, "q1Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q2Qty} onChange={(e) => set(idx, "q2Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q2Revenue} onChange={(e) => set(idx, "q2Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q3Qty} onChange={(e) => set(idx, "q3Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q3Revenue} onChange={(e) => set(idx, "q3Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q4Qty} onChange={(e) => set(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q4Revenue} onChange={(e) => set(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-20"} value={p.annualRevenue} onChange={(e) => set(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-xs text-[var(--signal-red)] hover:underline">×</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增产品行</button>
+    </div>
+  );
+}
+
+// ─── 渠道发展专题（业务BU必填）────────────────────────────────────────────────
+const CHANNEL_TYPES = ["直销", "经销/代理", "电商", "OEM/ODM", "政府/项目", "海外出口"];
+
+function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof ChannelPlanDraft, value: string) {
+    setForm((f) => { const channelPlans = [...f.channelPlans]; channelPlans[idx] = { ...channelPlans[idx], [field]: value }; return { ...f, channelPlans }; });
+  }
+  function addRow(type: string) { setForm((f) => ({ ...f, channelPlans: [...f.channelPlans, { ...emptyChannel(), channelType: type }] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, channelPlans: f.channelPlans.filter((_, i) => i !== idx) })); }
+  const ta = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 flex-wrap">
+        <p className="text-xs text-[var(--color-text-muted)]">业务BU必填 · 渠道发展专题分析</p>
+        {CHANNEL_TYPES.map((t) => (
+          <button key={t} onClick={() => addRow(t)} className="rounded border border-[var(--surface-border)] px-2 py-0.5 text-xs hover:bg-black/[0.04] transition-colors">{t}</button>
+        ))}
+      </div>
+      {form.channelPlans.map((ch, idx) => (
+        <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <input type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm font-medium" value={ch.channelType} onChange={(e) => set(idx, "channelType", e.target.value)} placeholder="渠道类型" />
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-[var(--color-text-muted)]">年度目标收入(万)</span>
+              <input type="text" className="w-24 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1" value={ch.revenueTarget} onChange={(e) => set(idx, "revenueTarget", e.target.value)} placeholder="0" />
+              <span className="text-[var(--color-text-muted)]">伙伴数量</span>
+              <input type="text" className="w-16 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1" value={ch.partnerCount} onChange={(e) => set(idx, "partnerCount", e.target.value)} placeholder="0" />
+              <button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">删除</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><div className="text-xs text-[var(--color-text-muted)] mb-1">现状</div><textarea className={ta} rows={2} value={ch.currentState} onChange={(e) => set(idx, "currentState", e.target.value)} placeholder="当前渠道状况" /></div>
+            <div><div className="text-xs text-[var(--color-text-muted)] mb-1">三年目标</div><textarea className={ta} rows={2} value={ch.targetState} onChange={(e) => set(idx, "targetState", e.target.value)} placeholder="期望达到的渠道状态" /></div>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {(["q1Action","q2Action","q3Action","q4Action"] as const).map((f, qi) => (
+              <div key={f}><div className="text-xs text-[var(--color-text-muted)] mb-1">Q{qi+1}行动</div><textarea className={ta} rows={2} value={ch[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder={"Q"+(qi+1)+"关键行动"} /></div>
+            ))}
+          </div>
+          <input type="text" className={ta} value={ch.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="备注" />
+        </div>
+      ))}
+      {form.channelPlans.length === 0 && <div className="text-center py-8 text-sm text-[var(--color-text-muted)]">点击上方按钮添加渠道类型</div>}
+    </div>
+  );
+}
+
+// ─── 客户发展专题（业务BU必填）────────────────────────────────────────────────
+function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof CustomerPlanDraft, value: string | boolean) {
+    setForm((f) => { const customerPlans = [...f.customerPlans]; customerPlans[idx] = { ...customerPlans[idx], [field]: value as string }; return { ...f, customerPlans }; });
+  }
+  function addRow(isNew: boolean) { setForm((f) => ({ ...f, customerPlans: [...f.customerPlans, emptyCustomer(isNew)] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, customerPlans: f.customerPlans.filter((_, i) => i !== idx) })); }
+  const inp = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
+  const ta = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
+  const existing = form.customerPlans.filter((c) => !c.isNew);
+  const newCustomers = form.customerPlans.filter((c) => c.isNew);
+  function renderGroup(group: typeof existing, label: string, isNew: boolean) {
+    const indices = form.customerPlans.map((c, i) => ({ c, i })).filter(({ c }) => c.isNew === isNew).map(({ i }) => i);
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium">{label}</div>
+          <button onClick={() => addRow(isNew)} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增{isNew ? "新增" : "现有"}客户</button>
+        </div>
+        {group.length === 0 && <div className="text-center py-4 text-xs text-[var(--color-text-muted)]">暂无数据，点击上方新增</div>}
+        {group.map((cu, gi) => {
+          const idx = indices[gi];
+          return (
+            <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <input type="text" className={inp + " flex-1"} value={cu.customerSegment} onChange={(e) => set(idx, "customerSegment", e.target.value)} placeholder="客户类型/名称" />
+                <span className="text-xs text-[var(--color-text-muted)]">现有</span>
+                <input type="text" className={inp + " w-16"} value={cu.currentCount} onChange={(e) => set(idx, "currentCount", e.target.value)} placeholder="家数" />
+                <span className="text-xs text-[var(--color-text-muted)]">年度目标</span>
+                <input type="text" className={inp + " w-16"} value={cu.targetCount} onChange={(e) => set(idx, "targetCount", e.target.value)} placeholder="家数" />
+                <span className="text-xs text-[var(--color-text-muted)]">客单值(万)</span>
+                <input type="text" className={inp + " w-20"} value={cu.revenuePerCustomer} onChange={(e) => set(idx, "revenuePerCustomer", e.target.value)} placeholder="0" />
+                <button onClick={() => removeRow(idx)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+              </div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(["q1Count","q2Count","q3Count","q4Count"] as const).map((f, qi) => (
+                  <div key={f}><div className="text-xs text-[var(--color-text-muted)] mb-0.5">Q{qi+1}家数</div><input type="text" className={inp + " w-full"} value={cu[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder="0" /></div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div><div className="text-xs text-[var(--color-text-muted)] mb-1">{isNew ? "获客策略" : "留存策略"}</div><textarea className={ta} rows={2} value={isNew ? cu.acquisitionStrategy : cu.retentionStrategy} onChange={(e) => set(idx, isNew ? "acquisitionStrategy" : "retentionStrategy", e.target.value)} placeholder={isNew ? "如何获取新客户" : "如何维系老客户"} /></div>
+                <div><div className="text-xs text-[var(--color-text-muted)] mb-1">备注</div><textarea className={ta} rows={2} value={cu.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-6">
+      <p className="text-xs text-[var(--color-text-muted)]">业务BU必填 · 客户发展年度规划</p>
+      {renderGroup(existing, "现有客户", false)}
+      <hr className="border-[var(--surface-border)]" />
+      {renderGroup(newCustomers, "新增客户", true)}
+    </div>
+  );
+}
+
+// ─── 组织规划 ─────────────────────────────────────────────────────────────────
+function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
+  function set(idx: number, field: keyof OrgChartNodeDraft, value: string) {
+    setForm((f) => { const orgChartNodes = [...f.orgChartNodes]; orgChartNodes[idx] = { ...orgChartNodes[idx], [field]: value }; return { ...f, orgChartNodes }; });
+  }
+  function addRow() { setForm((f) => ({ ...f, orgChartNodes: [...f.orgChartNodes, emptyOrg()] })); }
+  function removeRow(idx: number) { setForm((f) => ({ ...f, orgChartNodes: f.orgChartNodes.filter((_, i) => i !== idx) })); }
+  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-[var(--color-text-muted)]">组织架构规划 — 填写规划期末的目标组织设计</p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
+              <th className="px-2 py-1.5 text-left font-medium">部门/岗位</th>
+              <th className="px-2 py-1.5 text-left font-medium">职能描述</th>
+              <th className="px-2 py-1.5 text-center font-medium">现有编制</th>
+              <th className="px-2 py-1.5 text-center font-medium">新增编制</th>
+              <th className="px-2 py-1.5 text-left font-medium">备注</th>
+              <th className="px-1" />
+            </tr>
+          </thead>
+          <tbody>
+            {form.orgChartNodes.map((node, idx) => (
+              <tr key={idx} className="border-b border-[var(--surface-border)]/50">
+                <td className="px-1 py-1"><input type="text" className={inp} value={node.name} onChange={(e) => set(idx, "name", e.target.value)} placeholder="部门/岗位名称" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={node.role} onChange={(e) => set(idx, "role", e.target.value)} placeholder="主要职能" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount} onChange={(e) => set(idx, "headcount", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcountNew} onChange={(e) => set(idx, "headcountNew", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={node.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></td>
+                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增行</button>
     </div>
   );
 }

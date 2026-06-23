@@ -886,13 +886,18 @@ model StrategicPlan {
   lockedAt      DateTime?         @map("locked_at")
   createdAt     DateTime          @default(now()) @map("created_at")
   updatedAt     DateTime          @updatedAt @map("updated_at")
-  assumptions   PlanAssumption[]
-  attachments   PlanAttachment[]
-  initiatives   PlanInitiative[]
-  milestones    PlanMilestone[]
-  premises      PlanPremise[]
-  objectives    PlanObjective[]
-  resourceReqs  ResourceRequest[]
+  assumptions      PlanAssumption[]
+  attachments      PlanAttachment[]
+  initiatives      PlanInitiative[]
+  milestones       PlanMilestone[]
+  premises         PlanPremise[]
+  objectives       PlanObjective[]
+  resourceReqs     ResourceRequest[]
+  swotItems        PlanSwotItem[]
+  orgChartNodes    PlanOrgChartNode[]
+  channelPlans     PlanChannelPlan[]
+  customerPlans    PlanCustomerPlan[]
+  productQuarterly PlanProductQuarterly[]
   orgUnit       OrgUnit           @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
   submittedBy   User?             @relation(fields: [submittedById], references: [id])
 
@@ -940,10 +945,13 @@ model PlanInitiative {
   q1Milestone String?       @map("q1_milestone") @db.VarChar(200)
   q2Milestone String?       @map("q2_milestone") @db.VarChar(200)
   q3Milestone String?       @map("q3_milestone") @db.VarChar(200)
-  q4Milestone String?       @map("q4_milestone") @db.VarChar(200)
-  sortOrder   Int           @default(999) @map("sort_order")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  q4Milestone   String?       @map("q4_milestone") @db.VarChar(200)
+  okrKeyResult  String?       @map("okr_key_result") @db.VarChar(300)
+  okrTarget     String?       @map("okr_target") @db.VarChar(100)
+  okrBaseline   String?       @map("okr_baseline") @db.VarChar(100)
+  sortOrder     Int           @default(999) @map("sort_order")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId])
   @@map("plan_initiatives")
@@ -1030,6 +1038,109 @@ model PlanPremise {
   @@unique([planId, code])
   @@index([planId])
   @@map("plan_premises")
+}
+
+/// 战略编制 · SWOT 分析项
+model PlanSwotItem {
+  id        String        @id @default(uuid())
+  planId    String        @map("plan_id")
+  quadrant  SwotQuadrant
+  content   String        @db.VarChar(400)
+  sortOrder Int           @default(0) @map("sort_order")
+  createdAt DateTime      @default(now()) @map("created_at")
+  plan      StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, quadrant])
+  @@map("plan_swot_items")
+}
+
+/// 战略编制 · 组织规划节点
+model PlanOrgChartNode {
+  id           String        @id @default(uuid())
+  planId       String        @map("plan_id")
+  parentId     String?       @map("parent_id")
+  name         String        @db.VarChar(100)
+  role         String?       @db.VarChar(100)
+  headcount    Int?
+  headcountNew Int?          @map("headcount_new")
+  note         String?       @db.VarChar(300)
+  sortOrder    Int           @default(0) @map("sort_order")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  plan         StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("plan_org_chart_nodes")
+}
+
+/// 战略编制 · 渠道发展专题（业务BU必填）
+model PlanChannelPlan {
+  id              String        @id @default(uuid())
+  planId          String        @map("plan_id")
+  channelType     String        @map("channel_type") @db.VarChar(80)
+  currentState    String?       @map("current_state") @db.VarChar(400)
+  targetState     String?       @map("target_state") @db.VarChar(400)
+  q1Action        String?       @map("q1_action") @db.VarChar(200)
+  q2Action        String?       @map("q2_action") @db.VarChar(200)
+  q3Action        String?       @map("q3_action") @db.VarChar(200)
+  q4Action        String?       @map("q4_action") @db.VarChar(200)
+  revenueTarget   Decimal?      @map("revenue_target") @db.Decimal(14, 2)
+  partnerCount    Int?          @map("partner_count")
+  note            String?       @db.VarChar(400)
+  sortOrder       Int           @default(0) @map("sort_order")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  plan            StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("plan_channel_plans")
+}
+
+/// 战略编制 · 客户发展专题（业务BU必填）
+model PlanCustomerPlan {
+  id                  String        @id @default(uuid())
+  planId              String        @map("plan_id")
+  customerSegment     String        @map("customer_segment") @db.VarChar(100)
+  isNew               Boolean       @default(false) @map("is_new")
+  currentCount        Int?          @map("current_count")
+  targetCount         Int?          @map("target_count")
+  q1Count             Int?          @map("q1_count")
+  q2Count             Int?          @map("q2_count")
+  q3Count             Int?          @map("q3_count")
+  q4Count             Int?          @map("q4_count")
+  revenuePerCustomer  Decimal?      @map("revenue_per_customer") @db.Decimal(14, 2)
+  acquisitionStrategy String?       @map("acquisition_strategy") @db.VarChar(400)
+  retentionStrategy   String?       @map("retention_strategy") @db.VarChar(400)
+  note                String?       @db.VarChar(400)
+  sortOrder           Int           @default(0) @map("sort_order")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  plan                StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("plan_customer_plans")
+}
+
+/// 战略编制 · 产品季度推进表
+model PlanProductQuarterly {
+  id             String        @id @default(uuid())
+  planId         String        @map("plan_id")
+  productName    String        @map("product_name") @db.VarChar(100)
+  unit           String?       @db.VarChar(20)
+  q1Qty          Decimal?      @map("q1_qty") @db.Decimal(14, 2)
+  q1Revenue      Decimal?      @map("q1_revenue") @db.Decimal(14, 2)
+  q2Qty          Decimal?      @map("q2_qty") @db.Decimal(14, 2)
+  q2Revenue      Decimal?      @map("q2_revenue") @db.Decimal(14, 2)
+  q3Qty          Decimal?      @map("q3_qty") @db.Decimal(14, 2)
+  q3Revenue      Decimal?      @map("q3_revenue") @db.Decimal(14, 2)
+  q4Qty          Decimal?      @map("q4_qty") @db.Decimal(14, 2)
+  q4Revenue      Decimal?      @map("q4_revenue") @db.Decimal(14, 2)
+  annualQty      Decimal?      @map("annual_qty") @db.Decimal(14, 2)
+  annualRevenue  Decimal?      @map("annual_revenue") @db.Decimal(14, 2)
+  note           String?       @db.VarChar(300)
+  sortOrder      Int           @default(0) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  plan           StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("plan_product_quarterly")
 }
 
 /// 看战略 · China Strategy Summary 一页纸（可编辑 · 审批入库）
@@ -2300,4 +2411,11 @@ model DecodeHoshinEntry {
 
   @@index([period, sortOrder])
   @@map("decode_hoshin_entries")
+}
+
+enum SwotQuadrant {
+  strength
+  weakness
+  opportunity
+  threat
 }
