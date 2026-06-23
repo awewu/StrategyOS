@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrgUnit } from "@prisma/client";
 
 type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
@@ -1064,10 +1064,10 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
             <tr className="text-[var(--color-text-muted)] bg-black/[0.02]">
               <th /><th />
               {["Q1","Q2","Q3","Q4"].map(q => (
-                <>
-                  <th key={q+"qty"} className="px-2 py-1 text-center border-l border-[var(--surface-border)]">数量</th>
-                  <th key={q+"rev"} className="px-2 py-1 text-center">收入</th>
-                </>
+                <React.Fragment key={q}>
+                  <th className="px-2 py-1 text-center border-l border-[var(--surface-border)]">数量</th>
+                  <th className="px-2 py-1 text-center">收入</th>
+                </React.Fragment>
               ))}
               <th className="border-l border-[var(--surface-border)] px-2">万元</th>
               <th />
