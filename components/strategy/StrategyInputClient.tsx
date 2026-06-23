@@ -316,60 +316,42 @@ export function StrategyInputClient({ orgUnits }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-[280px_1fr] gap-6">
-      {/* 左侧组织树 */}
-      <div className="space-y-2">
-        <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-          选择组织单位
-        </div>
-        <div className="space-y-1">
+    <div className="space-y-4">
+      {/* 顶部：下拉选择组织单位 */}
+      <div className="flex items-center gap-3 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-4 py-3">
+        <label className="text-sm font-medium whitespace-nowrap">编制单位</label>
+        <select
+          value={selectedOrgId ?? ""}
+          onChange={(e) => setSelectedOrgId(e.target.value || null)}
+          className="flex-1 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-sm focus:border-[var(--color-accent)] focus:outline-none"
+        >
+          <option value="">— 请选择组织单位 —</option>
           {groupUnits.map((g) => (
-            <div key={g.id}>
-              <button
-                onClick={() => setSelectedOrgId(g.id)}
-                className={'w-full rounded px-3 py-2 text-left text-sm transition-colors ' + (
-                  selectedOrgId === g.id ? "bg-[var(--color-accent)] text-white" : "hover:bg-black/[0.04]"
-                )}
-              >
-                {g.name}
-              </button>
-              <div className="ml-3 mt-1 space-y-1">
-                {executiveUnits.map((ex) => (
-                  <div key={ex.id}>
-                    <button
-                      onClick={() => setSelectedOrgId(ex.id)}
-                      className={'w-full rounded px-3 py-1.5 text-left text-sm transition-colors ' + (
-                        selectedOrgId === ex.id ? "bg-[var(--color-accent)] text-white" : "hover:bg-black/[0.04]"
-                      )}
-                    >
-                      {ex.name}
-                    </button>
-                    <div className="ml-3 mt-0.5 space-y-0.5">
-                      {operatingUnits
-                        .filter((o) => o.parentId === ex.id)
-                        .map((o) => (
-                          <button
-                            key={o.id}
-                            onClick={() => setSelectedOrgId(o.id)}
-                            className={'w-full rounded px-3 py-1 text-left text-xs transition-colors ' + (
-                              selectedOrgId === o.id
-                                ? "bg-[var(--color-accent)] text-white"
-                                : "text-[var(--color-text-secondary)] hover:bg-black/[0.04]"
-                            )}
-                          >
-                            {o.name}
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <optgroup key={g.id} label={g.name}>
+              <option value={g.id}>{g.name}（集团）</option>
+              {executiveUnits.map((ex) => (
+                <React.Fragment key={ex.id}>
+                  <option value={ex.id}>　{ex.name}</option>
+                  {operatingUnits
+                    .filter((o) => o.parentId === ex.id)
+                    .map((o) => (
+                      <option key={o.id} value={o.id}>　　{o.name}</option>
+                    ))}
+                </React.Fragment>
+              ))}
+            </optgroup>
           ))}
-        </div>
+        </select>
+        {selectedOrg && (
+          <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+            {selectedOrg.level === "GROUP" && "集团"}
+            {selectedOrg.level === "EXECUTIVE" && "事业部/体系"}
+            {selectedOrg.level === "OPERATING_UNIT" && "二级部门"}
+          </span>
+        )}
       </div>
 
-      {/* 右侧表单 */}
+      {/* 表单主体 */}
       <div className="relative rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         {toast && (
           <div
