@@ -7,14 +7,15 @@ export const runtime = "nodejs";
 // ─── LLM helpers ─────────────────────────────────────────────────────────────
 function apiKey() { return process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY; }
 function baseUrl() { return (process.env.STRATOS_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, ""); }
-function llmModel() { return process.env.STRATOS_LLM_MODEL ?? "gpt-4o-mini"; }
+// 战略提取需要强推理，默认 gpt-4o；可用 STRATOS_LLM_EXTRACT_MODEL 单独覆盖
+function llmModel() { return process.env.STRATOS_LLM_EXTRACT_MODEL ?? process.env.STRATOS_LLM_MODEL ?? "gpt-4o"; }
 
 async function callLlm(messages: { role: string; content: string }[]): Promise<string> {
   const res = await fetch(`${baseUrl()}/chat/completions`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey()}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: llmModel(), temperature: 0.1, response_format: { type: "json_object" }, messages }),
-    signal: AbortSignal.timeout(30000),
+    body: JSON.stringify({ model: llmModel(), temperature: 0.2, response_format: { type: "json_object" }, messages }),
+    signal: AbortSignal.timeout(90000),
   });
   if (!res.ok) throw new Error(`LLM HTTP ${res.status}`);
   const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> };
@@ -70,32 +71,76 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
   try {
     if (ext === "docx" || ext === "doc") {
       return (await readZipEntry(buf, "word/document.xml"))
-        .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 40000);
+        .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 60000);
     }
     if (ext === "xlsx" || ext === "xls") {
       return (await readZipEntry(buf, "xl/sharedStrings.xml"))
-        .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 40000);
+        .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 60000);
     }
     if (ext === "pptx" || ext === "ppt") {
-      return (await readZipEntriesMatching(buf, /^ppt\/slides\/slide\d+\.xml$/))
-        .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 40000);
+      // 保留幻灯片编号顺序，每张用分隔符区分，方便LLM理解层级结构
+      const { inflateRawSync } = await import("node:zlib");
+      const slides: { idx: number; text: string }[] = [];
+      let offset = 0;
+      while (offset < buf.length - 30) {
+        if (buf.readUInt32LE(offset) !== 0x04034b50) { offset++; continue; }
+        const fnLen = buf.readUInt16LE(offset + 26);
+        const extraLen = buf.readUInt16LE(offset + 28);
+        const name = buf.subarray(offset + 30, offset + 30 + fnLen).toString("utf8");
+        const dataStart = offset + 30 + fnLen + extraLen;
+        const compSize = buf.readUInt32LE(offset + 18);
+        const m = name.match(/^ppt\/slides\/slide(\d+)\.xml$/);
+        if (m && compSize > 0) {
+          try {
+            const compressed = buf.subarray(dataStart, dataStart + compSize);
+            const raw = buf.readUInt16LE(offset + 8) === 8 ? inflateRawSync(compressed) : compressed;
+            const text = raw.toString("utf8").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+            if (text) slides.push({ idx: parseInt(m[1]), text });
+          } catch { /* skip bad slide */ }
+        }
+        offset = dataStart + compSize;
+      }
+      slides.sort((a, b) => a.idx - b.idx);
+      return slides.map((s) => `【幻灯片 ${s.idx}】${s.text}`).join("\n").slice(0, 60000);
     }
     if (ext === "pdf") {
-      // Best-effort: extract readable ASCII text from PDF binary
-      return buf.toString("latin1")
-        .replace(/[^\x20-\x7E\u4e00-\u9fff]/g, " ")
-        .replace(/\s+/g, " ").trim().slice(0, 20000);
+      // 用 pdf-parse 正确提取中文PDF文本
+      try {
+        const pdfMod = await import("pdf-parse");
+        const pdfParse = (pdfMod as unknown as { default: (buf: Buffer) => Promise<{ text: string }> }).default ?? pdfMod;
+        const result = await (pdfParse as (buf: Buffer) => Promise<{ text: string }>)(buf);
+        return result.text.replace(/\s+/g, " ").trim().slice(0, 60000);
+      } catch {
+        // fallback：latin1 ASCII 粗提取
+        return buf.toString("latin1")
+          .replace(/[^\x20-\x7E]/g, " ")
+          .replace(/\s+/g, " ").trim().slice(0, 30000);
+      }
     }
   } catch { /* best-effort */ }
-  return buf.toString("utf8", 0, Math.min(buf.length, 20000));
+  return buf.toString("utf8", 0, Math.min(buf.length, 30000));
 }
 
 // ─── Prompt ───────────────────────────────────────────────────────────────────
-const EXTRACT_SYSTEM = `你是战略编制助手。用户提供战略文件/PPT/报告原文，
-你需要从中提取结构化战略信息，输出严格 JSON，不要输出任何其他内容。`;
+const EXTRACT_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计分卡）、OKR、SWOT、波特五力、市场规模分析（TAM/SAM/SOM）等战略框架。
+用户上传的是企业内部战略文件、年度规划PPT或战略报告。
+
+你的任务是从文档中高质量提取结构化战略信息，遵循以下规则：
+1. **战略意图**：用一句话概括3-5年核心战略方向，保留原文关键词，不超过60字
+2. **北极星指标**：找最核心的量化目标，如"3年收入达XX亿"或"市占率从X%提升至Y%"
+3. **BSC目标**：按 FINANCIAL/CUSTOMER/PROCESS/LEARNING 四维度分类，每维度1-3个目标，每个目标附上KR
+4. **关键举措**：提取具体战略举措/项目，尽量关联负责人、OKR成果指标、季度里程碑
+5. **SWOT**：即使文档没有明确写SWOT，也要从文档语境推断优势/劣势/机会/威胁
+6. **市场洞察**：提取市场规模数据、行业趋势、竞争对手信息、客户需求变化，标注数据来源
+7. **作战计划**：提取有明确时间节点的具体行动，关联到举措，注明负责人和验收标准
+8. **预算**：提取投资金额、资源配置、ROI预估
+9. **路线图**：提取时间线节点，标注所属 track（举措/产品/组织/技术/渠道）
+10. 如果文档确实没有某类信息，返回空数组 []，**不要捏造**
+11. 只输出 JSON，不要有任何解释、注释或 markdown 代码块`;
 
 const EXTRACT_PROMPT = (text: string) => `
-从以下战略文件中提取信息，输出严格 JSON，结构如下（找不到的字段留空字符串，数组留空数组）：
+请从以下战略文件中提取信息。严格按照 JSON 结构输出，字段说明见 system 消息。
+结构如下（找不到的字段留空字符串，无法提取的数组留 []，不要捏造内容）：
 {
   "intent": "三年战略意图一句话",
   "northStar": "北极星指标",
@@ -152,10 +197,8 @@ const EXTRACT_PROMPT = (text: string) => `
   ]
 }
 
-只输出 JSON，不要有任何注释或说明文字。
-
-文件内容：
-${text.slice(0, 14000)}
+文件内容（总长 ${text.length} 字符，截取前 30000 字符）：
+${text.slice(0, 30000)}
 `;
 
 // ─── Route handler ────────────────────────────────────────────────────────────

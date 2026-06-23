@@ -256,6 +256,12 @@ const HORIZON_END = 2028;
 
 export function StrategyInputClient({ orgUnits }: Props) {
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+
+  // 客户端挂载后恢复上次选中的组织单位（避免SSR hydration mismatch）
+  useEffect(() => {
+    const saved = sessionStorage.getItem("strategy_input_orgId");
+    if (saved) setSelectedOrgId(saved);
+  }, []);
   const [step, setStep] = useState<Step>("intent");
   const [form, setForm] = useState<PlanForm>(emptyForm());
   const [attachments, setAttachments] = useState<AttachmentInfo[]>([]);
@@ -265,10 +271,22 @@ export function StrategyInputClient({ orgUnits }: Props) {
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const groupUnits = orgUnits.filter((u) => u.level === "GROUP");
-  const executiveUnits = orgUnits.filter((u) => u.level === "EXECUTIVE");
-  const operatingUnits = orgUnits.filter((u) => u.level === "OPERATING_UNIT");
-  const selectedOrg = orgUnits.find((u) => u.id === selectedOrgId);
+  // flat list including any children nested in the tree (DB may return nested structure)
+  const allUnitsFlat = useMemo(() => {
+    const seen = new Set<string>();
+    const result: OrgUnit[] = [];
+    for (const u of orgUnits) {
+      if (!seen.has(u.id)) { seen.add(u.id); result.push(u); }
+      for (const c of u.children ?? []) {
+        if (!seen.has(c.id)) { seen.add(c.id); result.push(c); }
+      }
+    }
+    return result;
+  }, [orgUnits]);
+  const groupUnits = allUnitsFlat.filter((u) => u.level === "GROUP");
+  const executiveUnits = allUnitsFlat.filter((u) => u.level === "EXECUTIVE");
+  const operatingUnits = allUnitsFlat.filter((u) => u.level === "OPERATING_UNIT");
+  const selectedOrg = allUnitsFlat.find((u) => u.id === selectedOrgId);
   const isBuUnit = selectedOrg ? selectedOrg.level === "OPERATING_UNIT" || selectedOrg.level === "EXECUTIVE" : false;
 
   const flash = useCallback((kind: "ok" | "err", msg: string) => {
@@ -394,25 +412,34 @@ export function StrategyInputClient({ orgUnits }: Props) {
         <label className="text-sm font-medium whitespace-nowrap">编制单位</label>
         <select
           value={selectedOrgId ?? ""}
-          onChange={(e) => setSelectedOrgId(e.target.value || null)}
+          onChange={(e) => {
+            const v = e.target.value || null;
+            if (v) sessionStorage.setItem("strategy_input_orgId", v);
+            else sessionStorage.removeItem("strategy_input_orgId");
+            setSelectedOrgId(v);
+          }}
+          autoComplete="off"
           className="flex-1 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-sm focus:border-[var(--color-accent)] focus:outline-none"
         >
           <option value="">— 请选择组织单位 —</option>
-          {groupUnits.map((g) => (
-            <optgroup key={g.id} label={g.name}>
-              <option value={g.id}>{g.name}（集团）</option>
-              {executiveUnits.map((ex) => (
-                <React.Fragment key={ex.id}>
-                  <option value={ex.id}>　{ex.name}</option>
-                  {operatingUnits
-                    .filter((o) => o.parentId === ex.id)
-                    .map((o) => (
-                      <option key={o.id} value={o.id}>　　{o.name}</option>
-                    ))}
-                </React.Fragment>
-              ))}
+          {groupUnits.length > 0 && (
+            <optgroup label="集团">
+              {groupUnits.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
             </optgroup>
-          ))}
+          )}
+          {executiveUnits.length > 0 && (
+            <optgroup label="事业部 / 职能">
+              {executiveUnits.map((ex) => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
+            </optgroup>
+          )}
+          {operatingUnits.length > 0 && (
+            <optgroup label="二级部门">
+              {operatingUnits.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+            </optgroup>
+          )}
+          {groupUnits.length === 0 && executiveUnits.length === 0 && operatingUnits.length === 0 &&
+            orgUnits.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)
+          }
         </select>
         {selectedOrg && (
           <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
@@ -437,6 +464,12 @@ export function StrategyInputClient({ orgUnits }: Props) {
           </div>
         )}
 
+        {/* DEBUG: remove after fix confirmed */}
+        {process.env.NODE_ENV === "development" && typeof window !== "undefined" && (() => {
+          // eslint-disable-next-line no-console
+          console.log("[StrategyInput] selectedOrgId=", selectedOrgId, "selectedOrg=", selectedOrg, "allUnitsFlat.length=", allUnitsFlat.length, "ids=", allUnitsFlat.map(u => u.id));
+          return null;
+        })()}
         {!selectedOrg ? (
           <div className="flex h-96 items-center justify-center text-sm text-[var(--color-text-muted)]">
             ← 请先选择组织单位
