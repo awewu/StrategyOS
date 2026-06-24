@@ -17,6 +17,7 @@ export const USAGE_ACTIONS = [
   "admin_view",
   "audit_export",
   "data_source_read",
+  "permission_update",
 ] as const;
 
 export type UsageAction = (typeof USAGE_ACTIONS)[number];
@@ -35,7 +36,7 @@ export interface UsageLogRecord {
   createdAt: Date;
 }
 
-export const ACTION_LABELS: Record<UsageAction, string> = {
+export const ACTION_LABELS: Partial<Record<UsageAction, string>> = {
   login: "登录",
   logout: "登出",
   auth_failed: "登录失败",

@@ -38,7 +38,7 @@ async function orchestrateWithLlm(
   rawContent: string,
   parsed: ParsedReport
 ): Promise<LlmOrchestrationPayload | null> {
-  const apiKey = process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY;
+  const apiKey = process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
   const baseUrl = (
     process.env.STRATOS_LLM_BASE_URL ??
     process.env.OPENAI_BASE_URL ??

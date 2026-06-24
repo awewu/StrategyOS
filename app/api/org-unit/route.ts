@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiAdmin } from "@/lib/auth/api-guard";
 import { getOrgUnitsFlat } from "@/lib/data/org-units-access";
 import { prisma } from "@/lib/db";
 
@@ -13,6 +14,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = await requireApiAdmin();
+  if (denied) return denied;
+
   try {
     const { id, name, nameEn, level, parentId, sortOrder } = await req.json();
     if (!name?.trim()) return NextResponse.json({ error: "名称必填" }, { status: 400 });
@@ -53,6 +57,9 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const denied = await requireApiAdmin();
+  if (denied) return denied;
+
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   try {

@@ -29,6 +29,22 @@ function pct(v: number) {
   return `${(v * 100).toFixed(1)}%`;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(fallback);
+      },
+    );
+  });
+}
+
 const QUICK_LINKS = [
   { href: "/inbox", label: "议题 Inbox" },
   { href: "/strategy/input", label: "编制战略" },
@@ -45,7 +61,7 @@ export default async function CommandPage() {
   await requireRouteAccess("/command");
   const [deck, inbox, activePeriod] = await Promise.all([
     getCommandDeckBundle(),
-    getInboxSummary(),
+    withTimeout(getInboxSummary(), 2500, { open: 0, critical: 0 }),
     getActivePeriod(),
   ]);
   const top3 = topDiffs(deck.stratDiffs, 3);

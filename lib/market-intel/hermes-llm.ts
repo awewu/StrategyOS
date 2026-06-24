@@ -6,7 +6,7 @@
 import type { IntelSignal, IntelSource } from "./types";
 
 function llmKey(): string | undefined {
-  return process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY;
+  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
 }
 function llmBaseUrl(): string {
   return (process.env.STRATOS_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "");

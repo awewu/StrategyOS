@@ -22,23 +22,47 @@ type InitiativeInput = {
 type ResourceInput = { resourceType: string; amount?: string; justification?: string };
 type AssumptionInput = { assumption?: string; critical?: boolean };
 type SwotItemInput = { quadrant: "strength" | "weakness" | "opportunity" | "threat"; content?: string };
-type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; headcount?: number; headcountNew?: number; note?: string };
-type ChannelPlanInput = { channelType?: string; currentState?: string; targetState?: string; q1Action?: string; q2Action?: string; q3Action?: string; q4Action?: string; revenueTarget?: string; partnerCount?: number; note?: string };
-type CustomerPlanInput = { customerSegment?: string; isNew?: boolean; currentCount?: number; targetCount?: number; q1Count?: number; q2Count?: number; q3Count?: number; q4Count?: number; revenuePerCustomer?: string; acquisitionStrategy?: string; retentionStrategy?: string; note?: string };
-type ProductQuarterlyInput = { productName?: string; unit?: string; q1Qty?: string; q1Revenue?: string; q2Qty?: string; q2Revenue?: string; q3Qty?: string; q3Revenue?: string; q4Qty?: string; q4Revenue?: string; annualQty?: string; annualRevenue?: string; note?: string };
+type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; headcount?: number | string; headcountNew?: number | string; note?: string };
+type NumericInput = number | string;
+type ChannelPlanInput = { channelType?: string; currentState?: string; targetState?: string; q1Action?: string; q2Action?: string; q3Action?: string; q4Action?: string; revenueTarget?: NumericInput; partnerCount?: number | string; note?: string };
+type CustomerPlanInput = { customerSegment?: string; isNew?: boolean; currentCount?: number | string; targetCount?: number | string; q1Count?: number | string; q2Count?: number | string; q3Count?: number | string; q4Count?: number | string; revenuePerCustomer?: NumericInput; acquisitionStrategy?: string; retentionStrategy?: string; note?: string };
+type ProductQuarterlyInput = { productName?: string; unit?: string; q1Qty?: NumericInput; q1Revenue?: NumericInput; q2Qty?: NumericInput; q2Revenue?: NumericInput; q3Qty?: NumericInput; q3Revenue?: NumericInput; q4Qty?: NumericInput; q4Revenue?: NumericInput; annualQty?: NumericInput; annualRevenue?: NumericInput; note?: string };
 type MarketInsightInput = { category?: string; title?: string; content?: string; dataPoint?: string; source?: string };
-type ActionItemInput = { initiativeTitle?: string; year?: number; quarter?: number; action?: string; ownerName?: string; acceptanceCriteria?: string; checkDate?: string; status?: string };
+type ActionItemInput = { initiativeTitle?: string; year?: number | string; quarter?: number | string; action?: string; ownerName?: string; acceptanceCriteria?: string; checkDate?: string; status?: string };
 type BudgetItemInput = { category?: string; initiativeTitle?: string; department?: string; description?: string; year1Amount?: string; year2Amount?: string; year3Amount?: string; totalAmount?: string; roiEstimate?: string; justification?: string };
-type RoadmapItemInput = { track?: string; title?: string; startYear?: number; startQ?: number; endYear?: number; endQ?: number; milestone?: string; color?: string };
+type RoadmapItemInput = { track?: string; title?: string; startYear?: number | string; startQ?: number | string; endYear?: number | string; endQ?: number | string; milestone?: string; color?: string };
 
 const VALID_DIMENSIONS = ["FINANCIAL", "CUSTOMER", "PROCESS", "LEARNING"];
 
-function parseAmount(raw?: string): number | null {
-  if (!raw) return null;
+function parseAmount(raw: unknown): number | null {
+  if (raw === null || raw === undefined || raw === "") return null;
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : null;
+  if (typeof raw !== "string") return null;
   const cleaned = raw.replace(/[^0-9.\-]/g, "");
   if (!cleaned) return null;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
+}
+
+function parseInteger(raw: unknown): number | null {
+  if (raw === null || raw === undefined || raw === "") return null;
+  if (typeof raw === "number") return Number.isFinite(raw) ? Math.trunc(raw) : null;
+  if (typeof raw !== "string") return null;
+  const match = raw.match(/-?\d+/);
+  if (!match) return null;
+  const n = Number(match[0]);
+  return Number.isFinite(n) ? n : null;
+}
+
+function text(raw: unknown): string {
+  if (raw === null || raw === undefined) return "";
+  if (typeof raw === "string") return raw.trim();
+  if (typeof raw === "number" || typeof raw === "boolean") return String(raw);
+  return "";
+}
+
+function nullableText(raw: unknown): string | null {
+  return text(raw) || null;
 }
 
 export async function POST(req: Request) {
@@ -98,10 +122,10 @@ export async function POST(req: Request) {
     }
 
     if (submit) {
-      if (!intent?.trim() || !northStar?.trim()) {
+      if (!text(intent) || !text(northStar)) {
         return NextResponse.json({ error: "intent 与 northStar 为提交必填" }, { status: 400 });
       }
-      const hasObjective = objectives.some((o) => o.objective?.trim());
+      const hasObjective = objectives.some((o) => text(o.objective));
       if (!hasObjective) {
         return NextResponse.json({ error: "提交需至少一个 BSC 目标" }, { status: 400 });
       }
@@ -117,8 +141,8 @@ export async function POST(req: Request) {
         ? await tx.strategicPlan.update({
             where: { id: existing.id },
             data: {
-              intent: intent ?? null,
-              northStar: northStar ?? null,
+              intent: nullableText(intent),
+              northStar: nullableText(northStar),
               ...(submit
                 ? { status: "SUBMITTED", submittedAt: new Date(), submittedById: submitterId }
                 : {}),
@@ -129,8 +153,8 @@ export async function POST(req: Request) {
               orgUnitId,
               horizonStart,
               horizonEnd,
-              intent: intent ?? null,
-              northStar: northStar ?? null,
+              intent: nullableText(intent),
+              northStar: nullableText(northStar),
               status: submit ? "SUBMITTED" : "DRAFT",
               submittedAt: submit ? new Date() : null,
               submittedById: submit ? submitterId : null,
@@ -156,23 +180,23 @@ export async function POST(req: Request) {
       let oSort = 0;
       for (const o of objectives) {
         if (!VALID_DIMENSIONS.includes(o.dimension)) continue;
-        if (!o.objective?.trim() && !(o.keyResults ?? []).some((k) => k.keyResult?.trim())) continue;
+        if (!text(o.objective) && !(o.keyResults ?? []).some((k) => text(k.keyResult))) continue;
         const created = await tx.planObjective.create({
           data: {
             planId: plan.id,
             dimension: o.dimension as "FINANCIAL" | "CUSTOMER" | "PROCESS" | "LEARNING",
-            objective: o.objective?.trim() ?? "",
+            objective: text(o.objective),
             sortOrder: oSort++,
           },
         });
         let kSort = 0;
         for (const k of o.keyResults ?? []) {
-          if (!k.keyResult?.trim()) continue;
+          if (!text(k.keyResult)) continue;
           await tx.planKeyResult.create({
             data: {
               objectiveId: created.id,
-              keyResult: k.keyResult.trim(),
-              target: k.target?.trim() || null,
+              keyResult: text(k.keyResult),
+              target: nullableText(k.target),
               sortOrder: kSort++,
             },
           });
@@ -182,19 +206,19 @@ export async function POST(req: Request) {
       // 举措（OKR关键举措级成果）
       let iSort = 0;
       for (const i of initiatives) {
-        if (!i.title?.trim()) continue;
+        if (!text(i.title)) continue;
         await tx.planInitiative.create({
           data: {
             planId: plan.id,
-            title: i.title.trim(),
-            ownerName: i.ownerName?.trim() || null,
-            q1Milestone: i.q1Milestone?.trim() || null,
-            q2Milestone: i.q2Milestone?.trim() || null,
-            q3Milestone: i.q3Milestone?.trim() || null,
-            q4Milestone: i.q4Milestone?.trim() || null,
-            okrKeyResult: i.okrKeyResult?.trim() || null,
-            okrTarget: i.okrTarget?.trim() || null,
-            okrBaseline: i.okrBaseline?.trim() || null,
+            title: text(i.title),
+            ownerName: nullableText(i.ownerName),
+            q1Milestone: nullableText(i.q1Milestone),
+            q2Milestone: nullableText(i.q2Milestone),
+            q3Milestone: nullableText(i.q3Milestone),
+            q4Milestone: nullableText(i.q4Milestone),
+            okrKeyResult: nullableText(i.okrKeyResult),
+            okrTarget: nullableText(i.okrTarget),
+            okrBaseline: nullableText(i.okrBaseline),
             sortOrder: iSort++,
           },
         });
@@ -203,25 +227,25 @@ export async function POST(req: Request) {
       // SWOT
       let swSort = 0;
       for (const sw of swotItems) {
-        if (!sw.content?.trim()) continue;
+        if (!text(sw.content)) continue;
         await tx.planSwotItem.create({
-          data: { planId: plan.id, quadrant: sw.quadrant, content: sw.content.trim(), sortOrder: swSort++ },
+          data: { planId: plan.id, quadrant: sw.quadrant, content: text(sw.content), sortOrder: swSort++ },
         });
       }
 
       // 组织规划
       let orgSort = 0;
       for (const node of orgChartNodes) {
-        if (!node.name?.trim()) continue;
+        if (!text(node.name)) continue;
         await tx.planOrgChartNode.create({
           data: {
             planId: plan.id,
-            parentId: node.parentId?.trim() || null,
-            name: node.name.trim(),
-            role: node.role?.trim() || null,
-            headcount: node.headcount ?? null,
-            headcountNew: node.headcountNew ?? null,
-            note: node.note?.trim() || null,
+            parentId: nullableText(node.parentId),
+            name: text(node.name),
+            role: nullableText(node.role),
+            headcount: parseInteger(node.headcount),
+            headcountNew: parseInteger(node.headcountNew),
+            note: nullableText(node.note),
             sortOrder: orgSort++,
           },
         });
@@ -230,20 +254,20 @@ export async function POST(req: Request) {
       // 渠道发展
       let chSort = 0;
       for (const ch of channelPlans) {
-        if (!ch.channelType?.trim()) continue;
+        if (!text(ch.channelType)) continue;
         await tx.planChannelPlan.create({
           data: {
             planId: plan.id,
-            channelType: ch.channelType.trim(),
-            currentState: ch.currentState?.trim() || null,
-            targetState: ch.targetState?.trim() || null,
-            q1Action: ch.q1Action?.trim() || null,
-            q2Action: ch.q2Action?.trim() || null,
-            q3Action: ch.q3Action?.trim() || null,
-            q4Action: ch.q4Action?.trim() || null,
+            channelType: text(ch.channelType),
+            currentState: nullableText(ch.currentState),
+            targetState: nullableText(ch.targetState),
+            q1Action: nullableText(ch.q1Action),
+            q2Action: nullableText(ch.q2Action),
+            q3Action: nullableText(ch.q3Action),
+            q4Action: nullableText(ch.q4Action),
             revenueTarget: parseAmount(ch.revenueTarget),
-            partnerCount: ch.partnerCount ?? null,
-            note: ch.note?.trim() || null,
+            partnerCount: parseInteger(ch.partnerCount),
+            note: nullableText(ch.note),
             sortOrder: chSort++,
           },
         });
@@ -252,22 +276,22 @@ export async function POST(req: Request) {
       // 客户发展
       let custSort = 0;
       for (const cu of customerPlans) {
-        if (!cu.customerSegment?.trim()) continue;
+        if (!text(cu.customerSegment)) continue;
         await tx.planCustomerPlan.create({
           data: {
             planId: plan.id,
-            customerSegment: cu.customerSegment.trim(),
+            customerSegment: text(cu.customerSegment),
             isNew: !!cu.isNew,
-            currentCount: cu.currentCount ?? null,
-            targetCount: cu.targetCount ?? null,
-            q1Count: cu.q1Count ?? null,
-            q2Count: cu.q2Count ?? null,
-            q3Count: cu.q3Count ?? null,
-            q4Count: cu.q4Count ?? null,
+            currentCount: parseInteger(cu.currentCount),
+            targetCount: parseInteger(cu.targetCount),
+            q1Count: parseInteger(cu.q1Count),
+            q2Count: parseInteger(cu.q2Count),
+            q3Count: parseInteger(cu.q3Count),
+            q4Count: parseInteger(cu.q4Count),
             revenuePerCustomer: parseAmount(cu.revenuePerCustomer),
-            acquisitionStrategy: cu.acquisitionStrategy?.trim() || null,
-            retentionStrategy: cu.retentionStrategy?.trim() || null,
-            note: cu.note?.trim() || null,
+            acquisitionStrategy: nullableText(cu.acquisitionStrategy),
+            retentionStrategy: nullableText(cu.retentionStrategy),
+            note: nullableText(cu.note),
             sortOrder: custSort++,
           },
         });
@@ -276,12 +300,12 @@ export async function POST(req: Request) {
       // 产品季度推进
       let pqSort = 0;
       for (const pq of productQuarterly) {
-        if (!pq.productName?.trim()) continue;
+        if (!text(pq.productName)) continue;
         await tx.planProductQuarterly.create({
           data: {
             planId: plan.id,
-            productName: pq.productName.trim(),
-            unit: pq.unit?.trim() || null,
+            productName: text(pq.productName),
+            unit: nullableText(pq.unit),
             q1Qty: parseAmount(pq.q1Qty),
             q1Revenue: parseAmount(pq.q1Revenue),
             q2Qty: parseAmount(pq.q2Qty),
@@ -292,7 +316,7 @@ export async function POST(req: Request) {
             q4Revenue: parseAmount(pq.q4Revenue),
             annualQty: parseAmount(pq.annualQty),
             annualRevenue: parseAmount(pq.annualRevenue),
-            note: pq.note?.trim() || null,
+            note: nullableText(pq.note),
             sortOrder: pqSort++,
           },
         });
@@ -301,15 +325,15 @@ export async function POST(req: Request) {
       // 市场洞察
       let miSort = 0;
       for (const mi of marketInsights) {
-        if (!mi.title?.trim() && !mi.content?.trim()) continue;
+        if (!text(mi.title) && !text(mi.content)) continue;
         await tx.planMarketInsight.create({
           data: {
             planId: plan.id,
-            category: mi.category?.trim() || "TREND",
-            title: mi.title?.trim() || "",
-            content: mi.content?.trim() || "",
-            dataPoint: mi.dataPoint?.trim() || null,
-            source: mi.source?.trim() || null,
+            category: text(mi.category) || "TREND",
+            title: text(mi.title),
+            content: text(mi.content),
+            dataPoint: nullableText(mi.dataPoint),
+            source: nullableText(mi.source),
             sortOrder: miSort++,
           },
         });
@@ -318,18 +342,18 @@ export async function POST(req: Request) {
       // 年度作战计划
       let aiSort = 0;
       for (const ai of actionItems) {
-        if (!ai.action?.trim()) continue;
+        if (!text(ai.action)) continue;
         await tx.planActionItem.create({
           data: {
             planId: plan.id,
-            initiativeTitle: ai.initiativeTitle?.trim() || null,
-            year: ai.year ?? 2026,
-            quarter: ai.quarter ?? 1,
-            action: ai.action.trim(),
-            ownerName: ai.ownerName?.trim() || null,
-            acceptanceCriteria: ai.acceptanceCriteria?.trim() || null,
-            checkDate: ai.checkDate?.trim() || null,
-            status: ai.status?.trim() || "PLAN",
+            initiativeTitle: nullableText(ai.initiativeTitle),
+            year: parseInteger(ai.year) ?? 2026,
+            quarter: parseInteger(ai.quarter) ?? 1,
+            action: text(ai.action),
+            ownerName: nullableText(ai.ownerName),
+            acceptanceCriteria: nullableText(ai.acceptanceCriteria),
+            checkDate: nullableText(ai.checkDate),
+            status: text(ai.status) || "PLAN",
             sortOrder: aiSort++,
           },
         });
@@ -338,20 +362,20 @@ export async function POST(req: Request) {
       // 资源预算
       let biSort = 0;
       for (const bi of budgetItems) {
-        if (!bi.description?.trim()) continue;
+        if (!text(bi.description)) continue;
         await tx.planBudgetItem.create({
           data: {
             planId: plan.id,
-            category: bi.category?.trim() || "OPEX",
-            initiativeTitle: bi.initiativeTitle?.trim() || null,
-            department: bi.department?.trim() || null,
-            description: bi.description.trim(),
-            year1Amount: bi.year1Amount?.trim() || null,
-            year2Amount: bi.year2Amount?.trim() || null,
-            year3Amount: bi.year3Amount?.trim() || null,
-            totalAmount: bi.totalAmount?.trim() || null,
-            roiEstimate: bi.roiEstimate?.trim() || null,
-            justification: bi.justification?.trim() || null,
+            category: text(bi.category) || "OPEX",
+            initiativeTitle: nullableText(bi.initiativeTitle),
+            department: nullableText(bi.department),
+            description: text(bi.description),
+            year1Amount: nullableText(bi.year1Amount),
+            year2Amount: nullableText(bi.year2Amount),
+            year3Amount: nullableText(bi.year3Amount),
+            totalAmount: nullableText(bi.totalAmount),
+            roiEstimate: nullableText(bi.roiEstimate),
+            justification: nullableText(bi.justification),
             sortOrder: biSort++,
           },
         });
@@ -360,18 +384,18 @@ export async function POST(req: Request) {
       // 路线图
       let rmSort = 0;
       for (const rm of roadmapItems) {
-        if (!rm.title?.trim()) continue;
+        if (!text(rm.title)) continue;
         await tx.planRoadmapItem.create({
           data: {
             planId: plan.id,
-            track: rm.track?.trim() || "举措",
-            title: rm.title.trim(),
-            startYear: rm.startYear ?? 2026,
-            startQ: rm.startQ ?? 1,
-            endYear: rm.endYear ?? 2026,
-            endQ: rm.endQ ?? 4,
-            milestone: rm.milestone?.trim() || null,
-            color: rm.color?.trim() || null,
+            track: text(rm.track) || "举措",
+            title: text(rm.title),
+            startYear: parseInteger(rm.startYear) ?? 2026,
+            startQ: parseInteger(rm.startQ) ?? 1,
+            endYear: parseInteger(rm.endYear) ?? 2026,
+            endQ: parseInteger(rm.endQ) ?? 4,
+            milestone: nullableText(rm.milestone),
+            color: nullableText(rm.color),
             sortOrder: rmSort++,
           },
         });
@@ -380,24 +404,24 @@ export async function POST(req: Request) {
       // 资源
       for (const r of resources) {
         const amount = parseAmount(r.amount);
-        if (amount == null && !r.justification?.trim()) continue;
+        if (amount == null && !text(r.justification)) continue;
         await tx.resourceRequest.create({
           data: {
             planId: plan.id,
             resourceType: r.resourceType,
             amount,
-            justification: r.justification?.trim() || null,
+            justification: nullableText(r.justification),
           },
         });
       }
 
       // 假设
       for (const a of assumptions) {
-        if (!a.assumption?.trim()) continue;
+        if (!text(a.assumption)) continue;
         await tx.planAssumption.create({
           data: {
             planId: plan.id,
-            assumption: a.assumption.trim(),
+            assumption: text(a.assumption),
             critical: !!a.critical,
           },
         });

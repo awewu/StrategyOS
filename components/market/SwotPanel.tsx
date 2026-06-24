@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
-  ReferenceLine, ResponsiveContainer,
+  ReferenceArea, ReferenceLine, ResponsiveContainer,
 } from "recharts";
 import {
   buildPositioning,
@@ -25,6 +25,15 @@ const CAT_COLOR: Record<SwotCategory, string> = {
   opportunity: "var(--color-accent)",
   threat: "var(--signal-yellow)",
 };
+
+const POSITIONING_DOMAIN = [0, 100] as const;
+const CENTERED_TICKS = [0, 25, 50, 75, 100];
+
+function centeredTick(value: number | string, center: number) {
+  const offset = Number(value) - center;
+  if (offset > 0) return `+${offset}`;
+  return `${offset}`;
+}
 
 function SelfScoreEditor({
   scores,
@@ -96,30 +105,42 @@ function PositioningChart({ map }: { map: PositioningMap }) {
     () => map.entities.map((e) => ({ ...e })),
     [map],
   );
+  const midX = map.midpoint.x;
+  const midY = map.midpoint.y;
 
   return (
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">竞争定位十字轴</h3>
         <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
-          X：{map.xAxis.label} · Y：{map.yAxis.label} · 我方高亮 · 点越靠右上越强
+          X：{map.xAxis.label} · Y：{map.yAxis.label} · 原点在中心 · 我方高亮
         </p>
       </div>
       <ResponsiveContainer width="100%" height={320}>
-        <ScatterChart margin={{ top: 20, right: 24, bottom: 24, left: 10 }}>
+        <ScatterChart margin={{ top: 24, right: 28, bottom: 28, left: 16 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid-stroke)" />
+          <ReferenceArea x1={midX} x2={100} y1={midY} y2={100} fill="var(--color-accent)" fillOpacity={0.04} />
+          <ReferenceArea x1={0} x2={midX} y1={midY} y2={100} fill="var(--signal-yellow)" fillOpacity={0.04} />
+          <ReferenceArea x1={midX} x2={100} y1={0} y2={midY} fill="var(--signal-green)" fillOpacity={0.035} />
+          <ReferenceArea x1={0} x2={midX} y1={0} y2={midY} fill="var(--signal-red)" fillOpacity={0.035} />
           <XAxis
-            type="number" dataKey="x" domain={[0, 100]} tickCount={6}
+            type="number" dataKey="x" domain={POSITIONING_DOMAIN} ticks={CENTERED_TICKS}
             tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => centeredTick(value, midX)}
             label={{ value: map.xAxis.label, position: "insideBottom", offset: -12, fill: "var(--chart-axis-tick)", fontSize: 11 }}
           />
           <YAxis
-            type="number" dataKey="y" domain={[0, 100]} tickCount={6}
+            type="number" dataKey="y" domain={POSITIONING_DOMAIN} ticks={CENTERED_TICKS}
             tick={{ fontSize: 10, fill: "var(--chart-axis-tick)" }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => centeredTick(value, midY)}
             label={{ value: map.yAxis.label, angle: -90, position: "insideLeft", fill: "var(--chart-axis-tick)", fontSize: 11 }}
           />
-          <ReferenceLine x={map.midpoint.x} stroke="var(--chart-ref-line)" strokeDasharray="4 3" />
-          <ReferenceLine y={map.midpoint.y} stroke="var(--chart-ref-line)" strokeDasharray="4 3" />
+          <ReferenceLine x={midX} stroke="var(--chart-ref-line)" strokeWidth={1.5} />
+          <ReferenceLine y={midY} stroke="var(--chart-ref-line)" strokeWidth={1.5} />
           <Tooltip content={<PositioningTooltip />} />
           <Scatter data={data} shape={(props: unknown) => <EntityDot {...(props as EntityDotProps)} />} />
         </ScatterChart>

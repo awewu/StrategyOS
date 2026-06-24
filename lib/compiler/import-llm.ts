@@ -10,7 +10,7 @@ import { compileStrategicText } from "./strategic-compiler";
 export { llmConfigured as compilerLlmConfigured };
 
 function apiKey(): string | undefined {
-  return process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY;
+  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
 }
 
 function baseUrl(): string {

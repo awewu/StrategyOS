@@ -10,6 +10,9 @@ export interface AccessUser {
   name: string;
   email: string;
   role: RoleKey;
+  orgUnitId?: string | null;
+  orgUnitName?: string | null;
+  projectCode?: string | null;
   createdAt?: Date;
 }
 
@@ -20,16 +23,23 @@ export async function getUsers(): Promise<AccessUser[]> {
       name: u.name,
       email: u.email,
       role: u.role,
+      orgUnitId: u.orgUnitId,
+      projectCode: u.projectCode,
     }));
   }
 
-  const rows = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
+  const rows = await prisma.user.findMany({
+    orderBy: { createdAt: "asc" },
+    include: { orgUnit: { select: { name: true } } },
+  });
   if (rows.length === 0) {
     return DEMO_USERS.map((u) => ({
       id: u.userId,
       name: u.name,
       email: u.email,
       role: u.role,
+      orgUnitId: u.orgUnitId,
+      projectCode: u.projectCode,
     }));
   }
 
@@ -38,6 +48,9 @@ export async function getUsers(): Promise<AccessUser[]> {
     name: r.name,
     email: r.email,
     role: r.role as RoleKey,
+    orgUnitId: r.orgUnitId,
+    orgUnitName: r.orgUnit?.name ?? null,
+    projectCode: r.projectCode,
     createdAt: r.createdAt,
   }));
 }

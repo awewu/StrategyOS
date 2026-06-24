@@ -5,19 +5,37 @@ import { llmConfigured } from "@/lib/stratos/llm-agent";
 export const runtime = "nodejs";
 
 // ─── LLM helpers ─────────────────────────────────────────────────────────────
-function apiKey() { return process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY; }
+function apiKey() { return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY; }
 function baseUrl() { return (process.env.STRATOS_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, ""); }
 // 战略提取需要强推理，默认 gpt-4o；可用 STRATOS_LLM_EXTRACT_MODEL 单独覆盖
 function llmModel() { return process.env.STRATOS_LLM_EXTRACT_MODEL ?? process.env.STRATOS_LLM_MODEL ?? "gpt-4o"; }
+function supportsJsonResponseFormat() {
+  return !/dashscope\.aliyuncs\.com/i.test(baseUrl());
+}
 
 async function callLlm(messages: { role: string; content: string }[]): Promise<string> {
-  const res = await fetch(`${baseUrl()}/chat/completions`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey()}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: llmModel(), temperature: 0.2, response_format: { type: "json_object" }, messages }),
-    signal: AbortSignal.timeout(90000),
-  });
-  if (!res.ok) throw new Error(`LLM HTTP ${res.status}`);
+  let res: Response;
+  try {
+    const payload: Record<string, unknown> = {
+      model: llmModel(),
+      temperature: 0.2,
+      messages,
+    };
+    if (supportsJsonResponseFormat()) payload.response_format = { type: "json_object" };
+    res = await fetch(`${baseUrl()}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey()}`, "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(90000),
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`LLM 服务连接失败：无法访问 ${baseUrl()}。请检查网络，或在 .env 配置可访问的 STRATOS_LLM_BASE_URL / OPENAI_BASE_URL。原始错误：${detail}`);
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`LLM HTTP ${res.status}: ${body.slice(0, 500)}`);
+  }
   const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> };
   return data.choices?.[0]?.message?.content ?? "";
 }
@@ -124,6 +142,163 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
 // ─── 两阶段 Prompt ────────────────────────────────────────────────────────────
 
 // 第一阶段：降噪摘要 —— 把混乱原文浓缩成干净的战略信号文本
+const ARRAY_FIELDS = [
+  "objectives",
+  "initiatives",
+  "swotItems",
+  "assumptions",
+  "marketInsights",
+  "actionItems",
+  "budgetItems",
+  "roadmapItems",
+  "productQuarterly",
+  "channelPlans",
+  "customerPlans",
+  "orgChartNodes",
+] as const;
+
+function parseJsonObject(raw: string): Record<string, unknown> {
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return {};
+  return JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+}
+
+function unwrapObject(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  let current = value as Record<string, unknown>;
+  for (const key of ["extracted", "data", "result", "plan", "structured", "output", "tabs", "fields"]) {
+    const nested = current[key];
+    if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+      current = nested as Record<string, unknown>;
+    }
+  }
+  return current;
+}
+
+function firstValue(source: Record<string, unknown>, keys: string[]): unknown {
+  for (const key of keys) {
+    const value = source[key];
+    if (value !== undefined && value !== null) return value;
+  }
+  return undefined;
+}
+
+function stringValue(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
+}
+
+function arrayValue(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeDimension(value: unknown): string {
+  const text = stringValue(value).toUpperCase();
+  if (/FIN|财务|收入|利润|营收/.test(text)) return "FINANCIAL";
+  if (/CUSTOMER|客户|市场|份额/.test(text)) return "CUSTOMER";
+  if (/PROCESS|流程|运营|交付|效率/.test(text)) return "PROCESS";
+  if (/LEARNING|学习|组织|人才|能力|创新/.test(text)) return "LEARNING";
+  return "FINANCIAL";
+}
+
+function normalizeSwotQuadrant(value: unknown): "strength" | "weakness" | "opportunity" | "threat" {
+  const text = stringValue(value).toLowerCase();
+  if (/weak|劣势|短板|不足/.test(text)) return "weakness";
+  if (/opportun|机会|机遇/.test(text)) return "opportunity";
+  if (/threat|威胁|风险|挑战/.test(text)) return "threat";
+  return "strength";
+}
+
+function normalizeExtracted(value: unknown): Record<string, unknown> {
+  const root = unwrapObject(value);
+  const strategicIntent = unwrapObject(firstValue(root, ["strategicIntent", "intentTab", "战略意图"]));
+  const market = unwrapObject(firstValue(root, ["market", "marketTab", "市场洞察"]));
+  const swot = unwrapObject(firstValue(root, ["swot", "swotTab", "SWOT分析", "SWOT"]));
+  const org = unwrapObject(firstValue(root, ["org", "organization", "组织规划"]));
+
+  const objectives = arrayValue(firstValue(root, ["objectives", "bscObjectives", "kpiObjectives", "kpis", "目标", "BSC目标", "KPI"]));
+  const initiatives = arrayValue(firstValue(root, ["initiatives", "okrInitiatives", "keyInitiatives", "举措", "关键举措", "OKR"]));
+  const swotItems = arrayValue(firstValue(root, ["swotItems", "SWOTItems", "swot", "SWOT", "swotAnalysis", "SWOT分析"]))
+    .concat(arrayValue(firstValue(swot, ["items", "swotItems", "SWOTItems"])));
+  const marketInsights = arrayValue(firstValue(root, ["marketInsights", "insights", "market", "市场洞察"]))
+    .concat(arrayValue(firstValue(market, ["items", "insights", "marketInsights"])));
+
+  return {
+    intent: stringValue(firstValue(root, ["intent", "strategicIntent", "strategyIntent", "战略意图", "战略方向"])) ||
+      stringValue(firstValue(strategicIntent, ["intent", "content", "战略意图", "战略方向"])),
+    northStar: stringValue(firstValue(root, ["northStar", "northStarMetric", "北极星指标", "核心指标"])) ||
+      stringValue(firstValue(strategicIntent, ["northStar", "metric", "北极星指标", "核心指标"])),
+    objectives: objectives.map((item) => {
+      const o = unwrapObject(item);
+      const keyResults = arrayValue(firstValue(o, ["keyResults", "krs", "KR", "关键结果"]));
+      return {
+        dimension: normalizeDimension(firstValue(o, ["dimension", "维度", "category", "类别"])),
+        objective: stringValue(firstValue(o, ["objective", "title", "目标", "content", "内容"])),
+        keyResults: keyResults.map((kr) => {
+          const k = unwrapObject(kr);
+          return {
+            keyResult: stringValue(firstValue(k, ["keyResult", "kr", "关键结果", "content", "内容"])),
+            target: stringValue(firstValue(k, ["target", "目标值", "value", "指标值"])),
+          };
+        }),
+      };
+    }).filter((o) => o.objective || o.keyResults.length),
+    initiatives: initiatives.map((item) => {
+      const i = unwrapObject(item);
+      return {
+        title: stringValue(firstValue(i, ["title", "name", "举措标题", "关键举措", "举措"])),
+        ownerName: stringValue(firstValue(i, ["ownerName", "owner", "负责人"])),
+        okrKeyResult: stringValue(firstValue(i, ["okrKeyResult", "keyResult", "KR", "关键结果"])),
+        okrTarget: stringValue(firstValue(i, ["okrTarget", "target", "目标值"])),
+        okrBaseline: stringValue(firstValue(i, ["okrBaseline", "baseline", "基线值"])),
+        q1Milestone: stringValue(firstValue(i, ["q1Milestone", "Q1", "q1", "一季度"])),
+        q2Milestone: stringValue(firstValue(i, ["q2Milestone", "Q2", "q2", "二季度"])),
+        q3Milestone: stringValue(firstValue(i, ["q3Milestone", "Q3", "q3", "三季度"])),
+        q4Milestone: stringValue(firstValue(i, ["q4Milestone", "Q4", "q4", "四季度"])),
+      };
+    }).filter((i) => i.title || i.okrKeyResult),
+    swotItems: swotItems.map((item) => {
+      const s = unwrapObject(item);
+      return {
+        quadrant: normalizeSwotQuadrant(firstValue(s, ["quadrant", "type", "category", "象限", "类型"])),
+        content: stringValue(firstValue(s, ["content", "description", "内容", "描述", "point"])),
+      };
+    }).filter((s) => s.content),
+    assumptions: arrayValue(firstValue(root, ["assumptions", "关键假设", "hypotheses"])).map((item) => {
+      const a = unwrapObject(item);
+      return {
+        assumption: stringValue(firstValue(a, ["assumption", "content", "假设", "内容"])),
+        critical: Boolean(firstValue(a, ["critical", "isCritical", "关键"])),
+      };
+    }).filter((a) => a.assumption),
+    marketInsights: marketInsights.map((item) => {
+      const m = unwrapObject(item);
+      return {
+        category: stringValue(firstValue(m, ["category", "type", "类别", "类型"])) || "TREND",
+        title: stringValue(firstValue(m, ["title", "conclusion", "标题", "结论"])),
+        content: stringValue(firstValue(m, ["content", "description", "内容", "描述"])),
+        dataPoint: stringValue(firstValue(m, ["dataPoint", "data", "metric", "数据点", "关键数据"])),
+        source: stringValue(firstValue(m, ["source", "来源"])) || "original document",
+      };
+    }).filter((m) => m.title || m.content || m.dataPoint),
+    actionItems: arrayValue(firstValue(root, ["actionItems", "actions", "作战计划", "行动计划"])),
+    budgetItems: arrayValue(firstValue(root, ["budgetItems", "budgets", "资源预算", "预算"])),
+    roadmapItems: arrayValue(firstValue(root, ["roadmapItems", "roadmap", "路线图"])),
+    productQuarterly: arrayValue(firstValue(root, ["productQuarterly", "products", "产品季度", "产品计划"])),
+    channelPlans: arrayValue(firstValue(root, ["channelPlans", "channels", "渠道发展", "渠道计划"])),
+    customerPlans: arrayValue(firstValue(root, ["customerPlans", "customers", "客户发展", "客户计划"])),
+    orgChartNodes: arrayValue(firstValue(root, ["orgChartNodes", "orgNodes", "organization", "组织规划"]))
+      .concat(arrayValue(firstValue(org, ["nodes", "orgChartNodes", "items"]))),
+  };
+}
+
+function hasExtractedContent(extracted: Record<string, unknown>): boolean {
+  if (stringValue(extracted.intent)) return true;
+  if (stringValue(extracted.northStar)) return true;
+  return ARRAY_FIELDS.some((key) => arrayValue(extracted[key]).length > 0);
+}
+
 const STAGE1_SYSTEM = `你是一位资深战略顾问。用户上传的是企业内部战略PPT、年度规划或战略报告的原始文字提取内容，可能包含大量噪音（封面、目录、页码、装饰性文字、重复标题、图表注释等）。
 
 你的任务：阅读全部内容，输出一份干净的「战略信号摘要」（纯文本，约800-1500字），只保留以下有价值的信息：
@@ -152,8 +327,8 @@ const STAGE2_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计�
 提取规则：
 1. **intent**：一句话概括3-5年战略方向，保留原文关键词，≤60字
 2. **northStar**：最核心的量化目标，如"3年收入达XX亿"
-3. **objectives**：严格按 FINANCIAL/CUSTOMER/PROCESS/LEARNING 四维度分类，每维1-3个，含KR
-4. **initiatives**：具体举措，关联负责人、OKR成果、季度里程碑（从摘要中推断Q1-Q4节点）
+3. **objectives**：BSC/KPI 管理，严格按 FINANCIAL/CUSTOMER/PROCESS/LEARNING 四维度分类；objective 是该维度的管理目标，keyResults 是 KPI 指标及目标值，不要放 OKR 举措
+4. **initiatives**：OKR/关键举措管理；每项 initiative 是一个 Objective / 关键举措，关联负责人、Key Result、基线、目标值、季度里程碑
 5. **swotItems**：即使摘要未明确写SWOT，也从语境推断四象限
 6. **marketInsights**：市场规模数据、趋势、竞争、客户，标注原文数据来源
 7. **actionItems**：有时间节点的具体行动，关联举措，写验收标准
@@ -163,17 +338,32 @@ const STAGE2_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计�
 11. 只输出 JSON，不要解释`;
 
 const STAGE2_PROMPT = (summary: string) => `
+Strict field mapping contract:
+- intent tab: intent is the strategic intent sentence; northStar is the measurable north-star metric.
+- objectives tab is BSC/KPI management only: objectives[].dimension must be FINANCIAL, CUSTOMER, PROCESS, or LEARNING; objective is the BSC management objective; keyResults[].keyResult is a KPI metric name/definition; keyResults[].target is the KPI target value. Do not put OKR initiatives here.
+- initiatives tab is OKR/key initiative management: initiatives[].title is the Objective/key initiative; ownerName is owner; okrKeyResult is the Key Result; okrTarget is target value; okrBaseline is baseline; q1Milestone, q2Milestone, q3Milestone, q4Milestone are quarterly milestones.
+- market tab: marketInsights[].category must be TAM, SAM, SOM, TREND, CUSTOMER, TECH, or COMPETE; title is the conclusion; content is the supporting insight; dataPoint is a number, ratio, market size, growth rate, or other evidence; source is the source section/page/report from the uploaded file or "original document".
+- SWOT tab: swotItems[].quadrant must be strength, weakness, opportunity, or threat; content is one concrete fact or judgment for that quadrant.
+- action tab: actionItems[].initiativeTitle, year, quarter, action, ownerName, acceptanceCriteria, checkDate, status map to the action plan table; year must be 2026-2028, quarter 1-4, status PLAN unless source says otherwise.
+- product tab: productQuarterly[].productName, unit, q1Qty, q1Revenue, q2Qty, q2Revenue, q3Qty, q3Revenue, q4Qty, q4Revenue, annualQty, annualRevenue, note map to the product quarterly table.
+- channel tab: channelPlans[].channelType, currentState, targetState, q1Action, q2Action, q3Action, q4Action, revenueTarget, partnerCount, note map to the channel plan table.
+- customer tab: customerPlans[].customerSegment, isNew, currentCount, targetCount, q1Count, q2Count, q3Count, q4Count, revenuePerCustomer, acquisitionStrategy, retentionStrategy, note map to the customer plan table.
+- org tab: orgChartNodes[].name, role, headcount, headcountNew, note map to the organization plan table.
+- budget tab: budgetItems[].category must be CAPEX, OPEX, or HC; initiativeTitle, department, description, year1Amount, year2Amount, year3Amount, totalAmount, roiEstimate, justification map to the budget table.
+- roadmap tab: roadmapItems[].track, title, startYear, startQ, endYear, endQ, milestone, color map to the roadmap table.
+- assumptions tab: assumptions[].assumption and critical map to key assumptions.
+Only return values that can be extracted or reasonably inferred for these exact fields. Return [] or "" for missing fields; do not invent facts.
 请从以下战略信号摘要中提取结构化信息，输出严格 JSON（找不到留空字符串，无法提取留[]）：
 {
   "intent": "三年战略意图一句话",
   "northStar": "北极星指标",
   "objectives": [
     { "dimension": "FINANCIAL|CUSTOMER|PROCESS|LEARNING", "objective": "目标描述",
-      "keyResults": [{ "keyResult": "KR描述", "target": "目标值" }] }
+      "keyResults": [{ "keyResult": "KPI指标", "target": "KPI目标值" }] }
   ],
   "initiatives": [
-    { "title": "举措标题", "ownerName": "负责人",
-      "okrKeyResult": "关键成果描述", "okrTarget": "目标值", "okrBaseline": "基线值",
+    { "title": "Objective/关键举措", "ownerName": "负责人",
+      "okrKeyResult": "Key Result", "okrTarget": "目标值", "okrBaseline": "基线值",
       "q1Milestone": "Q1里程碑", "q2Milestone": "Q2里程碑",
       "q3Milestone": "Q3里程碑", "q4Milestone": "Q4里程碑" }
   ],
@@ -284,12 +474,23 @@ export async function POST(req: Request) {
       { role: "user", content: STAGE2_PROMPT(summary) },
     ]);
 
-    let extracted: Record<string, unknown> = {};
+    let extracted: Record<string, unknown>;
     try {
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (jsonMatch) extracted = JSON.parse(jsonMatch[0]);
+      extracted = normalizeExtracted(parseJsonObject(raw));
     } catch {
       return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw }, { status: 422 });
+    }
+
+    if (!hasExtractedContent(extracted)) {
+      const retryRaw = await callLlm([
+        { role: "system", content: "Return only valid JSON. Use exactly these top-level keys: intent, northStar, objectives, initiatives, swotItems, assumptions, marketInsights, actionItems, budgetItems, roadmapItems, productQuarterly, channelPlans, customerPlans, orgChartNodes. Do not wrap the JSON in another object." },
+        { role: "user", content: `Extract at least the fields that are clearly present from this strategy summary. Use [] for missing arrays and "" for missing strings.\n\n${STAGE2_PROMPT(summary)}` },
+      ]);
+      try {
+        extracted = normalizeExtracted(parseJsonObject(retryRaw));
+      } catch {
+        return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw: retryRaw }, { status: 422 });
+      }
     }
 
     return NextResponse.json({ ok: true, extracted, summary });

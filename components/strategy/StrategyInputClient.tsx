@@ -15,8 +15,8 @@ const ALL_STEPS: { id: Step; label: string; buHint?: boolean }[] = [
   { id: "intent",    label: "战略意图" },
   { id: "market",    label: "市场洞察" },
   { id: "swot",      label: "SWOT分析" },
-  { id: "objectives",label: "BSC目标/OKR" },
-  { id: "initiatives",label:"关键举措" },
+  { id: "objectives",label: "BSC目标/KPI" },
+  { id: "initiatives",label:"OKR/关键举措" },
   { id: "action",    label: "作战计划" },
   { id: "product",   label: "产品季度", buHint: true },
   { id: "channel",   label: "渠道发展", buHint: true },
@@ -294,36 +294,23 @@ export function StrategyInputClient({ orgUnits }: Props) {
     setTimeout(() => setToast(null), 3200);
   }, []);
 
-  // 选中组织后加载已有草稿
+  // 选中组织后从空白状态开始，避免历史草稿污染待输入场景。
   useEffect(() => {
     if (!selectedOrgId) return;
     let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setStep("intent");
-    fetch('/api/strategy/plan?orgUnitId=' + encodeURIComponent(selectedOrgId))
-      .then((r) => (r.ok ? r.json() : null))
-      .then((plan) => {
-        if (cancelled) return;
-        if (plan) {
-          setForm(hydrate(plan));
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setAttachments((plan.attachments ?? []).map((a: any) => ({
-            id: a.id, filename: a.filename, sizeBytes: a.sizeBytes, mimeType: a.mimeType,
-          })));
-          setStatus(plan.status ?? "DRAFT");
-        } else {
-          setForm(emptyForm());
-          setAttachments([]);
-          setStatus(null);
-        }
-      })
-      .catch(() => flash("err", "草稿加载失败"))
-      .finally(() => !cancelled && setLoading(false));
+    setForm(emptyForm());
+    setAttachments([]);
+    setStatus(null);
+    queueMicrotask(() => {
+      if (!cancelled) setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, [selectedOrgId, flash]);
+  }, [selectedOrgId]);
 
   const validation = useMemo(() => validate(form), [form]);
 
@@ -508,7 +495,12 @@ export function StrategyInputClient({ orgUnits }: Props) {
             </div>
 
             {/* AI 一键提取 */}
-            <AiExtractBar form={form} setForm={setForm} flash={flash} />
+            <AiExtractBar
+              setForm={setForm}
+              flash={flash}
+              persistDraft={() => persist(false)}
+              onAttachmentSaved={(attachment) => setAttachments((prev) => [...prev, attachment])}
+            />
 
             {/* 步骤导航 */}
             <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
@@ -602,9 +594,40 @@ function validate(form: PlanForm): { ok: boolean; step: Step; message: string } 
 }
 
 // ─── AI 一键提取栏 ────────────────────────────────────────────────────────────
+function unwrapExtractedPayload(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  let current = value as Record<string, unknown>;
+  for (const key of ["extracted", "data", "result", "plan", "structured", "output"]) {
+    const nested = current[key];
+    if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+      current = nested as Record<string, unknown>;
+    }
+  }
+  return current;
+}
+
+function hasExtractedContent(e: Record<string, unknown>): boolean {
+  if (typeof e.intent === "string" && e.intent.trim()) return true;
+  if (typeof e.northStar === "string" && e.northStar.trim()) return true;
+  return [
+    "objectives",
+    "initiatives",
+    "swotItems",
+    "assumptions",
+    "productQuarterly",
+    "channelPlans",
+    "customerPlans",
+    "orgChartNodes",
+    "marketInsights",
+    "actionItems",
+    "budgetItems",
+    "roadmapItems",
+  ].some((key) => Array.isArray(e[key]) && (e[key] as unknown[]).length > 0);
+}
+
 function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ea = e as any;
+  const ea = unwrapExtractedPayload(e) as any;
   return {
     ...f,
     intent: ea.intent?.trim() || f.intent,
@@ -669,11 +692,12 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
 }
 
 function AiExtractBar({
-  form, setForm, flash,
+  setForm, flash, persistDraft, onAttachmentSaved,
 }: {
-  form: PlanForm;
   setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
   flash: (kind: "ok" | "err", msg: string) => void;
+  persistDraft: () => Promise<string | undefined>;
+  onAttachmentSaved: (attachment: AttachmentInfo) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"file" | "text">("file");
@@ -682,6 +706,19 @@ function AiExtractBar({
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState<1 | 2 | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  async function uploadAttachment(file: File): Promise<AttachmentInfo> {
+    const planId = await persistDraft();
+    if (!planId) throw new Error("保存草稿失败，无法上传并解析文件。请确认已选择编制单位。");
+
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("planId", planId);
+    const res = await fetch("/api/strategy/plan/attachment", { method: "POST", body: fd });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error ?? "附件上传失败");
+    return data as AttachmentInfo;
+  }
 
   async function runExtract(body: FormData | string) {
     setLoading(true);
@@ -699,7 +736,11 @@ function AiExtractBar({
       setLoadingStage(2);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "提取失败");
-      setForm((f) => applyExtracted(f, data.extracted));
+      const extracted = unwrapExtractedPayload(data.extracted);
+      if (!hasExtractedContent(extracted)) {
+        throw new Error("AI 已完成解析，但没有识别到可写入页签的字段。请确认文件内容包含战略意图、市场洞察、SWOT、目标或举措等信息。");
+      }
+      setForm((f) => applyExtracted(f, extracted));
       flash("ok", "AI 提取完成，请逐页检查并修订内容");
       setOpen(false);
       setText("");
@@ -718,7 +759,15 @@ function AiExtractBar({
     setFileName(file.name);
     const fd = new FormData();
     fd.append("file", file);
-    void runExtract(fd);
+    void (async () => {
+      try {
+        const attachment = await uploadAttachment(file);
+        onAttachmentSaved(attachment);
+        await runExtract(fd);
+      } catch (err) {
+        flash("err", err instanceof Error ? err.message : "附件上传或解析失败");
+      }
+    })();
     e.target.value = "";
   }
 
@@ -804,7 +853,7 @@ function AiExtractBar({
                 rows={6}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="粘贴战略报告/PPT 文字内容（支持中英文），AI 将自动识别战略意图、OKR、SWOT、产品计划、渠道、客户规划等所有字段…"
+                placeholder="粘贴战略报告/PPT 文字内容（支持中英文），AI 将自动识别战略意图、BSC/KPI、OKR/关键举措、SWOT、产品计划、渠道、客户规划等字段…"
               />
               <div className="flex justify-end">
                 <button
@@ -1045,7 +1094,7 @@ function ObjectivesForm({
   }
   return (
     <div className="space-y-4">
-      <p className="text-xs text-[var(--color-text-muted)]">BSC 四维度，每维 1 个目标 + 关键结果</p>
+      <p className="text-xs text-[var(--color-text-muted)]">BSC 四维度 KPI 管理：每个维度填写管理目标、KPI 指标与目标值</p>
       {form.objectives.map((obj, oIdx) => (
         <div key={obj.dimension} className="rounded border border-[var(--surface-border)] p-4">
           <div className="mb-2 text-sm font-medium text-[var(--color-accent)]">
@@ -1056,7 +1105,7 @@ function ObjectivesForm({
             rows={2}
             value={obj.objective}
             onChange={(e) => setObjective(oIdx, e.target.value)}
-            placeholder="目标描述"
+            placeholder="BSC 管理目标"
           />
           <div className="mt-2 space-y-1">
             {obj.keyResults.map((kr, kIdx) => (
@@ -1066,14 +1115,14 @@ function ObjectivesForm({
                   className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
                   value={kr.keyResult}
                   onChange={(e) => setKr(oIdx, kIdx, "keyResult", e.target.value)}
-                  placeholder={"KR " + (kIdx + 1)}
+                  placeholder={"KPI 指标 " + (kIdx + 1)}
                 />
                 <input
                   type="text"
                   className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
                   value={kr.target}
                   onChange={(e) => setKr(oIdx, kIdx, "target", e.target.value)}
-                  placeholder="目标值"
+                  placeholder="KPI 目标值"
                 />
               </div>
             ))}
@@ -1106,7 +1155,7 @@ function InitiativesForm({
   }
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">OKR 关键举措级成果 — 每项举措对应一个可衡量关键结果</p>
+      <p className="text-xs text-[var(--color-text-muted)]">OKR 管理：每项关键举措作为一个 Objective，填写负责人、关键结果、基线、目标值与季度里程碑</p>
       {form.initiatives.map((ini, idx) => (
         <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
           <div className="flex items-start gap-2">
@@ -1116,14 +1165,14 @@ function InitiativesForm({
                 className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm font-medium"
                 value={ini.title}
                 onChange={(e) => set(idx, "title", e.target.value)}
-                placeholder={"举措 " + (idx + 1) + " 标题（必赢之战）"}
+                placeholder={"Objective / 关键举措 " + (idx + 1)}
               />
               <div className="grid grid-cols-2 gap-2">
                 <input type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" value={ini.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="负责人" />
                 <div />
               </div>
               <div className="rounded bg-[var(--color-accent)]/[0.04] p-2 space-y-1">
-                <div className="text-xs font-medium text-[var(--color-accent)]">KR · 关键成果</div>
+                <div className="text-xs font-medium text-[var(--color-accent)]">OKR · Key Result</div>
                 <input type="text" className="w-full rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrKeyResult} onChange={(e) => set(idx, "okrKeyResult", e.target.value)} placeholder="关键成果描述（可衡量）" />
                 <div className="grid grid-cols-2 gap-2">
                   <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrBaseline} onChange={(e) => set(idx, "okrBaseline", e.target.value)} placeholder="基线值（现状）" />

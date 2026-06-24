@@ -15,6 +15,8 @@ const ALLOWED_MIME = new Set([
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ]);
 
 export async function POST(req: Request) {
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
     }
     // 类型校验（客户端可绕过，后端也要验）
     const mimeType = file.type || "application/octet-stream";
-    if (!ALLOWED_MIME.has(mimeType) && !file.name.match(/\.(ppt|pptx|pdf|doc|docx|key)$/i)) {
+    if (!ALLOWED_MIME.has(mimeType) && !file.name.match(/\.(ppt|pptx|pdf|doc|docx|xls|xlsx|key)$/i)) {
       return NextResponse.json({ error: "文件类型不支持" }, { status: 415 });
     }
     if (file.size > MAX_BYTES) {

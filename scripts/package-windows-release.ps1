@@ -123,6 +123,8 @@ $removePaths = @(
   "instrumentation.ts",
   "proxy.ts",
   "README.md",
+  "stratos-dev-current.out.log",
+  "stratos-dev-current.err.log",
   "stratos-dev.out.log",
   "stratos-dev.err.log",
   "tsconfig.tsbuildinfo",

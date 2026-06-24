@@ -11,7 +11,7 @@ import {
 } from "@/lib/market-intel/swot";
 
 function llmKey(): string | undefined {
-  return process.env.OPENAI_API_KEY ?? process.env.STRATOS_LLM_API_KEY;
+  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
 }
 
 function llmBaseUrl(): string {

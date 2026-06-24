@@ -23,6 +23,9 @@ export default async function StrategyInputPage() {
         subtitle="集团 · 高管层 · 执行层战略规划录入与提交"
         actions={
           <>
+            <Link href="/strategy/submissions" className="stratos-btn stratos-btn--ghost text-xs">
+              已提交战略
+            </Link>
             <Link href="/versions" className="stratos-btn stratos-btn--ghost text-xs">
               历史版本
             </Link>
