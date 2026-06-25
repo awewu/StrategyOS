@@ -16,6 +16,15 @@ function parseNullableString(value: unknown): string | null | undefined {
   return trimmed ? trimmed : null;
 }
 
+function parseStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const ids = value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return [...new Set(ids)];
+}
+
 export async function PATCH(
   request: Request,
   ctx: { params: Promise<{ id: string }> },
@@ -35,7 +44,7 @@ export async function PATCH(
 
   const body = (await request.json()) as {
     role?: unknown;
-    orgUnitId?: unknown;
+    orgScopeIds?: unknown;
     projectCode?: unknown;
   };
 
@@ -43,9 +52,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  const orgUnitId = parseNullableString(body.orgUnitId);
+  const orgScopeIds = parseStringArray(body.orgScopeIds);
   const projectCode = parseNullableString(body.projectCode);
-  if (orgUnitId === undefined || projectCode === undefined) {
+  if (orgScopeIds === undefined || projectCode === undefined) {
     return NextResponse.json({ error: "Invalid scope payload" }, { status: 400 });
   }
 
@@ -55,28 +64,40 @@ export async function PATCH(
 
   const existing = await prisma.user.findUnique({
     where: { id },
-    select: { id: true, email: true, role: true, orgUnitId: true, projectCode: true },
+    include: { orgScopes: { select: { orgUnitId: true } } },
   });
   if (!existing) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (orgUnitId) {
-    const org = await prisma.orgUnit.findUnique({
-      where: { id: orgUnitId },
-      select: { id: true },
-    });
-    if (!org) return NextResponse.json({ error: "Org unit not found" }, { status: 400 });
+  if (orgScopeIds.length > 0) {
+    const orgCount = await prisma.orgUnit.count({ where: { id: { in: orgScopeIds } } });
+    if (orgCount !== orgScopeIds.length) {
+      return NextResponse.json({ error: "Org scope contains missing org unit" }, { status: 400 });
+    }
   }
 
-  const updated = await prisma.user.update({
-    where: { id },
-    data: {
-      role: body.role as RoleKey,
-      orgUnitId,
-      projectCode,
-    },
-    include: { orgUnit: { select: { name: true } } },
+  const primaryOrgUnitId = orgScopeIds[0] ?? null;
+  const updated = await prisma.$transaction(async (tx) => {
+    await tx.userOrgScope.deleteMany({ where: { userId: id } });
+    if (orgScopeIds.length > 0) {
+      await tx.userOrgScope.createMany({
+        data: orgScopeIds.map((scopeId) => ({ userId: id, orgUnitId: scopeId })),
+        skipDuplicates: true,
+      });
+    }
+    return tx.user.update({
+      where: { id },
+      data: {
+        role: body.role as RoleKey,
+        orgUnitId: primaryOrgUnitId,
+        projectCode,
+      },
+      include: {
+        orgUnit: { select: { name: true } },
+        orgScopes: { include: { orgUnit: { select: { name: true } } }, orderBy: { createdAt: "asc" } },
+      },
+    });
   });
 
   await logUsageEvent({
@@ -87,11 +108,13 @@ export async function PATCH(
       before: {
         role: existing.role,
         orgUnitId: existing.orgUnitId,
+        orgScopeIds: existing.orgScopes.map((scope) => scope.orgUnitId),
         projectCode: existing.projectCode,
       },
       after: {
         role: updated.role,
         orgUnitId: updated.orgUnitId,
+        orgScopeIds: updated.orgScopes.map((scope) => scope.orgUnitId),
         projectCode: updated.projectCode,
       },
     },
@@ -106,6 +129,8 @@ export async function PATCH(
       role: updated.role,
       orgUnitId: updated.orgUnitId,
       orgUnitName: updated.orgUnit?.name ?? null,
+      orgScopeIds: updated.orgScopes.map((scope) => scope.orgUnitId),
+      orgScopeNames: updated.orgScopes.map((scope) => scope.orgUnit.name),
       projectCode: updated.projectCode,
     },
   });

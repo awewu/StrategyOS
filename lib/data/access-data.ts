@@ -12,6 +12,8 @@ export interface AccessUser {
   role: RoleKey;
   orgUnitId?: string | null;
   orgUnitName?: string | null;
+  orgScopeIds?: string[];
+  orgScopeNames?: string[];
   projectCode?: string | null;
   createdAt?: Date;
 }
@@ -24,13 +26,17 @@ export async function getUsers(): Promise<AccessUser[]> {
       email: u.email,
       role: u.role,
       orgUnitId: u.orgUnitId,
+      orgScopeIds: u.orgScopeIds ?? (u.orgUnitId ? [u.orgUnitId] : []),
       projectCode: u.projectCode,
     }));
   }
 
   const rows = await prisma.user.findMany({
     orderBy: { createdAt: "asc" },
-    include: { orgUnit: { select: { name: true } } },
+    include: {
+      orgUnit: { select: { name: true } },
+      orgScopes: { include: { orgUnit: { select: { name: true } } }, orderBy: { createdAt: "asc" } },
+    },
   });
   if (rows.length === 0) {
     return DEMO_USERS.map((u) => ({
@@ -39,6 +45,7 @@ export async function getUsers(): Promise<AccessUser[]> {
       email: u.email,
       role: u.role,
       orgUnitId: u.orgUnitId,
+      orgScopeIds: u.orgScopeIds ?? (u.orgUnitId ? [u.orgUnitId] : []),
       projectCode: u.projectCode,
     }));
   }
@@ -50,6 +57,8 @@ export async function getUsers(): Promise<AccessUser[]> {
     role: r.role as RoleKey,
     orgUnitId: r.orgUnitId,
     orgUnitName: r.orgUnit?.name ?? null,
+    orgScopeIds: r.orgScopes.map((scope) => scope.orgUnitId),
+    orgScopeNames: r.orgScopes.map((scope) => scope.orgUnit.name),
     projectCode: r.projectCode,
     createdAt: r.createdAt,
   }));

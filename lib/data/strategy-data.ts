@@ -39,6 +39,11 @@ import type {
   RobustnessDimensions,
   StrategicDiagnosis,
 } from "@/lib/types/stratos";
+import {
+  DEFAULT_GROUP_ORG_UNIT_ID,
+  DEFAULT_HORIZON_END,
+  DEFAULT_HORIZON_START,
+} from "@/lib/data/strategic-plan-data";
 
 export type DataSource = "database" | "demo";
 
@@ -699,12 +704,293 @@ export async function getDecodeBundle() {
   };
 }
 
+export interface RehearsalStrategySlide {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  bullets: string[];
+  metrics?: Array<{ label: string; value: string; note?: string }>;
+  footer?: string;
+}
+
+function trimText(value: string | null | undefined): string {
+  return value?.trim() ?? "";
+}
+
+function formatPlanAmount(value: unknown): string | null {
+  if (value == null) return null;
+  const num = Number(value);
+  if (!Number.isFinite(num)) return null;
+  if (Math.abs(num) >= 10000) return `${(num / 10000).toFixed(1)}亿`;
+  return `${Math.round(num).toLocaleString("zh-CN")}万`;
+}
+
+function formatPlanPercent(value: unknown): string | null {
+  if (value == null) return null;
+  const num = Number(value);
+  if (!Number.isFinite(num)) return null;
+  return `${Math.round(num * 100)}%`;
+}
+
+function compact(values: Array<string | null | undefined>, limit = 4): string[] {
+  return values.map(trimText).filter(Boolean).slice(0, limit);
+}
+
+async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
+  if (!(await dbAvailable())) return [];
+
+  const plan = await prisma.strategicPlan.findFirst({
+    where: {
+      orgUnitId: DEFAULT_GROUP_ORG_UNIT_ID,
+      horizonStart: DEFAULT_HORIZON_START,
+      horizonEnd: DEFAULT_HORIZON_END,
+    },
+    include: {
+      objectives: {
+        include: { keyResults: { orderBy: { sortOrder: "asc" } } },
+        orderBy: { sortOrder: "asc" },
+      },
+      milestones: { orderBy: [{ sortOrder: "asc" }, { year: "asc" }] },
+      premises: { orderBy: [{ sortOrder: "asc" }, { code: "asc" }] },
+      assumptions: true,
+      initiatives: { orderBy: { sortOrder: "asc" } },
+      swotItems: { orderBy: { sortOrder: "asc" } },
+      marketInsights: { orderBy: { sortOrder: "asc" } },
+      actionItems: { orderBy: { sortOrder: "asc" } },
+      budgetItems: { orderBy: { sortOrder: "asc" } },
+      roadmapItems: { orderBy: { sortOrder: "asc" } },
+      channelPlans: { orderBy: { sortOrder: "asc" } },
+      customerPlans: { orderBy: { sortOrder: "asc" } },
+      productQuarterly: { orderBy: { sortOrder: "asc" } },
+    },
+  });
+
+  if (!plan) return [];
+
+  const targetMetrics = [
+    plan.targetYear ? { label: "目标年", value: String(plan.targetYear) } : null,
+    formatPlanAmount(plan.revenueTarget)
+      ? { label: "收入目标", value: formatPlanAmount(plan.revenueTarget)! }
+      : null,
+    formatPlanPercent(plan.profitMarginTarget)
+      ? { label: "利润率", value: formatPlanPercent(plan.profitMarginTarget)! }
+      : null,
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
+
+  const slides: RehearsalStrategySlide[] = [];
+
+  slides.push({
+    id: "strategy-intent",
+    eyebrow: "战略输入 · 方向",
+    title: trimText(plan.northStar) || "战略北极星",
+    lead: trimText(plan.intent) || "尚未填写战略意图，请先在 /strategy/input 完成输入。",
+    bullets: compact([
+      plan.marketPositionDesc ? `市场地位：${plan.marketPositionDesc}` : null,
+      plan.geographyDesc ? `区域覆盖：${plan.geographyDesc}` : null,
+      plan.brandDesc ? `品牌格局：${plan.brandDesc}` : null,
+    ]),
+    metrics: targetMetrics,
+    footer: `来源 /strategy/input · ${plan.horizonStart}-${plan.horizonEnd} · ${plan.status}`,
+  });
+
+  const objectiveBullets = plan.objectives.flatMap((o) => {
+    const krs = o.keyResults
+      .map((kr) => [kr.keyResult, kr.target].filter(Boolean).join(" / "))
+      .filter(Boolean)
+      .slice(0, 2);
+    return [
+      trimText(o.objective),
+      ...krs.map((kr) => `KR：${kr}`),
+      o.mustNotFail ? `不可失败：${o.mustNotFail}` : null,
+    ];
+  });
+  if (objectiveBullets.some(Boolean)) {
+    slides.push({
+      id: "strategy-objectives",
+      eyebrow: "战略输入 · BSC / OKR",
+      title: "战略目标与关键结果",
+      bullets: compact(objectiveBullets, 8),
+      footer: `${plan.objectives.length} 个目标 · ${plan.objectives.reduce((sum, o) => sum + o.keyResults.length, 0)} 个 KR`,
+    });
+  }
+
+  const marketBullets = compact(
+    plan.marketInsights.map((m) =>
+      [m.title, m.dataPoint, m.content].map(trimText).filter(Boolean).join(" · "),
+    ),
+    5,
+  );
+  const swotBullets = compact(
+    plan.swotItems.map((s) => `${s.quadrant.toUpperCase()}：${s.content}`),
+    6,
+  );
+  if (marketBullets.length || swotBullets.length) {
+    slides.push({
+      id: "strategy-market",
+      eyebrow: "战略输入 · 市场判断",
+      title: "市场洞察与 SWOT",
+      bullets: [...marketBullets, ...swotBullets].slice(0, 8),
+      footer: "用于战略会开场对齐外部事实与内部能力判断",
+    });
+  }
+
+  const initiativeBullets = compact(
+    plan.initiatives.map((i) =>
+      [
+        trimText(i.title),
+        i.ownerName ? `Owner ${i.ownerName}` : null,
+        i.okrKeyResult ? `KR ${i.okrKeyResult}` : null,
+        i.q3Milestone ? `Q3 ${i.q3Milestone}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
+    6,
+  );
+  if (initiativeBullets.length) {
+    slides.push({
+      id: "strategy-initiatives",
+      eyebrow: "战略输入 · 关键举措",
+      title: "必须打赢的行动",
+      bullets: initiativeBullets,
+      footer: "每项举措需在彩排中确认负责人、里程碑与验收标准",
+    });
+  }
+
+  const roadmapBullets = compact(
+    plan.roadmapItems.map((r) =>
+      `${r.track} · ${r.title} · ${r.startYear}Q${r.startQ}-${r.endYear}Q${r.endQ}${
+        r.milestone ? ` · ${r.milestone}` : ""
+      }`,
+    ),
+    6,
+  );
+  const milestoneMetrics = plan.milestones.slice(0, 3).map((m) => ({
+    label: String(m.year),
+    value: m.label,
+    note: formatPlanAmount(m.revenueTarget) ?? undefined,
+  }));
+  if (roadmapBullets.length || milestoneMetrics.length) {
+    slides.push({
+      id: "strategy-roadmap",
+      eyebrow: "战略输入 · 路线图",
+      title: "年度路径与里程碑",
+      bullets: roadmapBullets,
+      metrics: milestoneMetrics,
+      footer: "用于投屏确认节奏、依赖与阶段性成果",
+    });
+  }
+
+  const executionBullets = compact(
+    plan.actionItems.map((a) =>
+      [
+        `${a.year}Q${a.quarter}`,
+        trimText(a.action),
+        a.ownerName ? `Owner ${a.ownerName}` : null,
+        a.acceptanceCriteria ? `验收 ${a.acceptanceCriteria}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
+    6,
+  );
+  if (executionBullets.length) {
+    slides.push({
+      id: "strategy-execution",
+      eyebrow: "战略输入 · 年度作战计划",
+      title: "下一步执行闭环",
+      bullets: executionBullets,
+      footer: "会后进入承诺、复盘与执行看板",
+    });
+  }
+
+  const budgetBullets = compact(
+    plan.budgetItems.map((b) =>
+      [
+        b.category,
+        trimText(b.description),
+        b.totalAmount ? `合计 ${b.totalAmount}` : null,
+        b.roiEstimate ? `ROI ${b.roiEstimate}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
+    5,
+  );
+  const premiseBullets = compact(
+    [
+      ...plan.premises.map((p) => `${p.code}：${p.premise} · 信心 ${p.confidence}% / 脆弱 ${p.fragility}%`),
+      ...plan.assumptions.map((a) => `${a.critical ? "关键假设" : "假设"}：${a.assumption}`),
+    ],
+    5,
+  );
+  if (budgetBullets.length || premiseBullets.length) {
+    slides.push({
+      id: "strategy-risks-resources",
+      eyebrow: "战略输入 · 资源与假设",
+      title: "资源投入和前提条件",
+      bullets: [...budgetBullets, ...premiseBullets].slice(0, 8),
+      footer: "投屏讨论重点：哪些资源现在承诺，哪些假设必须监控",
+    });
+  }
+
+  const productBullets = compact(
+    plan.productQuarterly.map((p) =>
+      [
+        trimText(p.productName),
+        p.annualRevenue ? `年收入 ${formatPlanAmount(p.annualRevenue)}` : null,
+        p.note,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
+    4,
+  );
+  const channelBullets = compact(
+    plan.channelPlans.map((c) =>
+      [
+        trimText(c.channelType),
+        c.targetState,
+        c.revenueTarget ? `目标 ${formatPlanAmount(c.revenueTarget)}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
+    3,
+  );
+  const customerBullets = compact(
+    plan.customerPlans.map((c) =>
+      [
+        trimText(c.customerSegment),
+        c.targetCount != null ? `目标 ${c.targetCount} 家` : null,
+        c.acquisitionStrategy,
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    ),
+    3,
+  );
+  if (productBullets.length || channelBullets.length || customerBullets.length) {
+    slides.push({
+      id: "strategy-business-plan",
+      eyebrow: "战略输入 · 业务专题",
+      title: "产品、渠道与客户打法",
+      bullets: [...productBullets, ...channelBullets, ...customerBullets].slice(0, 8),
+      footer: "适合 BU 投屏汇报与质询",
+    });
+  }
+
+  return slides;
+}
+
 /** Q3 rehearsal live context */
 export async function getRehearsalBundle() {
-  const [deck, , versions] = await Promise.all([
+  const [deck, , versions, strategySlides] = await Promise.all([
     getCommandDeckBundle(),
     getHealthBundle(),
     import("@/lib/data/versions-data").then((m) => m.getVersionsBundle()),
+    getRehearsalStrategySlides(),
   ]);
   const activeAssertion = deck.assertions.find((a) => a.active);
   return {
@@ -720,6 +1006,7 @@ export async function getRehearsalBundle() {
     hardBlock: activeAssertion?.active
       ? activeAssertion.message
       : null,
+    strategySlides,
   };
 }
 

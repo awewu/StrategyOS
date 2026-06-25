@@ -31,6 +31,7 @@ const DEMO_PROJECT_SCOPE: Record<RoleKey, string[] | null> = {
 
 export function getOrgScope(role: RoleKey, session?: SessionPayload | null): string[] | null {
   if (roleToLevel(role) >= 3) return null;
+  if (session?.orgScopeIds && session.orgScopeIds.length > 0) return session.orgScopeIds;
   if (session?.orgUnitId) return [session.orgUnitId];
   return DEMO_ORG_SCOPE[role];
 }

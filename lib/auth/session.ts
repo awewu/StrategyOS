@@ -59,7 +59,10 @@ export async function resolveUserByEmail(email: string): Promise<SessionPayload 
   const demo = DEMO_USERS.find((u) => u.email === email);
   if (!(await dbAvailable())) return demo ?? null;
 
-  const row = await prisma.user.findUnique({ where: { email } });
+  const row = await prisma.user.findUnique({
+    where: { email },
+    include: { orgScopes: { select: { orgUnitId: true } } },
+  });
   if (!row) return demo ?? null;
   return {
     userId: row.id,
@@ -67,6 +70,7 @@ export async function resolveUserByEmail(email: string): Promise<SessionPayload 
     name: row.name,
     role: row.role as RoleKey,
     orgUnitId: row.orgUnitId,
+    orgScopeIds: row.orgScopes.map((scope) => scope.orgUnitId),
     projectCode: row.projectCode,
   };
 }

@@ -11,7 +11,93 @@ import { roleLabel } from "@/lib/context/role-context";
 import type { PermissionConfig } from "@/lib/auth/permission-config";
 
 type OrgUnitOption = { id: string; name: string; level: string };
-type UserDraft = { role: RoleKey; orgUnitId: string; projectCode: string };
+type UserDraft = { role: RoleKey; orgScopeIds: string[]; projectCode: string };
+type AccessTab = "users" | "audit";
+
+const DEFAULT_PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
+
+function pageCount(total: number, pageSize: number): number {
+  return Math.max(1, Math.ceil(total / pageSize));
+}
+
+function pageSlice<T>(items: T[], page: number, pageSize: number): T[] {
+  return items.slice((page - 1) * pageSize, page * pageSize);
+}
+
+function toggleId(ids: string[], id: string): string[] {
+  return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+}
+
+function orgScopeSummary(ids: string[], orgUnits: OrgUnitOption[]): string {
+  if (ids.length === 0) return "全公司/不限制";
+  const names = ids
+    .map((id) => orgUnits.find((unit) => unit.id === id)?.name ?? id)
+    .filter(Boolean);
+  if (names.length <= 2) return names.join("、");
+  return `已选 ${names.length} 个组织`;
+}
+
+function Pagination({
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+}) {
+  const totalPages = pageCount(total, pageSize);
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return (
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+      <span>
+        {start}-{end} / {total}
+      </span>
+      <div className="flex items-center gap-2">
+        <label className="inline-flex items-center gap-1">
+          每页
+          <select
+            className="rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-xs"
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          >
+            {PAGE_SIZE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          条
+        </label>
+        <button
+          type="button"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          className="rounded border border-[var(--surface-border)] px-2.5 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          上一页
+        </button>
+        <span>
+          {page} / {totalPages}
+        </span>
+        <button
+          type="button"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className="rounded border border-[var(--surface-border)] px-2.5 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          下一页
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function formatTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -73,6 +159,13 @@ export function AccessManagementPanelV2({
   const [draft, setDraft] = useState<UserDraft | null>(null);
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<AccessTab>("users");
+  const [usersPage, setUsersPage] = useState(1);
+  const [auditPage, setAuditPage] = useState(1);
+  const [usersPageSize, setUsersPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [auditPageSize, setAuditPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const pagedUsers = pageSlice(users, usersPage, usersPageSize);
+  const pagedLogs = pageSlice(logs, auditPage, auditPageSize);
 
   async function handleOpenModeToggle(next: boolean) {
     setSavingOpenMode(true);
@@ -100,7 +193,7 @@ export function AccessManagementPanelV2({
     setEditingUserId(user.id);
     setDraft({
       role: user.role,
-      orgUnitId: user.orgUnitId ?? "",
+      orgScopeIds: user.orgScopeIds?.length ? user.orgScopeIds : user.orgUnitId ? [user.orgUnitId] : [],
       projectCode: user.projectCode ?? "",
     });
   }
@@ -114,7 +207,7 @@ export function AccessManagementPanelV2({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         role: draft.role,
-        orgUnitId: draft.orgUnitId || null,
+        orgScopeIds: draft.orgScopeIds,
         projectCode: draft.projectCode || null,
       }),
     });
@@ -137,13 +230,43 @@ export function AccessManagementPanelV2({
           <h1 className="stratos-section-title">访问管理</h1>
           <p className="stratos-section-desc mt-1">登录账号 · 权限分配 · 当前会话 · 使用审计日志（最近 50 条）</p>
         </div>
-        {session && (
-          <button type="button" disabled={loggingOut} onClick={handleLogout} className="rounded border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.04] disabled:opacity-50">
-            {loggingOut ? "登出中..." : "登出当前会话"}
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="/admin/org"
+            className="rounded border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.04]"
+          >
+            组织维护
+          </a>
+          {session && (
+            <button type="button" disabled={loggingOut} onClick={handleLogout} className="rounded border border-[var(--surface-border)] px-4 py-2 text-sm hover:bg-black/[0.04] disabled:opacity-50">
+              {loggingOut ? "登出中..." : "登出当前会话"}
+            </button>
+          )}
+        </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
+        {[
+          { id: "users" as const, label: `用户列表 (${users.length})` },
+          { id: "audit" as const, label: `审计日志 (${logs.length})` },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`border-b-2 px-3 py-2 text-sm ${
+              activeTab === tab.id
+                ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
+                : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "users" && (
+        <>
       <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <h2 className="mb-4 text-sm font-medium">当前会话</h2>
         {session ? (
@@ -189,7 +312,7 @@ export function AccessManagementPanelV2({
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => {
+              {pagedUsers.map((u) => {
                 const isEditing = editingUserId === u.id && draft;
                 const isSelf = session?.userId === u.id;
                 return (
@@ -205,11 +328,31 @@ export function AccessManagementPanelV2({
                     </td>
                     <td className="py-2 pr-4">
                       {isEditing ? (
-                        <select className="max-w-[180px] rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-xs" value={draft.orgUnitId} onChange={(e) => setDraft({ ...draft, orgUnitId: e.target.value })}>
-                          <option value="">全公司/不限制</option>
-                          {orgUnits.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
-                        </select>
-                      ) : u.orgUnitName ?? u.orgUnitId ?? "全公司/不限制"}
+                        <details className="relative">
+                          <summary className="min-w-[220px] cursor-pointer list-none rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-xs">
+                            {orgScopeSummary(draft.orgScopeIds, orgUnits)}
+                          </summary>
+                          <div className="absolute z-20 mt-1 grid max-h-56 min-w-[260px] gap-1 overflow-y-auto rounded border border-[var(--surface-border)] bg-white p-2 shadow-lg">
+                            <button
+                              type="button"
+                              className="rounded px-2 py-1 text-left text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04]"
+                              onClick={() => setDraft({ ...draft, orgScopeIds: [] })}
+                            >
+                              全公司/不限制
+                            </button>
+                            {orgUnits.map((unit) => (
+                              <label key={unit.id} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-black/[0.04]">
+                                <input
+                                  type="checkbox"
+                                  checked={draft.orgScopeIds.includes(unit.id)}
+                                  onChange={() => setDraft({ ...draft, orgScopeIds: toggleId(draft.orgScopeIds, unit.id) })}
+                                />
+                                <span className="truncate">{unit.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </details>
+                      ) : u.orgScopeNames?.length ? u.orgScopeNames.join("、") : u.orgUnitName ?? u.orgUnitId ?? "全公司/不限制"}
                     </td>
                     <td className="py-2 pr-4">
                       {isEditing ? (
@@ -235,8 +378,21 @@ export function AccessManagementPanelV2({
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={usersPage}
+          pageSize={usersPageSize}
+          total={users.length}
+          onPageChange={setUsersPage}
+          onPageSizeChange={(next) => {
+            setUsersPageSize(next);
+            setUsersPage(1);
+          }}
+        />
       </section>
+        </>
+      )}
 
+      {activeTab === "audit" && (
       <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-medium">使用审计日志</h2>
@@ -251,7 +407,7 @@ export function AccessManagementPanelV2({
             <table className="w-full text-left text-sm">
               <thead><tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]"><th className="pb-2 pr-3 font-normal">时间</th><th className="pb-2 pr-3 font-normal">用户</th><th className="pb-2 pr-3 font-normal">操作</th><th className="pb-2 pr-3 font-normal">资源</th><th className="pb-2 pr-3 font-normal">IP</th><th className="pb-2 font-normal">哈希</th></tr></thead>
               <tbody>
-                {logs.map((log) => (
+                {pagedLogs.map((log) => (
                   <tr key={log.id} className="border-b border-[var(--surface-border)]">
                     <td className="py-2 pr-3 whitespace-nowrap font-mono text-xs">{formatTime(log.createdAt)}</td>
                     <td className="py-2 pr-3">{log.userEmail}</td>
@@ -265,7 +421,18 @@ export function AccessManagementPanelV2({
             </table>
           </div>
         )}
+        <Pagination
+          page={auditPage}
+          pageSize={auditPageSize}
+          total={logs.length}
+          onPageChange={setAuditPage}
+          onPageSizeChange={(next) => {
+            setAuditPageSize(next);
+            setAuditPage(1);
+          }}
+        />
       </section>
+      )}
     </div>
   );
 }

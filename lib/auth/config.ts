@@ -10,6 +10,7 @@ export interface SessionPayload {
   name: string;
   role: RoleKey;
   orgUnitId?: string | null;
+  orgScopeIds?: string[] | null;
   projectCode?: string | null;
 }
 

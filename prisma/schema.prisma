@@ -36,6 +36,7 @@ model User {
   submittedPlans          StrategicPlan[]
   snapshotsFrozen         StrategicSnapshot[]  @relation("SnapshotFrozenBy")
   usageLogs               UsageLog[]
+  orgScopes               UserOrgScope[]
   workingVersionsCreated  WorkingVersion[]     @relation("WorkingVersionCreator")
   orgUnit                 OrgUnit?             @relation("UserOrgUnit", fields: [orgUnitId], references: [id], onDelete: SetNull)
 
@@ -860,11 +861,25 @@ model OrgUnit {
   salesRegions       SalesRegion[]    @relation("RegionOrgUnit")
   plans              StrategicPlan[]
   reports            Report[]         @relation("ReportOrgUnit")
+  userScopes         UserOrgScope[]
   users              User[]           @relation("UserOrgUnit")
 
   @@index([level, sortOrder])
   @@index([parentId])
   @@map("org_units")
+}
+
+model UserOrgScope {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  orgUnitId String   @map("org_unit_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  orgUnit   OrgUnit  @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgUnitId])
+  @@index([orgUnitId])
+  @@map("user_org_scopes")
 }
 
 model StrategicPlan {
