@@ -47,7 +47,13 @@ export async function POST(request: Request) {
   let signals = db?.signals ?? demoSignals;
   const fetchLog: string[] = [];
   let newSignalsWritten = 0;
-  let curation: { kept: number; drops: number; rounds: number; trace: { node: string; competitor: string; detail: string }[]; dropList: { competitor: string; dimension: string; title: string; reason: string }[] } | null = null;
+  let curation: {
+    kept: number;
+    drops: number;
+    rounds: number;
+    trace: { node: string; competitor: string; detail: string; fetched?: boolean }[];
+    dropList: { competitor: string; dimension: string; title: string; reason: string }[];
+  } | null = null;
 
   if (db && hermesLlmConfigured()) {
     // Multi-agent pipeline: collect → analyze → qc(grounding) → decide.
@@ -96,16 +102,33 @@ export async function POST(request: Request) {
     ).catch(() => {});
   }
 
-  const engine: "llm" | "rule" = hermesLlmConfigured() ? "llm" : "rule";
+  const didFetch = Boolean(curation?.trace.some((item) => item.node === "collect" && item.fetched));
+  const engine: "llm" | "rule" = didFetch && hermesLlmConfigured() ? "llm" : "rule";
   const base = runHermesScan(sources, signals, now);
-  const result = { ...base, llmEngine: engine, newSignals: newSignalsWritten || base.newSignals };
+  const result = { ...base, llmEngine: engine, newSignals: newSignalsWritten };
 
   await logUsageEvent({
     action: "hermes_scan", resource: result.scanId, request,
-    metadata: { sourcesScanned: result.sourcesScanned, newSignals: result.newSignals, engine, drops: curation?.drops ?? 0 },
+    metadata: {
+      sourcesScanned: result.sourcesScanned,
+      newSignals: result.newSignals,
+      engine,
+      didFetch,
+      inventorySignals: signals.length,
+      drops: curation?.drops ?? 0,
+    },
   });
 
-  return NextResponse.json({ ...result, blindSpots: blindSpots(sources, now), fetchLog, curation, source: db ? "db" : "demo" });
+  return NextResponse.json({
+    ...result,
+    blindSpots: blindSpots(sources, now),
+    fetchLog,
+    curation,
+    source: db ? "db" : "demo",
+    didFetch,
+    inventorySignals: signals.length,
+    llmConfigured: hermesLlmConfigured(),
+  });
 }
 
 export async function GET() {

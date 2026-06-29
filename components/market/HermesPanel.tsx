@@ -10,7 +10,13 @@ interface Curation {
   rounds: number;
   dropList: CurationDrop[];
 }
-type ScanResponse = HermesScanResult & { curation?: Curation | null };
+type ScanResponse = HermesScanResult & {
+  curation?: Curation | null;
+  didFetch?: boolean;
+  inventorySignals?: number;
+  llmConfigured?: boolean;
+  error?: string;
+};
 
 export function HermesPanel({
   agent,
@@ -27,16 +33,34 @@ export function HermesPanel({
   const [running, setRunning] = useState(false);
   const [open, setOpen] = useState(false);
   const [curation, setCuration] = useState<Curation | null>(null);
+  const [scanMeta, setScanMeta] = useState<{
+    didFetch: boolean;
+    inventorySignals: number | null;
+    llmConfigured: boolean | null;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function runScan() {
     setRunning(true);
+    setError(null);
     try {
       const res = await fetch("/api/market/scan", { method: "POST" });
-      if (res.ok) {
-        const data = (await res.json()) as ScanResponse;
-        setScan(data);
-        setCuration(data.curation ?? null);
+      const data = (await res.json().catch(() => null)) as ScanResponse | null;
+      if (!res.ok) {
+        setError(data?.error ?? `扫描失败：HTTP ${res.status}`);
+        return;
       }
+      if (!data) {
+        setError("扫描失败：接口返回为空");
+        return;
+      }
+      setScan(data);
+      setCuration(data.curation ?? null);
+      setScanMeta({
+        didFetch: Boolean(data.didFetch),
+        inventorySignals: typeof data.inventorySignals === "number" ? data.inventorySignals : null,
+        llmConfigured: typeof data.llmConfigured === "boolean" ? data.llmConfigured : null,
+      });
     } finally {
       setRunning(false);
     }
@@ -73,10 +97,32 @@ export function HermesPanel({
 
       <div className="mt-5 grid gap-4 sm:grid-cols-4">
         <Stat label="来源" value={`${scan.sourcesActive}/${scan.sourcesScanned}`} sub="活跃 / 登记" />
-        <Stat label="本期信号" value={String(scan.newSignals)} sub="归一化产出" />
+        <Stat label="本次新增" value={String(scan.newSignals)} sub={scanMeta?.inventorySignals != null ? `库存 ${scanMeta.inventorySignals} 条` : "归一化产出"} />
         <Stat label="覆盖" value={`${Math.round((sourcesActive / Math.max(sourcesTotal, 1)) * 100)}%`} sub="来源健康率" />
-        <Stat label="最近扫描" value={scan.ranAt.slice(5, 10)} sub={scan.llmEngine === "llm" ? "LLM 引擎" : "规则引擎"} />
+        <Stat
+          label="最近扫描"
+          value={scan.ranAt.slice(5, 10)}
+          sub={
+            scanMeta
+              ? scanMeta.didFetch
+                ? scan.llmEngine === "llm" ? "联网 + LLM" : "联网 + 规则"
+                : scanMeta.llmConfigured ? "LLM 已配 · 无信息更新" : "规则引擎 · 无信息更新"
+              : scan.llmEngine === "llm" ? "LLM 引擎" : "规则引擎"
+          }
+        />
       </div>
+
+      {error && (
+        <div className="mt-4 rounded-md border border-[var(--signal-red)]/25 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)] p-3 text-sm text-[var(--signal-red)]">
+          {error}
+        </div>
+      )}
+
+      {scanMeta && !scanMeta.didFetch && (
+        <div className="mt-4 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3 text-xs text-[var(--color-text-muted)]">
+          本次没有信息更新。上方摘要来自当前情报库存。
+        </div>
+      )}
 
       {scan.highlights.length > 0 && (
         <ul className="mt-4 space-y-1.5">

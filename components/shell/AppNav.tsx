@@ -8,7 +8,7 @@
 import { RhauttSidebarLogo } from "@/components/brand/RhauttSidebarLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { canAccessHub, canAccessRoute, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand/tokens";
 import { RoleSwitcher } from "@/components/shell/RoleSwitcher";
@@ -69,17 +69,23 @@ function HubFlyout({
   hub,
   pathname,
   open,
+  top,
   role,
 }: {
   hub: NavHub;
   pathname: string;
   open: boolean;
+  top: number | null;
   role: RoleKey;
 }) {
   if (!open || hub.children.length === 0) return null;
 
+  const style = {
+    "--stratos-nav-flyout-top": `${Math.max(top ?? 0, 8)}px`,
+  } as CSSProperties;
+
   return (
-    <div className="stratos-nav-flyout" role="menu">
+    <div className="stratos-nav-flyout" role="menu" style={style}>
       <p className="stratos-nav-flyout__title">{hub.label}</p>
       <ul className="stratos-nav-flyout__list">
         {hub.children.filter((c) => filterNavHref(role, c.href)).map((item) => {
@@ -111,6 +117,7 @@ function HubNavItem({
   role: ReturnType<typeof useRole>["role"];
 }) {
   const [flyout, setFlyout] = useState(false);
+  const [flyoutTop, setFlyoutTop] = useState<number | null>(null);
   const active = hubContainsPath(hub, pathname);
 
   const defaultHref =
@@ -120,7 +127,10 @@ function HubNavItem({
   return (
     <div
       className="stratos-nav-hub"
-      onMouseEnter={() => setFlyout(true)}
+      onMouseEnter={(event) => {
+        setFlyoutTop(event.currentTarget.getBoundingClientRect().top);
+        setFlyout(true);
+      }}
       onMouseLeave={() => setFlyout(false)}
     >
       <Link
@@ -132,7 +142,7 @@ function HubNavItem({
         {hub.id === "posture" ? <InboxNavBadge /> : null}
         <span className="stratos-nav-item__label">{hub.shortLabel}</span>
       </Link>
-      <HubFlyout hub={hub} pathname={pathname} open={flyout} role={role} />
+      <HubFlyout hub={hub} pathname={pathname} open={flyout} top={flyoutTop} role={role} />
     </div>
   );
 }

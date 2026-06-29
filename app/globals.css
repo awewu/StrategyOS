@@ -359,9 +359,9 @@ body {
 }
 
 .stratos-nav-flyout {
-  position: absolute;
-  left: calc(100% + 6px);
-  top: 0;
+  position: fixed;
+  left: var(--sidebar-w);
+  top: var(--stratos-nav-flyout-top, 0);
   z-index: 50;
   min-width: 10.5rem;
   padding: 0.5rem 0.35rem;
@@ -473,6 +473,8 @@ body {
 }
 
 .stratos-role-flyout {
+  position: absolute;
+  left: calc(100% + 6px);
   top: auto;
   bottom: 0;
   min-width: 12rem;

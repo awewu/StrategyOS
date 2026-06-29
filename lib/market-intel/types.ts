@@ -96,6 +96,7 @@ export interface HermesNodeTrace {
   node: "collect" | "analyze" | "qc" | "decide";
   competitor: string;
   detail: string;
+  fetched?: boolean;
 }
 
 export interface CompetitorTrack {

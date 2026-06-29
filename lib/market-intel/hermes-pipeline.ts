@@ -146,16 +146,26 @@ export async function runHermesPipeline(
   );
   const active = sources.filter((s) => daysSince(s.lastScrapedAt, now) <= s.cadenceDays * 2).length;
 
+  const dueWithoutUrl = sources.filter(
+    (s) => !s.url && daysSince(s.lastScrapedAt, now) >= s.cadenceDays,
+  );
+  for (const source of dueWithoutUrl) {
+    trace.push({ node: "collect", competitor: source.competitor, detail: "来源未配置 URL · 无信息更新", fetched: false });
+  }
+  if (due.length === 0 && dueWithoutUrl.length === 0) {
+    trace.push({ node: "collect", competitor: "—", detail: "无到期来源 · 本次无信息更新", fetched: false });
+  }
+
   let rounds = 0;
   for (const source of due) {
     rounds = Math.max(rounds, 1);
     // ── collect ──
     const text = await fetchPlainText(source.url!);
     if (!text) {
-      trace.push({ node: "collect", competitor: source.competitor, detail: "抓取失败 · 跳过" });
+      trace.push({ node: "collect", competitor: source.competitor, detail: "来源读取失败 · 无信息更新", fetched: false });
       continue;
     }
-    trace.push({ node: "collect", competitor: source.competitor, detail: `抓取 ${text.length} 字` });
+    trace.push({ node: "collect", competitor: source.competitor, detail: `读取 ${text.length} 字`, fetched: true });
 
     // ── analyze ──
     const sourceLabel = `${source.competitor} ${source.kind} ${capturedAt}`;
