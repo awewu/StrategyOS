@@ -266,6 +266,25 @@ const ARRAY_FIELDS = [
   "orgChartNodes",
 ] as const;
 
+function previewText(value: string, max = 360): string {
+  return value.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+function extractedCounts(extracted: Record<string, unknown>): Record<string, number | boolean> {
+  const counts: Record<string, number | boolean> = {
+    intent: Boolean(stringValue(extracted.intent)),
+    northStar: Boolean(stringValue(extracted.northStar)),
+  };
+  for (const key of ARRAY_FIELDS) {
+    counts[key] = arrayValue(extracted[key]).filter(hasMeaningfulValue).length;
+  }
+  return counts;
+}
+
+function logExtractStage(debugId: string, stage: string, detail: Record<string, unknown>) {
+  console.info("AI strategy extract stage:", { debugId, stage, ...detail });
+}
+
 function parseJsonObject(raw: string): Record<string, unknown> {
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (!jsonMatch) return {};
@@ -754,12 +773,13 @@ ${summary}
 const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 
 export async function POST(req: Request) {
+  const debugId = `strategy-ai-${Date.now().toString(36)}`;
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
 
   if (!llmConfigured()) {
     return NextResponse.json(
-      { error: "LLM 未配置，请先配置 OPENAI_API_KEY。", llmAvailable: false },
+      { error: `LLM 未配置，请先配置 OPENAI_API_KEY。（debugId: ${debugId}）`, llmAvailable: false, debugId },
       { status: 503 },
     );
   }
@@ -772,17 +792,25 @@ export async function POST(req: Request) {
     // ── 文件上传模式 ──
     let formData: FormData;
     try { formData = await req.formData(); }
-    catch { return NextResponse.json({ error: "无法解析上传文件" }, { status: 400 }); }
+    catch {
+      logExtractStage(debugId, "form-data-parse-failed", { contentType });
+      return NextResponse.json({ error: `无法解析上传文件（debugId: ${debugId}）`, debugId }, { status: 400 });
+    }
 
     const file = formData.get("file") as File | null;
-    if (!file) return NextResponse.json({ error: "未找到上传文件（字段名：file）" }, { status: 400 });
+    if (!file) {
+      logExtractStage(debugId, "file-missing", { contentType });
+      return NextResponse.json({ error: `未找到上传文件（字段名：file，debugId: ${debugId}）`, debugId }, { status: 400 });
+    }
 
     const ALLOWED = /\.(docx?|xlsx?|pptx?|pdf)$/i;
     if (!ALLOWED.test(file.name)) {
-      return NextResponse.json({ error: "仅支持 docx/xlsx/pptx/pdf 格式" }, { status: 400 });
+      logExtractStage(debugId, "file-type-rejected", { filename: file.name, sizeBytes: file.size, mimeType: file.type });
+      return NextResponse.json({ error: `仅支持 docx/xlsx/pptx/pdf 格式（debugId: ${debugId}）`, debugId }, { status: 400 });
     }
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: "文件不得超过 20 MB" }, { status: 400 });
+      logExtractStage(debugId, "file-too-large", { filename: file.name, sizeBytes: file.size });
+      return NextResponse.json({ error: `文件不得超过 20 MB（debugId: ${debugId}）`, debugId }, { status: 400 });
     }
 
     const buf = Buffer.from(await file.arrayBuffer());
@@ -793,10 +821,10 @@ export async function POST(req: Request) {
       sizeBytes: file.size,
       mimeType: file.type || "application/octet-stream",
     };
+    logExtractStage(debugId, "file-received", sourceMeta);
     try {
       text = await extractTextFromFile(buf, file.name);
     } catch (error) {
-      const debugId = `extract-${Date.now().toString(36)}`;
       const detail = error instanceof ExtractionFailure ? error.detail : {};
       const message = error instanceof Error ? error.message : "无法从文件中提取文字内容";
       console.error("AI extract file text failure:", { debugId, ...sourceMeta, detail, error });
@@ -807,8 +835,13 @@ export async function POST(req: Request) {
       }, { status: 422 });
     }
 
+    logExtractStage(debugId, "file-text-extracted", {
+      ...sourceMeta,
+      extractedLength: text.length,
+      preview: previewText(text),
+    });
+
     if (!text || text.length < 50) {
-      const debugId = `extract-${Date.now().toString(36)}`;
       console.error("AI extract empty text:", { debugId, ...sourceMeta, extractedLength: text?.length ?? 0, preview: text?.slice(0, 120) });
       return NextResponse.json({
         error: `无法从文件中提取足够文字内容（${file.name}，${ext || "未知格式"}，已提取 ${text?.length ?? 0} 字，debugId: ${debugId}）。请确认文件不是扫描图片，或另存为 .pptx / PDF 后重试。`,
@@ -820,25 +853,47 @@ export async function POST(req: Request) {
     // ── JSON 文本模式（兼容旧调用）──
     let body: { text?: string };
     try { body = await req.json(); }
-    catch { return NextResponse.json({ error: "无效 JSON" }, { status: 400 }); }
+    catch {
+      logExtractStage(debugId, "json-parse-failed", { contentType });
+      return NextResponse.json({ error: `无效 JSON（debugId: ${debugId}）`, debugId }, { status: 400 });
+    }
 
     text = body.text?.trim() ?? "";
     if (text.length < 50) {
-      return NextResponse.json({ error: "文本内容太短，至少 50 字" }, { status: 400 });
+      logExtractStage(debugId, "json-text-too-short", { textLength: text.length, preview: previewText(text) });
+      return NextResponse.json({ error: `文本内容太短，至少 50 字（debugId: ${debugId}）`, debugId }, { status: 400 });
     }
+    sourceMeta = { mode: "text", sizeBytes: text.length };
+    logExtractStage(debugId, "json-text-received", { textLength: text.length, preview: previewText(text) });
   }
 
   try {
     const cleanText = cleanSourceText(text);
     const heuristic = heuristicExtract(cleanText);
+    logExtractStage(debugId, "source-cleaned", {
+      ...sourceMeta,
+      originalLength: text.length,
+      cleanLength: cleanText.length,
+      removedLength: Math.max(0, text.length - cleanText.length),
+      cleanPreview: previewText(cleanText),
+      heuristicCounts: extractedCounts(heuristic),
+    });
 
     // ── 第一阶段：降噪摘要 ──────────────────────────────────────────────────
     const summary = await callLlm([
       { role: "system", content: STAGE1_SYSTEM },
       { role: "user", content: STAGE1_PROMPT(cleanText) },
     ]);
+    logExtractStage(debugId, "llm-summary-complete", {
+      summaryLength: summary.trim().length,
+      summaryPreview: previewText(summary),
+    });
     if (!summary || summary.trim().length < 30) {
-      return NextResponse.json({ error: "文件内容过少，无法提取战略信息" }, { status: 422 });
+      return NextResponse.json({
+        error: `文件内容过少，无法提取战略信息（debugId: ${debugId}）`,
+        debugId,
+        diagnostics: { stage: "llm-summary-complete", sourceMeta, originalLength: text.length, cleanLength: cleanText.length, summaryLength: summary.trim().length },
+      }, { status: 422 });
     }
 
     // ── 第二阶段：结构化提取 ─────────────────────────────────────────────────
@@ -846,30 +901,61 @@ export async function POST(req: Request) {
       { role: "system", content: STAGE2_SYSTEM },
       { role: "user", content: STAGE2_PROMPT(summary) },
     ]);
+    logExtractStage(debugId, "llm-structured-complete", {
+      rawLength: raw.length,
+      rawPreview: previewText(raw),
+    });
 
     let extracted: Record<string, unknown>;
     try {
       extracted = normalizeExtracted(parseJsonObject(raw));
-    } catch {
-      return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw }, { status: 422 });
+    } catch (error) {
+      console.error("AI strategy extract JSON parse failed:", { debugId, stage: "primary-json-parse", rawPreview: previewText(raw), error });
+      return NextResponse.json({ error: `LLM 返回格式异常，请重试（debugId: ${debugId}）`, debugId, raw }, { status: 422 });
     }
     extracted = mergeExtracted(extracted, heuristic);
+    logExtractStage(debugId, "primary-merged", {
+      counts: extractedCounts(extracted),
+      hasContent: hasExtractedContent(extracted),
+    });
 
     if (!hasExtractedContent(extracted)) {
       const retryRaw = await callLlm([
         { role: "system", content: "Return only valid JSON. Use exactly these top-level keys: intent, northStar, objectives, initiatives, swotItems, assumptions, marketInsights, actionItems, budgetItems, roadmapItems, productQuarterly, channelPlans, customerPlans, orgChartNodes. Do not wrap the JSON in another object." },
         { role: "user", content: `Extract at least the fields that are clearly present from this strategy summary. Infer the user's intent from non-standard headings and bullets. Use [] for missing arrays and "" for missing strings.\n\n${STAGE2_PROMPT(summary)}\n\nOriginal extracted text excerpt for intent clues:\n${cleanText.slice(0, 12000)}` },
       ]);
+      logExtractStage(debugId, "retry-structured-complete", {
+        rawLength: retryRaw.length,
+        rawPreview: previewText(retryRaw),
+      });
       try {
         extracted = mergeExtracted(normalizeExtracted(parseJsonObject(retryRaw)), heuristic);
-      } catch {
-        return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw: retryRaw }, { status: 422 });
+      } catch (error) {
+        console.error("AI strategy extract JSON parse failed:", { debugId, stage: "retry-json-parse", rawPreview: previewText(retryRaw), error });
+        return NextResponse.json({ error: `LLM 返回格式异常，请重试（debugId: ${debugId}）`, debugId, raw: retryRaw }, { status: 422 });
       }
+      logExtractStage(debugId, "retry-merged", {
+        counts: extractedCounts(extracted),
+        hasContent: hasExtractedContent(extracted),
+      });
     }
 
-    return NextResponse.json({ ok: true, extracted, summary });
+    const diagnostics = {
+      stage: "complete",
+      debugId,
+      sourceMeta,
+      originalLength: text.length,
+      cleanLength: cleanText.length,
+      summaryLength: summary.trim().length,
+      counts: extractedCounts(extracted),
+      hasContent: hasExtractedContent(extracted),
+    };
+    logExtractStage(debugId, "complete", diagnostics);
+
+    return NextResponse.json({ ok: true, debugId, extracted, summary, diagnostics });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "LLM 调用失败";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("AI strategy extract failed:", { debugId, sourceMeta, error: e });
+    return NextResponse.json({ error: `${msg}（debugId: ${debugId}）`, debugId }, { status: 500 });
   }
 }

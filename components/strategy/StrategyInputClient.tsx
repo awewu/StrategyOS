@@ -767,7 +767,8 @@ function AiExtractBar({
       if (!res.ok) throw new Error(data.error ?? "提取失败");
       const extracted = unwrapExtractedPayload(data.extracted);
       if (!hasExtractedContent(extracted)) {
-        throw new Error("AI 已完成解析，但没有识别到可写入页签的字段。请确认文件内容包含战略意图、市场洞察、SWOT、目标或举措等信息。");
+        const debugSuffix = data.debugId ? `（debugId: ${data.debugId}）` : "";
+        throw new Error(`AI 已完成解析，但没有识别到可写入页签的字段。请确认文件内容包含战略意图、市场洞察、SWOT、目标或举措等信息。${debugSuffix}`);
       }
       setForm((f) => applyExtracted(f, extracted));
       flash("ok", "AI 提取完成，请逐页检查并修订内容");
