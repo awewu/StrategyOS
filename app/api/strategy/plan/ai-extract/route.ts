@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { llmConfigured } from "@/lib/stratos/llm-agent";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 export const runtime = "nodejs";
 
@@ -84,6 +86,30 @@ async function readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<str
   return parts.join(" ");
 }
 
+async function extractPdfText(buf: Buffer): Promise<string> {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(join(process.cwd(), "node_modules", "pdfjs-dist", "legacy", "build", "pdf.worker.mjs")).href;
+  const standardFontDataUrl = pathToFileURL(join(process.cwd(), "node_modules", "pdfjs-dist", "standard_fonts") + "\\").href;
+  const doc = await pdfjs.getDocument({
+    data: new Uint8Array(buf),
+    standardFontDataUrl,
+  }).promise;
+  const pages: string[] = [];
+  for (let pageNo = 1; pageNo <= doc.numPages; pageNo++) {
+    const page = await doc.getPage(pageNo);
+    const content = await page.getTextContent();
+    const pageText = content.items
+      .map((item) => ("str" in item ? item.str : ""))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (pageText) pages.push(`【PDF第 ${pageNo} 页】${pageText}`);
+    page.cleanup();
+  }
+  await doc.destroy();
+  return pages.join("\n").replace(/\s+/g, " ").trim().slice(0, 60000);
+}
+
 async function extractTextFromFile(buf: Buffer, filename: string): Promise<string> {
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
   try {
@@ -122,17 +148,11 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
       return slides.map((s) => `【幻灯片 ${s.idx}】${s.text}`).join("\n").slice(0, 60000);
     }
     if (ext === "pdf") {
-      // 用 pdf-parse 正确提取中文PDF文本
       try {
-        const pdfMod = await import("pdf-parse");
-        const pdfParse = (pdfMod as unknown as { default: (buf: Buffer) => Promise<{ text: string }> }).default ?? pdfMod;
-        const result = await (pdfParse as (buf: Buffer) => Promise<{ text: string }>)(buf);
-        return result.text.replace(/\s+/g, " ").trim().slice(0, 60000);
-      } catch {
-        // fallback：latin1 ASCII 粗提取
-        return buf.toString("latin1")
-          .replace(/[^\x20-\x7E]/g, " ")
-          .replace(/\s+/g, " ").trim().slice(0, 30000);
+        return await extractPdfText(buf);
+      } catch (error) {
+        console.error("PDF text extraction failed:", error);
+        return "";
       }
     }
   } catch { /* best-effort */ }
@@ -189,8 +209,36 @@ function stringValue(value: unknown): string {
   return "";
 }
 
+function objectText(value: unknown): string {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return stringValue(value);
+  return "";
+}
+
 function arrayValue(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
+}
+
+function compactText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function cleanLine(value: string): string {
+  return compactText(value)
+    .replace(/^[\s\-•·*●○◆◇▶>]+/, "")
+    .replace(/^\d+[.)、]\s*/, "")
+    .trim();
+}
+
+function uniqueBy<T>(items: T[], keyOf: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    const key = keyOf(item).toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
 }
 
 function normalizeDimension(value: unknown): string {
@@ -204,50 +252,53 @@ function normalizeDimension(value: unknown): string {
 
 function normalizeSwotQuadrant(value: unknown): "strength" | "weakness" | "opportunity" | "threat" {
   const text = stringValue(value).toLowerCase();
-  if (/weak|劣势|短板|不足/.test(text)) return "weakness";
-  if (/opportun|机会|机遇/.test(text)) return "opportunity";
-  if (/threat|威胁|风险|挑战/.test(text)) return "threat";
+  if (/weak|劣势|短板|不足|瓶颈|问题|痛点/.test(text)) return "weakness";
+  if (/opportun|机会|机遇|增长空间|趋势|需求/.test(text)) return "opportunity";
+  if (/threat|威胁|风险|挑战|竞争|不确定/.test(text)) return "threat";
   return "strength";
 }
 
 function normalizeExtracted(value: unknown): Record<string, unknown> {
   const root = unwrapObject(value);
-  const strategicIntent = unwrapObject(firstValue(root, ["strategicIntent", "intentTab", "战略意图"]));
-  const market = unwrapObject(firstValue(root, ["market", "marketTab", "市场洞察"]));
-  const swot = unwrapObject(firstValue(root, ["swot", "swotTab", "SWOT分析", "SWOT"]));
-  const org = unwrapObject(firstValue(root, ["org", "organization", "组织规划"]));
+  const strategicIntent = unwrapObject(firstValue(root, ["strategicIntent", "intentTab", "strategy", "direction", "战略意图", "战略方向", "愿景使命"]));
+  const market = unwrapObject(firstValue(root, ["market", "marketTab", "marketLandscape", "industry", "市场洞察", "市场分析", "行业分析"]));
+  const swot = unwrapObject(firstValue(root, ["swot", "swotTab", "SWOT分析", "SWOT", "situation", "形势研判"]));
+  const org = unwrapObject(firstValue(root, ["org", "organization", "people", "组织规划", "组织能力", "人才组织"]));
 
-  const objectives = arrayValue(firstValue(root, ["objectives", "bscObjectives", "kpiObjectives", "kpis", "目标", "BSC目标", "KPI"]));
-  const initiatives = arrayValue(firstValue(root, ["initiatives", "okrInitiatives", "keyInitiatives", "举措", "关键举措", "OKR"]));
+  const objectives = arrayValue(firstValue(root, ["objectives", "bscObjectives", "kpiObjectives", "kpis", "goals", "targets", "metrics", "目标", "BSC目标", "KPI", "经营目标", "战略目标", "年度目标"]));
+  const initiatives = arrayValue(firstValue(root, ["initiatives", "okrInitiatives", "keyInitiatives", "strategicMoves", "priorities", "projects", "workstreams", "举措", "关键举措", "OKR", "策略", "重点工作", "重点任务", "战略动作", "项目"]));
   const swotItems = arrayValue(firstValue(root, ["swotItems", "SWOTItems", "swot", "SWOT", "swotAnalysis", "SWOT分析"]))
     .concat(arrayValue(firstValue(swot, ["items", "swotItems", "SWOTItems"])));
-  const marketInsights = arrayValue(firstValue(root, ["marketInsights", "insights", "market", "市场洞察"]))
+  const marketInsights = arrayValue(firstValue(root, ["marketInsights", "insights", "market", "marketTrends", "industryInsights", "市场洞察", "市场趋势", "行业趋势"]))
     .concat(arrayValue(firstValue(market, ["items", "insights", "marketInsights"])));
 
   return {
-    intent: stringValue(firstValue(root, ["intent", "strategicIntent", "strategyIntent", "战略意图", "战略方向"])) ||
-      stringValue(firstValue(strategicIntent, ["intent", "content", "战略意图", "战略方向"])),
-    northStar: stringValue(firstValue(root, ["northStar", "northStarMetric", "北极星指标", "核心指标"])) ||
-      stringValue(firstValue(strategicIntent, ["northStar", "metric", "北极星指标", "核心指标"])),
+    intent: stringValue(firstValue(root, ["intent", "strategicIntent", "strategyIntent", "direction", "vision", "mission", "theme", "战略意图", "战略方向", "战略主题", "愿景", "使命"])) ||
+      stringValue(firstValue(strategicIntent, ["intent", "content", "direction", "vision", "战略意图", "战略方向", "愿景"])),
+    northStar: stringValue(firstValue(root, ["northStar", "northStarMetric", "coreMetric", "primaryTarget", "北极星指标", "核心指标", "关键目标"])) ||
+      stringValue(firstValue(strategicIntent, ["northStar", "metric", "target", "北极星指标", "核心指标", "关键目标"])),
     objectives: objectives.map((item) => {
       const o = unwrapObject(item);
-      const keyResults = arrayValue(firstValue(o, ["keyResults", "krs", "KR", "关键结果"]));
+      const text = objectText(item);
+      const keyResults = arrayValue(firstValue(o, ["keyResults", "krs", "KR", "关键结果", "metrics", "kpis", "指标"]));
       return {
-        dimension: normalizeDimension(firstValue(o, ["dimension", "维度", "category", "类别"])),
-        objective: stringValue(firstValue(o, ["objective", "title", "目标", "content", "内容"])),
+        dimension: normalizeDimension(firstValue(o, ["dimension", "维度", "category", "类别"]) ?? text),
+        objective: stringValue(firstValue(o, ["objective", "title", "goal", "target", "目标", "content", "内容", "description", "描述"])) || text,
         keyResults: keyResults.map((kr) => {
           const k = unwrapObject(kr);
+          const krText = objectText(kr);
           return {
-            keyResult: stringValue(firstValue(k, ["keyResult", "kr", "关键结果", "content", "内容"])),
-            target: stringValue(firstValue(k, ["target", "目标值", "value", "指标值"])),
+            keyResult: stringValue(firstValue(k, ["keyResult", "kr", "metric", "kpi", "name", "关键结果", "指标", "content", "内容"])) || krText,
+            target: stringValue(firstValue(k, ["target", "目标值", "value", "指标值", "targetValue"])) || dataPointFromLine(krText),
           };
         }),
       };
     }).filter((o) => o.objective || o.keyResults.length),
     initiatives: initiatives.map((item) => {
       const i = unwrapObject(item);
+      const text = objectText(item);
       return {
-        title: stringValue(firstValue(i, ["title", "name", "举措标题", "关键举措", "举措"])),
+        title: stringValue(firstValue(i, ["title", "name", "workstream", "project", "举措标题", "关键举措", "举措", "content", "内容", "description", "描述"])) || text,
         ownerName: stringValue(firstValue(i, ["ownerName", "owner", "负责人"])),
         okrKeyResult: stringValue(firstValue(i, ["okrKeyResult", "keyResult", "KR", "关键结果"])),
         okrTarget: stringValue(firstValue(i, ["okrTarget", "target", "目标值"])),
@@ -260,36 +311,49 @@ function normalizeExtracted(value: unknown): Record<string, unknown> {
     }).filter((i) => i.title || i.okrKeyResult),
     swotItems: swotItems.map((item) => {
       const s = unwrapObject(item);
+      const text = objectText(item);
       return {
-        quadrant: normalizeSwotQuadrant(firstValue(s, ["quadrant", "type", "category", "象限", "类型"])),
-        content: stringValue(firstValue(s, ["content", "description", "内容", "描述", "point"])),
+        quadrant: normalizeSwotQuadrant(firstValue(s, ["quadrant", "type", "category", "象限", "类型"]) ?? text),
+        content: stringValue(firstValue(s, ["content", "description", "内容", "描述", "point"])) || text,
       };
     }).filter((s) => s.content),
     assumptions: arrayValue(firstValue(root, ["assumptions", "关键假设", "hypotheses"])).map((item) => {
       const a = unwrapObject(item);
+      const text = objectText(item);
       return {
-        assumption: stringValue(firstValue(a, ["assumption", "content", "假设", "内容"])),
+        assumption: stringValue(firstValue(a, ["assumption", "content", "假设", "内容", "description", "描述"])) || text,
         critical: Boolean(firstValue(a, ["critical", "isCritical", "关键"])),
       };
     }).filter((a) => a.assumption),
     marketInsights: marketInsights.map((item) => {
       const m = unwrapObject(item);
+      const text = objectText(item);
       return {
-        category: stringValue(firstValue(m, ["category", "type", "类别", "类型"])) || "TREND",
-        title: stringValue(firstValue(m, ["title", "conclusion", "标题", "结论"])),
-        content: stringValue(firstValue(m, ["content", "description", "内容", "描述"])),
-        dataPoint: stringValue(firstValue(m, ["dataPoint", "data", "metric", "数据点", "关键数据"])),
+        category: stringValue(firstValue(m, ["category", "type", "类别", "类型"])) || (/(客户|人才)/.test(text) ? "CUSTOMER" : "TREND"),
+        title: stringValue(firstValue(m, ["title", "conclusion", "标题", "结论"])) || text.slice(0, 60),
+        content: stringValue(firstValue(m, ["content", "description", "内容", "描述"])) || text,
+        dataPoint: stringValue(firstValue(m, ["dataPoint", "data", "metric", "数据点", "关键数据"])) || dataPointFromLine(text),
         source: stringValue(firstValue(m, ["source", "来源"])) || "original document",
       };
     }).filter((m) => m.title || m.content || m.dataPoint),
-    actionItems: arrayValue(firstValue(root, ["actionItems", "actions", "作战计划", "行动计划"])),
-    budgetItems: arrayValue(firstValue(root, ["budgetItems", "budgets", "资源预算", "预算"])),
-    roadmapItems: arrayValue(firstValue(root, ["roadmapItems", "roadmap", "路线图"])),
-    productQuarterly: arrayValue(firstValue(root, ["productQuarterly", "products", "产品季度", "产品计划"])),
-    channelPlans: arrayValue(firstValue(root, ["channelPlans", "channels", "渠道发展", "渠道计划"])),
-    customerPlans: arrayValue(firstValue(root, ["customerPlans", "customers", "客户发展", "客户计划"])),
+    actionItems: arrayValue(firstValue(root, ["actionItems", "actions", "workplan", "executionPlan", "作战计划", "行动计划", "实施计划", "重点工作"])),
+    budgetItems: arrayValue(firstValue(root, ["budgetItems", "budgets", "resources", "investment", "资源预算", "预算", "资源投入", "投资"])),
+    roadmapItems: arrayValue(firstValue(root, ["roadmapItems", "roadmap", "timeline", "milestones", "路线图", "时间表", "里程碑"])),
+    productQuarterly: arrayValue(firstValue(root, ["productQuarterly", "products", "portfolio", "产品季度", "产品计划", "产品组合"])),
+    channelPlans: arrayValue(firstValue(root, ["channelPlans", "channels", "goToMarket", "gtm", "渠道发展", "渠道计划", "销售网络", "GTM"])),
+    customerPlans: arrayValue(firstValue(root, ["customerPlans", "customers", "segments", "accounts", "客户发展", "客户计划", "客户群", "大客户"])),
     orgChartNodes: arrayValue(firstValue(root, ["orgChartNodes", "orgNodes", "organization", "组织规划"]))
-      .concat(arrayValue(firstValue(org, ["nodes", "orgChartNodes", "items"]))),
+      .concat(arrayValue(firstValue(org, ["nodes", "orgChartNodes", "items"]))).map((item) => {
+        const n = unwrapObject(item);
+        const text = objectText(item);
+        return {
+          name: stringValue(firstValue(n, ["name", "title", "department", "roleName", "部门", "岗位", "名称"])) || text.slice(0, 40),
+          role: stringValue(firstValue(n, ["role", "description", "职责", "职能", "内容"])) || text,
+          headcount: stringValue(firstValue(n, ["headcount", "hc", "HC", "编制", "人数"])),
+          headcountNew: stringValue(firstValue(n, ["headcountNew", "newHeadcount", "新增编制", "新增人数"])),
+          note: stringValue(firstValue(n, ["note", "备注"])),
+        };
+      }).filter((n) => n.name || n.role),
   };
 }
 
@@ -299,9 +363,137 @@ function hasExtractedContent(extracted: Record<string, unknown>): boolean {
   return ARRAY_FIELDS.some((key) => arrayValue(extracted[key]).length > 0);
 }
 
+function linesFromText(text: string): string[] {
+  return text
+    .split(/\n|。|；|;|\r/)
+    .map(cleanLine)
+    .filter((line) => line.length >= 6 && line.length <= 180)
+    .filter((line) => !/^(目录|contents?|谢谢|thank|confidential|page\s*\d+|第\s*\d+\s*页)$/i.test(line));
+}
+
+function dataPointFromLine(line: string): string {
+  return line.match(/(?:\d+(?:\.\d+)?\s*(?:%|pct|pp|个点|亿|万|万元|亿元|人|家|个|台|套|倍|年|月|Q[1-4])|20\d{2})/i)?.[0] ?? "";
+}
+
+function quarterFromLine(line: string, fallback: number): number {
+  const q = line.match(/Q([1-4])|([一二三四])季度/i);
+  if (!q) return fallback;
+  if (q[1]) return Number(q[1]);
+  const zh: Record<string, number> = { 一: 1, 二: 2, 三: 3, 四: 4 };
+  return zh[q[2]] ?? fallback;
+}
+
+function heuristicExtract(text: string): Record<string, unknown> {
+  const lines = linesFromText(text);
+  const intentLine = lines.find((line) => /(战略|愿景|使命|方向|定位|目标|成为|打造|构建|聚焦|转型|增长)/.test(line) && !/(目录|背景|复盘)/.test(line));
+  const northStarLine = lines.find((line) => /(收入|营收|利润|市占|份额|增长|GMV|ARR|用户|客户|覆盖|NPS|毛利|EBIT|ROS|ROI).*(\d|%|亿|万)/i.test(line));
+
+  const marketInsights = uniqueBy(lines
+    .filter((line) => /(市场|行业|客户|竞争|趋势|需求|机会|技术|政策|价格|份额|规模|TAM|SAM|SOM)/i.test(line))
+    .slice(0, 8)
+    .map((line) => ({
+      category: /(竞争|竞品|对手)/.test(line) ? "COMPETE" : /(客户|用户|客群)/.test(line) ? "CUSTOMER" : /(技术|研发|AI|数字化)/i.test(line) ? "TECH" : "TREND",
+      title: line.slice(0, 60),
+      content: line,
+      dataPoint: dataPointFromLine(line),
+      source: "original document",
+    })), (item) => item.content);
+
+  const objectiveLines = uniqueBy(lines
+    .filter((line) => /(目标|指标|KPI|收入|营收|利润|份额|增长|效率|交付|质量|组织|人才|研发|创新).*(\d|%|提升|降低|达到|完成|实现|突破|成为)/i.test(line))
+    .slice(0, 8), (line) => line);
+  const objectives = objectiveLines.map((line) => ({
+    dimension: normalizeDimension(line),
+    objective: line,
+    keyResults: dataPointFromLine(line) ? [{ keyResult: line.replace(dataPointFromLine(line), "").trim(), target: dataPointFromLine(line) }] : [],
+  }));
+
+  const initiatives = uniqueBy(lines
+    .filter((line) => /(举措|策略|重点|任务|项目|建设|推进|落地|实施|提升|优化|拓展|打造|构建|上线|导入|转型)/.test(line))
+    .filter((line) => !/(市场趋势|行业趋势|目录)/.test(line))
+    .slice(0, 10)
+    .map((line) => ({
+      title: line.slice(0, 80),
+      ownerName: line.match(/(?:负责人|Owner|owner)[:：]\s*([\u4e00-\u9fa5A-Za-z0-9_-]{2,12})/)?.[1] ?? "",
+      okrKeyResult: dataPointFromLine(line) ? line : "",
+      okrTarget: dataPointFromLine(line),
+      okrBaseline: "",
+      q1Milestone: /Q1|一季度/.test(line) ? line : "",
+      q2Milestone: /Q2|二季度/.test(line) ? line : "",
+      q3Milestone: /Q3|三季度/.test(line) ? line : "",
+      q4Milestone: /Q4|四季度/.test(line) ? line : "",
+    })), (item) => item.title);
+
+  const swotItems = uniqueBy(lines
+    .filter((line) => /(优势|劣势|短板|不足|机会|机遇|威胁|风险|挑战|能力|壁垒|瓶颈)/.test(line))
+    .slice(0, 8)
+    .map((line) => ({ quadrant: normalizeSwotQuadrant(line), content: line })), (item) => item.content);
+
+  const assumptions = uniqueBy(lines
+    .filter((line) => /(假设|前提|依赖|如果|预计|预期|判断|可能|风险)/.test(line))
+    .slice(0, 6)
+    .map((line) => ({ assumption: line, critical: /(关键|核心|必须|重大|高风险)/.test(line) })), (item) => item.assumption);
+
+  const roadmapItems = uniqueBy(lines
+    .filter((line) => /(20\d{2}|Q[1-4]|一季度|二季度|三季度|四季度|阶段|里程碑|上线|发布|交付)/i.test(line))
+    .slice(0, 8)
+    .map((line) => ({
+      track: /(产品|SKU|平台)/.test(line) ? "产品" : /(组织|人才|团队)/.test(line) ? "组织" : /(技术|研发|系统|数字化)/.test(line) ? "技术" : /(渠道|经销|销售)/.test(line) ? "渠道" : "举措",
+      title: line.slice(0, 60),
+      startYear: Number(line.match(/20\d{2}/)?.[0] ?? 2026),
+      startQ: quarterFromLine(line, 1),
+      endYear: Number(line.match(/20\d{2}/)?.[0] ?? 2026),
+      endQ: quarterFromLine(line, 4),
+      milestone: line,
+      color: "",
+    })), (item) => item.milestone);
+
+  return {
+    intent: intentLine?.slice(0, 90) ?? "",
+    northStar: northStarLine ?? "",
+    objectives,
+    initiatives,
+    swotItems,
+    assumptions,
+    marketInsights,
+    actionItems: initiatives.slice(0, 6).map((item) => ({
+      initiativeTitle: item.title,
+      year: 2026,
+      quarter: 1,
+      action: item.title,
+      ownerName: item.ownerName,
+      acceptanceCriteria: item.okrTarget ? `达到 ${item.okrTarget}` : "",
+      checkDate: "",
+      status: "PLAN",
+    })),
+    budgetItems: [],
+    roadmapItems,
+    productQuarterly: [],
+    channelPlans: [],
+    customerPlans: [],
+    orgChartNodes: [],
+  };
+}
+
+function mergeExtracted(primary: Record<string, unknown>, fallback: Record<string, unknown>): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...primary };
+  for (const key of ["intent", "northStar"]) {
+    if (!stringValue(merged[key])) merged[key] = stringValue(fallback[key]);
+  }
+  for (const key of ARRAY_FIELDS) {
+    const existing = arrayValue(merged[key]);
+    const extra = arrayValue(fallback[key]);
+    if (existing.length === 0 && extra.length > 0) merged[key] = extra;
+  }
+  return merged;
+}
+
 const STAGE1_SYSTEM = `你是一位资深战略顾问。用户上传的是企业内部战略PPT、年度规划或战略报告的原始文字提取内容，可能包含大量噪音（封面、目录、页码、装饰性文字、重复标题、图表注释等）。
 
-你的任务：阅读全部内容，输出一份干净的「战略信号摘要」（纯文本，约800-1500字），只保留以下有价值的信息：
+你的任务：先理解每页/每段的表达意图，再输出一份干净的「战略信号摘要」（纯文本，约1200-2200字）。
+不要依赖固定模板关键词；用户PPT可能把同一类内容写成「战略主题」「年度重点」「打法」「增长抓手」「经营计划」「行动方案」「能力建设」等。
+
+请按语义归类保留以下信息，尽量带上原文措辞、数字、时间、责任主体和页码/章节线索：
 - 战略方向、愿景、使命
 - 量化目标、KPI、收入/市占/增长目标
 - 具体举措、项目名称、负责人
@@ -309,8 +501,10 @@ const STAGE1_SYSTEM = `你是一位资深战略顾问。用户上传的是企业
 - 时间节点、里程碑、季度计划
 - 预算金额、资源配置
 - 组织变化、渠道策略、产品计划
+- 问题/短板、机会/风险、关键假设
 
 过滤掉：封面文字、目录、"汇报人：XXX"、"机密"、"版权"、重复的公司名称、无意义的装饰文字。
+如果某页没有标准标题，也要根据内容意图判断它可能对应哪个模块，不能只因为没有关键词就丢弃。
 
 直接输出摘要文本，不要任何解释。`;
 
@@ -325,6 +519,7 @@ const STAGE2_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计�
 你将收到一份已经过降噪处理的战略信号摘要，从中精准提取结构化信息。
 
 提取规则：
+0. 不要按模板标题机械匹配；按意图映射。比如「年度重点/打法/抓手/项目群」通常是 initiatives 或 actionItems；「经营指标/承诺/三年目标」通常是 objectives/northStar；「形势/外部环境/客户变化」通常是 marketInsights 或 SWOT。
 1. **intent**：一句话概括3-5年战略方向，保留原文关键词，≤60字
 2. **northStar**：最核心的量化目标，如"3年收入达XX亿"
 3. **objectives**：BSC/KPI 管理，严格按 FINANCIAL/CUSTOMER/PROCESS/LEARNING 四维度分类；objective 是该维度的管理目标，keyResults 是 KPI 指标及目标值，不要放 OKR 举措
@@ -335,7 +530,8 @@ const STAGE2_SYSTEM = `你是一位资深战略顾问，精通 BSC（平衡计�
 8. **budgetItems**：投资金额、资源，分CAPEX/OPEX/HC类
 9. **roadmapItems**：时间线节点，标注track
 10. 文档没有的信息 → 返回 []，**绝不捏造**
-11. 只输出 JSON，不要解释`;
+11. 如果 PPT 内容只给了松散 bullets，也要尽量把可识别内容填入最接近的字段；字段值可以是原文短句。
+12. 只输出 JSON，不要解释`;
 
 const STAGE2_PROMPT = (summary: string) => `
 Strict field mapping contract:
@@ -459,6 +655,8 @@ export async function POST(req: Request) {
   }
 
   try {
+    const heuristic = heuristicExtract(text);
+
     // ── 第一阶段：降噪摘要 ──────────────────────────────────────────────────
     const summary = await callLlm([
       { role: "system", content: STAGE1_SYSTEM },
@@ -480,14 +678,15 @@ export async function POST(req: Request) {
     } catch {
       return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw }, { status: 422 });
     }
+    extracted = mergeExtracted(extracted, heuristic);
 
     if (!hasExtractedContent(extracted)) {
       const retryRaw = await callLlm([
         { role: "system", content: "Return only valid JSON. Use exactly these top-level keys: intent, northStar, objectives, initiatives, swotItems, assumptions, marketInsights, actionItems, budgetItems, roadmapItems, productQuarterly, channelPlans, customerPlans, orgChartNodes. Do not wrap the JSON in another object." },
-        { role: "user", content: `Extract at least the fields that are clearly present from this strategy summary. Use [] for missing arrays and "" for missing strings.\n\n${STAGE2_PROMPT(summary)}` },
+        { role: "user", content: `Extract at least the fields that are clearly present from this strategy summary. Infer the user's intent from non-standard headings and bullets. Use [] for missing arrays and "" for missing strings.\n\n${STAGE2_PROMPT(summary)}\n\nOriginal extracted text excerpt for intent clues:\n${text.slice(0, 12000)}` },
       ]);
       try {
-        extracted = normalizeExtracted(parseJsonObject(retryRaw));
+        extracted = mergeExtracted(normalizeExtracted(parseJsonObject(retryRaw)), heuristic);
       } catch {
         return NextResponse.json({ error: "LLM 返回格式异常，请重试", raw: retryRaw }, { status: 422 });
       }
