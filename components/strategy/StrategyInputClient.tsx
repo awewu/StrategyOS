@@ -635,9 +635,18 @@ function hasExtractedContent(e: Record<string, unknown>): boolean {
 function isReadableFormText(value: string): boolean {
   const text = value.trim();
   if (!text) return true;
+  if (isDocumentObjectNoise(text)) return false;
   if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/.test(text)) return false;
   const readable = (text.match(/[\u4e00-\u9fffA-Za-z0-9%.,，。；;：:、（）()【】\s\-_/]/g) ?? []).length;
   return readable / Math.max(text.length, 1) >= 0.65;
+}
+
+function isDocumentObjectNoise(value: string): boolean {
+  const text = value.trim();
+  return /\/Type\s*\/XObject|\/Subtype\s*\/Image|\/ColorSp(?:ace)?|\/BitsPerComponent|\/Filter\s*\/|\/Length\s+\d+|\/Width\s+\d+\s*\/Height\s+\d+/i.test(text) ||
+    /^<</.test(text) ||
+    /(?:\/[A-Za-z][A-Za-z0-9]*){4,}/.test(text) ||
+    /^(?:obj|endobj|stream|endstream|xref|trailer)\b/i.test(text);
 }
 
 function cleanFormString(value: unknown): string {
@@ -650,8 +659,8 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
   const ea = unwrapExtractedPayload(e) as any;
   return {
     ...f,
-    intent: ea.intent?.trim() || f.intent,
-    northStar: ea.northStar?.trim() || f.northStar,
+    intent: cleanFormString(ea.intent) || f.intent,
+    northStar: cleanFormString(ea.northStar) || f.northStar,
     objectives: Array.isArray(ea.objectives) && ea.objectives.length > 0
       ? DIMENSIONS.map((d) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

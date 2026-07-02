@@ -69,9 +69,18 @@ function decodeXmlText(xml: string): string {
 function isReadableText(value: string): boolean {
   const text = value.trim();
   if (!text) return false;
+  if (isDocumentObjectNoise(text)) return false;
   if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/.test(text)) return false;
   const readable = (text.match(/[\u4e00-\u9fffA-Za-z0-9%.,，。；;：:、（）()【】\s\-_/]/g) ?? []).length;
   return readable / Math.max(text.length, 1) >= 0.65;
+}
+
+function isDocumentObjectNoise(value: string): boolean {
+  const text = value.trim();
+  return /\/Type\s*\/XObject|\/Subtype\s*\/Image|\/ColorSp(?:ace)?|\/BitsPerComponent|\/Filter\s*\/|\/Length\s+\d+|\/Width\s+\d+\s*\/Height\s+\d+/i.test(text) ||
+    /^<</.test(text) ||
+    /(?:\/[A-Za-z][A-Za-z0-9]*){4,}/.test(text) ||
+    /^(?:obj|endobj|stream|endstream|xref|trailer)\b/i.test(text);
 }
 
 async function readZipEntry(buf: Buffer, targetName: string): Promise<string> {
@@ -310,7 +319,7 @@ function cleanLine(value: string): string {
 }
 
 function meaningfulText(value: unknown): string {
-  if (typeof value === "string") return value.trim();
+  if (typeof value === "string") return isReadableText(value) ? value.trim() : "";
   if (typeof value === "number" || typeof value === "boolean") return String(value);
   if (Array.isArray(value)) return value.map(meaningfulText).filter(Boolean).join(" ").trim();
   if (!value || typeof value !== "object") return "";
@@ -472,6 +481,12 @@ function linesFromText(text: string): string[] {
     .filter((line) => !/^(目录|contents?|谢谢|thank|confidential|page\s*\d+|第\s*\d+\s*页)$/i.test(line));
 }
 
+function cleanSourceText(text: string): string {
+  const lines = linesFromText(text);
+  if (lines.join("").length < 50) return text;
+  return lines.join("\n").slice(0, 60000);
+}
+
 function dataPointFromLine(line: string): string {
   return line.match(/(?:\d+(?:\.\d+)?\s*(?:%|pct|pp|个点|亿|万|万元|亿元|人|家|个|台|套|倍|年|月|Q[1-4])|20\d{2})/i)?.[0] ?? "";
 }
@@ -588,11 +603,23 @@ function heuristicExtract(text: string): Record<string, unknown> {
 }
 
 function compactExtracted(extracted: Record<string, unknown>): Record<string, unknown> {
-  const compacted: Record<string, unknown> = { ...extracted };
+  const compacted = sanitizeExtractedValue(extracted) as Record<string, unknown>;
   for (const key of ARRAY_FIELDS) {
     compacted[key] = arrayValue(compacted[key]).filter(hasMeaningfulValue);
   }
   return compacted;
+}
+
+function sanitizeExtractedValue(value: unknown): unknown {
+  if (typeof value === "string") return isReadableText(value) ? value.trim() : "";
+  if (typeof value === "number" || typeof value === "boolean" || value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(sanitizeExtractedValue).filter(hasMeaningfulValue);
+  if (typeof value !== "object") return "";
+  const result: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+    result[key] = sanitizeExtractedValue(item);
+  }
+  return result;
 }
 
 function mergeExtracted(primary: Record<string, unknown>, fallback: Record<string, unknown>): Record<string, unknown> {
@@ -802,12 +829,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const heuristic = heuristicExtract(text);
+    const cleanText = cleanSourceText(text);
+    const heuristic = heuristicExtract(cleanText);
 
     // ── 第一阶段：降噪摘要 ──────────────────────────────────────────────────
     const summary = await callLlm([
       { role: "system", content: STAGE1_SYSTEM },
-      { role: "user", content: STAGE1_PROMPT(text) },
+      { role: "user", content: STAGE1_PROMPT(cleanText) },
     ]);
     if (!summary || summary.trim().length < 30) {
       return NextResponse.json({ error: "文件内容过少，无法提取战略信息" }, { status: 422 });
@@ -830,7 +858,7 @@ export async function POST(req: Request) {
     if (!hasExtractedContent(extracted)) {
       const retryRaw = await callLlm([
         { role: "system", content: "Return only valid JSON. Use exactly these top-level keys: intent, northStar, objectives, initiatives, swotItems, assumptions, marketInsights, actionItems, budgetItems, roadmapItems, productQuarterly, channelPlans, customerPlans, orgChartNodes. Do not wrap the JSON in another object." },
-        { role: "user", content: `Extract at least the fields that are clearly present from this strategy summary. Infer the user's intent from non-standard headings and bullets. Use [] for missing arrays and "" for missing strings.\n\n${STAGE2_PROMPT(summary)}\n\nOriginal extracted text excerpt for intent clues:\n${text.slice(0, 12000)}` },
+        { role: "user", content: `Extract at least the fields that are clearly present from this strategy summary. Infer the user's intent from non-standard headings and bullets. Use [] for missing arrays and "" for missing strings.\n\n${STAGE2_PROMPT(summary)}\n\nOriginal extracted text excerpt for intent clues:\n${cleanText.slice(0, 12000)}` },
       ]);
       try {
         extracted = mergeExtracted(normalizeExtracted(parseJsonObject(retryRaw)), heuristic);
