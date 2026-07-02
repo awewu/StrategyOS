@@ -54,6 +54,47 @@ function fileUrlForDir(path: string): string {
   return pathToFileURL(path.endsWith(sep) ? path : path + sep).href;
 }
 
+function ensurePdfJsDomPolyfills() {
+  const global = globalThis as Record<string, unknown>;
+  if (!global.DOMMatrix) {
+    global.DOMMatrix = class DOMMatrix {
+      a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+      m11 = 1; m12 = 0; m13 = 0; m14 = 0;
+      m21 = 0; m22 = 1; m23 = 0; m24 = 0;
+      m31 = 0; m32 = 0; m33 = 1; m34 = 0;
+      m41 = 0; m42 = 0; m43 = 0; m44 = 1;
+      constructor(init?: unknown) {
+        if (Array.isArray(init) && init.length >= 6) {
+          [this.a, this.b, this.c, this.d, this.e, this.f] = init.slice(0, 6).map(Number);
+        }
+      }
+      multiply() { return this; }
+      translate() { return this; }
+      scale() { return this; }
+      rotate() { return this; }
+      inverse() { return this; }
+      transformPoint(point?: { x?: number; y?: number }) {
+        return { x: point?.x ?? 0, y: point?.y ?? 0, z: 0, w: 1 };
+      }
+    };
+  }
+  if (!global.ImageData) {
+    global.ImageData = class ImageData {
+      data: Uint8ClampedArray;
+      width: number;
+      height: number;
+      constructor(data: Uint8ClampedArray, width: number, height = 0) {
+        this.data = data;
+        this.width = width;
+        this.height = height || Math.floor(data.length / Math.max(width * 4, 1));
+      }
+    };
+  }
+  if (!global.Path2D) {
+    global.Path2D = class Path2D {};
+  }
+}
+
 function decodeXmlText(xml: string): string {
   return xml
     .replace(/<[^>]+>/g, " ")
@@ -174,6 +215,7 @@ async function readZipEntriesFromCentralDirectory(buf: Buffer, match: (name: str
 }
 
 async function extractPdfText(buf: Buffer): Promise<string> {
+  ensurePdfJsDomPolyfills();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const pdfRoot = join(process.cwd(), "node_modules", "pdfjs-dist");
   const workerSrc = pathToFileURL(join(pdfRoot, "legacy", "build", "pdf.worker.mjs")).href;
