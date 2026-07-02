@@ -66,6 +66,14 @@ function decodeXmlText(xml: string): string {
     .trim();
 }
 
+function isReadableText(value: string): boolean {
+  const text = value.trim();
+  if (!text) return false;
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/.test(text)) return false;
+  const readable = (text.match(/[\u4e00-\u9fffA-Za-z0-9%.,，。；;：:、（）()【】\s\-_/]/g) ?? []).length;
+  return readable / Math.max(text.length, 1) >= 0.65;
+}
+
 async function readZipEntry(buf: Buffer, targetName: string): Promise<string> {
   const { inflateRawSync } = await import("node:zlib");
   let offset = 0;
@@ -110,9 +118,9 @@ async function readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<str
   return (await readZipEntriesFromCentralDirectory(buf, (name) => pattern.test(name))).join(" ");
 }
 
-async function readZipEntriesFromCentralDirectory(buf: Buffer, match: (name: string) => boolean): Promise<string[]> {
+async function readNamedZipEntriesFromCentralDirectory(buf: Buffer, match: (name: string) => boolean): Promise<Array<{ name: string; text: string }>> {
   const { inflateRawSync } = await import("node:zlib");
-  const parts: string[] = [];
+  const parts: Array<{ name: string; text: string }> = [];
   let eocd = -1;
   for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65558); i--) {
     if (buf.readUInt32LE(i) === 0x06054b50) {
@@ -128,20 +136,21 @@ async function readZipEntriesFromCentralDirectory(buf: Buffer, match: (name: str
     if (buf.readUInt32LE(offset) !== 0x02014b50) break;
     const method = buf.readUInt16LE(offset + 10);
     const compressedSize = buf.readUInt32LE(offset + 20);
+    const uncompressedSize = buf.readUInt32LE(offset + 24);
     const fnLen = buf.readUInt16LE(offset + 28);
     const extraLen = buf.readUInt16LE(offset + 30);
     const commentLen = buf.readUInt16LE(offset + 32);
     const localOffset = buf.readUInt32LE(offset + 42);
     const name = buf.subarray(offset + 46, offset + 46 + fnLen).toString("utf8");
 
-    if (match(name) && compressedSize > 0 && localOffset < buf.length - 30 && buf.readUInt32LE(localOffset) === 0x04034b50) {
+    if (match(name) && compressedSize > 0 && uncompressedSize > 0 && localOffset < buf.length - 30 && buf.readUInt32LE(localOffset) === 0x04034b50) {
       const localFnLen = buf.readUInt16LE(localOffset + 26);
       const localExtraLen = buf.readUInt16LE(localOffset + 28);
       const dataStart = localOffset + 30 + localFnLen + localExtraLen;
       const compressed = buf.subarray(dataStart, dataStart + compressedSize);
       try {
         const raw = method === 8 ? inflateRawSync(compressed) : compressed;
-        parts.push(raw.toString("utf8"));
+        parts.push({ name, text: raw.toString("utf8") });
       } catch {
         /* skip bad entry */
       }
@@ -149,6 +158,10 @@ async function readZipEntriesFromCentralDirectory(buf: Buffer, match: (name: str
     offset += 46 + fnLen + extraLen + commentLen;
   }
   return parts;
+}
+
+async function readZipEntriesFromCentralDirectory(buf: Buffer, match: (name: string) => boolean): Promise<string[]> {
+  return (await readNamedZipEntriesFromCentralDirectory(buf, match)).map((entry) => entry.text);
 }
 
 async function extractPdfText(buf: Buffer): Promise<string> {
@@ -207,28 +220,12 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
       });
     }
     if (ext === "pptx" || ext === "ppt") {
-      // 保留幻灯片编号顺序，每张用分隔符区分，方便LLM理解层级结构
-      const { inflateRawSync } = await import("node:zlib");
-      const slides: { idx: number; text: string }[] = [];
-      let offset = 0;
-      while (offset < buf.length - 30) {
-        if (buf.readUInt32LE(offset) !== 0x04034b50) { offset++; continue; }
-        const fnLen = buf.readUInt16LE(offset + 26);
-        const extraLen = buf.readUInt16LE(offset + 28);
-        const name = buf.subarray(offset + 30, offset + 30 + fnLen).toString("utf8");
-        const dataStart = offset + 30 + fnLen + extraLen;
-        const compSize = buf.readUInt32LE(offset + 18);
-        const m = name.match(/^ppt\/slides\/slide(\d+)\.xml$/);
-        if (m && compSize > 0) {
-          try {
-            const compressed = buf.subarray(dataStart, dataStart + compSize);
-            const raw = buf.readUInt16LE(offset + 8) === 8 ? inflateRawSync(compressed) : compressed;
-            const text = decodeXmlText(raw.toString("utf8"));
-            if (text) slides.push({ idx: parseInt(m[1]), text });
-          } catch { /* skip bad slide */ }
-        }
-        offset = dataStart + compSize;
-      }
+      const slideEntries = await readNamedZipEntriesFromCentralDirectory(buf, (name) => /^ppt\/slides\/slide\d+\.xml$/.test(name));
+      const slides = slideEntries.map((entry) => {
+        const idx = Number(entry.name.match(/^ppt\/slides\/slide(\d+)\.xml$/)?.[1] ?? 0);
+        const text = decodeXmlText(entry.text);
+        return { idx, text };
+      }).filter((slide) => slide.idx > 0 && isReadableText(slide.text));
       slides.sort((a, b) => a.idx - b.idx);
       return slides.map((s) => `【幻灯片 ${s.idx}】${s.text}`).join("\n").slice(0, 60000);
     }
@@ -470,6 +467,7 @@ function linesFromText(text: string): string[] {
     .map(cleanLine)
     .flatMap((line) => line.length > 180 ? line.match(/.{1,160}(?=\s|$)|.{1,160}/g) ?? [] : [line])
     .map(cleanLine)
+    .filter(isReadableText)
     .filter((line) => line.length >= 4 && line.length <= 180)
     .filter((line) => !/^(目录|contents?|谢谢|thank|confidential|page\s*\d+|第\s*\d+\s*页)$/i.test(line));
 }

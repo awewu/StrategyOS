@@ -632,6 +632,19 @@ function hasExtractedContent(e: Record<string, unknown>): boolean {
   ].some((key) => Array.isArray(e[key]) && (e[key] as unknown[]).some(hasMeaningfulValue));
 }
 
+function isReadableFormText(value: string): boolean {
+  const text = value.trim();
+  if (!text) return true;
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/.test(text)) return false;
+  const readable = (text.match(/[\u4e00-\u9fffA-Za-z0-9%.,，。；;：:、（）()【】\s\-_/]/g) ?? []).length;
+  return readable / Math.max(text.length, 1) >= 0.65;
+}
+
+function cleanFormString(value: unknown): string {
+  const text = String(value ?? "");
+  return isReadableFormText(text) ? text : "";
+}
+
 function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ea = unwrapExtractedPayload(e) as any;
@@ -693,8 +706,8 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
       : f.budgetItems,
     roadmapItems: Array.isArray(ea.roadmapItems) && ea.roadmapItems.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? ea.roadmapItems.map((r: any) => ({ track: r.track ?? "举措", title: r.title ?? "", startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: r.milestone ?? "", color: r.color ?? "" }))
-      : f.roadmapItems,
+      ? ea.roadmapItems.map((r: any) => ({ track: cleanFormString(r.track) || "举措", title: cleanFormString(r.title), startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: cleanFormString(r.milestone), color: cleanFormString(r.color) }))
+      : f.roadmapItems.map((r) => ({ ...r, track: cleanFormString(r.track) || "举措", title: cleanFormString(r.title), milestone: cleanFormString(r.milestone), color: cleanFormString(r.color) })),
   };
 }
 
