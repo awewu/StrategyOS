@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { llmConfigured } from "@/lib/stratos/llm-agent";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 export const runtime = "nodejs";
@@ -43,6 +43,29 @@ async function callLlm(messages: { role: string; content: string }[]): Promise<s
 }
 
 // ─── File text extraction (OOXML zip + PDF best-effort) ──────────────────────
+class ExtractionFailure extends Error {
+  constructor(message: string, public readonly detail: Record<string, unknown> = {}) {
+    super(message);
+    this.name = "ExtractionFailure";
+  }
+}
+
+function fileUrlForDir(path: string): string {
+  return pathToFileURL(path.endsWith(sep) ? path : path + sep).href;
+}
+
+function decodeXmlText(xml: string): string {
+  return xml
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 async function readZipEntry(buf: Buffer, targetName: string): Promise<string> {
   const { inflateRawSync } = await import("node:zlib");
   let offset = 0;
@@ -60,7 +83,7 @@ async function readZipEntry(buf: Buffer, targetName: string): Promise<string> {
     }
     offset = dataStart + compSize;
   }
-  return "";
+  return (await readZipEntriesFromCentralDirectory(buf, (name) => name === targetName))[0] ?? "";
 }
 
 async function readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<string> {
@@ -83,30 +106,86 @@ async function readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<str
     }
     offset = dataStart + compSize;
   }
-  return parts.join(" ");
+  if (parts.length > 0) return parts.join(" ");
+  return (await readZipEntriesFromCentralDirectory(buf, (name) => pattern.test(name))).join(" ");
+}
+
+async function readZipEntriesFromCentralDirectory(buf: Buffer, match: (name: string) => boolean): Promise<string[]> {
+  const { inflateRawSync } = await import("node:zlib");
+  const parts: string[] = [];
+  let eocd = -1;
+  for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65558); i--) {
+    if (buf.readUInt32LE(i) === 0x06054b50) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd < 0) return parts;
+
+  const entryCount = buf.readUInt16LE(eocd + 10);
+  let offset = buf.readUInt32LE(eocd + 16);
+  for (let i = 0; i < entryCount && offset < buf.length - 46; i++) {
+    if (buf.readUInt32LE(offset) !== 0x02014b50) break;
+    const method = buf.readUInt16LE(offset + 10);
+    const compressedSize = buf.readUInt32LE(offset + 20);
+    const fnLen = buf.readUInt16LE(offset + 28);
+    const extraLen = buf.readUInt16LE(offset + 30);
+    const commentLen = buf.readUInt16LE(offset + 32);
+    const localOffset = buf.readUInt32LE(offset + 42);
+    const name = buf.subarray(offset + 46, offset + 46 + fnLen).toString("utf8");
+
+    if (match(name) && compressedSize > 0 && localOffset < buf.length - 30 && buf.readUInt32LE(localOffset) === 0x04034b50) {
+      const localFnLen = buf.readUInt16LE(localOffset + 26);
+      const localExtraLen = buf.readUInt16LE(localOffset + 28);
+      const dataStart = localOffset + 30 + localFnLen + localExtraLen;
+      const compressed = buf.subarray(dataStart, dataStart + compressedSize);
+      try {
+        const raw = method === 8 ? inflateRawSync(compressed) : compressed;
+        parts.push(raw.toString("utf8"));
+      } catch {
+        /* skip bad entry */
+      }
+    }
+    offset += 46 + fnLen + extraLen + commentLen;
+  }
+  return parts;
 }
 
 async function extractPdfText(buf: Buffer): Promise<string> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(join(process.cwd(), "node_modules", "pdfjs-dist", "legacy", "build", "pdf.worker.mjs")).href;
-  const standardFontDataUrl = pathToFileURL(join(process.cwd(), "node_modules", "pdfjs-dist", "standard_fonts") + "\\").href;
-  const doc = await pdfjs.getDocument({
+  const pdfRoot = join(process.cwd(), "node_modules", "pdfjs-dist");
+  const workerSrc = pathToFileURL(join(pdfRoot, "legacy", "build", "pdf.worker.mjs")).href;
+  pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+  const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(buf),
-    standardFontDataUrl,
-  }).promise;
+    standardFontDataUrl: fileUrlForDir(join(pdfRoot, "standard_fonts")),
+    cMapUrl: fileUrlForDir(join(pdfRoot, "cmaps")),
+    cMapPacked: true,
+    wasmUrl: fileUrlForDir(join(pdfRoot, "wasm")),
+  });
   const pages: string[] = [];
-  for (let pageNo = 1; pageNo <= doc.numPages; pageNo++) {
-    const page = await doc.getPage(pageNo);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map((item) => ("str" in item ? item.str : ""))
-      .join(" ")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (pageText) pages.push(`【PDF第 ${pageNo} 页】${pageText}`);
-    page.cleanup();
+  try {
+    const pdfDoc = await loadingTask.promise;
+    for (let pageNo = 1; pageNo <= pdfDoc.numPages; pageNo++) {
+      const page = await pdfDoc.getPage(pageNo);
+      const content = await page.getTextContent();
+      const pageText = content.items
+        .map((item) => ("str" in item ? item.str : ""))
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (pageText) pages.push(`【PDF第 ${pageNo} 页】${pageText}`);
+      page.cleanup();
+    }
+    await pdfDoc.destroy();
+  } catch (error) {
+    throw new ExtractionFailure("PDF 文本解析失败", {
+      parser: "pdfjs-dist",
+      cwd: process.cwd(),
+      workerSrc,
+      message: error instanceof Error ? error.message : String(error),
+    });
   }
-  await doc.destroy();
   return pages.join("\n").replace(/\s+/g, " ").trim().slice(0, 60000);
 }
 
@@ -120,6 +199,12 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
     if (ext === "xlsx" || ext === "xls") {
       return (await readZipEntry(buf, "xl/sharedStrings.xml"))
         .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 60000);
+    }
+    if (ext === "ppt" && buf.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]))) {
+      throw new ExtractionFailure("暂不支持旧版 .ppt 二进制文件，请另存为 .pptx 或导出 PDF 后再上传。", {
+        parser: "ppt-binary",
+        ext,
+      });
     }
     if (ext === "pptx" || ext === "ppt") {
       // 保留幻灯片编号顺序，每张用分隔符区分，方便LLM理解层级结构
@@ -138,7 +223,7 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
           try {
             const compressed = buf.subarray(dataStart, dataStart + compSize);
             const raw = buf.readUInt16LE(offset + 8) === 8 ? inflateRawSync(compressed) : compressed;
-            const text = raw.toString("utf8").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+            const text = decodeXmlText(raw.toString("utf8"));
             if (text) slides.push({ idx: parseInt(m[1]), text });
           } catch { /* skip bad slide */ }
         }
@@ -148,14 +233,12 @@ async function extractTextFromFile(buf: Buffer, filename: string): Promise<strin
       return slides.map((s) => `【幻灯片 ${s.idx}】${s.text}`).join("\n").slice(0, 60000);
     }
     if (ext === "pdf") {
-      try {
-        return await extractPdfText(buf);
-      } catch (error) {
-        console.error("PDF text extraction failed:", error);
-        return "";
-      }
+      return await extractPdfText(buf);
     }
-  } catch { /* best-effort */ }
+  } catch (error) {
+    if (error instanceof ExtractionFailure) throw error;
+    console.error("File text extraction failed:", error);
+  }
   return buf.toString("utf8", 0, Math.min(buf.length, 30000));
 }
 
@@ -617,6 +700,7 @@ export async function POST(req: Request) {
   }
 
   let text = "";
+  let sourceMeta: Record<string, unknown> = {};
   const contentType = req.headers.get("content-type") ?? "";
 
   if (contentType.includes("multipart/form-data")) {
@@ -637,10 +721,35 @@ export async function POST(req: Request) {
     }
 
     const buf = Buffer.from(await file.arrayBuffer());
-    text = await extractTextFromFile(buf, file.name);
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    sourceMeta = {
+      filename: file.name,
+      ext,
+      sizeBytes: file.size,
+      mimeType: file.type || "application/octet-stream",
+    };
+    try {
+      text = await extractTextFromFile(buf, file.name);
+    } catch (error) {
+      const debugId = `extract-${Date.now().toString(36)}`;
+      const detail = error instanceof ExtractionFailure ? error.detail : {};
+      const message = error instanceof Error ? error.message : "无法从文件中提取文字内容";
+      console.error("AI extract file text failure:", { debugId, ...sourceMeta, detail, error });
+      return NextResponse.json({
+        error: `${message}（${file.name}，${ext || "未知格式"}，debugId: ${debugId}）`,
+        debugId,
+        detail: { ...sourceMeta, ...detail },
+      }, { status: 422 });
+    }
 
     if (!text || text.length < 50) {
-      return NextResponse.json({ error: "无法从文件中提取文字内容，请尝试粘贴文本" }, { status: 422 });
+      const debugId = `extract-${Date.now().toString(36)}`;
+      console.error("AI extract empty text:", { debugId, ...sourceMeta, extractedLength: text?.length ?? 0, preview: text?.slice(0, 120) });
+      return NextResponse.json({
+        error: `无法从文件中提取足够文字内容（${file.name}，${ext || "未知格式"}，已提取 ${text?.length ?? 0} 字，debugId: ${debugId}）。请确认文件不是扫描图片，或另存为 .pptx / PDF 后重试。`,
+        debugId,
+        detail: { ...sourceMeta, extractedLength: text?.length ?? 0 },
+      }, { status: 422 });
     }
   } else {
     // ── JSON 文本模式（兼容旧调用）──
