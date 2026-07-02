@@ -94,6 +94,7 @@ Copy-Required (Join-Path $Root "node_modules\esbuild") (Join-Path $nodeModules "
 Copy-Required (Join-Path $Root "node_modules\@esbuild") (Join-Path $nodeModules "@esbuild")
 Copy-Required (Join-Path $Root "node_modules\get-tsconfig") (Join-Path $nodeModules "get-tsconfig")
 Copy-Required (Join-Path $Root "node_modules\resolve-pkg-maps") (Join-Path $nodeModules "resolve-pkg-maps")
+Copy-Required (Join-Path $Root "node_modules\pdfjs-dist") (Join-Path $nodeModules "pdfjs-dist")
 
 $removePaths = @(
   ".env",
