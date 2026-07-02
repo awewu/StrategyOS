@@ -609,6 +609,13 @@ function unwrapExtractedPayload(value: unknown): Record<string, unknown> {
 function hasExtractedContent(e: Record<string, unknown>): boolean {
   if (typeof e.intent === "string" && e.intent.trim()) return true;
   if (typeof e.northStar === "string" && e.northStar.trim()) return true;
+  const hasMeaningfulValue = (value: unknown): boolean => {
+    if (typeof value === "string") return value.trim().length > 0;
+    if (typeof value === "number" || typeof value === "boolean") return true;
+    if (!value || typeof value !== "object") return false;
+    if (Array.isArray(value)) return value.some(hasMeaningfulValue);
+    return Object.values(value as Record<string, unknown>).some(hasMeaningfulValue);
+  };
   return [
     "objectives",
     "initiatives",
@@ -622,7 +629,7 @@ function hasExtractedContent(e: Record<string, unknown>): boolean {
     "actionItems",
     "budgetItems",
     "roadmapItems",
-  ].some((key) => Array.isArray(e[key]) && (e[key] as unknown[]).length > 0);
+  ].some((key) => Array.isArray(e[key]) && (e[key] as unknown[]).some(hasMeaningfulValue));
 }
 
 function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {

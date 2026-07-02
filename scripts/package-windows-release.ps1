@@ -143,7 +143,32 @@ if (Test-Path $ArchivePath) {
   Remove-Item -Path $ArchivePath -Force -ErrorAction SilentlyContinue
 }
 
-Compress-Archive -Path (Join-Path $Staging "*") -DestinationPath $ArchivePath -Force
+try {
+  Compress-Archive -Path (Join-Path $Staging "*") -DestinationPath $ArchivePath -Force
+} catch {
+  Write-Warning "Compress-Archive failed, retrying with tar.exe: $($_.Exception.Message)"
+  if (Test-Path $ArchivePath) {
+    Reset-PathAttributes $ArchivePath
+    Remove-Item -Path $ArchivePath -Force -ErrorAction SilentlyContinue
+  }
+  Push-Location $Staging
+  try {
+    $TarArchivePath = Join-Path ([System.IO.Path]::GetTempPath()) "$PackageName-$Stamp.zip"
+    Remove-IfExists $TarArchivePath
+    & tar.exe -a -cf $TarArchivePath *
+    if ($LASTEXITCODE -ne 0) {
+      throw "tar.exe failed with exit code $LASTEXITCODE"
+    }
+    try {
+      Move-Item -Path $TarArchivePath -Destination $ArchivePath -Force
+    } catch {
+      $ArchivePath = Join-Path $ReleaseRoot "$PackageName-$Stamp-fallback.zip"
+      Move-Item -Path $TarArchivePath -Destination $ArchivePath -Force
+    }
+  } finally {
+    Pop-Location
+  }
+}
 
 $sizeMb = [Math]::Round((Get-Item $ArchivePath).Length / 1MB, 2)
 Write-Host "Wrote $ArchivePath ($sizeMb MB)"

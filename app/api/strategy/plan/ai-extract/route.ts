@@ -312,6 +312,22 @@ function cleanLine(value: string): string {
     .trim();
 }
 
+function meaningfulText(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.map(meaningfulText).filter(Boolean).join(" ").trim();
+  if (!value || typeof value !== "object") return "";
+  return Object.values(value as Record<string, unknown>)
+    .map(meaningfulText)
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function hasMeaningfulValue(value: unknown): boolean {
+  return meaningfulText(value).length > 0;
+}
+
 function uniqueBy<T>(items: T[], keyOf: (item: T) => string): T[] {
   const seen = new Set<string>();
   const result: T[] = [];
@@ -443,14 +459,18 @@ function normalizeExtracted(value: unknown): Record<string, unknown> {
 function hasExtractedContent(extracted: Record<string, unknown>): boolean {
   if (stringValue(extracted.intent)) return true;
   if (stringValue(extracted.northStar)) return true;
-  return ARRAY_FIELDS.some((key) => arrayValue(extracted[key]).length > 0);
+  return ARRAY_FIELDS.some((key) => arrayValue(extracted[key]).some(hasMeaningfulValue));
 }
 
 function linesFromText(text: string): string[] {
   return text
+    .replace(/【(幻灯片|PDF第)\s*\d+\s*页?】/g, "\n$& ")
+    .replace(/\s+(?=(?:业务战略|组织战略|人才体系|激励机制|文化基座|集团化运营|双总部架构|销售突破|利润率突破|战略目标|战略举措|关键举措|能力建设))/g, "\n")
     .split(/\n|。|；|;|\r/)
     .map(cleanLine)
-    .filter((line) => line.length >= 6 && line.length <= 180)
+    .flatMap((line) => line.length > 180 ? line.match(/.{1,160}(?=\s|$)|.{1,160}/g) ?? [] : [line])
+    .map(cleanLine)
+    .filter((line) => line.length >= 4 && line.length <= 180)
     .filter((line) => !/^(目录|contents?|谢谢|thank|confidential|page\s*\d+|第\s*\d+\s*页)$/i.test(line));
 }
 
@@ -468,7 +488,7 @@ function quarterFromLine(line: string, fallback: number): number {
 
 function heuristicExtract(text: string): Record<string, unknown> {
   const lines = linesFromText(text);
-  const intentLine = lines.find((line) => /(战略|愿景|使命|方向|定位|目标|成为|打造|构建|聚焦|转型|增长)/.test(line) && !/(目录|背景|复盘)/.test(line));
+  const intentLine = lines.find((line) => /(从业务战略到组织战略|业务战略|组织战略|战略|愿景|使命|方向|定位|目标|成为|打造|构建|聚焦|转型|增长)/.test(line) && !/(目录|背景|复盘)/.test(line));
   const northStarLine = lines.find((line) => /(收入|营收|利润|市占|份额|增长|GMV|ARR|用户|客户|覆盖|NPS|毛利|EBIT|ROS|ROI).*(\d|%|亿|万)/i.test(line));
 
   const marketInsights = uniqueBy(lines
@@ -483,7 +503,7 @@ function heuristicExtract(text: string): Record<string, unknown> {
     })), (item) => item.content);
 
   const objectiveLines = uniqueBy(lines
-    .filter((line) => /(目标|指标|KPI|收入|营收|利润|份额|增长|效率|交付|质量|组织|人才|研发|创新).*(\d|%|提升|降低|达到|完成|实现|突破|成为)/i.test(line))
+    .filter((line) => /(目标|指标|KPI|收入|营收|销售|利润|利润率|份额|增长|效率|交付|质量|组织|人才|研发|创新).*(\d|%|提升|降低|达到|完成|实现|突破|成为)/i.test(line))
     .slice(0, 8), (line) => line);
   const objectives = objectiveLines.map((line) => ({
     dimension: normalizeDimension(line),
@@ -492,7 +512,7 @@ function heuristicExtract(text: string): Record<string, unknown> {
   }));
 
   const initiatives = uniqueBy(lines
-    .filter((line) => /(举措|策略|重点|任务|项目|建设|推进|落地|实施|提升|优化|拓展|打造|构建|上线|导入|转型)/.test(line))
+    .filter((line) => /(举措|策略|重点|任务|项目|建设|推进|落地|实施|提升|优化|拓展|打造|构建|上线|导入|转型|集团化运营|双总部|人才体系|激励机制|文化基座|组织能力)/.test(line))
     .filter((line) => !/(市场趋势|行业趋势|目录)/.test(line))
     .slice(0, 10)
     .map((line) => ({
@@ -531,6 +551,17 @@ function heuristicExtract(text: string): Record<string, unknown> {
       color: "",
     })), (item) => item.milestone);
 
+  const orgLines = uniqueBy(lines
+    .filter((line) => /(组织战略|组织规划|组织能力|组织架构|人才体系|激励机制|文化基座|集团化运营|双总部|总部架构|岗位|编制|人力|HR|人力资源)/i.test(line))
+    .slice(0, 8), (line) => line);
+  const orgChartNodes = orgLines.map((line) => ({
+    name: line.match(/(人才体系|激励机制|文化基座|集团化运营|双总部架构|组织能力|组织战略|人力资源|HR)/i)?.[0] ?? line.slice(0, 30),
+    role: line,
+    headcount: dataPointFromLine(line).includes("人") ? dataPointFromLine(line) : "",
+    headcountNew: "",
+    note: "",
+  }));
+
   return {
     intent: intentLine?.slice(0, 90) ?? "",
     northStar: northStarLine ?? "",
@@ -554,18 +585,27 @@ function heuristicExtract(text: string): Record<string, unknown> {
     productQuarterly: [],
     channelPlans: [],
     customerPlans: [],
-    orgChartNodes: [],
+    orgChartNodes,
   };
 }
 
+function compactExtracted(extracted: Record<string, unknown>): Record<string, unknown> {
+  const compacted: Record<string, unknown> = { ...extracted };
+  for (const key of ARRAY_FIELDS) {
+    compacted[key] = arrayValue(compacted[key]).filter(hasMeaningfulValue);
+  }
+  return compacted;
+}
+
 function mergeExtracted(primary: Record<string, unknown>, fallback: Record<string, unknown>): Record<string, unknown> {
-  const merged: Record<string, unknown> = { ...primary };
+  const merged: Record<string, unknown> = compactExtracted(primary);
+  const cleanFallback = compactExtracted(fallback);
   for (const key of ["intent", "northStar"]) {
-    if (!stringValue(merged[key])) merged[key] = stringValue(fallback[key]);
+    if (!stringValue(merged[key])) merged[key] = stringValue(cleanFallback[key]);
   }
   for (const key of ARRAY_FIELDS) {
     const existing = arrayValue(merged[key]);
-    const extra = arrayValue(fallback[key]);
+    const extra = arrayValue(cleanFallback[key]);
     if (existing.length === 0 && extra.length > 0) merged[key] = extra;
   }
   return merged;
