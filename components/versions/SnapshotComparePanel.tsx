@@ -1,76 +1,85 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
-import type { DiffRecord } from "@/lib/types/stratos";
 
-type SnapshotOption = {
-  code: string;
-  period: string;
-  status: "FROZEN" | "WORKING";
-  rate: number;
+type OrgUnitOption = {
+  id: string;
+  name: string;
+  level: string;
+  snapshotCount: number;
+};
+
+type PlanSnapshotOption = {
+  id: string;
+  version: number;
+  label: string;
+  status: string;
+  submittedAt: string;
+};
+
+type PlanDiff = {
+  category: string;
+  severity: "info" | "warning" | "high";
+  title: string;
+  detail?: string;
+  before?: string;
+  after?: string;
+};
+
+type SnapshotListResponse = {
+  selectedOrgId?: string | null;
+  orgUnits?: OrgUnitOption[];
+  snapshots?: PlanSnapshotOption[];
+  source?: string;
+  error?: string;
 };
 
 type CompareResponse = {
   ok?: boolean;
   count?: number;
   source?: string;
-  diffs?: DiffRecord[];
+  diffs?: PlanDiff[];
   error?: string;
+  fromVersion?: number;
+  toVersion?: number;
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  INTENT_CHANGE: "战略意图",
-  BSC_TARGET: "BSC / 目标",
-  COMMITMENT_DROP: "BSC / 目标",
-  OKR_REPLACE: "OKR / 举措",
-  PROJECT_MIGRATE: "执行项目",
-  ROADMAP_SLIP: "路线图",
-  FPA_FORECAST: "财务预测",
-  CASH_RUNWAY: "现金安全线",
-  RESOURCE_REALLOC: "资源配置",
-  IC_CHANGE: "投资案",
-  IC_ROI_DEVIATION: "投资案",
-  CAPSTACK_CHANGE: "资本栈",
-  CAPACITY_GAP: "产能",
-  ASSUMPTION_FAILED: "关键假设",
-  ASSUMPTION_NEW: "关键假设",
-  HEALTH_LIGHT: "健康断言",
-  PRODUCT_BET_CHANGE: "产品赌注",
-  EMERGENT_PATTERN: "涌现模式",
-  UNREALIZED: "未实现",
-  SERENDIPITOUS: "偶成结果",
-  DELIBERATE_RATE_DROP: "刻意实现率",
+  STRATEGIC_INTENT: "战略意图",
+  NORTH_STAR: "北极星指标",
+  MARKET_INSIGHT: "市场洞察",
+  SWOT: "SWOT",
+  BSC_OBJECTIVE: "BSC 目标/KPI",
+  INITIATIVE: "OKR/关键举措",
+  ACTION_PLAN: "作战计划",
+  ORGANIZATION: "组织规划",
+  RESOURCE_BUDGET: "资源预算",
+  ASSUMPTION: "关键假设",
+  ROADMAP: "路线图",
 };
 
 function severitySignal(severity: string): "red" | "yellow" | "green" {
-  if (severity === "critical" || severity === "high") return "red";
-  if (severity === "warning" || severity === "medium") return "yellow";
+  if (severity === "high") return "red";
+  if (severity === "warning") return "yellow";
   return "green";
 }
 
-function defaultPair(snapshots: SnapshotOption[]): { fromCode: string; toCode: string } {
-  if (snapshots.length >= 2) {
-    return {
-      fromCode: snapshots[snapshots.length - 2].code,
-      toCode: snapshots[snapshots.length - 1].code,
-    };
-  }
-  return { fromCode: snapshots[0]?.code ?? "", toCode: snapshots[0]?.code ?? "" };
-}
-
-export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[] }) {
-  const initial = useMemo(() => defaultPair(snapshots), [snapshots]);
-  const [fromCode, setFromCode] = useState(initial.fromCode);
-  const [toCode, setToCode] = useState(initial.toCode);
-  const [diffs, setDiffs] = useState<DiffRecord[]>([]);
+export function SnapshotComparePanel() {
+  const [orgUnits, setOrgUnits] = useState<OrgUnitOption[]>([]);
+  const [snapshots, setSnapshots] = useState<PlanSnapshotOption[]>([]);
+  const [orgUnitId, setOrgUnitId] = useState("");
+  const [fromId, setFromId] = useState("");
+  const [toId, setToId] = useState("");
+  const [diffs, setDiffs] = useState<PlanDiff[]>([]);
   const [source, setSource] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingList, setLoadingList] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [comparedPair, setComparedPair] = useState<{ fromCode: string; toCode: string } | null>(null);
+  const [comparedPair, setComparedPair] = useState<{ from: string; to: string } | null>(null);
 
   const grouped = useMemo(() => {
-    const map = new Map<string, DiffRecord[]>();
+    const map = new Map<string, PlanDiff[]>();
     for (const diff of diffs) {
       const label = CATEGORY_LABELS[diff.category] ?? diff.category;
       map.set(label, [...(map.get(label) ?? []), diff]);
@@ -78,22 +87,60 @@ export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[
     return Array.from(map.entries());
   }, [diffs]);
 
+  useEffect(() => {
+    void loadSnapshots("");
+  }, []);
+
+  async function loadSnapshots(nextOrgUnitId: string) {
+    setLoadingList(true);
+    setError(null);
+    try {
+      const qs = nextOrgUnitId ? `?orgUnitId=${encodeURIComponent(nextOrgUnitId)}` : "";
+      const res = await fetch(`/api/strategy/plan/snapshots${qs}`);
+      const data = (await res.json()) as SnapshotListResponse;
+      if (!res.ok) {
+        setError(data.error ?? "加载组织版本失败");
+        return;
+      }
+      const nextOrgUnits = data.orgUnits ?? [];
+      const nextSnapshots = data.snapshots ?? [];
+      const selectedOrg = data.selectedOrgId ?? nextOrgUnitId ?? nextOrgUnits[0]?.id ?? "";
+      setOrgUnits(nextOrgUnits);
+      setOrgUnitId(selectedOrg);
+      setSnapshots(nextSnapshots);
+      setSource(data.source ?? null);
+      setDiffs([]);
+      setComparedPair(null);
+      if (nextSnapshots.length >= 2) {
+        setFromId(nextSnapshots[nextSnapshots.length - 2].id);
+        setToId(nextSnapshots[nextSnapshots.length - 1].id);
+      } else {
+        setFromId(nextSnapshots[0]?.id ?? "");
+        setToId(nextSnapshots[0]?.id ?? "");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "加载组织版本失败");
+    } finally {
+      setLoadingList(false);
+    }
+  }
+
   async function runCompare() {
-    if (!fromCode || !toCode) {
+    if (!fromId || !toId) {
       setError("请先选择两个版本");
       return;
     }
-    if (fromCode === toCode) {
+    if (fromId === toId) {
       setError("请选择两个不同版本");
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/diffs/compute", {
+      const res = await fetch("/api/strategy/plan/snapshots", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fromCode, toCode, persist: false }),
+        body: JSON.stringify({ fromId, toId }),
       });
       const data = (await res.json()) as CompareResponse;
       if (!res.ok || !data.ok) {
@@ -102,7 +149,9 @@ export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[
       }
       setDiffs(data.diffs ?? []);
       setSource(data.source ?? null);
-      setComparedPair({ fromCode, toCode });
+      const from = snapshots.find((snapshot) => snapshot.id === fromId);
+      const to = snapshots.find((snapshot) => snapshot.id === toId);
+      setComparedPair({ from: from?.label ?? `V${data.fromVersion ?? ""}`, to: to?.label ?? `V${data.toVersion ?? ""}` });
     } catch (e) {
       setError(e instanceof Error ? e.message : "对比失败");
     } finally {
@@ -114,29 +163,43 @@ export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[
     <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-sm font-medium text-[var(--color-text-primary)]">版本选择 · 快照对比</h2>
+          <h2 className="text-sm font-medium text-[var(--color-text-primary)]">组织战略版本对比</h2>
           <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            选择旧版本与新版本，实时生成 StratDiff 预览，不写入正式差异记录
+            先选择组织，再选择该组织的两个提交版本；对比结果只预览，不写入公司级 StratDiff
           </p>
         </div>
         {comparedPair ? (
           <span className="rounded-full bg-[var(--color-accent)]/10 px-3 py-1 text-xs text-[var(--color-accent)]">
-            {comparedPair.fromCode} → {comparedPair.toCode}
+            {comparedPair.from} → {comparedPair.to}
           </span>
         ) : null}
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+      <div className="mt-4 grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end">
+        <label className="text-xs text-[var(--color-text-muted)]">
+          组织
+          <select
+            value={orgUnitId}
+            onChange={(e) => void loadSnapshots(e.target.value)}
+            className="mt-1 block w-full rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
+          >
+            {orgUnits.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name} · {org.snapshotCount} 个版本
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="text-xs text-[var(--color-text-muted)]">
           旧版本
           <select
-            value={fromCode}
-            onChange={(e) => setFromCode(e.target.value)}
+            value={fromId}
+            onChange={(e) => setFromId(e.target.value)}
             className="mt-1 block w-full rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
           >
             {snapshots.map((snapshot) => (
-              <option key={snapshot.code} value={snapshot.code}>
-                {snapshot.code} · {snapshot.status} · {snapshot.rate}%
+              <option key={snapshot.id} value={snapshot.id}>
+                {snapshot.label}
               </option>
             ))}
           </select>
@@ -144,24 +207,24 @@ export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[
         <label className="text-xs text-[var(--color-text-muted)]">
           新版本
           <select
-            value={toCode}
-            onChange={(e) => setToCode(e.target.value)}
+            value={toId}
+            onChange={(e) => setToId(e.target.value)}
             className="mt-1 block w-full rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-3 py-2 text-sm text-[var(--color-text-primary)]"
           >
             {snapshots.map((snapshot) => (
-              <option key={snapshot.code} value={snapshot.code}>
-                {snapshot.code} · {snapshot.status} · {snapshot.rate}%
+              <option key={snapshot.id} value={snapshot.id}>
+                {snapshot.label}
               </option>
             ))}
           </select>
         </label>
         <button
           type="button"
-          disabled={loading || snapshots.length < 2}
+          disabled={loading || loadingList || snapshots.length < 2}
           onClick={runCompare}
           className="rounded bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-bg-deep)] disabled:opacity-50"
         >
-          {loading ? "对比中…" : "开始对比"}
+          {loading ? "对比中…" : loadingList ? "加载中…" : "开始对比"}
         </button>
       </div>
 
@@ -171,10 +234,12 @@ export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[
         <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-muted)]">
           <span>差异 {diffs.length} 条</span>
           {source ? <span>数据源 {source}</span> : null}
-          {snapshots.length < 2 ? <span>至少需要两个快照才能对比</span> : null}
+          {snapshots.length < 2 ? <span>该组织至少需要两个提交版本才能对比</span> : null}
         </div>
         {grouped.length === 0 ? (
-          <p className="text-sm text-[var(--color-text-muted)]">选择两个版本后点击开始对比。</p>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            {snapshots.length < 2 ? "提交两次审核后，这里会出现可对比版本。" : "选择两个版本后点击开始对比。"}
+          </p>
         ) : (
           <div className="space-y-4">
             {grouped.map(([group, rows]) => (
@@ -193,6 +258,11 @@ export function SnapshotComparePanel({ snapshots }: { snapshots: SnapshotOption[
                         {diff.title}
                         {diff.detail ? (
                           <span className="block text-xs text-[var(--color-text-muted)]">{diff.detail}</span>
+                        ) : null}
+                        {diff.before || diff.after ? (
+                          <span className="mt-1 block text-xs text-[var(--color-text-muted)]">
+                            前：{diff.before ?? "-"} · 后：{diff.after ?? "-"}
+                          </span>
                         ) : null}
                       </div>
                     </li>

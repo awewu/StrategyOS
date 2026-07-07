@@ -61,7 +61,7 @@ export default async function VersionsPage() {
         ))}
       </section>
 
-      <SnapshotComparePanel snapshots={snapshots} />
+      <SnapshotComparePanel />
       <SnapshotFreezePanel activePeriod={activePeriod} />
       <CounterfactualPanel />
       <StrategyPatternPanel pattern={strategyPattern} />

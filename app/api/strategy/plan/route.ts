@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
 import { syncPlanAssumptionsToPremises } from "@/lib/data/plan-assumption-sync";
@@ -103,6 +104,48 @@ function hasMeaningfulPlanPayload(input: {
   return false;
 }
 
+function buildSubmissionSnapshot(input: {
+  orgUnitId: string;
+  horizonStart: number;
+  horizonEnd: number;
+  intent?: string;
+  northStar?: string;
+  objectives?: ObjectiveInput[];
+  initiatives?: InitiativeInput[];
+  resources?: ResourceInput[];
+  assumptions?: AssumptionInput[];
+  swotItems?: SwotItemInput[];
+  orgChartNodes?: OrgChartNodeInput[];
+  channelPlans?: ChannelPlanInput[];
+  customerPlans?: CustomerPlanInput[];
+  productQuarterly?: ProductQuarterlyInput[];
+  marketInsights?: MarketInsightInput[];
+  actionItems?: ActionItemInput[];
+  budgetItems?: BudgetItemInput[];
+  roadmapItems?: RoadmapItemInput[];
+}) {
+  return {
+    orgUnitId: input.orgUnitId,
+    horizonStart: input.horizonStart,
+    horizonEnd: input.horizonEnd,
+    intent: text(input.intent),
+    northStar: text(input.northStar),
+    objectives: input.objectives ?? [],
+    initiatives: input.initiatives ?? [],
+    resources: input.resources ?? [],
+    assumptions: input.assumptions ?? [],
+    swotItems: input.swotItems ?? [],
+    orgChartNodes: input.orgChartNodes ?? [],
+    channelPlans: input.channelPlans ?? [],
+    customerPlans: input.customerPlans ?? [],
+    productQuarterly: input.productQuarterly ?? [],
+    marketInsights: input.marketInsights ?? [],
+    actionItems: input.actionItems ?? [],
+    budgetItems: input.budgetItems ?? [],
+    roadmapItems: input.roadmapItems ?? [],
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getSession();
@@ -187,6 +230,7 @@ export async function POST(req: Request) {
       roadmapItems,
     });
 
+    const submittedAt = submit ? new Date() : null;
     const planId = await prisma.$transaction(async (tx) => {
       const existing = await tx.strategicPlan.findFirst({
         where: { orgUnitId, horizonStart, horizonEnd },
@@ -213,7 +257,7 @@ export async function POST(req: Request) {
               intent: nullableText(intent),
               northStar: nullableText(northStar),
               ...(submit
-                ? { status: "SUBMITTED", submittedAt: new Date(), submittedById: submitterId }
+                ? { status: "SUBMITTED", submittedAt, submittedById: submitterId }
                 : {}),
             },
           })
@@ -225,7 +269,7 @@ export async function POST(req: Request) {
               intent: nullableText(intent),
               northStar: nullableText(northStar),
               status: submit ? "SUBMITTED" : "DRAFT",
-              submittedAt: submit ? new Date() : null,
+              submittedAt,
               submittedById: submit ? submitterId : null,
             },
           });
@@ -494,6 +538,63 @@ export async function POST(req: Request) {
             critical: !!a.critical,
           },
         });
+      }
+
+      if (submit && submittedAt) {
+        const nextVersionRows = await tx.$queryRaw<Array<{ version: number }>>`
+          SELECT COALESCE(MAX("version"), 0) + 1 AS "version"
+          FROM "plan_submission_snapshots"
+          WHERE "org_unit_id" = ${orgUnitId}
+            AND "horizon_start" = ${horizonStart}
+            AND "horizon_end" = ${horizonEnd}
+        `;
+        const version = Number(nextVersionRows[0]?.version ?? 1);
+        const snapshot = buildSubmissionSnapshot({
+          orgUnitId,
+          horizonStart,
+          horizonEnd,
+          intent,
+          northStar,
+          objectives,
+          initiatives,
+          resources,
+          assumptions,
+          swotItems,
+          orgChartNodes,
+          channelPlans,
+          customerPlans,
+          productQuarterly,
+          marketInsights,
+          actionItems,
+          budgetItems,
+          roadmapItems,
+        });
+        await tx.$executeRaw`
+          INSERT INTO "plan_submission_snapshots" (
+            "id",
+            "plan_id",
+            "org_unit_id",
+            "horizon_start",
+            "horizon_end",
+            "version",
+            "status",
+            "submitted_at",
+            "submitted_by_id",
+            "snapshot_json"
+          )
+          VALUES (
+            ${randomUUID()},
+            ${plan.id},
+            ${orgUnitId},
+            ${horizonStart},
+            ${horizonEnd},
+            ${version},
+            'SUBMITTED',
+            ${submittedAt},
+            ${submitterId},
+            CAST(${JSON.stringify(snapshot)} AS JSONB)
+          )
+        `;
       }
 
       return plan.id;

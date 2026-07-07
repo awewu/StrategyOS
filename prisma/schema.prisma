@@ -860,6 +860,7 @@ model OrgUnit {
   researchItemsOwned ResearchItem[]   @relation("ResearchItemOwner")
   salesRegions       SalesRegion[]    @relation("RegionOrgUnit")
   plans              StrategicPlan[]
+  planSnapshots      PlanSubmissionSnapshot[]
   reports            Report[]         @relation("ReportOrgUnit")
   userScopes         UserOrgScope[]
   users              User[]           @relation("UserOrgUnit")
@@ -917,12 +918,34 @@ model StrategicPlan {
   actionItems      PlanActionItem[]
   budgetItems      PlanBudgetItem[]
   roadmapItems     PlanRoadmapItem[]
+  submissionSnapshots PlanSubmissionSnapshot[]
   orgUnit       OrgUnit           @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
   submittedBy   User?             @relation(fields: [submittedById], references: [id])
 
   @@unique([orgUnitId, horizonStart, horizonEnd])
   @@index([status])
   @@map("strategic_plans")
+}
+
+model PlanSubmissionSnapshot {
+  id            String        @id @default(uuid())
+  planId        String        @map("plan_id")
+  orgUnitId     String        @map("org_unit_id")
+  horizonStart  Int           @map("horizon_start")
+  horizonEnd    Int           @map("horizon_end")
+  version       Int
+  status        String        @default("SUBMITTED") @db.VarChar(20)
+  submittedAt   DateTime      @default(now()) @map("submitted_at")
+  submittedById String?       @map("submitted_by_id")
+  snapshotJson  Json          @map("snapshot_json")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  orgUnit       OrgUnit       @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([orgUnitId, horizonStart, horizonEnd, version])
+  @@index([orgUnitId, horizonStart, horizonEnd, submittedAt])
+  @@index([planId])
+  @@map("plan_submission_snapshots")
 }
 
 model PlanObjective {
