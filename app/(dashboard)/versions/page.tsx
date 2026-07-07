@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { CounterfactualPanel } from "@/components/versions/CounterfactualPanel";
+import { SnapshotComparePanel } from "@/components/versions/SnapshotComparePanel";
 import { StrategyPatternPanel } from "@/components/versions/StrategyPatternPanel";
 import { SnapshotFreezePanel } from "@/components/versions/SnapshotFreezePanel";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
@@ -60,6 +61,7 @@ export default async function VersionsPage() {
         ))}
       </section>
 
+      <SnapshotComparePanel snapshots={snapshots} />
       <SnapshotFreezePanel activePeriod={activePeriod} />
       <CounterfactualPanel />
       <StrategyPatternPanel pattern={strategyPattern} />
@@ -87,9 +89,9 @@ export default async function VersionsPage() {
       </section>
 
       <p className="text-xs text-[var(--color-text-muted)]">
-        对比：2025-FY → 2026-FY · deliberate{" "}
+        默认演示基线：2025-FY → 2026-FY · deliberate{" "}
         {snapshotFY25.strategyPattern?.deliberateRealizationRate}% →{" "}
-        {snapshotFY26.strategyPattern?.deliberateRealizationRate}%
+        {snapshotFY26.strategyPattern?.deliberateRealizationRate}%；实际对比请以上方版本选择器为准。
       </p>
 
       <ConceptGuide ids={["mintzberg", "stratDiff", "counterfactual", "stratRobust"]} />

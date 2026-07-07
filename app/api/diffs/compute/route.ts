@@ -3,6 +3,7 @@ import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import { dbAvailable, prisma } from "@/lib/db";
 import { autoPersistDiffsForSnapshot, persistDiffsBetweenSnapshots } from "@/lib/stratos/persist-diff";
+import { computeStratDiff } from "@/lib/stratos/strat-diff";
 import type { SnapshotStatePayload } from "@/lib/types/stratos";
 import * as demo from "@/lib/stratos-demo-data";
 
@@ -14,6 +15,7 @@ export async function POST(request: NextRequest) {
     toCode?: string;
     auto?: boolean;
     toSnapshotId?: string;
+    persist?: boolean;
   };
 
   if (body.auto && body.toSnapshotId) {
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
 
   const fromCode = body.fromCode ?? "2025-FY-STRATEGIC";
   const toCode = body.toCode ?? "2026-FY-STRATEGIC";
+  const shouldPersist = body.persist !== false;
 
   if (await dbAvailable()) {
     const [fromRow, toRow] = await Promise.all([
@@ -36,6 +39,19 @@ export async function POST(request: NextRequest) {
       prisma.strategicSnapshot.findUnique({ where: { code: toCode } }),
     ]);
     if (fromRow && toRow) {
+      if (!shouldPersist) {
+        const diffs = computeStratDiff(
+          fromRow.stateJson as SnapshotStatePayload,
+          toRow.stateJson as SnapshotStatePayload
+        );
+        await logUsageEvent({
+          action: "diff_persist",
+          resource: `${fromCode}→${toCode}`,
+          metadata: { count: diffs.length, preview: true },
+          request,
+        });
+        return NextResponse.json({ ok: true, count: diffs.length, source: "database", diffs });
+      }
       const result = await persistDiffsBetweenSnapshots(
         fromRow.id,
         toRow.id,
@@ -50,6 +66,17 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json({ ok: true, count: result.count, source: "database" });
     }
+  }
+
+  if (!shouldPersist) {
+    const diffs = computeStratDiff(demo.snapshotFY25, demo.snapshotFY26);
+    await logUsageEvent({
+      action: "diff_persist",
+      resource: `${fromCode}→${toCode}`,
+      metadata: { count: diffs.length, source: "demo", preview: true },
+      request,
+    });
+    return NextResponse.json({ ok: true, count: diffs.length, source: "demo", diffs });
   }
 
   const result = await persistDiffsBetweenSnapshots(
