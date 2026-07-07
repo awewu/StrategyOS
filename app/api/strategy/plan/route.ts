@@ -65,6 +65,44 @@ function nullableText(raw: unknown): string | null {
   return text(raw) || null;
 }
 
+function anyText(...values: unknown[]): boolean {
+  return values.some((value) => text(value));
+}
+
+function hasMeaningfulPlanPayload(input: {
+  intent?: string;
+  northStar?: string;
+  objectives?: ObjectiveInput[];
+  initiatives?: InitiativeInput[];
+  resources?: ResourceInput[];
+  assumptions?: AssumptionInput[];
+  swotItems?: SwotItemInput[];
+  orgChartNodes?: OrgChartNodeInput[];
+  channelPlans?: ChannelPlanInput[];
+  customerPlans?: CustomerPlanInput[];
+  productQuarterly?: ProductQuarterlyInput[];
+  marketInsights?: MarketInsightInput[];
+  actionItems?: ActionItemInput[];
+  budgetItems?: BudgetItemInput[];
+  roadmapItems?: RoadmapItemInput[];
+}): boolean {
+  if (anyText(input.intent, input.northStar)) return true;
+  if ((input.objectives ?? []).some((o) => anyText(o.objective) || (o.keyResults ?? []).some((k) => anyText(k.keyResult, k.target)))) return true;
+  if ((input.initiatives ?? []).some((i) => anyText(i.title, i.ownerName, i.q1Milestone, i.q2Milestone, i.q3Milestone, i.q4Milestone, i.okrKeyResult, i.okrTarget, i.okrBaseline))) return true;
+  if ((input.resources ?? []).some((r) => anyText(r.amount, r.justification))) return true;
+  if ((input.assumptions ?? []).some((a) => anyText(a.assumption))) return true;
+  if ((input.swotItems ?? []).some((sw) => anyText(sw.content))) return true;
+  if ((input.orgChartNodes ?? []).some((node) => anyText(node.name, node.role, node.headcount, node.headcountNew, node.note))) return true;
+  if ((input.channelPlans ?? []).some((ch) => anyText(ch.channelType, ch.currentState, ch.targetState, ch.q1Action, ch.q2Action, ch.q3Action, ch.q4Action, ch.revenueTarget, ch.partnerCount, ch.note))) return true;
+  if ((input.customerPlans ?? []).some((cu) => anyText(cu.customerSegment, cu.currentCount, cu.targetCount, cu.q1Count, cu.q2Count, cu.q3Count, cu.q4Count, cu.revenuePerCustomer, cu.acquisitionStrategy, cu.retentionStrategy, cu.note))) return true;
+  if ((input.productQuarterly ?? []).some((pq) => anyText(pq.productName, pq.unit, pq.q1Qty, pq.q1Revenue, pq.q2Qty, pq.q2Revenue, pq.q3Qty, pq.q3Revenue, pq.q4Qty, pq.q4Revenue, pq.annualQty, pq.annualRevenue, pq.note))) return true;
+  if ((input.marketInsights ?? []).some((mi) => anyText(mi.title, mi.content, mi.dataPoint, mi.source))) return true;
+  if ((input.actionItems ?? []).some((ai) => anyText(ai.initiativeTitle, ai.action, ai.ownerName, ai.acceptanceCriteria, ai.checkDate))) return true;
+  if ((input.budgetItems ?? []).some((bi) => anyText(bi.initiativeTitle, bi.department, bi.description, bi.year1Amount, bi.year2Amount, bi.year3Amount, bi.totalAmount, bi.roiEstimate, bi.justification))) return true;
+  if ((input.roadmapItems ?? []).some((rm) => anyText(rm.title, rm.milestone))) return true;
+  return false;
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getSession();
@@ -131,11 +169,42 @@ export async function POST(req: Request) {
       }
     }
 
+    const hasMeaningfulPayload = hasMeaningfulPlanPayload({
+      intent,
+      northStar,
+      objectives,
+      initiatives,
+      resources,
+      assumptions,
+      swotItems,
+      orgChartNodes,
+      channelPlans,
+      customerPlans,
+      productQuarterly,
+      marketInsights,
+      actionItems,
+      budgetItems,
+      roadmapItems,
+    });
+
     const planId = await prisma.$transaction(async (tx) => {
       const existing = await tx.strategicPlan.findFirst({
         where: { orgUnitId, horizonStart, horizonEnd },
         select: { id: true },
       });
+
+      if (!submit && !hasMeaningfulPayload) {
+        if (existing) return existing.id;
+        const shell = await tx.strategicPlan.create({
+          data: {
+            orgUnitId,
+            horizonStart,
+            horizonEnd,
+            status: "DRAFT",
+          },
+        });
+        return shell.id;
+      }
 
       const plan = existing
         ? await tx.strategicPlan.update({
