@@ -888,13 +888,13 @@ model StrategicPlan {
   horizonStart  Int               @map("horizon_start")
   horizonEnd    Int               @map("horizon_end")
   intent        String?
-  northStar     String?           @map("north_star") @db.VarChar(200)
+  northStar     String?           @map("north_star")
   targetYear          Int?          @map("target_year")
   revenueTarget       Decimal?      @map("revenue_target") @db.Decimal(14, 2)
   profitMarginTarget  Decimal?      @map("profit_margin_target") @db.Decimal(5, 4)
-  marketPositionDesc  String?       @map("market_position_desc") @db.VarChar(200)
-  geographyDesc       String?       @map("geography_desc") @db.VarChar(200)
-  brandDesc           String?       @map("brand_desc") @db.VarChar(200)
+  marketPositionDesc  String?       @map("market_position_desc")
+  geographyDesc       String?       @map("geography_desc")
+  brandDesc           String?       @map("brand_desc")
   status        PlanStatus        @default(DRAFT)
   submittedById String?           @map("submitted_by_id")
   submittedAt   DateTime?         @map("submitted_at")
@@ -945,10 +945,10 @@ model PlanObjective {
 model PlanKeyResult {
   id          String        @id @default(uuid())
   objectiveId String        @map("objective_id")
-  target      String?       @db.VarChar(100)
+  target      String?
   sortOrder   Int           @default(999) @map("sort_order")
   createdAt   DateTime      @default(now()) @map("created_at")
-  keyResult   String        @db.VarChar(300)
+  keyResult   String
   objective   PlanObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
 
   @@index([objectiveId])
@@ -958,16 +958,16 @@ model PlanKeyResult {
 model PlanInitiative {
   id          String        @id @default(uuid())
   planId      String        @map("plan_id")
-  title       String        @db.VarChar(200)
+  title       String
   description String?
   ownerName   String?       @map("owner_name") @db.VarChar(100)
-  q1Milestone String?       @map("q1_milestone") @db.VarChar(200)
-  q2Milestone String?       @map("q2_milestone") @db.VarChar(200)
-  q3Milestone String?       @map("q3_milestone") @db.VarChar(200)
-  q4Milestone   String?       @map("q4_milestone") @db.VarChar(200)
-  okrKeyResult  String?       @map("okr_key_result") @db.VarChar(300)
-  okrTarget     String?       @map("okr_target") @db.VarChar(100)
-  okrBaseline   String?       @map("okr_baseline") @db.VarChar(100)
+  q1Milestone String?       @map("q1_milestone")
+  q2Milestone String?       @map("q2_milestone")
+  q3Milestone String?       @map("q3_milestone")
+  q4Milestone   String?       @map("q4_milestone")
+  okrKeyResult  String?       @map("okr_key_result")
+  okrTarget     String?       @map("okr_target")
+  okrBaseline   String?       @map("okr_baseline")
   sortOrder     Int           @default(999) @map("sort_order")
   createdAt     DateTime      @default(now()) @map("created_at")
   plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -1025,7 +1025,7 @@ model PlanMilestone {
   profitMarginTarget Decimal?      @map("profit_margin_target") @db.Decimal(5, 4)
   keyConditions      String[]      @map("key_conditions")
   revenueActual      Decimal?      @map("revenue_actual") @db.Decimal(14, 2)
-  progressNote       String?       @map("progress_note") @db.VarChar(500)
+  progressNote       String?       @map("progress_note")
   riskScore          Int?          @map("risk_score")
   riskFactors        String[]      @map("risk_factors")
   sortOrder          Int           @default(0) @map("sort_order")
@@ -1040,13 +1040,13 @@ model PlanPremise {
   id              String        @id @default(uuid())
   planId          String        @map("plan_id")
   code            String        @db.VarChar(20)
-  premise         String        @db.VarChar(500)
+  premise         String
   category        String        @db.VarChar(50)
   confidence      Int           @default(50)
   fragility       Int           @default(50)
   lastValidatedAt DateTime?     @map("last_validated_at")
-  validationNote  String?       @map("validation_note") @db.VarChar(500)
-  failSignal      String?       @map("fail_signal") @db.VarChar(300)
+  validationNote  String?       @map("validation_note")
+  failSignal      String?       @map("fail_signal")
   signalSource    String?       @map("signal_source") @db.VarChar(100)
   signalAt        DateTime?     @map("signal_at")
   sortOrder       Int           @default(0) @map("sort_order")
@@ -1064,7 +1064,7 @@ model PlanSwotItem {
   id        String        @id @default(uuid())
   planId    String        @map("plan_id")
   quadrant  SwotQuadrant
-  content   String        @db.VarChar(400)
+  content   String
   sortOrder Int           @default(0) @map("sort_order")
   createdAt DateTime      @default(now()) @map("created_at")
   plan      StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -1078,11 +1078,11 @@ model PlanOrgChartNode {
   id           String        @id @default(uuid())
   planId       String        @map("plan_id")
   parentId     String?       @map("parent_id")
-  name         String        @db.VarChar(100)
-  role         String?       @db.VarChar(100)
+  name         String
+  role         String?
   headcount    Int?
   headcountNew Int?          @map("headcount_new")
-  note         String?       @db.VarChar(300)
+  note         String?
   sortOrder    Int           @default(0) @map("sort_order")
   createdAt    DateTime      @default(now()) @map("created_at")
   plan         StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -1096,15 +1096,15 @@ model PlanChannelPlan {
   id              String        @id @default(uuid())
   planId          String        @map("plan_id")
   channelType     String        @map("channel_type") @db.VarChar(80)
-  currentState    String?       @map("current_state") @db.VarChar(400)
-  targetState     String?       @map("target_state") @db.VarChar(400)
-  q1Action        String?       @map("q1_action") @db.VarChar(200)
-  q2Action        String?       @map("q2_action") @db.VarChar(200)
-  q3Action        String?       @map("q3_action") @db.VarChar(200)
-  q4Action        String?       @map("q4_action") @db.VarChar(200)
+  currentState    String?       @map("current_state")
+  targetState     String?       @map("target_state")
+  q1Action        String?       @map("q1_action")
+  q2Action        String?       @map("q2_action")
+  q3Action        String?       @map("q3_action")
+  q4Action        String?       @map("q4_action")
   revenueTarget   Decimal?      @map("revenue_target") @db.Decimal(14, 2)
   partnerCount    Int?          @map("partner_count")
-  note            String?       @db.VarChar(400)
+  note            String?
   sortOrder       Int           @default(0) @map("sort_order")
   createdAt       DateTime      @default(now()) @map("created_at")
   plan            StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -1117,7 +1117,7 @@ model PlanChannelPlan {
 model PlanCustomerPlan {
   id                  String        @id @default(uuid())
   planId              String        @map("plan_id")
-  customerSegment     String        @map("customer_segment") @db.VarChar(100)
+  customerSegment     String        @map("customer_segment")
   isNew               Boolean       @default(false) @map("is_new")
   currentCount        Int?          @map("current_count")
   targetCount         Int?          @map("target_count")
@@ -1126,9 +1126,9 @@ model PlanCustomerPlan {
   q3Count             Int?          @map("q3_count")
   q4Count             Int?          @map("q4_count")
   revenuePerCustomer  Decimal?      @map("revenue_per_customer") @db.Decimal(14, 2)
-  acquisitionStrategy String?       @map("acquisition_strategy") @db.VarChar(400)
-  retentionStrategy   String?       @map("retention_strategy") @db.VarChar(400)
-  note                String?       @db.VarChar(400)
+  acquisitionStrategy String?       @map("acquisition_strategy")
+  retentionStrategy   String?       @map("retention_strategy")
+  note                String?
   sortOrder           Int           @default(0) @map("sort_order")
   createdAt           DateTime      @default(now()) @map("created_at")
   plan                StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -1141,7 +1141,7 @@ model PlanCustomerPlan {
 model PlanProductQuarterly {
   id             String        @id @default(uuid())
   planId         String        @map("plan_id")
-  productName    String        @map("product_name") @db.VarChar(100)
+  productName    String        @map("product_name")
   unit           String?       @db.VarChar(20)
   q1Qty          Decimal?      @map("q1_qty") @db.Decimal(14, 2)
   q1Revenue      Decimal?      @map("q1_revenue") @db.Decimal(14, 2)
@@ -1153,7 +1153,7 @@ model PlanProductQuarterly {
   q4Revenue      Decimal?      @map("q4_revenue") @db.Decimal(14, 2)
   annualQty      Decimal?      @map("annual_qty") @db.Decimal(14, 2)
   annualRevenue  Decimal?      @map("annual_revenue") @db.Decimal(14, 2)
-  note           String?       @db.VarChar(300)
+  note           String?
   sortOrder      Int           @default(0) @map("sort_order")
   createdAt      DateTime      @default(now()) @map("created_at")
   plan           StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -2444,10 +2444,10 @@ model PlanMarketInsight {
   id          String        @id @default(uuid())
   planId      String        @map("plan_id")
   category    String        @db.VarChar(50)  // TAM|SAM|SOM|TREND|CUSTOMER|TECH
-  title       String        @db.VarChar(200)
+  title       String
   content     String
-  dataPoint   String?       @map("data_point") @db.VarChar(200)
-  source      String?       @db.VarChar(200)
+  dataPoint   String?       @map("data_point")
+  source      String?
   sortOrder   Int           @default(999) @map("sort_order")
   createdAt   DateTime      @default(now()) @map("created_at")
   plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -2460,7 +2460,7 @@ model PlanMarketInsight {
 model PlanActionItem {
   id              String        @id @default(uuid())
   planId          String        @map("plan_id")
-  initiativeTitle String?       @map("initiative_title") @db.VarChar(200)
+  initiativeTitle String?       @map("initiative_title")
   year            Int
   quarter         Int           // 1-4
   action          String
@@ -2481,14 +2481,14 @@ model PlanBudgetItem {
   id              String        @id @default(uuid())
   planId          String        @map("plan_id")
   category        String        @db.VarChar(20)  // CAPEX|OPEX|HC
-  initiativeTitle String?       @map("initiative_title") @db.VarChar(200)
-  department      String?       @db.VarChar(100)
+  initiativeTitle String?       @map("initiative_title")
+  department      String?
   description     String
   year1Amount     String?       @map("year1_amount") @db.VarChar(50)
   year2Amount     String?       @map("year2_amount") @db.VarChar(50)
   year3Amount     String?       @map("year3_amount") @db.VarChar(50)
   totalAmount     String?       @map("total_amount") @db.VarChar(50)
-  roiEstimate     String?       @map("roi_estimate") @db.VarChar(100)
+  roiEstimate     String?       @map("roi_estimate")
   justification   String?
   sortOrder       Int           @default(999) @map("sort_order")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -2503,12 +2503,12 @@ model PlanRoadmapItem {
   id          String        @id @default(uuid())
   planId      String        @map("plan_id")
   track       String        @db.VarChar(50)   // 轨道：举措/产品/组织/技术
-  title       String        @db.VarChar(200)
+  title       String
   startYear   Int           @map("start_year")
   startQ      Int           @map("start_q")   // 1-4
   endYear     Int           @map("end_year")
   endQ        Int           @map("end_q")
-  milestone   String?       @db.VarChar(200)
+  milestone   String?
   color       String?       @db.VarChar(20)   // accent/green/yellow/red
   sortOrder   Int           @default(999) @map("sort_order")
   createdAt   DateTime      @default(now()) @map("created_at")
