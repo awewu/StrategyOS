@@ -65,6 +65,12 @@ function severitySignal(severity: string): "red" | "yellow" | "green" {
   return "green";
 }
 
+function severityLabel(severity: PlanDiff["severity"]): string {
+  if (severity === "high") return "高";
+  if (severity === "warning") return "中";
+  return "低";
+}
+
 export function SnapshotComparePanel() {
   const [orgUnits, setOrgUnits] = useState<OrgUnitOption[]>([]);
   const [snapshots, setSnapshots] = useState<PlanSnapshotOption[]>([]);
@@ -241,35 +247,58 @@ export function SnapshotComparePanel() {
             {snapshots.length < 2 ? "提交两次审核后，这里会出现可对比版本。" : "选择两个版本后点击开始对比。"}
           </p>
         ) : (
-          <div className="space-y-4">
-            {grouped.map(([group, rows]) => (
-              <div key={group} className="border-l border-[var(--surface-border)] pl-4">
-                <h3 className="mb-2 text-xs font-medium text-[var(--color-accent)]">
-                  {group} · {rows.length}
-                </h3>
-                <ul className="space-y-2">
-                  {rows.map((diff, index) => (
-                    <li key={`${diff.category}-${index}`} className="flex gap-3 text-sm">
-                      <TrafficLightDot signal={severitySignal(diff.severity)} />
-                      <div>
-                        <span className="text-[var(--color-text-muted)]">
-                          [{diff.category}] [{diff.severity}]{" "}
+          <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
+            <table className="min-w-[980px] w-full border-collapse text-left text-sm">
+              <thead className="bg-black/[0.03] text-xs text-[var(--color-text-muted)]">
+                <tr>
+                  <th className="w-32 px-3 py-2 font-medium">模块</th>
+                  <th className="w-20 px-3 py-2 font-medium">级别</th>
+                  <th className="w-48 px-3 py-2 font-medium">变化项</th>
+                  <th className="px-3 py-2 font-medium">变更前</th>
+                  <th className="px-3 py-2 font-medium">变更后</th>
+                  <th className="w-40 px-3 py-2 font-medium">说明</th>
+                </tr>
+              </thead>
+              <tbody>
+                {grouped.flatMap(([group, rows]) =>
+                  rows.map((diff, index) => (
+                    <tr
+                      key={`${diff.category}-${index}`}
+                      className="border-t border-[var(--surface-border)] align-top"
+                    >
+                      <td className="px-3 py-3 text-xs font-medium text-[var(--color-accent)]">
+                        {group}
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className="inline-flex items-center gap-2 whitespace-nowrap text-xs text-[var(--color-text-muted)]">
+                          <TrafficLightDot signal={severitySignal(diff.severity)} />
+                          {severityLabel(diff.severity)}
                         </span>
-                        {diff.title}
-                        {diff.detail ? (
-                          <span className="block text-xs text-[var(--color-text-muted)]">{diff.detail}</span>
-                        ) : null}
-                        {diff.before || diff.after ? (
-                          <span className="mt-1 block text-xs text-[var(--color-text-muted)]">
-                            前：{diff.before ?? "-"} · 后：{diff.after ?? "-"}
-                          </span>
-                        ) : null}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="font-medium text-[var(--color-text-primary)]">{diff.title}</div>
+                        <div className="mt-1 font-mono text-[10px] text-[var(--color-text-muted)]">
+                          {diff.category}
+                        </div>
+                      </td>
+                      <td className="max-w-md px-3 py-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                        <div className="max-h-32 overflow-auto whitespace-pre-wrap break-words">
+                          {diff.before ?? "-"}
+                        </div>
+                      </td>
+                      <td className="max-w-md px-3 py-3 text-xs leading-relaxed text-[var(--color-text-primary)]">
+                        <div className="max-h-32 overflow-auto whitespace-pre-wrap break-words">
+                          {diff.after ?? "-"}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
+                        {diff.detail ?? "-"}
+                      </td>
+                    </tr>
+                  )),
+                )}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
