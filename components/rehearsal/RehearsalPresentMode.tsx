@@ -35,6 +35,7 @@ function StrategySlide({
 }) {
   const slides = live.strategySlides ?? [];
   const slide = slides[slideIndex];
+  const meta = live.strategyDeckMeta;
 
   if (!slide) {
     return (
@@ -92,7 +93,10 @@ function StrategySlide({
       </div>
 
       <footer className="mt-10 flex items-center justify-between border-t border-white/10 pt-5 text-sm text-[var(--color-text-muted)]">
-        <span>{slide.footer ?? "来源 /strategy/input"}</span>
+        <span>
+          {slide.footer ?? "来源 /strategy/input"}
+          {meta ? ` · 更新 ${meta.updatedAt} · ID ${meta.planCode}` : ""}
+        </span>
         <span>
           {slideIndex + 1} / {slides.length}
         </span>
@@ -124,6 +128,7 @@ export function RehearsalPresentMode({
   const overtime = segmentElapsed > segmentBudgetSec;
   const meetingBudgetSec = REHEARSAL_TOTAL_MIN * 60;
   const slideCount = live.strategySlides?.length ?? 0;
+  const deckMeta = live.strategyDeckMeta;
 
   const persistCheck = useCallback(
     (key: string, done: boolean) => {
@@ -212,10 +217,33 @@ export function RehearsalPresentMode({
           <h1 className="text-2xl font-semibold text-[var(--color-accent)]">
             {view === "slides" ? "战略幻灯" : `${step.segment} — ${step.title}`}
           </h1>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            Crux: {live.crux} · Runway {live.runwayMonths}m · Robust {live.robustOverall}
-            {live.hardBlock ? ` · ⚠ ${live.hardBlock}` : ""}
-          </p>
+          {view === "slides" && deckMeta ? (
+            <div className="mt-2 flex flex-wrap gap-2 text-xs">
+              <span className="rounded border border-[var(--color-accent)]/35 bg-[var(--color-accent)]/10 px-2 py-1 text-[var(--color-accent)]">
+                {deckMeta.orgUnitName}
+              </span>
+              <span className="rounded border border-[var(--color-accent)]/35 bg-[var(--color-accent)]/10 px-2 py-1 text-[var(--color-accent)]">
+                {deckMeta.versionLabel}
+              </span>
+              <span className="rounded border border-white/10 bg-black/10 px-2 py-1 text-[var(--color-text-muted)]">
+                周期 {deckMeta.horizon}
+              </span>
+              <span className="rounded border border-white/10 bg-black/10 px-2 py-1 text-[var(--color-text-muted)]">
+                状态 {deckMeta.status}
+              </span>
+              <span className="rounded border border-white/10 bg-black/10 px-2 py-1 text-[var(--color-text-muted)]">
+                ID {deckMeta.planCode}
+              </span>
+              <span className="rounded border border-white/10 bg-black/10 px-2 py-1 text-[var(--color-text-muted)]">
+                更新 {deckMeta.updatedAt}
+              </span>
+            </div>
+          ) : (
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              Crux: {live.crux} · Runway {live.runwayMonths}m · Robust {live.robustOverall}
+              {live.hardBlock ? ` · ⚠ ${live.hardBlock}` : ""}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-6">
           <div className="flex rounded-lg border border-white/10 bg-black/10 p-1">

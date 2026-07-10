@@ -6,7 +6,7 @@ function iso(d: Date | null): string | null {
 }
 
 export async function getMandateBundle(): Promise<MandateBundle> {
-  const [mandateRows, meetingRows] = await Promise.all([
+  const [mandateRows, meetingRows, planRows, userRows] = await Promise.all([
     prisma.strategyMandate.findMany({
       orderBy: [{ closed: "asc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
       include: {
@@ -18,7 +18,20 @@ export async function getMandateBundle(): Promise<MandateBundle> {
     }),
     prisma.strategyMeeting.findMany({
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { holdings: true } } },
+      include: {
+        _count: { select: { holdings: true } },
+        plan: { include: { orgUnit: { select: { name: true } } } },
+        participants: { orderBy: { createdAt: "asc" } },
+        todos: { orderBy: [{ completed: "asc" }, { dueDate: "asc" }, { createdAt: "asc" }] },
+      },
+    }),
+    prisma.strategicPlan.findMany({
+      orderBy: [{ horizonStart: "desc" }, { updatedAt: "desc" }],
+      include: { orgUnit: { select: { name: true } } },
+    }),
+    prisma.user.findMany({
+      orderBy: [{ name: "asc" }, { createdAt: "asc" }],
+      include: { orgUnit: { select: { name: true } } },
     }),
   ]);
 
@@ -43,11 +56,33 @@ export async function getMandateBundle(): Promise<MandateBundle> {
   }));
 
   const meetings: Meeting[] = meetingRows.map((mt) => ({
-    id: mt.id, title: mt.title, meetingType: mt.meetingType as Meeting["meetingType"],
+    id: mt.id, planId: mt.planId,
+    planLabel: mt.plan ? `${mt.plan.orgUnit.name} · ${mt.plan.horizonStart}-${mt.plan.horizonEnd}` : null,
+    title: mt.title, meetingType: mt.meetingType as Meeting["meetingType"],
     period: mt.period, meetingDate: iso(mt.meetingDate),
     status: mt.status as Meeting["status"], agenda: mt.agenda, notes: mt.notes,
     holdingCount: mt._count.holdings,
+    participantUserIds: mt.participants.flatMap((p) => p.userId ? [p.userId] : []),
+    participants: mt.participants.map((p) => ({
+      id: p.id, userId: p.userId, name: p.participantName, role: p.participantRole,
+    })),
+    todos: mt.todos.map((todo) => ({
+      id: todo.id, title: todo.title, ownerUserId: todo.ownerUserId,
+      ownerName: todo.ownerName, dueDate: iso(todo.dueDate), completed: todo.completed,
+    })),
   }));
 
-  return { mandates, meetings };
+  const plans = planRows.map((plan) => ({
+    id: plan.id,
+    label: `${plan.orgUnit.name} · ${plan.horizonStart}-${plan.horizonEnd}`,
+    status: plan.status,
+  }));
+  const users = userRows.map((user) => ({
+    id: user.id,
+    name: user.name,
+    role: String(user.role),
+    orgUnitName: user.orgUnit?.name ?? null,
+  }));
+
+  return { mandates, meetings, plans, users };
 }

@@ -258,7 +258,7 @@ export async function POST(req: Request) {
               northStar: nullableText(northStar),
               ...(submit
                 ? { status: "SUBMITTED", submittedAt, submittedById: submitterId }
-                : {}),
+                : { status: "DRAFT", submittedAt: null, submittedById: null }),
             },
           })
         : await tx.strategicPlan.create({

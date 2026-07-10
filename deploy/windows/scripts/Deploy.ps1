@@ -18,6 +18,20 @@ if (-not (Test-Path (Join-Path $AppRoot ".env.production"))) {
 
 . (Join-Path $PSScriptRoot "Import-Env.ps1") -EnvPath (Join-Path $AppRoot ".env.production")
 
+if (-not $env:STRATOS_LLM_API_KEY -and -not $env:OPENAI_API_KEY) {
+  throw "Missing STRATOS_LLM_API_KEY. Bailian credentials are required for AI extraction and automatic PDF OCR."
+}
+
+$pdfJsEntry = Join-Path $AppRoot "node_modules\pdfjs-dist\legacy\build\pdf.mjs"
+if (-not (Test-Path $pdfJsEntry)) {
+  throw "Missing PDF.js runtime assets: $pdfJsEntry"
+}
+
+& node.exe -e "require('@napi-rs/canvas'); console.log('Canvas OCR runtime OK')"
+if ($LASTEXITCODE -ne 0) {
+  throw "Canvas OCR native runtime failed to load (exit code $LASTEXITCODE). Use the Windows x64 release package."
+}
+
 if (-not $SkipDb) {
   & (Join-Path $PSScriptRoot "Init-Database.ps1") -AppRoot $AppRoot -SkipSeed:$SkipSeed
 }

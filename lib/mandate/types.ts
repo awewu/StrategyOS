@@ -51,6 +51,8 @@ export interface Mandate {
 
 export interface Meeting {
   id: string;
+  planId: string | null;
+  planLabel: string | null;
   title: string;
   meetingType: MeetingType;
   period: string;
@@ -59,9 +61,43 @@ export interface Meeting {
   agenda: string | null;
   notes: string | null;
   holdingCount: number;
+  participantUserIds: string[];
+  participants: MeetingParticipant[];
+  todos: MeetingTodo[];
+}
+
+export interface MeetingParticipant {
+  id: string;
+  userId: string | null;
+  name: string;
+  role: string;
+}
+
+export interface MeetingTodo {
+  id?: string;
+  title: string;
+  ownerUserId: string | null;
+  ownerName: string | null;
+  dueDate: string | null;
+  completed: boolean;
+}
+
+export interface MeetingPlanOption {
+  id: string;
+  label: string;
+  status: string;
+}
+
+export interface MeetingUserOption {
+  id: string;
+  name: string;
+  role: string;
+  orgUnitName: string | null;
 }
 
 export interface MandateBundle {
   mandates: Mandate[];
   meetings: Meeting[];
+  plans: MeetingPlanOption[];
+  users: MeetingUserOption[];
 }

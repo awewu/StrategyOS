@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RehearsalPresentMode } from "@/components/rehearsal/RehearsalPresentMode";
 import { typography } from "@/lib/brand/typography";
 import { Q3_REHEARSAL_AGENDA, REHEARSAL_TOTAL_MIN } from "@/lib/rehearsal/q3-agenda";
@@ -36,9 +36,115 @@ function LiveBanner({ live }: { live: RehearsalLiveContext }) {
   );
 }
 
+function strategyPrintHref(option: { key: string; orgUnitId: string } | undefined): string {
+  if (!option) return "/print/panorama";
+  const params = new URLSearchParams({ source: "rehearsal", orgUnitId: option.orgUnitId });
+  if (option.key.startsWith("snapshot:")) params.set("snapshotId", option.key.slice("snapshot:".length));
+  return `/print/panorama?${params.toString()}`;
+}
+
+function StrategyDeckPicker({
+  live,
+  onPrintHrefChange,
+}: {
+  live: RehearsalLiveContext;
+  onPrintHrefChange: (href: string) => void;
+}) {
+  const orgs = useMemo(() => live.strategyOptions ?? [], [live.strategyOptions]);
+  const initialOrgId = live.strategyDeckMeta?.orgUnitId ?? orgs[0]?.id ?? "";
+  const initialKey = live.strategyDeckMeta?.selectionKey ?? orgs.find((org) => org.id === initialOrgId)?.options[0]?.key ?? "";
+  const [orgUnitId, setOrgUnitId] = useState(initialOrgId);
+  const [selectionKey, setSelectionKey] = useState(initialKey);
+
+  const selectedOrg = useMemo(
+    () => orgs.find((org) => org.id === orgUnitId) ?? orgs[0],
+    [orgUnitId, orgs],
+  );
+  const versions = selectedOrg?.options ?? [];
+  const selectedVersion = versions.find((option) => option.key === selectionKey) ?? versions[0];
+  const isCurrentSelection = selectionKey === live.strategyDeckMeta?.selectionKey;
+
+  useEffect(() => {
+    onPrintHrefChange(strategyPrintHref(selectedVersion));
+  }, [onPrintHrefChange, selectedVersion]);
+
+  function changeOrg(nextOrgUnitId: string) {
+    const nextOrg = orgs.find((org) => org.id === nextOrgUnitId);
+    setOrgUnitId(nextOrgUnitId);
+    setSelectionKey(nextOrg?.options[0]?.key ?? "");
+  }
+
+  function applySelection() {
+    if (!selectedVersion) return;
+    window.location.href = selectedVersion.href;
+  }
+
+  return (
+    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-medium text-[var(--color-text-primary)]">投屏战略选择</h3>
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+            先选部门和版本，再进入投屏；投屏页会锁定这份战略。
+          </p>
+        </div>
+        {live.strategyDeckMeta ? (
+          <span className="rounded-full bg-[var(--color-accent)]/10 px-3 py-1 text-xs text-[var(--color-accent)]">
+            当前：{live.strategyDeckMeta.orgUnitName} · {live.strategyDeckMeta.versionLabel}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_auto] md:items-end">
+        <label className="text-xs text-[var(--color-text-muted)]">
+          部门
+          <select
+            value={orgUnitId}
+            onChange={(e) => changeOrg(e.target.value)}
+            className="stratos-input mt-1 text-sm"
+          >
+            {orgs.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name} · {org.options.length} 版
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs text-[var(--color-text-muted)]">
+          战略版本
+          <select
+            value={selectedVersion?.key ?? ""}
+            onChange={(e) => setSelectionKey(e.target.value)}
+            className="stratos-input mt-1 text-sm"
+          >
+            {versions.map((option) => (
+              <option key={option.key} value={option.key}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          disabled={!selectedVersion || isCurrentSelection}
+          onClick={applySelection}
+          className="rounded border border-[var(--color-accent)]/40 px-4 py-2 text-sm text-[var(--color-accent)] disabled:opacity-40"
+        >
+          {isCurrentSelection ? "已选定" : "确认投屏战略"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
   const [active, setActive] = useState(0);
   const [present, setPresent] = useState(false);
+  const currentOption = live.strategyOptions
+    ?.flatMap((org) => org.options)
+    .find((option) => option.key === live.strategyDeckMeta?.selectionKey);
+  const [printHref, setPrintHref] = useState(() => strategyPrintHref(currentOption));
+  const updatePrintHref = useCallback((href: string) => setPrintHref(href), []);
   const step = Q3_REHEARSAL_AGENDA[active];
   const progress = Math.round(((active + 1) / Q3_REHEARSAL_AGENDA.length) * 100);
 
@@ -62,12 +168,13 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
           <button
             type="button"
             onClick={() => setPresent(true)}
-            className="rounded bg-[var(--color-accent)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/30"
+            disabled={!live.strategyDeckMeta}
+            className="rounded bg-[var(--color-accent)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/30 disabled:opacity-40"
           >
             进入投屏模式 →
           </button>
           <Link
-            href="/print/panorama"
+            href={printHref}
             className="rounded border border-[var(--color-accent)]/40 px-4 py-2 text-sm text-[var(--color-accent)]"
           >
             打印签到一页纸
@@ -80,6 +187,8 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
           </Link>
         </div>
       </div>
+
+      <StrategyDeckPicker live={live} onPrintHrefChange={updatePrintHref} />
 
       <LiveBanner live={live} />
 

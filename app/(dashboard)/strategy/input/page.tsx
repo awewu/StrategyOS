@@ -5,22 +5,50 @@ import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { getOrgUnitsWithChildren } from "@/lib/data/org-units-access";
 import { getVersionsBundle } from "@/lib/data/versions-data";
+import { prisma } from "@/lib/db";
 import { topDiffs } from "@/lib/stratos";
 
-export default async function StrategyInputPage() {
+export default async function StrategyInputPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ planId?: string }>;
+}) {
   await requireRouteAccess("/strategy/input");
-  const [orgUnits, { stratDiffs }] = await Promise.all([
+  const { planId } = await searchParams;
+  const [orgUnits, { stratDiffs }, plan] = await Promise.all([
     getOrgUnitsWithChildren(),
     getVersionsBundle(),
+    planId
+      ? prisma.strategicPlan.findUnique({
+          where: { id: planId },
+          include: {
+            objectives: { include: { keyResults: { orderBy: { sortOrder: "asc" } } }, orderBy: { sortOrder: "asc" } },
+            initiatives: { orderBy: { sortOrder: "asc" } },
+            resourceReqs: true,
+            assumptions: true,
+            attachments: { orderBy: { uploadedAt: "asc" } },
+            swotItems: { orderBy: { sortOrder: "asc" } },
+            orgChartNodes: { orderBy: { sortOrder: "asc" } },
+            channelPlans: { orderBy: { sortOrder: "asc" } },
+            customerPlans: { orderBy: { sortOrder: "asc" } },
+            productQuarterly: { orderBy: { sortOrder: "asc" } },
+            marketInsights: { orderBy: { sortOrder: "asc" } },
+            actionItems: { orderBy: { sortOrder: "asc" } },
+            budgetItems: { orderBy: { sortOrder: "asc" } },
+            roadmapItems: { orderBy: { sortOrder: "asc" } },
+          },
+        })
+      : Promise.resolve(null),
   ]);
   const top3 = topDiffs(stratDiffs, 3);
+  const initialPlan = plan ? JSON.parse(JSON.stringify(plan)) : null;
 
   return (
     <div className="stratos-page">
       <PageHeader
         eyebrow="三级规划 · 提交审核"
-        title="战略录入"
-        subtitle="集团 · 高管层 · 执行层战略规划录入与提交"
+        title={initialPlan ? "修改战略" : "战略录入"}
+        subtitle={initialPlan ? "加载已保存内容进行修改，保存草稿或重新提交审核" : "集团 · 高管层 · 执行层战略规划录入与提交"}
         actions={
           <>
             <Link href="/strategy/submissions" className="stratos-btn stratos-btn--ghost text-xs">
@@ -58,7 +86,7 @@ export default async function StrategyInputPage() {
         </Link>
       </section>
 
-      <StrategyInputClient orgUnits={orgUnits} />
+      <StrategyInputClient key={initialPlan?.id ?? "new"} orgUnits={orgUnits} initialPlan={initialPlan} />
     </div>
   );
 }

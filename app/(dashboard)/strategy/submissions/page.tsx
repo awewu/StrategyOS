@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlanReviewActions } from "@/components/strategy/PlanReviewActions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { prisma } from "@/lib/db";
@@ -189,7 +190,24 @@ export default async function StrategySubmissionsPage({
                     {value(plan.submittedAt)}
                   </p>
                 </div>
-                <StatusPill status={plan.status} />
+                <div className="flex items-center gap-2">
+                  <StatusPill status={plan.status} />
+                  {plan.status === "SUBMITTED" ? (
+                    <PlanReviewActions
+                      orgUnitId={plan.orgUnitId}
+                      horizonStart={plan.horizonStart}
+                      horizonEnd={plan.horizonEnd}
+                    />
+                  ) : null}
+                  {plan.status !== "LOCKED" ? (
+                    <Link
+                      href={`/strategy/input?planId=${plan.id}`}
+                      className="stratos-btn stratos-btn--primary px-3 py-1.5 text-xs"
+                    >
+                      修改此战略
+                    </Link>
+                  ) : null}
+                </div>
               </div>
               <nav className="flex flex-wrap gap-2 text-xs">
                 {[

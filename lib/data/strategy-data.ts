@@ -714,8 +714,52 @@ export interface RehearsalStrategySlide {
   footer?: string;
 }
 
+export interface RehearsalStrategyDeckMeta {
+  planId: string;
+  planCode: string;
+  orgUnitId: string;
+  orgUnitName: string;
+  horizon: string;
+  status: string;
+  versionLabel: string;
+  sourceType: "current" | "snapshot";
+  selectionKey: string;
+  updatedAt: string;
+  submittedAt: string | null;
+}
+
+export interface RehearsalStrategyOption {
+  key: string;
+  orgUnitId: string;
+  orgUnitName: string;
+  label: string;
+  status: string;
+  horizon: string;
+  href: string;
+  isCurrent: boolean;
+  submittedAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface RehearsalStrategyOrgOption {
+  id: string;
+  name: string;
+  level: string;
+  options: RehearsalStrategyOption[];
+}
+
+export interface RehearsalStrategyDeckSelection {
+  orgUnitId?: string | null;
+  snapshotId?: string | null;
+}
+
 function trimText(value: string | null | undefined): string {
   return value?.trim() ?? "";
+}
+
+function formatDateTime(value: Date | null | undefined): string | null {
+  if (!value) return null;
+  return value.toISOString().slice(0, 16).replace("T", " ");
 }
 
 function formatPlanAmount(value: unknown): string | null {
@@ -737,44 +781,272 @@ function compact(values: Array<string | null | undefined>, limit = 4): string[] 
   return values.map(trimText).filter(Boolean).slice(0, limit);
 }
 
-async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
+type StrategyDeckPayload = {
+  orgUnitId: string;
+  horizonStart: number;
+  horizonEnd: number;
+  intent?: string | null;
+  northStar?: string | null;
+  targetYear?: number | null;
+  revenueTarget?: unknown;
+  profitMarginTarget?: unknown;
+  marketPositionDesc?: string | null;
+  geographyDesc?: string | null;
+  brandDesc?: string | null;
+  objectives?: Array<{
+    objective?: string | null;
+    mustNotFail?: string | null;
+    keyResults?: Array<{ keyResult?: string | null; target?: string | null }>;
+  }>;
+  milestones?: Array<{ year?: number; label?: string; revenueTarget?: unknown }>;
+  premises?: Array<{ code?: string; premise?: string; confidence?: number; fragility?: number }>;
+  assumptions?: Array<{ assumption?: string; critical?: boolean }>;
+  initiatives?: Array<{ title?: string; ownerName?: string | null; okrKeyResult?: string | null; q3Milestone?: string | null }>;
+  swotItems?: Array<{ quadrant?: string; content?: string | null }>;
+  marketInsights?: Array<{ title?: string | null; content?: string | null; dataPoint?: string | null }>;
+  actionItems?: Array<{ year?: number | string; quarter?: number | string; action?: string | null; ownerName?: string | null; acceptanceCriteria?: string | null }>;
+  budgetItems?: Array<{ category?: string | null; description?: string | null; totalAmount?: string | null; roiEstimate?: string | null }>;
+  roadmapItems?: Array<{ track?: string | null; title?: string | null; startYear?: number | string; startQ?: number | string; endYear?: number | string; endQ?: number | string; milestone?: string | null }>;
+  channelPlans?: Array<{ channelType?: string | null; targetState?: string | null; revenueTarget?: unknown }>;
+  customerPlans?: Array<{ customerSegment?: string | null; targetCount?: number | string | null; acquisitionStrategy?: string | null }>;
+  productQuarterly?: Array<{ productName?: string | null; annualRevenue?: unknown; note?: string | null }>;
+};
+
+function jsonToDeckPayload(value: unknown): StrategyDeckPayload | null {
+  if (!value || typeof value !== "object") return null;
+  const payload = value as StrategyDeckPayload;
+  if (!payload.orgUnitId) return null;
+  return payload;
+}
+
+async function getRehearsalStrategyOptions(): Promise<RehearsalStrategyOrgOption[]> {
   if (!(await dbAvailable())) return [];
 
-  const plan = await prisma.strategicPlan.findFirst({
-    where: {
-      orgUnitId: DEFAULT_GROUP_ORG_UNIT_ID,
-      horizonStart: DEFAULT_HORIZON_START,
-      horizonEnd: DEFAULT_HORIZON_END,
-    },
-    include: {
-      objectives: {
-        include: { keyResults: { orderBy: { sortOrder: "asc" } } },
-        orderBy: { sortOrder: "asc" },
-      },
-      milestones: { orderBy: [{ sortOrder: "asc" }, { year: "asc" }] },
-      premises: { orderBy: [{ sortOrder: "asc" }, { code: "asc" }] },
-      assumptions: true,
-      initiatives: { orderBy: { sortOrder: "asc" } },
-      swotItems: { orderBy: { sortOrder: "asc" } },
-      marketInsights: { orderBy: { sortOrder: "asc" } },
-      actionItems: { orderBy: { sortOrder: "asc" } },
-      budgetItems: { orderBy: { sortOrder: "asc" } },
-      roadmapItems: { orderBy: { sortOrder: "asc" } },
-      channelPlans: { orderBy: { sortOrder: "asc" } },
-      customerPlans: { orderBy: { sortOrder: "asc" } },
-      productQuarterly: { orderBy: { sortOrder: "asc" } },
-    },
-  });
+  const [orgUnits, plans, snapshots] = await Promise.all([
+    prisma.$queryRaw<Array<{ id: string; name: string; nameEn: string | null; level: string }>>`
+      SELECT "id", "name", "name_en" AS "nameEn", "level"::text AS "level"
+      FROM "org_units"
+      ORDER BY "sort_order" ASC, "name" ASC
+    `,
+    prisma.$queryRaw<Array<{
+      id: string;
+      orgUnitId: string;
+      orgName: string;
+      orgNameEn: string | null;
+      horizonStart: number;
+      horizonEnd: number;
+      status: string;
+      submittedAt: Date | null;
+      updatedAt: Date;
+    }>>`
+      SELECT
+        sp."id",
+        sp."org_unit_id" AS "orgUnitId",
+        ou."name" AS "orgName",
+        ou."name_en" AS "orgNameEn",
+        sp."horizon_start" AS "horizonStart",
+        sp."horizon_end" AS "horizonEnd",
+        sp."status"::text AS "status",
+        sp."submitted_at" AS "submittedAt",
+        sp."updated_at" AS "updatedAt"
+      FROM "strategic_plans" sp
+      JOIN "org_units" ou ON ou."id" = sp."org_unit_id"
+      ORDER BY ou."sort_order" ASC, sp."updated_at" DESC
+    `,
+    prisma.$queryRaw<Array<{
+      id: string;
+      orgUnitId: string;
+      orgName: string;
+      orgNameEn: string | null;
+      horizonStart: number;
+      horizonEnd: number;
+      version: number;
+      status: string;
+      submittedAt: Date;
+      createdAt: Date;
+    }>>`
+      SELECT
+        ps."id",
+        ps."org_unit_id" AS "orgUnitId",
+        ou."name" AS "orgName",
+        ou."name_en" AS "orgNameEn",
+        ps."horizon_start" AS "horizonStart",
+        ps."horizon_end" AS "horizonEnd",
+        ps."version",
+        ps."status",
+        ps."submitted_at" AS "submittedAt",
+        ps."created_at" AS "createdAt"
+      FROM "plan_submission_snapshots" ps
+      JOIN "org_units" ou ON ou."id" = ps."org_unit_id"
+      ORDER BY ou."sort_order" ASC, ps."version" DESC
+    `,
+  ]);
 
-  if (!plan) return [];
+  const optionsByOrg = new Map<string, RehearsalStrategyOption[]>();
+  for (const plan of plans) {
+    const orgName = plan.orgNameEn ? `${plan.orgName} / ${plan.orgNameEn}` : plan.orgName;
+    const horizon = `${plan.horizonStart}-${plan.horizonEnd}`;
+    const option: RehearsalStrategyOption = {
+      key: `current:${plan.orgUnitId}:${plan.horizonStart}-${plan.horizonEnd}`,
+      orgUnitId: plan.orgUnitId,
+      orgUnitName: orgName,
+      label: `当前工作版 · ${horizon} · ${plan.status}`,
+      status: plan.status,
+      horizon,
+      href: `/rehearsal?orgUnitId=${encodeURIComponent(plan.orgUnitId)}`,
+      isCurrent: true,
+      submittedAt: formatDateTime(plan.submittedAt),
+      updatedAt: formatDateTime(plan.updatedAt),
+    };
+    optionsByOrg.set(plan.orgUnitId, [...(optionsByOrg.get(plan.orgUnitId) ?? []), option]);
+  }
+  for (const snapshot of snapshots) {
+    const orgName = snapshot.orgNameEn ? `${snapshot.orgName} / ${snapshot.orgNameEn}` : snapshot.orgName;
+    const horizon = `${snapshot.horizonStart}-${snapshot.horizonEnd}`;
+    const option: RehearsalStrategyOption = {
+      key: `snapshot:${snapshot.id}`,
+      orgUnitId: snapshot.orgUnitId,
+      orgUnitName: orgName,
+      label: `V${snapshot.version} · ${horizon} · ${formatDateTime(snapshot.submittedAt)}`,
+      status: snapshot.status,
+      horizon,
+      href: `/rehearsal?orgUnitId=${encodeURIComponent(snapshot.orgUnitId)}&snapshotId=${encodeURIComponent(snapshot.id)}`,
+      isCurrent: false,
+      submittedAt: formatDateTime(snapshot.submittedAt),
+      updatedAt: formatDateTime(snapshot.createdAt),
+    };
+    optionsByOrg.set(snapshot.orgUnitId, [...(optionsByOrg.get(snapshot.orgUnitId) ?? []), option]);
+  }
+
+  return orgUnits
+    .map((org) => ({
+      id: org.id,
+      name: org.nameEn ? `${org.name} / ${org.nameEn}` : org.name,
+      level: org.level,
+      options: optionsByOrg.get(org.id) ?? [],
+    }))
+    .filter((org) => org.options.length > 0);
+}
+
+export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckSelection = {}): Promise<{
+  meta: RehearsalStrategyDeckMeta | null;
+  slides: RehearsalStrategySlide[];
+}> {
+  if (!(await dbAvailable())) return { meta: null, slides: [] };
+
+  let payload: StrategyDeckPayload | null = null;
+  let orgUnit: { id: string; name: string; nameEn: string | null } | null = null;
+  let meta: RehearsalStrategyDeckMeta | null = null;
+
+  if (selection.snapshotId) {
+    const [snapshot] = await prisma.$queryRaw<Array<{
+      id: string;
+      planId: string;
+      orgUnitId: string;
+      orgName: string;
+      orgNameEn: string | null;
+      horizonStart: number;
+      horizonEnd: number;
+      version: number;
+      status: string;
+      submittedAt: Date;
+      createdAt: Date;
+      snapshotJson: unknown;
+    }>>`
+      SELECT
+        ps."id",
+        ps."plan_id" AS "planId",
+        ps."org_unit_id" AS "orgUnitId",
+        ou."name" AS "orgName",
+        ou."name_en" AS "orgNameEn",
+        ps."horizon_start" AS "horizonStart",
+        ps."horizon_end" AS "horizonEnd",
+        ps."version",
+        ps."status",
+        ps."submitted_at" AS "submittedAt",
+        ps."created_at" AS "createdAt",
+        ps."snapshot_json" AS "snapshotJson"
+      FROM "plan_submission_snapshots" ps
+      JOIN "org_units" ou ON ou."id" = ps."org_unit_id"
+      WHERE ps."id" = ${selection.snapshotId}
+      LIMIT 1
+    `;
+    const snapshotPayload = jsonToDeckPayload(snapshot?.snapshotJson);
+    if (snapshot && snapshotPayload) {
+      payload = snapshotPayload;
+      orgUnit = { id: snapshot.orgUnitId, name: snapshot.orgName, nameEn: snapshot.orgNameEn };
+      const orgUnitName = orgUnit.nameEn ? `${orgUnit.name} / ${orgUnit.nameEn}` : orgUnit.name;
+      meta = {
+        planId: snapshot.planId,
+        planCode: `V${snapshot.version}`,
+        orgUnitId: snapshot.orgUnitId,
+        orgUnitName,
+        horizon: `${snapshot.horizonStart}-${snapshot.horizonEnd}`,
+        status: snapshot.status,
+        versionLabel: `提交版 V${snapshot.version}`,
+        sourceType: "snapshot",
+        selectionKey: `snapshot:${snapshot.id}`,
+        updatedAt: formatDateTime(snapshot.createdAt) ?? "",
+        submittedAt: formatDateTime(snapshot.submittedAt),
+      };
+    }
+  }
+
+  if (!payload) {
+    const plan = await prisma.strategicPlan.findFirst({
+      where: {
+        orgUnitId: selection.orgUnitId ?? DEFAULT_GROUP_ORG_UNIT_ID,
+        horizonStart: DEFAULT_HORIZON_START,
+        horizonEnd: DEFAULT_HORIZON_END,
+      },
+      include: {
+        orgUnit: { select: { id: true, name: true, nameEn: true } },
+        objectives: {
+          include: { keyResults: { orderBy: { sortOrder: "asc" } } },
+          orderBy: { sortOrder: "asc" },
+        },
+        milestones: { orderBy: [{ sortOrder: "asc" }, { year: "asc" }] },
+        premises: { orderBy: [{ sortOrder: "asc" }, { code: "asc" }] },
+        assumptions: true,
+        initiatives: { orderBy: { sortOrder: "asc" } },
+        swotItems: { orderBy: { sortOrder: "asc" } },
+        marketInsights: { orderBy: { sortOrder: "asc" } },
+        actionItems: { orderBy: { sortOrder: "asc" } },
+        budgetItems: { orderBy: { sortOrder: "asc" } },
+        roadmapItems: { orderBy: { sortOrder: "asc" } },
+        channelPlans: { orderBy: { sortOrder: "asc" } },
+        customerPlans: { orderBy: { sortOrder: "asc" } },
+        productQuarterly: { orderBy: { sortOrder: "asc" } },
+      },
+    });
+    if (!plan) return { meta: null, slides: [] };
+    orgUnit = plan.orgUnit;
+    payload = plan;
+    const orgUnitName = orgUnit.nameEn ? `${orgUnit.name} / ${orgUnit.nameEn}` : orgUnit.name;
+    meta = {
+      planId: plan.id,
+      planCode: plan.id.slice(0, 8).toUpperCase(),
+      orgUnitId: plan.orgUnitId,
+      orgUnitName,
+      horizon: `${plan.horizonStart}-${plan.horizonEnd}`,
+      status: plan.status,
+      versionLabel: "当前工作版",
+      sourceType: "current",
+      selectionKey: `current:${plan.orgUnitId}:${plan.horizonStart}-${plan.horizonEnd}`,
+      updatedAt: formatDateTime(plan.updatedAt) ?? "",
+      submittedAt: formatDateTime(plan.submittedAt),
+    };
+  }
+
+  if (!payload || !meta) return { meta: null, slides: [] };
 
   const targetMetrics = [
-    plan.targetYear ? { label: "目标年", value: String(plan.targetYear) } : null,
-    formatPlanAmount(plan.revenueTarget)
-      ? { label: "收入目标", value: formatPlanAmount(plan.revenueTarget)! }
+    payload.targetYear ? { label: "目标年", value: String(payload.targetYear) } : null,
+    formatPlanAmount(payload.revenueTarget)
+      ? { label: "收入目标", value: formatPlanAmount(payload.revenueTarget)! }
       : null,
-    formatPlanPercent(plan.profitMarginTarget)
-      ? { label: "利润率", value: formatPlanPercent(plan.profitMarginTarget)! }
+    formatPlanPercent(payload.profitMarginTarget)
+      ? { label: "利润率", value: formatPlanPercent(payload.profitMarginTarget)! }
       : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
@@ -783,19 +1055,19 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   slides.push({
     id: "strategy-intent",
     eyebrow: "战略输入 · 方向",
-    title: trimText(plan.northStar) || "战略北极星",
-    lead: trimText(plan.intent) || "尚未填写战略意图，请先在 /strategy/input 完成输入。",
+    title: trimText(payload.northStar) || "战略北极星",
+    lead: trimText(payload.intent) || "尚未填写战略意图，请先在 /strategy/input 完成输入。",
     bullets: compact([
-      plan.marketPositionDesc ? `市场地位：${plan.marketPositionDesc}` : null,
-      plan.geographyDesc ? `区域覆盖：${plan.geographyDesc}` : null,
-      plan.brandDesc ? `品牌格局：${plan.brandDesc}` : null,
+      payload.marketPositionDesc ? `市场地位：${payload.marketPositionDesc}` : null,
+      payload.geographyDesc ? `区域覆盖：${payload.geographyDesc}` : null,
+      payload.brandDesc ? `品牌格局：${payload.brandDesc}` : null,
     ]),
     metrics: targetMetrics,
-    footer: `来源 /strategy/input · ${plan.horizonStart}-${plan.horizonEnd} · ${plan.status}`,
+    footer: `${meta.versionLabel} · ${meta.orgUnitName} · ${meta.horizon} · ${meta.status} · #${meta.planCode}`,
   });
 
-  const objectiveBullets = plan.objectives.flatMap((o) => {
-    const krs = o.keyResults
+  const objectiveBullets = (payload.objectives ?? []).flatMap((o) => {
+    const krs = (o.keyResults ?? [])
       .map((kr) => [kr.keyResult, kr.target].filter(Boolean).join(" / "))
       .filter(Boolean)
       .slice(0, 2);
@@ -811,18 +1083,18 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
       eyebrow: "战略输入 · BSC / OKR",
       title: "战略目标与关键结果",
       bullets: compact(objectiveBullets, 8),
-      footer: `${plan.objectives.length} 个目标 · ${plan.objectives.reduce((sum, o) => sum + o.keyResults.length, 0)} 个 KR`,
+      footer: `${payload.objectives?.length ?? 0} 个目标 · ${(payload.objectives ?? []).reduce((sum, o) => sum + (o.keyResults?.length ?? 0), 0)} 个 KR`,
     });
   }
 
   const marketBullets = compact(
-    plan.marketInsights.map((m) =>
+    (payload.marketInsights ?? []).map((m) =>
       [m.title, m.dataPoint, m.content].map(trimText).filter(Boolean).join(" · "),
     ),
     5,
   );
   const swotBullets = compact(
-    plan.swotItems.map((s) => `${s.quadrant.toUpperCase()}：${s.content}`),
+    (payload.swotItems ?? []).map((s) => `${trimText(s.quadrant).toUpperCase()}：${s.content}`),
     6,
   );
   if (marketBullets.length || swotBullets.length) {
@@ -836,7 +1108,7 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   }
 
   const initiativeBullets = compact(
-    plan.initiatives.map((i) =>
+    (payload.initiatives ?? []).map((i) =>
       [
         trimText(i.title),
         i.ownerName ? `Owner ${i.ownerName}` : null,
@@ -859,16 +1131,16 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   }
 
   const roadmapBullets = compact(
-    plan.roadmapItems.map((r) =>
+    (payload.roadmapItems ?? []).map((r) =>
       `${r.track} · ${r.title} · ${r.startYear}Q${r.startQ}-${r.endYear}Q${r.endQ}${
         r.milestone ? ` · ${r.milestone}` : ""
       }`,
     ),
     6,
   );
-  const milestoneMetrics = plan.milestones.slice(0, 3).map((m) => ({
-    label: String(m.year),
-    value: m.label,
+  const milestoneMetrics = (payload.milestones ?? []).slice(0, 3).map((m) => ({
+    label: String(m.year ?? ""),
+    value: m.label ?? "",
     note: formatPlanAmount(m.revenueTarget) ?? undefined,
   }));
   if (roadmapBullets.length || milestoneMetrics.length) {
@@ -883,7 +1155,7 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   }
 
   const executionBullets = compact(
-    plan.actionItems.map((a) =>
+    (payload.actionItems ?? []).map((a) =>
       [
         `${a.year}Q${a.quarter}`,
         trimText(a.action),
@@ -906,7 +1178,7 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   }
 
   const budgetBullets = compact(
-    plan.budgetItems.map((b) =>
+    (payload.budgetItems ?? []).map((b) =>
       [
         b.category,
         trimText(b.description),
@@ -920,8 +1192,8 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   );
   const premiseBullets = compact(
     [
-      ...plan.premises.map((p) => `${p.code}：${p.premise} · 信心 ${p.confidence}% / 脆弱 ${p.fragility}%`),
-      ...plan.assumptions.map((a) => `${a.critical ? "关键假设" : "假设"}：${a.assumption}`),
+      ...(payload.premises ?? []).map((p) => `${p.code}：${p.premise} · 信心 ${p.confidence}% / 脆弱 ${p.fragility}%`),
+      ...(payload.assumptions ?? []).map((a) => `${a.critical ? "关键假设" : "假设"}：${a.assumption}`),
     ],
     5,
   );
@@ -936,7 +1208,7 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
   }
 
   const productBullets = compact(
-    plan.productQuarterly.map((p) =>
+    (payload.productQuarterly ?? []).map((p) =>
       [
         trimText(p.productName),
         p.annualRevenue ? `年收入 ${formatPlanAmount(p.annualRevenue)}` : null,
@@ -948,7 +1220,7 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
     4,
   );
   const channelBullets = compact(
-    plan.channelPlans.map((c) =>
+    (payload.channelPlans ?? []).map((c) =>
       [
         trimText(c.channelType),
         c.targetState,
@@ -960,7 +1232,7 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
     3,
   );
   const customerBullets = compact(
-    plan.customerPlans.map((c) =>
+    (payload.customerPlans ?? []).map((c) =>
       [
         trimText(c.customerSegment),
         c.targetCount != null ? `目标 ${c.targetCount} 家` : null,
@@ -981,16 +1253,17 @@ async function getRehearsalStrategySlides(): Promise<RehearsalStrategySlide[]> {
     });
   }
 
-  return slides;
+  return { meta, slides };
 }
 
 /** Q3 rehearsal live context */
-export async function getRehearsalBundle() {
-  const [deck, , versions, strategySlides] = await Promise.all([
+export async function getRehearsalBundle(selection: RehearsalStrategyDeckSelection = {}) {
+  const [deck, , versions, strategyDeck, strategyOptions] = await Promise.all([
     getCommandDeckBundle(),
     getHealthBundle(),
     import("@/lib/data/versions-data").then((m) => m.getVersionsBundle()),
-    getRehearsalStrategySlides(),
+    getRehearsalStrategyDeck(selection),
+    getRehearsalStrategyOptions(),
   ]);
   const activeAssertion = deck.assertions.find((a) => a.active);
   return {
@@ -1006,7 +1279,9 @@ export async function getRehearsalBundle() {
     hardBlock: activeAssertion?.active
       ? activeAssertion.message
       : null,
-    strategySlides,
+    strategyDeckMeta: strategyDeck.meta,
+    strategySlides: strategyDeck.slides,
+    strategyOptions,
   };
 }
 

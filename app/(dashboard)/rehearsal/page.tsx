@@ -2,8 +2,16 @@ import { RehearsalWalkthrough } from "@/components/rehearsal/RehearsalWalkthroug
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getRehearsalBundle } from "@/lib/data/strategy-data";
 
-export default async function RehearsalPage() {
-  const live = await getRehearsalBundle();
+export default async function RehearsalPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ orgUnitId?: string; snapshotId?: string }>;
+}) {
+  const params = await searchParams;
+  const live = await getRehearsalBundle({
+    orgUnitId: params.orgUnitId,
+    snapshotId: params.snapshotId,
+  });
   return (
     <div className="stratos-page">
       <PageHeader

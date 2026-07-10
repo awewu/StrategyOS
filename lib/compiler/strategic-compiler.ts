@@ -2,6 +2,8 @@
  * Strategic compiler — extract structured plan + BSC from raw text / PDF.
  */
 import { spawn } from "node:child_process";
+import { join, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { FpaSummary } from "@/lib/types/stratos";
 import { prefilterImportText } from "./import-quality";
@@ -210,17 +212,90 @@ print("\\n".join((p.extract_text() or "") for p in reader.pages))`]);
     const err: Buffer[] = [];
     py.stdout.on("data", (d: Buffer) => chunks.push(d));
     py.stderr.on("data", (d: Buffer) => err.push(d));
+    py.stdin.on("error", () => undefined);
     py.on("error", reject);
     py.on("close", (code) => {
       if (code === 0) resolve(Buffer.concat(chunks).toString("utf8"));
       else reject(new Error(Buffer.concat(err).toString("utf8") || "pypdf failed"));
     });
-    py.stdin.write(buffer);
-    py.stdin.end();
+    py.stdin.end(buffer);
   });
 }
 
+function ensurePdfJsPolyfills() {
+  const global = globalThis as Record<string, unknown>;
+  if (!global.DOMMatrix) {
+    global.DOMMatrix = class DOMMatrix {
+      a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+      m11 = 1; m12 = 0; m13 = 0; m14 = 0;
+      m21 = 0; m22 = 1; m23 = 0; m24 = 0;
+      m31 = 0; m32 = 0; m33 = 1; m34 = 0;
+      m41 = 0; m42 = 0; m43 = 0; m44 = 1;
+      multiply() { return this; }
+      translate() { return this; }
+      scale() { return this; }
+      rotate() { return this; }
+      inverse() { return this; }
+      transformPoint(point?: { x?: number; y?: number }) {
+        return { x: point?.x ?? 0, y: point?.y ?? 0, z: 0, w: 1 };
+      }
+    };
+  }
+  if (!global.ImageData) {
+    global.ImageData = class ImageData {
+      data: Uint8ClampedArray;
+      width: number;
+      height: number;
+      constructor(data: Uint8ClampedArray, width: number, height = 0) {
+        this.data = data;
+        this.width = width;
+        this.height = height || Math.floor(data.length / Math.max(width * 4, 1));
+      }
+    };
+  }
+  if (!global.Path2D) global.Path2D = class Path2D {};
+}
+
+async function extractPdfWithPdfJs(buffer: Buffer): Promise<string> {
+  ensurePdfJsPolyfills();
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const pdfRoot = join(process.cwd(), "node_modules", "pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(join(pdfRoot, "legacy", "build", "pdf.worker.mjs")).href;
+  const fileUrl = (path: string) => pathToFileURL(path.endsWith(sep) ? path : path + sep).href;
+  const loadingTask = pdfjs.getDocument({
+    data: new Uint8Array(buffer),
+    standardFontDataUrl: fileUrl(join(pdfRoot, "standard_fonts")),
+    cMapUrl: fileUrl(join(pdfRoot, "cmaps")),
+    cMapPacked: true,
+    wasmUrl: fileUrl(join(pdfRoot, "wasm")),
+  });
+  const pages: string[] = [];
+  const pdf = await loadingTask.promise;
+  try {
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      const text = content.items
+        .map((item) => ("str" in item ? item.str : ""))
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (text) pages.push(`【PDF 第 ${pageNumber} 页】\n${text}`);
+      page.cleanup();
+    }
+  } finally {
+    await pdf.destroy();
+  }
+  return pages.join("\n").trim();
+}
+
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  try {
+    const text = await extractPdfWithPdfJs(buffer);
+    if (text) return text;
+  } catch {
+    /* try pdf-parse fallback */
+  }
   try {
     const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: buffer });
@@ -249,4 +324,113 @@ export async function extractTextFromXlsx(buffer: Buffer): Promise<string> {
     }
   }
   return parts.join("\n");
+}
+
+function decodeOfficeXml(xml: string): string {
+  return xml
+    .replace(/<\/(?:w:p|a:p|row|si)>/g, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+async function readOfficeXmlEntries(
+  buffer: Buffer,
+  matches: (name: string) => boolean,
+): Promise<Array<{ name: string; text: string }>> {
+  const { inflateRawSync } = await import("node:zlib");
+  let eocd = -1;
+  for (let index = buffer.length - 22; index >= Math.max(0, buffer.length - 65558); index--) {
+    if (buffer.readUInt32LE(index) === 0x06054b50) {
+      eocd = index;
+      break;
+    }
+  }
+  if (eocd < 0) return [];
+
+  const entries: Array<{ name: string; text: string }> = [];
+  const entryCount = buffer.readUInt16LE(eocd + 10);
+  let offset = buffer.readUInt32LE(eocd + 16);
+  for (let index = 0; index < entryCount && offset < buffer.length - 46; index++) {
+    if (buffer.readUInt32LE(offset) !== 0x02014b50) break;
+    const method = buffer.readUInt16LE(offset + 10);
+    const compressedSize = buffer.readUInt32LE(offset + 20);
+    const fileNameLength = buffer.readUInt16LE(offset + 28);
+    const extraLength = buffer.readUInt16LE(offset + 30);
+    const commentLength = buffer.readUInt16LE(offset + 32);
+    const localOffset = buffer.readUInt32LE(offset + 42);
+    const name = buffer.subarray(offset + 46, offset + 46 + fileNameLength).toString("utf8");
+
+    if (matches(name) && compressedSize > 0 && buffer.readUInt32LE(localOffset) === 0x04034b50) {
+      const localNameLength = buffer.readUInt16LE(localOffset + 26);
+      const localExtraLength = buffer.readUInt16LE(localOffset + 28);
+      const dataStart = localOffset + 30 + localNameLength + localExtraLength;
+      try {
+        const compressed = buffer.subarray(dataStart, dataStart + compressedSize);
+        const raw = method === 8 ? inflateRawSync(compressed) : compressed;
+        entries.push({ name, text: raw.toString("utf8") });
+      } catch {
+        // Ignore a damaged entry and continue extracting the remaining document.
+      }
+    }
+    offset += 46 + fileNameLength + extraLength + commentLength;
+  }
+  return entries;
+}
+
+export async function extractTextFromDocx(buffer: Buffer): Promise<string> {
+  const entries = await readOfficeXmlEntries(buffer, (name) => name === "word/document.xml");
+  return entries.map((entry) => decodeOfficeXml(entry.text)).join("\n").trim();
+}
+
+export async function extractTextFromPptx(buffer: Buffer): Promise<string> {
+  const entries = await readOfficeXmlEntries(buffer, (name) => /^ppt\/slides\/slide\d+\.xml$/.test(name));
+  entries.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  return entries
+    .map((entry, index) => `【幻灯片 ${index + 1}】\n${decodeOfficeXml(entry.text)}`)
+    .join("\n")
+    .trim();
+}
+
+export type DocumentExtractionResult = {
+  text: string;
+  method: "embedded" | "ocr";
+  model?: string;
+  pageCount?: number;
+};
+
+function hasUsefulText(text: string): boolean {
+  const clean = text.trim();
+  if (clean.length < 40) return false;
+  const readable = (clean.match(/[\u3400-\u9fffA-Za-z0-9%.,，。；;：:、（）()【】\s\-_/]/g) ?? []).length;
+  return readable / clean.length >= 0.6;
+}
+
+export async function extractTextFromDocumentDetailed(buffer: Buffer, fileName: string): Promise<DocumentExtractionResult> {
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  let text = "";
+  if (ext === "pdf") text = await extractTextFromPdf(buffer);
+  else if (ext === "xlsx" || ext === "xls") text = await extractTextFromXlsx(buffer);
+  else if (ext === "docx") text = await extractTextFromDocx(buffer);
+  else if (ext === "pptx") text = await extractTextFromPptx(buffer);
+  else if (["txt", "md", "csv"].includes(ext)) text = buffer.toString("utf8");
+  else throw new Error(`暂不支持 .${ext || "未知"} 文件，请上传 PDF、Word、PPT、Excel 或文本文件`);
+  text = text.replace(/\u0000/g, "").trim().slice(0, 60000);
+  if (ext === "pdf" && !hasUsefulText(text)) {
+    const { ocrPdfWithBailian } = await import("./pdf-ocr");
+    const ocr = await ocrPdfWithBailian(buffer);
+    return { text: ocr.text.slice(0, 60000), method: "ocr", model: ocr.model, pageCount: ocr.pageCount };
+  }
+  return { text, method: "embedded" };
+}
+
+export async function extractTextFromDocument(buffer: Buffer, fileName: string): Promise<string> {
+  return (await extractTextFromDocumentDetailed(buffer, fileName)).text;
 }

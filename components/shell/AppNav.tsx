@@ -7,12 +7,12 @@
  */
 import { RhauttSidebarLogo } from "@/components/brand/RhauttSidebarLogo";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import { canAccessHub, canAccessRoute, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand/tokens";
 import { RoleSwitcher } from "@/components/shell/RoleSwitcher";
-import { NavIcon, type NavIconId } from "@/components/shell/NavIcons";
+import { NavIcon, NavLogoutIcon, type NavIconId } from "@/components/shell/NavIcons";
 import { InboxNavBadge } from "@/components/shell/InboxNavBadge";
 import {
   NAV_ACCESS,
@@ -147,6 +147,35 @@ function HubNavItem({
   );
 }
 
+function LogoutButton() {
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/login", { method: "DELETE" });
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={loggingOut}
+      onClick={() => void handleLogout()}
+      className="stratos-sidebar__logout"
+      title="退出登录"
+      aria-label="退出登录"
+    >
+      <NavLogoutIcon className="stratos-nav-item__icon" />
+      <span className="stratos-nav-item__label">{loggingOut ? "退出中" : "退出"}</span>
+    </button>
+  );
+}
+
 export function AppNav({
   secureMode = false,
   devBypassAuth = false,
@@ -212,6 +241,7 @@ export function AppNav({
 
       <div className="stratos-sidebar__foot">
         <RoleSwitcher compact hidden={secureMode && !devBypassAuth} />
+        <LogoutButton />
         <kbd className="stratos-sidebar__kbd" title="⌘K 命令面板">
           ⌘K
         </kbd>

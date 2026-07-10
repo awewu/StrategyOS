@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { dbAvailable, prisma } from "@/lib/db";
 import { buildFilterAuditReport } from "@/lib/compiler/import-audit";
-import { extractTextFromPdf, extractTextFromXlsx } from "@/lib/compiler/strategic-compiler";
+import { extractTextFromDocument } from "@/lib/compiler/strategic-compiler";
 import { loadExistingObjectiveTitles } from "@/lib/compiler/merge-import";
 
 export const runtime = "nodejs";
@@ -36,10 +36,7 @@ export async function POST(req: Request) {
       if (file instanceof File && file.size > 0) {
         fileName = file.name;
         const buffer = Buffer.from(await file.arrayBuffer());
-        const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-        if (ext === "pdf") rawText = rawText || (await extractTextFromPdf(buffer));
-        else if (ext === "xlsx" || ext === "xls") rawText = rawText || (await extractTextFromXlsx(buffer));
-        else rawText = rawText || buffer.toString("utf8");
+        rawText = rawText || (await extractTextFromDocument(buffer, file.name));
       }
     }
 

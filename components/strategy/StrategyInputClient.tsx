@@ -7,6 +7,8 @@ type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 
 interface Props {
   orgUnits: OrgUnitWithChildren[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialPlan?: any;
 }
 
 type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions" | "market" | "action" | "budget" | "roadmap" | "onepager";
@@ -254,18 +256,30 @@ function emptyForm(): PlanForm {
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
 
-export function StrategyInputClient({ orgUnits }: Props) {
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
+  const editingExistingPlan = Boolean(initialPlan?.id);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(initialPlan?.orgUnitId ?? null);
 
   // 客户端挂载后恢复上次选中的组织单位（避免SSR hydration mismatch）
   useEffect(() => {
+    if (initialPlan) return;
     const saved = sessionStorage.getItem("strategy_input_orgId");
     if (saved) setSelectedOrgId(saved);
-  }, []);
+  }, [initialPlan]);
   const [step, setStep] = useState<Step>("intent");
-  const [form, setForm] = useState<PlanForm>(emptyForm());
-  const [attachments, setAttachments] = useState<AttachmentInfo[]>([]);
-  const [status, setStatus] = useState<"DRAFT" | "SUBMITTED" | "LOCKED" | null>(null);
+  const [form, setForm] = useState<PlanForm>(() => initialPlan ? hydrate(initialPlan) : emptyForm());
+  const [attachments, setAttachments] = useState<AttachmentInfo[]>(() =>
+    (initialPlan?.attachments ?? []).map((a: AttachmentInfo) => ({
+      id: a.id,
+      filename: a.filename,
+      sizeBytes: a.sizeBytes,
+      mimeType: a.mimeType,
+    })),
+  );
+  const [status, setStatus] = useState<"DRAFT" | "SUBMITTED" | "LOCKED" | null>(() => {
+    const value = initialPlan?.status;
+    return value === "DRAFT" || value === "SUBMITTED" || value === "LOCKED" ? value : null;
+  });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
@@ -294,23 +308,16 @@ export function StrategyInputClient({ orgUnits }: Props) {
     setTimeout(() => setToast(null), 3200);
   }, []);
 
-  // 选中组织后从空白状态开始，避免历史草稿污染待输入场景。
-  useEffect(() => {
-    if (!selectedOrgId) return;
-    let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
+  function selectOrg(orgUnitId: string | null) {
+    if (orgUnitId) sessionStorage.setItem("strategy_input_orgId", orgUnitId);
+    else sessionStorage.removeItem("strategy_input_orgId");
+    setSelectedOrgId(orgUnitId);
     setStep("intent");
     setForm(emptyForm());
     setAttachments([]);
     setStatus(null);
-    queueMicrotask(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedOrgId]);
+    setLoading(false);
+  }
 
   const validation = useMemo(() => validate(form), [form]);
 
@@ -401,10 +408,9 @@ export function StrategyInputClient({ orgUnits }: Props) {
           value={selectedOrgId ?? ""}
           onChange={(e) => {
             const v = e.target.value || null;
-            if (v) sessionStorage.setItem("strategy_input_orgId", v);
-            else sessionStorage.removeItem("strategy_input_orgId");
-            setSelectedOrgId(v);
+            selectOrg(v);
           }}
+          disabled={editingExistingPlan}
           autoComplete="off"
           className="flex-1 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-sm focus:border-[var(--color-accent)] focus:outline-none"
         >
@@ -569,7 +575,7 @@ export function StrategyInputClient({ orgUnits }: Props) {
                 disabled={saving}
                 className="rounded-lg bg-[var(--color-accent)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50"
               >
-                提交审核
+                {status === "SUBMITTED" ? "更新并重新提交" : "提交审核"}
               </button>
             </div>
           </div>

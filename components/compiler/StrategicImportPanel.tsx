@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CompiledStrategicPayload } from "@/lib/compiler/strategic-compiler";
 import type { QualityReject } from "@/lib/compiler/import-quality";
 import type { ImportDeductionReport } from "@/lib/compiler/import-deduction";
@@ -53,9 +53,36 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
   const [rejected, setRejected] = useState<QualityReject[]>([]);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractStatus, setExtractStatus] = useState<string | null>(null);
   const [phase, setPhase] = useState<"idle" | "preview" | "done">("idle");
   const [mode, setMode] = useState<ImportMode>("merge");
   const [auditComparePlan, setAuditComparePlan] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function extractSelectedFile(file: File | undefined) {
+    setExtractStatus(null);
+    if (!file) return;
+    setExtracting(true);
+    setPreview(null);
+    setPhase("idle");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const response = await fetch("/api/compiler/extract", { method: "POST", body: form });
+      const data = (await response.json()) as { ok?: boolean; text?: string; charCount?: number; method?: "embedded" | "ocr"; error?: string };
+      if (!response.ok || !data.ok || !data.text) {
+        setExtractStatus(data.error ?? "文本提取失败");
+        return;
+      }
+      setRawText(data.text);
+      setExtractStatus(`${data.method === "ocr" ? "已自动 OCR 并提取" : "已提取"} ${data.charCount?.toLocaleString("zh-CN") ?? data.text.length} 个字符`);
+    } catch {
+      setExtractStatus("网络错误，文本提取失败");
+    } finally {
+      setExtracting(false);
+    }
+  }
 
   async function runAudit() {
     setLoading(true);
@@ -63,8 +90,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
       const fd = new FormData();
       fd.append("rawText", rawText);
       fd.append("comparePlan", auditComparePlan ? "1" : "0");
-      const fileInput = document.getElementById("strategic-import-file") as HTMLInputElement | null;
-      const file = fileInput?.files?.[0];
+      const file = fileInputRef.current?.files?.[0];
       if (file) fd.append("file", file);
       const res = await fetch("/api/compiler/audit", { method: "POST", body: fd });
       const data = (await res.json()) as { ok?: boolean; audit?: FilterAuditReport; error?: string };
@@ -82,8 +108,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
       fd.append("rawText", rawText);
       fd.append("preview", confirm ? "0" : "1");
       fd.append("mode", mode);
-      const fileInput = document.getElementById("strategic-import-file") as HTMLInputElement | null;
-      const file = fileInput?.files?.[0];
+      const file = fileInputRef.current?.files?.[0];
       if (file) fd.append("file", file);
 
       const res = await fetch("/api/compiler/import", { method: "POST", body: fd });
@@ -149,11 +174,19 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
             上传文件
           </label>
           <input
+            ref={fileInputRef}
             id="strategic-import-file"
             type="file"
-            accept=".pdf,.xlsx,.xls,.txt,.docx"
+            accept=".pdf,.xlsx,.xls,.docx,.pptx,.txt,.md,.csv"
+            onChange={(event) => void extractSelectedFile(event.target.files?.[0])}
             className="stratos-input mt-1 cursor-pointer file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-[var(--color-accent-dim)] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[var(--color-accent)]"
           />
+          {extracting ? <p className="mt-1 text-xs text-[var(--color-text-muted)]">正在提取文本...</p> : null}
+          {!extracting && extractStatus ? (
+            <p className={`mt-1 text-xs ${extractStatus.startsWith("已") ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
+              {extractStatus}
+            </p>
+          ) : null}
         </div>
 
         <div>
@@ -180,15 +213,15 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
         </label>
 
         <div className="flex flex-wrap gap-2 border-t border-[var(--surface-border)] pt-4">
-          <button type="button" disabled={loading} onClick={() => runCompile(false)} className="stratos-btn">
+          <button type="button" disabled={loading || extracting} onClick={() => runCompile(false)} className="stratos-btn">
             {loading ? "推演中…" : "推演预览"}
           </button>
-          <button type="button" disabled={loading} onClick={() => void runAudit()} className="stratos-btn">
+          <button type="button" disabled={loading || extracting} onClick={() => void runAudit()} className="stratos-btn">
             误杀审计
           </button>
           <button
             type="button"
-            disabled={loading || (phase !== "preview" && !deduction?.safeToImport)}
+            disabled={loading || extracting || (phase !== "preview" && !deduction?.safeToImport)}
             onClick={() => runCompile(true)}
             className="stratos-btn stratos-btn--primary"
           >

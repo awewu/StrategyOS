@@ -95,6 +95,9 @@ Copy-Required (Join-Path $Root "node_modules\@esbuild") (Join-Path $nodeModules 
 Copy-Required (Join-Path $Root "node_modules\get-tsconfig") (Join-Path $nodeModules "get-tsconfig")
 Copy-Required (Join-Path $Root "node_modules\resolve-pkg-maps") (Join-Path $nodeModules "resolve-pkg-maps")
 Copy-Required (Join-Path $Root "node_modules\pdfjs-dist") (Join-Path $nodeModules "pdfjs-dist")
+New-Item -ItemType Directory -Force -Path (Join-Path $nodeModules "@napi-rs") | Out-Null
+Copy-Required (Join-Path $Root "node_modules\@napi-rs\canvas") (Join-Path $nodeModules "@napi-rs\canvas")
+Copy-Required (Join-Path $Root "node_modules\@napi-rs\canvas-win32-x64-msvc") (Join-Path $nodeModules "@napi-rs\canvas-win32-x64-msvc")
 
 $removePaths = @(
   ".env",
@@ -136,6 +139,12 @@ $removePaths = @(
 
 foreach ($rel in $removePaths) {
   Remove-IfExists (Join-Path $Staging $rel)
+}
+
+Get-ChildItem -Path $Staging -Recurse -Force -File -Include `
+  "README", "README.*", "AGENTS.md", "CLAUDE.md" `
+  -ErrorAction SilentlyContinue | ForEach-Object {
+  Remove-IfExists $_.FullName
 }
 
 if (Test-Path $ArchivePath) {

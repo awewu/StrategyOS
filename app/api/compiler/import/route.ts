@@ -6,8 +6,7 @@ import { checkRateLimit, clientRateLimitKey } from "@/lib/rate-limit";
 import { saveDecodeBsc } from "@/lib/decode/data-access";
 import { saveFpaEditable } from "@/lib/fpa/data-access";
 import {
-  extractTextFromPdf,
-  extractTextFromXlsx,
+  extractTextFromDocument,
   type CompiledObjective,
 } from "@/lib/compiler/strategic-compiler";
 import { sanitizeCompiledPayload } from "@/lib/compiler/import-quality";
@@ -96,14 +95,7 @@ export async function POST(req: Request) {
       if (file instanceof File && file.size > 0) {
         fileName = file.name;
         const buffer = Buffer.from(await file.arrayBuffer());
-        const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-        if (ext === "pdf") {
-          rawText = rawText || (await extractTextFromPdf(buffer));
-        } else if (ext === "xlsx" || ext === "xls") {
-          rawText = rawText || (await extractTextFromXlsx(buffer));
-        } else {
-          rawText = rawText || buffer.toString("utf8");
-        }
+        rawText = rawText || (await extractTextFromDocument(buffer, file.name));
       }
     }
 
@@ -113,7 +105,7 @@ export async function POST(req: Request) {
     }
 
     if (!rawText.trim()) {
-      return NextResponse.json({ error: "无法提取文本 — 请上传 PDF/Excel 或粘贴正文" }, { status: 400 });
+      return NextResponse.json({ error: `无法从 ${fileName} 提取文本，请确认文件含可搜索文字` }, { status: 400 });
     }
 
     const { payload: compiled, engine: compileEngine } = await compileStrategicTextSmart(rawText);

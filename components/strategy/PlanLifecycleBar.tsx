@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { DEFAULT_GROUP_ORG_UNIT_ID } from "@/lib/data/strategic-plan-data";
 import { planStatusLabel, type PlanLifecycleView } from "@/lib/strategy/plan-lifecycle";
 
@@ -166,12 +167,20 @@ export function PlanLifecycleBar() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/strategy/submissions?planId=${lifecycle.planId}`}
+            className={`stratos-btn px-3 py-1.5 text-xs ${
+              lifecycle.status === "SUBMITTED" ? "stratos-btn--primary" : "stratos-btn--ghost"
+            }`}
+          >
+            {lifecycle.status === "SUBMITTED" ? "查看并审核" : "查看计划内容"}
+          </Link>
           {lifecycle.canSubmit ? (
             <button type="button" disabled={busy} onClick={() => void runAction("submit")} className="stratos-btn px-3 py-1.5 text-xs">
               提交审核
             </button>
           ) : null}
-          {lifecycle.canLock ? (
+          {lifecycle.canLock && lifecycle.status !== "SUBMITTED" ? (
             <button type="button" disabled={busy} onClick={() => void runAction("lock")} className="stratos-btn stratos-btn--primary px-3 py-1.5 text-xs">
               定稿锁定
             </button>

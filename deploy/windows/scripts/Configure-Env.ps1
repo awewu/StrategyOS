@@ -81,7 +81,7 @@ if ($ssoEnabled) {
   $skipEnvValidate = "1"
   Write-Host "No SSO enabled. STRATOS_REQUIRE_AUTH=0 will be written for initial deployment."
 }
-$openAiKey = Read-Optional "OPENAI_API_KEY (optional)"
+$bailianKey = Read-Required "Bailian STRATOS_LLM_API_KEY (required for AI extraction and PDF OCR)"
 $port = Read-Optional "Local app port behind Nginx" "3000"
 $sessionSecret = New-SessionSecret
 $redirectUri = if ($enableWorkos -eq "YES") { "$($publicUrl.TrimEnd('/'))/api/auth/callback" } else { "" }
@@ -104,7 +104,7 @@ $content = $content -replace "(?m)^TANDEM_CLIENT_ID=.*$", "TANDEM_CLIENT_ID=$tan
 $content = $content -replace "(?m)^TANDEM_CLIENT_SECRET=.*$", "TANDEM_CLIENT_SECRET=$tandemClientSecret"
 $content = $content -replace "(?m)^TANDEM_REDIRECT_URI=.*$", "TANDEM_REDIRECT_URI=$tandemRedirectUri"
 $content = $content -replace "(?m)^TANDEM_ISSUER=.*$", "TANDEM_ISSUER=$tandemIssuer"
-$content = $content -replace "(?m)^OPENAI_API_KEY=.*$", "OPENAI_API_KEY=$openAiKey"
+$content = $content -replace "(?m)^STRATOS_LLM_API_KEY=.*$", "STRATOS_LLM_API_KEY=$bailianKey"
 
 Set-Content -Path $envPath -Value $content -Encoding UTF8
 

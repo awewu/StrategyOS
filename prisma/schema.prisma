@@ -34,6 +34,8 @@ model User {
   ownedProjects           Project[]            @relation("ProjectOwner")
   diagnosesApproved       StrategicDiagnosis[] @relation("DiagnosisApprover")
   submittedPlans          StrategicPlan[]
+  meetingParticipants     MeetingParticipant[] @relation("MeetingParticipantUser")
+  meetingTodos            MeetingTodo[]        @relation("MeetingTodoOwner")
   snapshotsFrozen         StrategicSnapshot[]  @relation("SnapshotFrozenBy")
   usageLogs               UsageLog[]
   orgScopes               UserOrgScope[]
@@ -670,18 +672,18 @@ model Assumption {
 }
 
 model Commitment {
-  id             String           @id @default(uuid())
-  userId         String?          @map("user_id")
-  ownerName      String?          @map("owner_name") @db.VarChar(50)
-  content        String
-  promiseTo      String           @map("promise_to") @db.VarChar(50)
-  deadline       DateTime         @db.Date
-  status         CommitmentStatus @default(pending)
-  completionNote String?          @map("completion_note")
-  linkedProjectCode    String?    @map("linked_project_code") @db.VarChar(10)
-  linkedAssumptionCode String?    @map("linked_assumption_code") @db.VarChar(10)
-  createdAt      DateTime         @default(now()) @map("created_at")
-  user           User?            @relation(fields: [userId], references: [id])
+  id                   String           @id @default(uuid())
+  userId               String?          @map("user_id")
+  ownerName            String?          @map("owner_name") @db.VarChar(50)
+  content              String
+  promiseTo            String           @map("promise_to") @db.VarChar(50)
+  deadline             DateTime         @db.Date
+  status               CommitmentStatus @default(pending)
+  completionNote       String?          @map("completion_note")
+  linkedProjectCode    String?          @map("linked_project_code") @db.VarChar(10)
+  linkedAssumptionCode String?          @map("linked_assumption_code") @db.VarChar(10)
+  createdAt            DateTime         @default(now()) @map("created_at")
+  user                 User?            @relation(fields: [userId], references: [id])
 
   @@map("commitments")
 }
@@ -846,24 +848,24 @@ model TechSignalRecord {
 }
 
 model OrgUnit {
-  id                 String           @id @default(uuid())
-  name               String           @db.VarChar(100)
-  nameEn             String?          @map("name_en") @db.VarChar(100)
+  id                 String                   @id @default(uuid())
+  name               String                   @db.VarChar(100)
+  nameEn             String?                  @map("name_en") @db.VarChar(100)
   level              OrgLevel
-  sortOrder          Int              @default(999) @map("sort_order")
-  parentId           String?          @map("parent_id")
-  createdAt          DateTime         @default(now()) @map("created_at")
-  updatedAt          DateTime         @updatedAt @map("updated_at")
-  productLinesOwned  MktProductLine[] @relation("ProductLineOwner")
-  parent             OrgUnit?         @relation("OrgTree", fields: [parentId], references: [id], onDelete: Restrict)
-  children           OrgUnit[]        @relation("OrgTree")
-  researchItemsOwned ResearchItem[]   @relation("ResearchItemOwner")
-  salesRegions       SalesRegion[]    @relation("RegionOrgUnit")
+  sortOrder          Int                      @default(999) @map("sort_order")
+  parentId           String?                  @map("parent_id")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+  productLinesOwned  MktProductLine[]         @relation("ProductLineOwner")
+  parent             OrgUnit?                 @relation("OrgTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children           OrgUnit[]                @relation("OrgTree")
+  researchItemsOwned ResearchItem[]           @relation("ResearchItemOwner")
+  salesRegions       SalesRegion[]            @relation("RegionOrgUnit")
   plans              StrategicPlan[]
   planSnapshots      PlanSubmissionSnapshot[]
-  reports            Report[]         @relation("ReportOrgUnit")
+  reports            Report[]                 @relation("ReportOrgUnit")
   userScopes         UserOrgScope[]
-  users              User[]           @relation("UserOrgUnit")
+  users              User[]                   @relation("UserOrgUnit")
 
   @@index([level, sortOrder])
   @@index([parentId])
@@ -884,43 +886,44 @@ model UserOrgScope {
 }
 
 model StrategicPlan {
-  id            String            @id @default(uuid())
-  orgUnitId     String            @map("org_unit_id")
-  horizonStart  Int               @map("horizon_start")
-  horizonEnd    Int               @map("horizon_end")
-  intent        String?
-  northStar     String?           @map("north_star")
-  targetYear          Int?          @map("target_year")
-  revenueTarget       Decimal?      @map("revenue_target") @db.Decimal(14, 2)
-  profitMarginTarget  Decimal?      @map("profit_margin_target") @db.Decimal(5, 4)
-  marketPositionDesc  String?       @map("market_position_desc")
-  geographyDesc       String?       @map("geography_desc")
-  brandDesc           String?       @map("brand_desc")
-  status        PlanStatus        @default(DRAFT)
-  submittedById String?           @map("submitted_by_id")
-  submittedAt   DateTime?         @map("submitted_at")
-  lockedAt      DateTime?         @map("locked_at")
-  createdAt     DateTime          @default(now()) @map("created_at")
-  updatedAt     DateTime          @updatedAt @map("updated_at")
-  assumptions      PlanAssumption[]
-  attachments      PlanAttachment[]
-  initiatives      PlanInitiative[]
-  milestones       PlanMilestone[]
-  premises         PlanPremise[]
-  objectives       PlanObjective[]
-  resourceReqs     ResourceRequest[]
-  swotItems        PlanSwotItem[]
-  orgChartNodes    PlanOrgChartNode[]
-  channelPlans     PlanChannelPlan[]
-  customerPlans    PlanCustomerPlan[]
-  productQuarterly PlanProductQuarterly[]
-  marketInsights   PlanMarketInsight[]
-  actionItems      PlanActionItem[]
-  budgetItems      PlanBudgetItem[]
-  roadmapItems     PlanRoadmapItem[]
+  id                  String                   @id @default(uuid())
+  orgUnitId           String                   @map("org_unit_id")
+  horizonStart        Int                      @map("horizon_start")
+  horizonEnd          Int                      @map("horizon_end")
+  intent              String?
+  northStar           String?                  @map("north_star")
+  targetYear          Int?                     @map("target_year")
+  revenueTarget       Decimal?                 @map("revenue_target") @db.Decimal(14, 2)
+  profitMarginTarget  Decimal?                 @map("profit_margin_target") @db.Decimal(5, 4)
+  marketPositionDesc  String?                  @map("market_position_desc")
+  geographyDesc       String?                  @map("geography_desc")
+  brandDesc           String?                  @map("brand_desc")
+  status              PlanStatus               @default(DRAFT)
+  submittedById       String?                  @map("submitted_by_id")
+  submittedAt         DateTime?                @map("submitted_at")
+  lockedAt            DateTime?                @map("locked_at")
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  assumptions         PlanAssumption[]
+  attachments         PlanAttachment[]
+  initiatives         PlanInitiative[]
+  milestones          PlanMilestone[]
+  premises            PlanPremise[]
+  objectives          PlanObjective[]
+  resourceReqs        ResourceRequest[]
+  swotItems           PlanSwotItem[]
+  orgChartNodes       PlanOrgChartNode[]
+  channelPlans        PlanChannelPlan[]
+  customerPlans       PlanCustomerPlan[]
+  productQuarterly    PlanProductQuarterly[]
+  marketInsights      PlanMarketInsight[]
+  actionItems         PlanActionItem[]
+  budgetItems         PlanBudgetItem[]
+  roadmapItems        PlanRoadmapItem[]
   submissionSnapshots PlanSubmissionSnapshot[]
-  orgUnit       OrgUnit           @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
-  submittedBy   User?             @relation(fields: [submittedById], references: [id])
+  meetings            StrategyMeeting[]
+  orgUnit             OrgUnit                  @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
+  submittedBy         User?                    @relation(fields: [submittedById], references: [id])
 
   @@unique([orgUnitId, horizonStart, horizonEnd])
   @@index([status])
@@ -979,21 +982,21 @@ model PlanKeyResult {
 }
 
 model PlanInitiative {
-  id          String        @id @default(uuid())
-  planId      String        @map("plan_id")
-  title       String
-  description String?
-  ownerName   String?       @map("owner_name") @db.VarChar(100)
-  q1Milestone String?       @map("q1_milestone")
-  q2Milestone String?       @map("q2_milestone")
-  q3Milestone String?       @map("q3_milestone")
-  q4Milestone   String?       @map("q4_milestone")
-  okrKeyResult  String?       @map("okr_key_result")
-  okrTarget     String?       @map("okr_target")
-  okrBaseline   String?       @map("okr_baseline")
-  sortOrder     Int           @default(999) @map("sort_order")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id           String        @id @default(uuid())
+  planId       String        @map("plan_id")
+  title        String
+  description  String?
+  ownerName    String?       @map("owner_name") @db.VarChar(100)
+  q1Milestone  String?       @map("q1_milestone")
+  q2Milestone  String?       @map("q2_milestone")
+  q3Milestone  String?       @map("q3_milestone")
+  q4Milestone  String?       @map("q4_milestone")
+  okrKeyResult String?       @map("okr_key_result")
+  okrTarget    String?       @map("okr_target")
+  okrBaseline  String?       @map("okr_baseline")
+  sortOrder    Int           @default(999) @map("sort_order")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  plan         StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId])
   @@map("plan_initiatives")
@@ -1116,21 +1119,21 @@ model PlanOrgChartNode {
 
 /// 战略编制 · 渠道发展专题（业务BU必填）
 model PlanChannelPlan {
-  id              String        @id @default(uuid())
-  planId          String        @map("plan_id")
-  channelType     String        @map("channel_type") @db.VarChar(80)
-  currentState    String?       @map("current_state")
-  targetState     String?       @map("target_state")
-  q1Action        String?       @map("q1_action")
-  q2Action        String?       @map("q2_action")
-  q3Action        String?       @map("q3_action")
-  q4Action        String?       @map("q4_action")
-  revenueTarget   Decimal?      @map("revenue_target") @db.Decimal(14, 2)
-  partnerCount    Int?          @map("partner_count")
-  note            String?
-  sortOrder       Int           @default(0) @map("sort_order")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  plan            StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id            String        @id @default(uuid())
+  planId        String        @map("plan_id")
+  channelType   String        @map("channel_type") @db.VarChar(80)
+  currentState  String?       @map("current_state")
+  targetState   String?       @map("target_state")
+  q1Action      String?       @map("q1_action")
+  q2Action      String?       @map("q2_action")
+  q3Action      String?       @map("q3_action")
+  q4Action      String?       @map("q4_action")
+  revenueTarget Decimal?      @map("revenue_target") @db.Decimal(14, 2)
+  partnerCount  Int?          @map("partner_count")
+  note          String?
+  sortOrder     Int           @default(0) @map("sort_order")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId])
   @@map("plan_channel_plans")
@@ -1162,24 +1165,24 @@ model PlanCustomerPlan {
 
 /// 战略编制 · 产品季度推进表
 model PlanProductQuarterly {
-  id             String        @id @default(uuid())
-  planId         String        @map("plan_id")
-  productName    String        @map("product_name")
-  unit           String?       @db.VarChar(20)
-  q1Qty          Decimal?      @map("q1_qty") @db.Decimal(14, 2)
-  q1Revenue      Decimal?      @map("q1_revenue") @db.Decimal(14, 2)
-  q2Qty          Decimal?      @map("q2_qty") @db.Decimal(14, 2)
-  q2Revenue      Decimal?      @map("q2_revenue") @db.Decimal(14, 2)
-  q3Qty          Decimal?      @map("q3_qty") @db.Decimal(14, 2)
-  q3Revenue      Decimal?      @map("q3_revenue") @db.Decimal(14, 2)
-  q4Qty          Decimal?      @map("q4_qty") @db.Decimal(14, 2)
-  q4Revenue      Decimal?      @map("q4_revenue") @db.Decimal(14, 2)
-  annualQty      Decimal?      @map("annual_qty") @db.Decimal(14, 2)
-  annualRevenue  Decimal?      @map("annual_revenue") @db.Decimal(14, 2)
-  note           String?
-  sortOrder      Int           @default(0) @map("sort_order")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  plan           StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id            String        @id @default(uuid())
+  planId        String        @map("plan_id")
+  productName   String        @map("product_name")
+  unit          String?       @db.VarChar(20)
+  q1Qty         Decimal?      @map("q1_qty") @db.Decimal(14, 2)
+  q1Revenue     Decimal?      @map("q1_revenue") @db.Decimal(14, 2)
+  q2Qty         Decimal?      @map("q2_qty") @db.Decimal(14, 2)
+  q2Revenue     Decimal?      @map("q2_revenue") @db.Decimal(14, 2)
+  q3Qty         Decimal?      @map("q3_qty") @db.Decimal(14, 2)
+  q3Revenue     Decimal?      @map("q3_revenue") @db.Decimal(14, 2)
+  q4Qty         Decimal?      @map("q4_qty") @db.Decimal(14, 2)
+  q4Revenue     Decimal?      @map("q4_revenue") @db.Decimal(14, 2)
+  annualQty     Decimal?      @map("annual_qty") @db.Decimal(14, 2)
+  annualRevenue Decimal?      @map("annual_revenue") @db.Decimal(14, 2)
+  note          String?
+  sortOrder     Int           @default(0) @map("sort_order")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId])
   @@map("plan_product_quarterly")
@@ -1187,27 +1190,27 @@ model PlanProductQuarterly {
 
 /// 看战略 · China Strategy Summary 一页纸（可编辑 · 审批入库）
 model StrategyOnePager {
-  id          String         @id @default(uuid())
-  slug        String         @unique @default("china-summary")
-  status      OnePagerStatus @default(DRAFT)
-  contentJson Json           @map("content_json")
-  approvedAt  DateTime?      @map("approved_at")
-  approvedBy  String?        @map("approved_by") @db.VarChar(100)
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  createdAt   DateTime       @default(now()) @map("created_at")
+  id          String                     @id @default(uuid())
+  slug        String                     @unique @default("china-summary")
+  status      OnePagerStatus             @default(DRAFT)
+  contentJson Json                       @map("content_json")
+  approvedAt  DateTime?                  @map("approved_at")
+  approvedBy  String?                    @map("approved_by") @db.VarChar(100)
+  updatedAt   DateTime                   @updatedAt @map("updated_at")
+  createdAt   DateTime                   @default(now()) @map("created_at")
   revisions   StrategyOnePagerRevision[]
 
   @@map("strategy_one_pagers")
 }
 
 model StrategyOnePagerRevision {
-  id          String         @id @default(uuid())
-  onePagerId  String         @map("one_pager_id")
-  action      String         @db.VarChar(20)
-  actor       String?        @db.VarChar(100)
-  contentJson Json           @map("content_json")
-  diffJson    Json?          @map("diff_json")
-  createdAt   DateTime       @default(now()) @map("created_at")
+  id          String           @id @default(uuid())
+  onePagerId  String           @map("one_pager_id")
+  action      String           @db.VarChar(20)
+  actor       String?          @db.VarChar(100)
+  contentJson Json             @map("content_json")
+  diffJson    Json?            @map("diff_json")
+  createdAt   DateTime         @default(now()) @map("created_at")
   onePager    StrategyOnePager @relation(fields: [onePagerId], references: [id], onDelete: Cascade)
 
   @@index([onePagerId, createdAt(sort: Desc)])
@@ -1998,18 +2001,18 @@ model ExecutionTension {
 }
 
 model ExecutionMaturity {
-  id                   String      @id @default(uuid())
-  period               String      @default("2026-FY") @db.VarChar(10)
-  projectCode          String      @map("project_code") @db.VarChar(10)
-  projectName          String      @map("project_name") @db.VarChar(100)
-  owner                String      @db.VarChar(50)
-  milestoneOnTimeRate  Decimal     @map("milestone_on_time_rate") @db.Decimal(5, 4)
-  assumptionHitRate    Decimal     @map("assumption_hit_rate") @db.Decimal(5, 4)
-  responseLatencyDays  Int         @map("response_latency_days")
-  budgetTotal          Decimal     @map("budget_total") @db.Decimal(14, 2)
-  tensionType          TensionType @map("tension_type")
-  horizon              String      @db.VarChar(5)
-  updatedAt            DateTime    @updatedAt @map("updated_at")
+  id                  String      @id @default(uuid())
+  period              String      @default("2026-FY") @db.VarChar(10)
+  projectCode         String      @map("project_code") @db.VarChar(10)
+  projectName         String      @map("project_name") @db.VarChar(100)
+  owner               String      @db.VarChar(50)
+  milestoneOnTimeRate Decimal     @map("milestone_on_time_rate") @db.Decimal(5, 4)
+  assumptionHitRate   Decimal     @map("assumption_hit_rate") @db.Decimal(5, 4)
+  responseLatencyDays Int         @map("response_latency_days")
+  budgetTotal         Decimal     @map("budget_total") @db.Decimal(14, 2)
+  tensionType         TensionType @map("tension_type")
+  horizon             String      @db.VarChar(5)
+  updatedAt           DateTime    @updatedAt @map("updated_at")
 
   @@unique([period, projectCode])
   @@index([period])
@@ -2069,65 +2072,65 @@ model OpsMetricActual {
 // ── Compass: 使命/愿景/5年终点 + 里程碑路径 + 假设前提审计 ─────────────
 
 model CompanyNorthStar {
-  id          String   @id @default(uuid())
-  version     Int      @default(1)
-  active      Boolean  @default(true)
-  mission     String   @db.VarChar(500)          // 使命：为何存在
-  vision      String   @db.VarChar(500)          // 愿景：10年后的形态
-  targetYear  Int      @map("target_year")       // e.g. 2030
+  id                 String                @id @default(uuid())
+  version            Int                   @default(1)
+  active             Boolean               @default(true)
+  mission            String                @db.VarChar(500) // 使命：为何存在
+  vision             String                @db.VarChar(500) // 愿景：10年后的形态
+  targetYear         Int                   @map("target_year") // e.g. 2030
   // 5年量化终点
-  revenueTarget     Decimal  @map("revenue_target") @db.Decimal(14,2)      // 万元
-  profitMarginTarget Decimal @map("profit_margin_target") @db.Decimal(5,4) // 0-1
-  marketPositionDesc String? @map("market_position_desc") @db.VarChar(200) // 目标市场地位描述
-  geographyDesc     String? @map("geography_desc") @db.VarChar(200)        // 目标地理覆盖
-  brandDesc         String? @map("brand_desc") @db.VarChar(200)            // 目标品牌格局
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  milestones  CompassMilestone[]
-  premiseAudit CompassPremiseAudit[]
+  revenueTarget      Decimal               @map("revenue_target") @db.Decimal(14, 2) // 万元
+  profitMarginTarget Decimal               @map("profit_margin_target") @db.Decimal(5, 4) // 0-1
+  marketPositionDesc String?               @map("market_position_desc") @db.VarChar(200) // 目标市场地位描述
+  geographyDesc      String?               @map("geography_desc") @db.VarChar(200) // 目标地理覆盖
+  brandDesc          String?               @map("brand_desc") @db.VarChar(200) // 目标品牌格局
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+  milestones         CompassMilestone[]
+  premiseAudit       CompassPremiseAudit[]
 
   @@map("company_north_stars")
 }
 
 model CompassMilestone {
-  id            String   @id @default(uuid())
-  northStarId   String   @map("north_star_id")
-  year          Int                               // 2026/2027/2028/2030
-  label         String   @db.VarChar(100)        // e.g. "站稳2亿"
-  revenueTarget Decimal? @map("revenue_target") @db.Decimal(14,2)
-  profitMarginTarget Decimal? @map("profit_margin_target") @db.Decimal(5,4)
-  keyConditions String[] @map("key_conditions")  // 到达这个里程碑必须满足的条件
+  id                 String           @id @default(uuid())
+  northStarId        String           @map("north_star_id")
+  year               Int // 2026/2027/2028/2030
+  label              String           @db.VarChar(100) // e.g. "站稳2亿"
+  revenueTarget      Decimal?         @map("revenue_target") @db.Decimal(14, 2)
+  profitMarginTarget Decimal?         @map("profit_margin_target") @db.Decimal(5, 4)
+  keyConditions      String[]         @map("key_conditions") // 到达这个里程碑必须满足的条件
   // 实时进度（由系统从FPA/OpsMetric拉取，手动可覆盖）
-  revenueActual Decimal? @map("revenue_actual") @db.Decimal(14,2)
-  progressNote  String?  @map("progress_note") @db.VarChar(500)
-  riskScore     Int?     @map("risk_score")      // 0-100，由反推引擎计算
-  riskFactors   String[] @map("risk_factors")    // 自动识别的主要风险项
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  northStar     CompanyNorthStar @relation(fields: [northStarId], references: [id], onDelete: Cascade)
+  revenueActual      Decimal?         @map("revenue_actual") @db.Decimal(14, 2)
+  progressNote       String?          @map("progress_note") @db.VarChar(500)
+  riskScore          Int?             @map("risk_score") // 0-100，由反推引擎计算
+  riskFactors        String[]         @map("risk_factors") // 自动识别的主要风险项
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  northStar          CompanyNorthStar @relation(fields: [northStarId], references: [id], onDelete: Cascade)
 
   @@index([northStarId, year])
   @@map("compass_milestones")
 }
 
 model CompassPremiseAudit {
-  id            String   @id @default(uuid())
-  northStarId   String   @map("north_star_id")
+  id              String           @id @default(uuid())
+  northStarId     String           @map("north_star_id")
   // 每条假设前提
-  code          String   @db.VarChar(20)         // e.g. "P1"
-  premise       String   @db.VarChar(500)        // 假设内容
-  category      String   @db.VarChar(50)         // market/technology/regulation/competition/capability
+  code            String           @db.VarChar(20) // e.g. "P1"
+  premise         String           @db.VarChar(500) // 假设内容
+  category        String           @db.VarChar(50) // market/technology/regulation/competition/capability
   // 置信度 & 脆弱性
-  confidence    Int      @default(50)            // 0-100
-  fragility     Int      @default(50)            // 0-100：如果失效，对战略的伤害程度
-  lastValidatedAt DateTime? @map("last_validated_at")
-  validationNote String?  @map("validation_note") @db.VarChar(500)
+  confidence      Int              @default(50) // 0-100
+  fragility       Int              @default(50) // 0-100：如果失效，对战略的伤害程度
+  lastValidatedAt DateTime?        @map("last_validated_at")
+  validationNote  String?          @map("validation_note") @db.VarChar(500)
   // 失效信号（Hermes可自动标记）
-  failSignal    String?  @map("fail_signal") @db.VarChar(300)
-  signalSource  String?  @map("signal_source") @db.VarChar(100)
-  signalAt      DateTime? @map("signal_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  northStar     CompanyNorthStar @relation(fields: [northStarId], references: [id], onDelete: Cascade)
+  failSignal      String?          @map("fail_signal") @db.VarChar(300)
+  signalSource    String?          @map("signal_source") @db.VarChar(100)
+  signalAt        DateTime?        @map("signal_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  northStar       CompanyNorthStar @relation(fields: [northStarId], references: [id], onDelete: Cascade)
 
   @@map("compass_premise_audits")
 }
@@ -2138,91 +2141,130 @@ model CompassPremiseAudit {
 // 当期责任人(MandateHolding)是职责在某次会议上的人事快照, 人变线不断。
 
 enum MandateStatus {
-  ACTIVE        // 进行中
-  AT_RISK       // 有风险
-  ON_HOLD       // 暂缓
-  CLOSED        // 已结案
+  ACTIVE // 进行中
+  AT_RISK // 有风险
+  ON_HOLD // 暂缓
+  CLOSED // 已结案
 }
 
 enum MeetingType {
-  MID_YEAR      // 年中战略会
-  YEAR_END      // 年底战略会
-  TOPIC         // 专题会
-  REVIEW        // 复盘会
+  MID_YEAR // 年中战略会
+  YEAR_END // 年底战略会
+  TOPIC // 专题会
+  REVIEW // 复盘会
 }
 
 enum MeetingStatus {
-  INVITING      // 邀请中
-  IN_PROGRESS   // 进行中
-  ARCHIVED      // 已存档
+  INVITING // 邀请中
+  IN_PROGRESS // 进行中
+  ARCHIVED // 已存档
 }
 
 enum HoldingStatus {
-  CLAIMED       // 已认领
-  DELIVERED     // 已交账
-  HANDED_OVER   // 已移交
-  MISSED        // 未交账
+  CLAIMED // 已认领
+  DELIVERED // 已交账
+  HANDED_OVER // 已移交
+  MISSED // 未交账
 }
 
 model StrategyMandate {
-  id            String         @id @default(uuid())
-  code          String         @unique @db.VarChar(20)   // e.g. M-V4
-  title         String         @db.VarChar(200)          // 议题/职责标题
-  theme         String?        @db.VarChar(100)          // 所属战略主题
-  description   String?                                  // 职责说明
-  status        MandateStatus  @default(ACTIVE)
-  closed        Boolean        @default(false)
-  originMeetingId String?      @map("origin_meeting_id")  // 起始会议
-  linkedProjectCode    String? @map("linked_project_code") @db.VarChar(10)
-  linkedAssumptionCode String? @map("linked_assumption_code") @db.VarChar(10)
-  sortOrder     Int            @default(999) @map("sort_order")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  holdings      MandateHolding[]
+  id                   String           @id @default(uuid())
+  code                 String           @unique @db.VarChar(20) // e.g. M-V4
+  title                String           @db.VarChar(200) // 议题/职责标题
+  theme                String?          @db.VarChar(100) // 所属战略主题
+  description          String? // 职责说明
+  status               MandateStatus    @default(ACTIVE)
+  closed               Boolean          @default(false)
+  originMeetingId      String?          @map("origin_meeting_id") // 起始会议
+  linkedProjectCode    String?          @map("linked_project_code") @db.VarChar(10)
+  linkedAssumptionCode String?          @map("linked_assumption_code") @db.VarChar(10)
+  sortOrder            Int              @default(999) @map("sort_order")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+  holdings             MandateHolding[]
 
   @@index([status])
   @@map("strategy_mandates")
 }
 
 model StrategyMeeting {
-  id            String         @id @default(uuid())
-  title         String         @db.VarChar(200)
-  meetingType   MeetingType    @map("meeting_type")
-  period        String         @db.VarChar(10)            // e.g. 2026-FY
-  meetingDate   DateTime?      @map("meeting_date") @db.Date
-  status        MeetingStatus  @default(INVITING)
-  agenda        String?                                   // 会议主题/议程
-  notes         String?                                   // 纪要
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  holdings      MandateHolding[]
-  polls         MeetingPoll[]
+  id           String               @id @default(uuid())
+  planId       String?              @map("plan_id")
+  title        String               @db.VarChar(200)
+  meetingType  MeetingType          @map("meeting_type")
+  period       String               @db.VarChar(10) // e.g. 2026-FY
+  meetingDate  DateTime?            @map("meeting_date") @db.Date
+  status       MeetingStatus        @default(INVITING)
+  agenda       String? // 会议主题/议程
+  notes        String? // 纪要
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  holdings     MandateHolding[]
+  polls        MeetingPoll[]
+  participants MeetingParticipant[]
+  todos        MeetingTodo[]
+  plan         StrategicPlan?       @relation(fields: [planId], references: [id], onDelete: SetNull)
 
   @@index([period])
+  @@index([planId])
   @@map("strategy_meetings")
 }
 
+model MeetingParticipant {
+  id              String          @id @default(uuid())
+  meetingId       String          @map("meeting_id")
+  userId          String?         @map("user_id")
+  participantName String          @map("participant_name") @db.VarChar(50)
+  participantRole String          @map("participant_role") @db.VarChar(100)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  meeting         StrategyMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user            User?           @relation("MeetingParticipantUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([meetingId, userId])
+  @@index([meetingId])
+  @@index([userId])
+  @@map("meeting_participants")
+}
+
+model MeetingTodo {
+  id          String          @id @default(uuid())
+  meetingId   String          @map("meeting_id")
+  title       String          @db.VarChar(300)
+  ownerUserId String?         @map("owner_user_id")
+  ownerName   String?         @map("owner_name") @db.VarChar(50)
+  dueDate     DateTime?       @map("due_date") @db.Date
+  completed   Boolean         @default(false)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  meeting     StrategyMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  owner       User?           @relation("MeetingTodoOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId, completed])
+  @@index([ownerUserId])
+  @@map("meeting_todos")
+}
+
 model MandateHolding {
-  id            String         @id @default(uuid())
-  mandateId     String         @map("mandate_id")
-  meetingId     String         @map("meeting_id")
+  id             String          @id @default(uuid())
+  mandateId      String          @map("mandate_id")
+  meetingId      String          @map("meeting_id")
   // 当期人事快照 (自由文本, 因为人会调动)
-  holderName    String         @map("holder_name") @db.VarChar(50)   // 当期责任人
-  holderRole    String         @map("holder_role") @db.VarChar(100)  // 当期参会角色
+  holderName     String          @map("holder_name") @db.VarChar(50) // 当期责任人
+  holderRole     String          @map("holder_role") @db.VarChar(100) // 当期参会角色
   // 邀请/参会两时点
-  invitedAt     DateTime?      @map("invited_at")
-  attendedAt    DateTime?      @map("attended_at")
-  status        HoldingStatus  @default(CLAIMED)
+  invitedAt      DateTime?       @map("invited_at")
+  attendedAt     DateTime?       @map("attended_at")
+  status         HoldingStatus   @default(CLAIMED)
   // 本期承诺/交账
-  commitment    String?                                   // 本期承诺内容
-  deadline      DateTime?      @db.Date                    // 承诺截止
-  deliveryNote  String?        @map("delivery_note")       // 交账说明
-  handoverNote  String?        @map("handover_note")       // 移交说明 (换人时)
-  handoverToName String?       @map("handover_to_name") @db.VarChar(50)  // 移交给谁
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  mandate       StrategyMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
-  meeting       StrategyMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  commitment     String? // 本期承诺内容
+  deadline       DateTime?       @db.Date // 承诺截止
+  deliveryNote   String?         @map("delivery_note") // 交账说明
+  handoverNote   String?         @map("handover_note") // 移交说明 (换人时)
+  handoverToName String?         @map("handover_to_name") @db.VarChar(50) // 移交给谁
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  mandate        StrategyMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+  meeting        StrategyMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 
   @@index([mandateId])
   @@index([meetingId])
@@ -2268,16 +2310,16 @@ enum MeetingPollType {
 }
 
 model MeetingPoll {
-  id          String           @id @default(uuid())
-  meetingId   String?          @map("meeting_id")
-  pollType    MeetingPollType  @map("poll_type")
-  question    String           @db.VarChar(300)
-  optionsJson Json             @map("options_json")
-  status      String           @default("OPEN") @db.VarChar(20)
-  linkedInboxSourceKey String? @map("linked_inbox_source_key") @db.VarChar(80)
-  createdAt   DateTime         @default(now()) @map("created_at")
-  meeting     StrategyMeeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
-  responses   MeetingPollResponse[]
+  id                   String                @id @default(uuid())
+  meetingId            String?               @map("meeting_id")
+  pollType             MeetingPollType       @map("poll_type")
+  question             String                @db.VarChar(300)
+  optionsJson          Json                  @map("options_json")
+  status               String                @default("OPEN") @db.VarChar(20)
+  linkedInboxSourceKey String?               @map("linked_inbox_source_key") @db.VarChar(80)
+  createdAt            DateTime              @default(now()) @map("created_at")
+  meeting              StrategyMeeting?      @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  responses            MeetingPollResponse[]
 
   @@map("meeting_polls")
 }
@@ -2464,16 +2506,16 @@ enum SwotQuadrant {
 
 // 市场洞察
 model PlanMarketInsight {
-  id          String        @id @default(uuid())
-  planId      String        @map("plan_id")
-  category    String        @db.VarChar(50)  // TAM|SAM|SOM|TREND|CUSTOMER|TECH
-  title       String
-  content     String
-  dataPoint   String?       @map("data_point")
-  source      String?
-  sortOrder   Int           @default(999) @map("sort_order")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id        String        @id @default(uuid())
+  planId    String        @map("plan_id")
+  category  String        @db.VarChar(50) // TAM|SAM|SOM|TREND|CUSTOMER|TECH
+  title     String
+  content   String
+  dataPoint String?       @map("data_point")
+  source    String?
+  sortOrder Int           @default(999) @map("sort_order")
+  createdAt DateTime      @default(now()) @map("created_at")
+  plan      StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId, category])
   @@map("plan_market_insights")
@@ -2481,19 +2523,19 @@ model PlanMarketInsight {
 
 // 年度作战计划
 model PlanActionItem {
-  id              String        @id @default(uuid())
-  planId          String        @map("plan_id")
-  initiativeTitle String?       @map("initiative_title")
-  year            Int
-  quarter         Int           // 1-4
-  action          String
-  ownerName       String?       @map("owner_name") @db.VarChar(100)
-  acceptanceCriteria String?    @map("acceptance_criteria")
-  checkDate       String?       @map("check_date") @db.VarChar(20)
-  status          String?       @db.VarChar(20)  // PLAN|ON_TRACK|AT_RISK|DONE
-  sortOrder       Int           @default(999) @map("sort_order")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  plan            StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id                 String        @id @default(uuid())
+  planId             String        @map("plan_id")
+  initiativeTitle    String?       @map("initiative_title")
+  year               Int
+  quarter            Int // 1-4
+  action             String
+  ownerName          String?       @map("owner_name") @db.VarChar(100)
+  acceptanceCriteria String?       @map("acceptance_criteria")
+  checkDate          String?       @map("check_date") @db.VarChar(20)
+  status             String?       @db.VarChar(20) // PLAN|ON_TRACK|AT_RISK|DONE
+  sortOrder          Int           @default(999) @map("sort_order")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  plan               StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId, year, quarter])
   @@map("plan_action_items")
@@ -2503,7 +2545,7 @@ model PlanActionItem {
 model PlanBudgetItem {
   id              String        @id @default(uuid())
   planId          String        @map("plan_id")
-  category        String        @db.VarChar(20)  // CAPEX|OPEX|HC
+  category        String        @db.VarChar(20) // CAPEX|OPEX|HC
   initiativeTitle String?       @map("initiative_title")
   department      String?
   description     String
@@ -2523,19 +2565,19 @@ model PlanBudgetItem {
 
 // 战略路线图
 model PlanRoadmapItem {
-  id          String        @id @default(uuid())
-  planId      String        @map("plan_id")
-  track       String        @db.VarChar(50)   // 轨道：举措/产品/组织/技术
-  title       String
-  startYear   Int           @map("start_year")
-  startQ      Int           @map("start_q")   // 1-4
-  endYear     Int           @map("end_year")
-  endQ        Int           @map("end_q")
-  milestone   String?
-  color       String?       @db.VarChar(20)   // accent/green/yellow/red
-  sortOrder   Int           @default(999) @map("sort_order")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  plan        StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id        String        @id @default(uuid())
+  planId    String        @map("plan_id")
+  track     String        @db.VarChar(50) // 轨道：举措/产品/组织/技术
+  title     String
+  startYear Int           @map("start_year")
+  startQ    Int           @map("start_q") // 1-4
+  endYear   Int           @map("end_year")
+  endQ      Int           @map("end_q")
+  milestone String?
+  color     String?       @db.VarChar(20) // accent/green/yellow/red
+  sortOrder Int           @default(999) @map("sort_order")
+  createdAt DateTime      @default(now()) @map("created_at")
+  plan      StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId, track])
   @@map("plan_roadmap_items")
