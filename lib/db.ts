@@ -43,6 +43,8 @@ const REQUIRED_PRISMA_DELEGATES = [
   "strategicGrowthAnalytics",
   "strategicCommandConfig",
   "executionScoreboardConfig",
+  "innovationProductLine",
+  "innovationBet",
 ] as const;
 
 function resolveDatabaseUrl(): string | undefined {

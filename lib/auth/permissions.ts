@@ -48,6 +48,7 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { prefix: "/finance", minLevel: 3 },
   { prefix: "/fpa", minLevel: 3 },
   { prefix: "/decode", minLevel: 2 },
+  { prefix: "/innovation", minLevel: 2 },
   { prefix: "/market", minLevel: 2 },
   { prefix: "/reports", minLevel: 2 },
   { prefix: "/ops", minLevel: 2 },

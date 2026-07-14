@@ -2601,3 +2601,87 @@ model PlanRoadmapItem {
   @@index([planId, track])
   @@map("plan_roadmap_items")
 }
+
+// 创新底座 · 产品线画像（内核不变 · 画像可配）
+model InnovationProductLine {
+  id               String          @id @default(uuid())
+  name             String          @db.VarChar(100)
+  lifecycleStage   String          @default("introduction") @map("lifecycle_stage") @db.VarChar(20)
+  dominantProblems String[]        @map("dominant_problems")
+  fAxisWeights     Json            @default("{}") @map("f_axis_weights")
+  gateThresholds   Json            @default("{}") @map("gate_thresholds")
+  evidenceBar      Int             @default(4) @map("evidence_bar")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  bets             InnovationBet[]
+
+  @@map("innovation_product_lines")
+}
+
+// 创新底座 · 创新下注（D×F×V 输入全为数据，引擎读取时计算）
+model InnovationBet {
+  id               String                 @id @default(uuid())
+  lineId           String                 @map("line_id")
+  title            String                 @db.VarChar(200)
+  horizon          String                 @default("H2") @db.VarChar(4)
+  stageGate        String                 @default("discovery") @map("stage_gate") @db.VarChar(20)
+  nextCommitAmount Decimal?               @map("next_commit_amount") @db.Decimal(14, 2)
+  abandonRight     Boolean                @default(true) @map("abandon_right")
+  odi              Json                   @default("[]")
+  wtpFactor        Decimal                @default(1) @map("wtp_factor") @db.Decimal(4, 2)
+  feasibilityDims  Json                   @default("[]") @map("feasibility_dims")
+  economics        Json                   @default("{}")
+  capabilityGaps   Json                   @default("[]") @map("capability_gaps")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+  line             InnovationProductLine  @relation(fields: [lineId], references: [id], onDelete: Cascade)
+  claims           InnovationClaim[]
+  assumptions      InnovationAssumption[]
+
+  @@index([lineId])
+  @@map("innovation_bets")
+}
+
+// 创新底座 · 论证（Toulmin 结构）
+model InnovationClaim {
+  id        String               @id @default(uuid())
+  betId     String               @map("bet_id")
+  axis      String               @db.VarChar(2)
+  claim     String               @db.VarChar(500)
+  warrant   String?              @db.VarChar(500)
+  rebuttal  String?              @db.VarChar(500)
+  updatedAt DateTime             @updatedAt @map("updated_at")
+  bet       InnovationBet        @relation(fields: [betId], references: [id], onDelete: Cascade)
+  evidence  InnovationEvidence[]
+
+  @@index([betId])
+  @@map("innovation_claims")
+}
+
+// 创新底座 · 证据（6 级分级 · 可溯源 · stale 复研）
+model InnovationEvidence {
+  id         String          @id @default(uuid())
+  claimId    String          @map("claim_id")
+  level      Int
+  source     String          @db.VarChar(300)
+  note       String?         @db.VarChar(500)
+  stale      Boolean         @default(false)
+  capturedAt DateTime        @default(now()) @map("captured_at")
+  claim      InnovationClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  @@index([claimId])
+  @@map("innovation_evidence")
+}
+
+// 创新底座 · 杀手假设（错了就全垮 · 最便宜实验优先证伪）
+model InnovationAssumption {
+  id        String        @id @default(uuid())
+  betId     String        @map("bet_id")
+  code      String        @db.VarChar(30)
+  statement String        @db.VarChar(500)
+  status    String        @default("pending") @db.VarChar(12)
+  testPlan  String?       @map("test_plan") @db.VarChar(500)
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  bet       InnovationBet @relation(fields: [betId], references: [id], onDelete: Cascade)
+
+  @@index([betId])
+  @@map("innovation_assumptions")
+}

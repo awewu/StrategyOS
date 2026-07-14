@@ -14,6 +14,7 @@ export const USAGE_ACTIONS = [
   "workos_webhook",
   "hermes_scan",
   "fpa_view",
+  "innovation_view",
   "admin_view",
   "audit_export",
   "data_source_read",
