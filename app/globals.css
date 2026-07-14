@@ -784,6 +784,18 @@ body {
   color: var(--color-text-muted);
 }
 
+/* Container queries — 卡片按容器宽度（而非视口）自适应。
+ * .cq-hide-narrow 标记次要内容（图例/meta 列），容器 <420px 时隐藏。 */
+.stratos-card {
+  container-type: inline-size;
+}
+
+@container (max-width: 420px) {
+  .cq-hide-narrow {
+    display: none;
+  }
+}
+
 .stratos-slot-grid {
   display: grid;
   gap: 1rem;
