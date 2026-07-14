@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { DealType } from "@/lib/ma/types";
 import type { DealView, MaBundle } from "@/lib/ma/views";
 import { DEAL_STAGE_LABEL, DEAL_STAGE_ORDER, DEAL_TYPE_LABEL } from "@/lib/ma/views";
-import { DealEditor } from "./DealEditor";
+import { DealEditor, type DealPrefill } from "./DealEditor";
 import { FootballFieldChart } from "./FootballFieldChart";
 
 const STAGE_HINT: Record<string, string> = {
@@ -39,10 +39,10 @@ function pct(v: number): string {
   return `${(v * 100).toFixed(0)}%`;
 }
 
-export function MaClient({ bundle }: { bundle: MaBundle }) {
+export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: DealPrefill | null }) {
   const router = useRouter();
   const [typeFilter, setTypeFilter] = useState<DealType | "all">("all");
-  const [editDeal, setEditDeal] = useState<DealView | null | "new">(null);
+  const [editDeal, setEditDeal] = useState<DealView | null | "new">(prefill ? "new" : null);
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const deals = useMemo(
@@ -293,6 +293,7 @@ export function MaClient({ bundle }: { bundle: MaBundle }) {
         <DealEditor
           deal={editDeal === "new" ? null : editDeal}
           profiles={bundle.profiles}
+          prefill={editDeal === "new" ? prefill : null}
           onClose={() => setEditDeal(null)}
           onSaved={refresh}
         />

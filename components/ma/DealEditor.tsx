@@ -24,23 +24,33 @@ type FindRow = { workstream: string; finding: string; severity: string; dealBrea
 type CpRow = { item: string; owner: string; dueDate: string; status: string };
 type ScrRow = { dimension: string; judgment: string; evidenceLevel: number };
 
+export interface DealPrefill {
+  name?: string;
+  thesis?: string;
+  direction?: string;
+  dealType?: DealType;
+  linkedCrux?: string;
+}
+
 export function DealEditor({
   deal,
   profiles,
+  prefill,
   onClose,
   onSaved,
 }: {
   deal: DealView | null;
   profiles: DealTypeProfileView[];
+  prefill?: DealPrefill | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [name, setName] = useState(deal?.name ?? "");
-  const [dealType, setDealType] = useState<DealType>(deal?.dealType ?? "acquisition");
-  const [direction, setDirection] = useState(deal?.direction ?? "tech");
+  const [name, setName] = useState(deal?.name ?? prefill?.name ?? "");
+  const [dealType, setDealType] = useState<DealType>(deal?.dealType ?? prefill?.dealType ?? "acquisition");
+  const [direction, setDirection] = useState(deal?.direction ?? prefill?.direction ?? "tech");
   const [stage, setStage] = useState<string>(deal?.stage ?? "sourcing");
-  const [thesis, setThesis] = useState(deal?.thesis ?? "");
-  const [linkedCrux, setLinkedCrux] = useState(deal?.linkedCrux ?? "");
+  const [thesis, setThesis] = useState(deal?.thesis ?? prefill?.thesis ?? "");
+  const [linkedCrux, setLinkedCrux] = useState(deal?.linkedCrux ?? prefill?.linkedCrux ?? "");
   const [dealLead, setDealLead] = useState(deal?.dealLead ?? "");
   const [budgetTag, setBudgetTag] = useState(deal?.budgetTag ?? "");
   const [price, setPrice] = useState(deal?.price?.toString() ?? "");

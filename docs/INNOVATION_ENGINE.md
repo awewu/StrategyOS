@@ -160,3 +160,15 @@ recommendSourcing(gaps, window): ("build"|"buy"|"partner")[]
 4. 论证强度 = 证据最短板,低于门槛不过 Gate;
 5. sourcing(build/buy/partner)由缺口**动态产出**;
 6. 真实案例只在测试里,生产零 seed。
+
+---
+
+## 十、与 M&A 模块的联动(2026-07-14)
+
+创新底座是 `/ma` 并购模块的**上游**:
+
+- `recommendSourcing` 判定 **buy** → `/innovation` 详情抽屉一键"发起交易",预填并购论点(能力/缺口原因/来源下注)跳转 `/ma?new=1&dealType=acquisition`;
+- 判定 **partner** → 同上,`dealType=jv`;
+- M&A 侧复用同一套证据分级(L1–L6)与"最短板"纪律:协同逐条挂证据级,`evaluateDealGate` 与创新 Gate 同构(阈值来自 `MaDealTypeProfile` 形态画像)。
+
+详见 `docs/STRAT_MA.md` §八。

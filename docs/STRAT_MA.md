@@ -146,3 +146,18 @@
 7. 整合有**工作流×负责人×里程碑**;
 8. **投后协同当作承诺追踪**,逾期进坚守驾驶舱;
 9. 并购变化**进 StratDiff / 快照**,形成史学。
+
+---
+
+## 八、实现状态(2026-07-14)
+
+**已交付(P0–P2 + 形态泛化):**
+
+- `lib/ma/engine.ts` 纯函数:`synergyNpv`(run-rate×爬坡×折现−一次性成本)、`footballField`(三角区间)、`dealEconomics`(协同占对价/ROIC−WACC)、`evaluateDealGate`(红线+必备条款+CP,strict 从审批阶段起)——13 条参数化测试;
+- **一个模型四种形态**:收购/并购/投资/合资共用 `MaDeal`,`MaDealTypeProfile` 画像配置阈值与必备条款(JV 僵局机制、投资退出权等**否决规则是数据不是代码**);`direction`(买什么能力)与 `dealType`(用什么形态)正交拆分;
+- 数据模型:`MaDeal`(七阶段)+ `MaValuation` + `MaSynergy`(逐条挂证据级)+ `MaDdFinding`(deal-breaker)+ `MaConditionPrecedent`;老 `ma_pipeline_items` 已平移,`/finance?tab=ma` 重定向 `/ma`;
+- 红线:协同占对价>50% / ROIC<WACC / 证据最短板<门槛 / deal-breaker 未解 → 否决;CP 未关 → HOLD;
+- UI `/ma`(权限 L3):七阶段看板 + Football Field SVG(对价绿线/walk-away 红线)+ 交易结构条(现金/股份/earnout)+ 详情抽屉;
+- **创新底座联动**:`/innovation` 能力缺口判定 buy/partner 时一键"发起交易"预填论点跳 `/ma`。
+
+**待做(P3–P4):** PMI 工作流映射 `Commitment`、投后协同兑现逐季追踪(earnout 结算依据)、并购一页纸、纳入 StratDiff/快照。

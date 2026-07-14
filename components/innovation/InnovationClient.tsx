@@ -257,8 +257,18 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                   {detailBet.sourcing.map((s) => (
                     <div key={s.capability} className="flex items-center justify-between rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <span className="text-[var(--color-text-secondary)]">{s.capability}</span>
-                      <span className={s.decision === "buy" ? "font-medium text-[var(--signal-yellow)]" : "text-[var(--color-text-primary)]"}>
-                        {SOURCING_LABEL[s.decision]} · {s.reason}
+                      <span className="flex items-center gap-2">
+                        <span className={s.decision === "buy" ? "font-medium text-[var(--signal-yellow)]" : "text-[var(--color-text-primary)]"}>
+                          {SOURCING_LABEL[s.decision]} · {s.reason}
+                        </span>
+                        {s.decision !== "build" && (
+                          <a
+                            href={`/ma?new=1&dealType=${s.decision === "buy" ? "acquisition" : "jv"}&direction=${encodeURIComponent(s.capability)}&thesis=${encodeURIComponent(`${s.decision === "buy" ? "收购" : "合资"}获取「${s.capability}」能力——${s.reason}(来自创新下注:${detailBet.title})`)}&crux=${encodeURIComponent(detailBet.title)}`}
+                            className="rounded bg-[var(--color-accent)] px-1.5 py-0.5 text-[10px] text-white"
+                          >
+                            发起交易 →
+                          </a>
+                        )}
                       </span>
                     </div>
                   ))}
