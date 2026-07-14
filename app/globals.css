@@ -25,12 +25,12 @@
   --surface-panel:    #ffffff;
   --surface-raised:   #fafafa;
   --surface-elevated: #ffffff;
-  --surface-border:   #e3e5e6;   /* Ruud #ddd family, slate-tinted */
-  --surface-border-strong: #cdd1d2;
+  --surface-border:   #eaeced;   /* premium pass: 近不可见，靠阴影分层 */
+  --surface-border-strong: #d9dddf;
   --surface-overlay: color-mix(in srgb, #ffffff 90%, transparent);
   --blur-glass: 18px;
   --space-section: 3rem;
-  --space-card: 1.5rem;
+  --space-card: 1.75rem;
   --space-page-block: 2.5rem;
   --radius-card: 10px;
   --radius-control: 8px;
@@ -194,8 +194,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: var(--type-body);
-  line-height: 1.6;
-  letter-spacing: 0.01em;
+  line-height: 1.65;
+  letter-spacing: 0; /* 中文不加字距——加了发虚 */
 }
 
 .stratos-shell-bg {
@@ -681,14 +681,14 @@ body {
 .text-caption {
   font-size: var(--type-caption);
   font-weight: 400;
-  letter-spacing: 0.01em;
-  line-height: 1.45;
+  letter-spacing: 0;
+  line-height: 1.5;
   color: var(--color-text-muted);
 }
 .text-label {
   font-size: var(--type-label);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em; /* 中文字距克制 */
   line-height: 1.35;
   color: var(--color-text-secondary);
 }
@@ -829,8 +829,9 @@ body {
   border: 1px solid var(--surface-border);
   background: var(--surface-panel);
   box-shadow:
-    0 1px 2px color-mix(in srgb, black 4%, transparent),
-    0 4px 16px color-mix(in srgb, black 2%, transparent);
+    0 1px 2px color-mix(in srgb, black 3%, transparent),
+    0 2px 4px color-mix(in srgb, black 2.5%, transparent),
+    0 8px 24px color-mix(in srgb, black 2%, transparent);
 }
 
 .stratos-card--padded {
