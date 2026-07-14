@@ -1,10 +1,36 @@
 import type { ReactNode } from "react";
 import { typography } from "@/lib/brand/typography";
 
+export function KpiDelta({
+  value,
+  label,
+  higherIsBetter = true,
+}: {
+  value: number;
+  label?: string;
+  higherIsBetter?: boolean;
+}) {
+  if (value === 0) {
+    return <span className="text-[11px] text-[var(--color-text-muted)]">→ 持平{label ? ` · ${label}` : ""}</span>;
+  }
+  const up = value > 0;
+  const good = up === higherIsBetter;
+  return (
+    <span
+      className="font-data text-[11px]"
+      style={{ color: good ? "var(--signal-green)" : "var(--signal-red)" }}
+    >
+      {up ? "▲" : "▼"} {Math.abs(value)}
+      {label ? ` · ${label}` : ""}
+    </span>
+  );
+}
+
 export function KpiTile({
   label,
   value,
   sub,
+  delta,
   tone = "gold",
   href,
   size = "default",
@@ -13,6 +39,7 @@ export function KpiTile({
   label: string;
   value: string;
   sub?: string;
+  delta?: { value: number; label?: string; higherIsBetter?: boolean };
   tone?: "gold" | "green" | "red" | "neutral";
   href?: string;
   size?: "default" | "hero";
@@ -33,6 +60,11 @@ export function KpiTile({
     <div className="stratos-kpi-slot">
       <div className="label-xs">{label}</div>
       <div className={`${valueClass} mt-1 ${toneClass}`}>{value}</div>
+      {delta ? (
+        <div className="mt-0.5">
+          <KpiDelta value={delta.value} label={delta.label} higherIsBetter={delta.higherIsBetter} />
+        </div>
+      ) : null}
       {sub ? <div className="stratos-kpi-slot__sub">{sub}</div> : null}
     </div>
   );
