@@ -175,6 +175,15 @@
   --color-muted:      var(--color-text-muted);
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
   --font-mono: var(--font-geist-mono);
+
+  /* Tailwind 字号刻度锚定到 --type-* token：
+   * 裸 text-xs/2xl/3xl 等 utility 由 token 中央驱动，调 token 即全站生效。
+   * xs=caption(12) · sm=14 · base=body(16) · xl=section(20) · 2xl=kpi(24) · 3xl=kpi-hero(32) */
+  --text-xs: var(--type-caption);
+  --text-base: var(--type-body);
+  --text-xl: var(--type-section);
+  --text-2xl: var(--type-kpi);
+  --text-3xl: var(--type-kpi-hero);
 }
 
 body {

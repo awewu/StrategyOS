@@ -298,7 +298,7 @@ export function OkrEditor({
                     ) : (
                       <>
                         <span className="min-w-0 flex-1">{kr.title}</span>
-                        <span className="font-mono text-xs text-[var(--color-text-muted)]">
+                        <span className="font-mono text-caption">
                           {kr.baselineValue ?? "0"} → {kr.targetValue ?? "?"}
                           {kr.unit ? ` ${kr.unit}` : ""} · 当前 {kr.currentValue ?? "—"}
                         </span>
@@ -338,7 +338,7 @@ export function OkrEditor({
       ) : null}
 
       <div className="stratos-card stratos-card--padded flex flex-wrap items-center gap-3">
-        <span className="text-xs text-[var(--color-text-muted)]">
+        <span className="text-caption">
           数据源 {source === "database" ? "DB" : "Demo"} · O ≤ 5（聚焦） · 先导指标 · 与 BSC 各看各的
         </span>
         <div className="ml-auto flex flex-wrap items-center gap-2">
