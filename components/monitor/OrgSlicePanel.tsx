@@ -3,6 +3,7 @@ import { CommitmentSummaryCard } from "@/components/execution/CommitmentSummaryC
 import { ReportSignalsPanel } from "@/components/execution/ReportSignalsPanel";
 import { SliceExecutionExpand } from "@/components/monitor/SliceExecutionExpand";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
+import { SectionCard } from "@/components/ui/KpiTile";
 import type { getExecutionBundle } from "@/lib/data/strategy-data";
 import { executionHrefForSlice } from "@/lib/monitor/filter-exec";
 import { getSliceKpis } from "@/lib/monitor/slice-kpis";
@@ -43,20 +44,20 @@ export async function OrgSlicePanel({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
-            {slice.label} · 数据
-          </h2>
+      <SectionCard
+        title={`${slice.label} · 数据`}
+        dense
+        action={
           <div className="flex items-center gap-3">
-            <span className="text-xs text-[var(--color-text-muted)]">
+            <span className="text-caption text-[var(--color-text-muted)]">
               KPI 源 {kpiSource === "database" ? "DB" : "Demo"}
             </span>
-            <Link href={fpaHref} className="text-sm text-[var(--color-accent)] hover:underline">
+            <Link href={fpaHref} className="text-caption text-[var(--color-accent)] hover:underline">
               FPA 深潜 →
             </Link>
           </div>
-        </div>
+        }
+      >
         <table className="w-full text-left text-sm">
           <thead className="text-[var(--color-text-muted)]">
             <tr>
@@ -79,11 +80,11 @@ export async function OrgSlicePanel({
             ))}
           </tbody>
         </table>
-      </section>
+      </SectionCard>
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+          <h2 className="text-subsection font-semibold text-[var(--color-text-primary)]">
             {slice.label} · 执行分析
           </h2>
           <Link

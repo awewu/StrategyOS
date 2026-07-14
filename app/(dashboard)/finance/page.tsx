@@ -15,6 +15,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StratosTabNav } from "@/components/ui/StratosTabNav";
 import { getFinanceBundle } from "@/lib/data/strategy-data";
 import { getStacksBundle } from "@/lib/stacks/data-access";
+import { getBudgetBaseline } from "@/lib/finance/budget-versions";
+import { getActivePeriod } from "@/lib/data/active-period";
 
 type FinanceTab =
   | "management"
@@ -45,6 +47,9 @@ async function FinanceContent({
   const data = await getFinanceBundle();
   const stacks = await getStacksBundle();
   const report = data.managementReport;
+  const activePeriod = await getActivePeriod();
+  const fiscalYear = activePeriod.slice(0, 4);
+  const baseline = activeTab === "management" ? await getBudgetBaseline(fiscalYear) : null;
 
   const tabs = [
     { href: "/finance", label: "管理报表", active: activeTab === "management" },
@@ -61,7 +66,7 @@ async function FinanceContent({
       <PageHeader
         eyebrow="ROS · EBITDA · 利润桥"
         title="FPA 财务"
-        subtitle={`管理报表优先 · 数据源 ${data.source === "database" ? "DB" : "Demo"}`}
+        subtitle="管理报表优先"
         actions={
           <Link href="/monitor/health" className="stratos-btn stratos-btn--ghost text-xs">
             集团健康
@@ -72,7 +77,22 @@ async function FinanceContent({
       <StratosTabNav tabs={tabs} />
 
       {activeTab === "management" && (
-        <ManagementReportEditor report={report} bridgeSource={data.managementMarginBridgeSource} />
+        <>
+          {baseline ? (
+            <p className="text-caption -mt-2">
+              B 基准：FY{baseline.fiscalYear} 「{baseline.name}」· 批准于 {baseline.decidedAt?.slice(0, 10)}
+              {baseline.decidedBy ? ` · ${baseline.decidedBy}` : ""} ·{" "}
+              <Link href="/finance/ledger?tab=budget" className="text-[var(--color-accent)] hover:underline">预算版本 →</Link>
+            </p>
+          ) : (
+            <p className="text-caption -mt-2 text-[var(--signal-yellow)]">
+              FY{fiscalYear} 尚无已批准预算基准 — B 列口径未受控，去{" "}
+              <Link href="/finance/ledger?tab=budget" className="text-[var(--color-accent)] hover:underline">预算版本</Link>
+              建立基准
+            </p>
+          )}
+          <ManagementReportEditor report={report} bridgeSource={data.managementMarginBridgeSource} />
+        </>
       )}
 
       {activeTab === "statements" && (

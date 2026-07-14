@@ -93,7 +93,6 @@ export default async function MarketPage({
   const ranked = rankSignals(signals);
   const brief = buildMarketBrief(ranked, 3);
   const active = sources.filter((s) => s.health === "active").length;
-  const dataSource = db ? "DB" : "Demo";
 
   const landscapeView = (
     <div className="space-y-8">
@@ -160,7 +159,7 @@ export default async function MarketPage({
       <PageHeader
         eyebrow="竞争情报 · Hermes"
         title="市场洞察"
-        subtitle={`简报 → 格局 → 深潜 · 数据源 ${dataSource}`}
+        subtitle="简报 → 格局 → 深潜"
       />
 
       <div className="grid gap-6 lg:grid-cols-2">

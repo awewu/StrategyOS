@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReportSignal } from "@/lib/data/strategy-data";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 const SEVERITY_META: Record<ReportSignal["severity"], { label: string; color: string; bg: string; border: string }> = {
   high:   { label: "高", color: "var(--signal-red)",   bg: "bg-[var(--signal-red)]/10",    border: "border-[var(--signal-red)]/25" },
@@ -10,21 +11,16 @@ const SEVERITY_META: Record<ReportSignal["severity"], { label: string; color: st
 
 export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-medium text-[var(--color-text-primary)]">
-            报告反哺信号 · 来自已存档经营报告
-          </h2>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-            各部门已确认存档的报告经 AI 解析后，自动提取红线触发与战略模式信号，反哺执行审计
-          </p>
-        </div>
-        <Link href="/reports" className="text-xs text-[var(--color-accent)] hover:underline">
+    <SectionCard
+      title="报告反哺信号 · 来自已存档经营报告"
+      subtitle="各部门已确认存档的报告经 AI 解析后，自动提取红线触发与战略模式信号，反哺执行审计"
+      dense
+      action={
+        <Link href="/reports" className="text-caption text-[var(--color-accent)] hover:underline">
           报告中心 →
         </Link>
-      </header>
-
+      }
+    >
       {signals.length === 0 ? (
         <EmptyState
           title="暂无已存档报告产生的信号"
@@ -64,6 +60,6 @@ export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
           })}
         </ul>
       )}
-    </section>
+    </SectionCard>
   );
 }

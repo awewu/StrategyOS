@@ -1,8 +1,11 @@
-# StratOS · 品牌视觉识别规范（BRAND VI v1.0）
+# StratOS · 品牌视觉识别规范（BRAND VI v2.0）
 
-**版本：** v1.0 · 2026-06-14  
-**状态：** 定稿 · 与产品 MVP+ 同步  
+**版本：** v2.0 · 2026-07-14（Ruud/Rheem 浅色主题重写）  
+**状态：** 定稿 · 与 `app/globals.css` Brand Tokens v2.0 + `lib/brand/tokens.ts` 同步  
+**权威来源：** 运行时以 `app/globals.css` 的 CSS 变量为准；本文件与 `lib/brand/tokens.ts` 为其镜像。  
 **关联：** [UI_VI.md](./UI_VI.md) · [ONE_PAGE_PANORAMA.md](./ONE_PAGE_PANORAMA.md) · [STRATOS_BLUEPRINT.md](./STRATOS_BLUEPRINT.md)
+
+> **v1.0 → v2.0 迁移说明**：早期暗色 + 琥珀金（`#D4A574`）方案已**全面废弃**。当前为 Ruud 工业浅色底座：白卡 on 浅灰、**Ruud teal 作战略强调**、Rheem red 作品牌与风险。若仍在代码中见到 `#b8860b/#D4A574/#0F172A/--color-accent-gold`，均为遗留，应替换为下表 token。
 
 ---
 
@@ -14,9 +17,9 @@
 | **中文定位** | 战略沙盘 · 战略推演系统 |
 | **标语** | 战略是抉择 · *Decide with clarity.* |
 | **受众** | 300 人企业 · 30 人核心层 · CEO/董事会 |
-| **气质** | 暗色指挥舱 · 琥珀战略金 · 冷静 · 可审计 · 非 OKR 工具 |
+| **气质** | Ruud 工业浅色 · Teal 战略强调 · 冷静 · 可审计 · 非 OKR 工具 |
 
-**Logo 隐喻：** 字母 **S** = 三栈横切（Cap · Prod · Gtm）+ 右上角 **Snapshot 冻结框**（琥珀金）
+**品牌锁定：** 侧栏 = `logo-mark.svg` + Rhautt 集团字标 **Rhautt.**（红）+ 中文「瑞合瑞德」。导航激活态用 Rheem red 指示条，战略强调（链接/按钮/重点）用 Ruud teal。
 
 ---
 
@@ -37,40 +40,55 @@
 
 ## 三、色彩系统
 
-### 3.1 Dark（默认 · 投屏）
+### 3.1 表面与文字（默认 · 浅色）
 
 | Token | Hex | 用途 |
 |-------|-----|------|
-| `--color-bg-deep` | `#0F172A` | 页面底 |
-| `--color-bg-surface` | `#0A1628` | 卡片/面板 |
-| `--color-accent-gold` | `#D4A574` | 战略重点 · Logo 框 · Doctrine |
-| `--color-text-primary` | `#F1F5F9` | 正文 |
-| `--color-text-muted` | `#64748B` | 辅助 |
+| `--color-bg-deep` | `#f5f5f5` | 页面底（Ruud body gray）|
+| `--color-bg-surface` / `--surface-panel` | `#ffffff` | 卡片 / 面板 |
+| `--surface-raised` | `#fafafa` | 抬升面 |
+| `--surface-border` | `#e3e5e6` | 描边 |
+| `--color-text-primary` | `#2c3133` | 标题 / 正文 |
+| `--color-text-secondary` | `#4e5758` | 次级正文 |
+| `--color-text-muted` | `#828c8d` | 辅助 / meta |
 
-### 3.2 语义色（不可挪用）
+### 3.2 强调色
+
+| Token | Hex | 用途 |
+|-------|-----|------|
+| `--color-accent`（Ruud teal）| `#007681` | 战略强调 · 链接 · 主按钮 · 激活 |
+| `--color-accent-bright` | `#3eb5d4` | hover / 填充 |
+| `--color-accent-vivid`（Ruud cyan）| `#00aeef` | 高亮填充 |
+| `--ruud-red-primary`（Rheem red）| `#e4002b` | 品牌 mark · 导航激活指示条 |
+| `--accent-sim`（推演紫）| `#6d3fc0` | 反事实 / Agent 推演 / H3 探索（**专用语义**）|
+
+### 3.3 语义信号色（不可挪用）
 
 | Token | Hex | 绑定 |
 |-------|-----|------|
-| `--signal-green` | `#2E7D32` | 正常 · 验证 · Gate 通过 |
-| `--signal-yellow` | `#F9A825` | 关注 · 偏差 |
-| `--signal-red` | `#E65100` | 预警 · 否决 · Hx 失效 |
+| `--signal-green` | `#1f8a45` | 正常 · 验证 · Gate 通过 |
+| `--signal-yellow` | `#b45309` | 关注 · 偏差 |
+| `--signal-red` | `#8b0e04` | 预警 · 否决 · Hx 失效 |
 
-### 3.3 三栈色
+> 注：黄信号 token 名为 `--signal-yellow`（**没有** `--signal-amber`）；推演紫用 `--accent-sim`（**没有** `--accent-violet`）。
 
-| 栈 | Token | Hex |
-|----|-------|-----|
-| CapStack | `--stack-cap` | `#D4A574` |
-| ProdStack | `--stack-prod` | `#2E7D32` |
-| GtmStack | `--stack-gtm` | `#38BDF8` |
+### 3.4 三栈色 / BSC
 
-### 3.4 Light / Print（董事会 PDF）
+| 栈 | Token | Hex | · | BSC 维 | Token | Hex |
+|----|-------|-----|---|--------|-------|-----|
+| CapStack | `--stack-cap` | `#8b0e04` | · | 财务 | `--bsc-financial` | `#8b0e04` |
+| ProdStack | `--stack-prod` | `#1f8a45` | · | 客户 | `--bsc-customer` | `#0c8bab` |
+| GtmStack | `--stack-gtm` | `#0c8bab` | · | 流程 | `--bsc-process` | `#6344b8` |
+| | | | · | 学习 | `--bsc-learning` | `#1f8a45` |
+
+### 3.5 Print（董事会 PDF / A3）
 
 | Token | Hex | 用途 |
 |-------|-----|------|
-| `--print-ivory` | `#FAF8F5` | 纸面底 |
-| `--print-navy` | `#0A1628` | 印刷正文 |
+| `--print-ivory` | `#faf8f5` | 纸面底 |
+| `--print-navy` | `#0a1220` | 印刷正文 |
 
-启用：`<html data-theme="print">` 或 `@media print`
+启用：`<html data-theme="print">` 或 `@media print`。打印强调色沿用 `--color-accent`（teal）。
 
 ---
 
@@ -84,14 +102,13 @@
 
 ### 4.2 禁止
 
-- 改比例、改色（除反白/单色金）
-- 去掉 Snapshot 框
+- 改比例、改色（除反白/单色）
 - 与竞品 Logo 并置小于安全距离
 - 用于全员日报/任务类界面主视觉
 
 ### 4.3 App Icon
 
-深空蓝底 `#0A1628` + 白栈条 + 琥珀框 — 见 `public/icon.svg`
+见 `public/icon.svg` / `public/logo-mark.svg`（Rhautt 集团 mark，Rheem red 主色）
 
 ---
 
@@ -101,7 +118,8 @@
 |------|------|------|
 | 英文/数据 | Geist Mono / DIN / Roboto | KPI · B-A-F · budget_tag |
 | 中文 | Noto Sans SC / 思源黑体 | 界面 · 诊断 · 标语 |
-| 比例 | 32 : 20 : 12 | H1 : H2 : 注释 |
+| 比例 | 32 : 20 : 16 : 12 : 11 | 页面 : 卡片 : 子栏目/正文 : 说明 : 标签（`--type-*`）|
+| 数据 | Geist Mono · tabular-nums | KPI · B-A-F · budget_tag（`.font-data`）|
 
 ---
 
@@ -109,11 +127,11 @@
 
 | 触点 | 模式 | 说明 |
 |------|------|------|
-| Web 指挥舱 | Dark | 默认 `/command` |
-| 战略会 A3 海报 | Light | `/print/panorama` 或 PNG 资产 |
-| 董事会一页纸 PDF | Light | Robust + 四灯 + Top3 diff |
-| 快照文件夹 | Physical | 深色压印 · H1/FY 金标 |
-| 硬阻断条 | Coral 全宽 | 否决时行 0，无 dismiss |
+| Web 指挥舱 | 浅色 | 默认 `/command`（Ruud teal 强调）|
+| 战略会 A3 海报 | Print | `/print/panorama` 或 PNG 资产 |
+| 董事会一页纸 PDF | Print | Robust + 四灯 + Top3 diff |
+| 快照文件夹 | Physical | H1/FY 标识 |
+| 硬阻断条 | `--signal-red` 全宽 | 否决时行 0，无 dismiss |
 
 ---
 
@@ -147,11 +165,11 @@
 ## 九、与产品模块映射
 
 ```
-Logo 三栈     → CapStack / ProdStack / GtmStack
-Snapshot 框   → StrategicSnapshot FROZEN
-Amber Gold    → Diagnosis · Doctrine Invest · 财务维
-Coral         → HealthAssertion · 硬阻断
-Green/Blue    → Prod / Gtm 栈 · BSC 客户/学习
+Ruud teal (accent)    → 战略强调 · 链接 · 主按钮 · Diagnosis 重点
+Rheem red (brand)     → 品牌 mark · 导航激活指示条
+signal-red            → HealthAssertion · 硬阻断 · 否决 · 财务/Cap 栈
+accent-sim (推演紫)   → 反事实 · Agent 推演 · H3 探索
+Green / Blue          → Prod / Gtm 栈 · BSC 客户·学习
 ```
 
 ---
@@ -169,4 +187,4 @@ Green/Blue    → Prod / Gtm 栈 · BSC 客户/学习
 
 ---
 
-*StratOS VI v1.0 · 视觉服务于「30 秒读懂战局、两次快照看清变化」*
+*StratOS VI v2.0 · 视觉服务于「30 秒读懂战局、两次快照看清变化」*

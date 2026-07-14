@@ -21,7 +21,7 @@ const STAGE_HINT: Record<string, string> = {
 
 const TYPE_TONE: Record<DealType, string> = {
   acquisition: "bg-[var(--color-accent)]/12 text-[var(--color-accent)]",
-  merger: "bg-purple-500/12 text-purple-600",
+  merger: "bg-[var(--accent-sim-dim)] text-[var(--accent-sim)]",
   minority_investment: "bg-[var(--signal-green)]/12 text-[var(--signal-green)]",
   jv: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]",
 };
@@ -187,7 +187,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                 <div className="text-xs font-medium text-[var(--color-text-primary)]">交易结构</div>
                 <div className="mt-1 flex h-3 w-full overflow-hidden rounded-full">
                   <div className="bg-[var(--color-accent)]" style={{ width: pct(detail.dealStructure.cashPct ?? 0) }} title="现金" />
-                  <div className="bg-purple-400" style={{ width: pct(detail.dealStructure.stockPct ?? 0) }} title="股份" />
+                  <div className="bg-[var(--accent-sim)]" style={{ width: pct(detail.dealStructure.stockPct ?? 0) }} title="股份" />
                   <div className="bg-[var(--signal-yellow)]" style={{ width: pct(detail.dealStructure.earnoutPct ?? 0) }} title="earnout" />
                 </div>
                 <div className="mt-1 flex gap-3 text-[11px] text-[var(--color-text-muted)]">

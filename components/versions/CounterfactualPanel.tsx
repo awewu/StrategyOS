@@ -29,8 +29,8 @@ export function CounterfactualPanel() {
   }
 
   return (
-    <section className="rounded-lg border border-violet-500/30 bg-[var(--color-bg-surface)] p-6">
-      <h2 className="mb-2 text-sm font-medium text-violet-400">反事实 diff</h2>
+    <section className="rounded-lg border border-[color-mix(in_srgb,var(--accent-sim)_30%,transparent)] bg-[var(--color-bg-surface)] p-6">
+      <h2 className="mb-2 text-sm font-medium text-[var(--accent-sim)]">反事实 diff</h2>
       <p className="mb-4 text-xs text-[var(--color-text-muted)]">
         「如果当时选了 B 路径」— 基于当前工作版本基线 + 历史校准推演
       </p>
@@ -42,7 +42,7 @@ export function CounterfactualPanel() {
             type="button"
             disabled={loading}
             onClick={() => run(p.type, p.magnitude)}
-            className="rounded border border-violet-500/40 px-3 py-1.5 text-xs text-violet-300 hover:bg-violet-500/10 disabled:opacity-50"
+            className="rounded border border-[color-mix(in_srgb,var(--accent-sim)_40%,transparent)] px-3 py-1.5 text-xs text-[var(--accent-sim)] hover:bg-[var(--accent-sim-dim)] disabled:opacity-50"
           >
             {p.label}
           </button>
@@ -78,7 +78,7 @@ export function CounterfactualPanel() {
           type="button"
           disabled={loading}
           onClick={() => run(customType, magnitude)}
-          className="rounded bg-violet-600/80 px-3 py-1.5 text-xs text-white disabled:opacity-50"
+          className="rounded bg-[var(--accent-sim)] px-3 py-1.5 text-xs text-white disabled:opacity-50"
         >
           运行推演
         </button>
@@ -99,7 +99,7 @@ export function CounterfactualPanel() {
             <div className="text-sm font-medium">{s.premise}</div>
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">{s.impact}</p>
             {s.linkedDiff.length > 0 && (
-              <span className="mt-2 inline-block font-mono text-[11px] text-violet-400/80">
+              <span className="mt-2 inline-block font-mono text-[11px] text-[var(--accent-sim)]">
                 {s.linkedDiff.join(" · ")}
               </span>
             )}

@@ -7,6 +7,8 @@ import { LedgerPanels, type LedgerTab } from "@/components/finance/LedgerPanels"
 import { getLedgerBundle } from "@/lib/finance/ledger-queries";
 import { BudgetVersionsPanel } from "@/components/finance/BudgetVersionsPanel";
 import { listBudgetVersions } from "@/lib/finance/budget-versions";
+import { MetricTrendPanel } from "@/components/finance/MetricTrendPanel";
+import { captureMetricSnapshots, getMetricSeries } from "@/lib/metrics/snapshots";
 
 const TABS: { id: LedgerTab; label: string }[] = [
   { id: "overview", label: "总览 · 批次" },
@@ -19,6 +21,7 @@ const TABS: { id: LedgerTab; label: string }[] = [
   { id: "accounts", label: "科目映射" },
   { id: "depts", label: "部门映射" },
   { id: "ops", label: "运营指标" },
+  { id: "trend", label: "多期趋势" },
 ];
 
 function parseTab(raw: string | undefined): LedgerTab {
@@ -37,6 +40,11 @@ export default async function LedgerPage({
   await logUsageEvent({ action: "fpa_view", resource: `/finance/ledger?tab=${activeTab}` });
   const bundle = await getLedgerBundle({ period: params.period, q });
   const budgetVersions = activeTab === "budget" ? await listBudgetVersions() : [];
+  // 趋势页机会式捕获当期快照（幂等），无需 cron 即可逐期累积
+  const metricSeries =
+    activeTab === "trend"
+      ? await captureMetricSnapshots().then(() => getMetricSeries()).catch(() => [])
+      : [];
 
   const query = (tab: LedgerTab) => {
     const sp = new URLSearchParams({ tab });
@@ -50,7 +58,7 @@ export default async function LedgerPage({
       <PageHeader
         eyebrow="Ledger Hub · 中→美映射 · OneStream"
         title="总账中台"
-        subtitle={`科目/部门映射 · 试算平衡 · GL 明细 · 运营事实 · 数据源 ${bundle.available ? "DB" : "不可用"}`}
+        subtitle="科目/部门映射 · 试算平衡 · GL 明细 · 运营事实"
         actions={
           <Link href="/finance" className="stratos-btn stratos-btn--ghost text-xs">
             返回 FPA
@@ -62,6 +70,11 @@ export default async function LedgerPage({
 
       {bundle.available && activeTab === "budget" ? (
         <BudgetVersionsPanel initial={budgetVersions} />
+      ) : bundle.available && activeTab === "trend" ? (
+        <>
+          <MetricTrendPanel series={metricSeries} />
+          <LedgerPanels tab={activeTab} bundle={bundle} q={q} period={params.period} />
+        </>
       ) : bundle.available ? (
         <LedgerPanels tab={activeTab} bundle={bundle} q={q} period={params.period} />
       ) : (

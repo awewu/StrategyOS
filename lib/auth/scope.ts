@@ -17,6 +17,7 @@ const DEMO_ORG_SCOPE: Record<RoleKey, string[] | null> = {
   system_head: ["org-exec-rd"],
   pm: ["org-exec-hw"],
   observer: ["org-exec-hw"],
+  board: null,
 };
 
 const DEMO_PROJECT_SCOPE: Record<RoleKey, string[] | null> = {
@@ -27,6 +28,7 @@ const DEMO_PROJECT_SCOPE: Record<RoleKey, string[] | null> = {
   system_head: null,
   pm: ["V4"],
   observer: null,
+  board: null,
 };
 
 export function getOrgScope(role: RoleKey, session?: SessionPayload | null): string[] | null {

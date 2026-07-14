@@ -13,7 +13,7 @@ export function RehearsalSignInPrintLayout({
 
   return (
     <article className="mx-auto max-w-[1120px] bg-white p-8 text-[#172033] print:max-w-none print:p-0">
-      <header className="mb-5 flex items-start justify-between border-b-2 border-[#b8860b] pb-4">
+      <header className="mb-5 flex items-start justify-between border-b-2 border-[var(--color-accent)] pb-4">
         <div className="flex items-center gap-4">
           <Image src="/logo-mark.svg" alt="" width={44} height={44} />
           <div>
@@ -30,8 +30,8 @@ export function RehearsalSignInPrintLayout({
       </header>
 
       {intent ? (
-        <section className="mb-4 border-l-4 border-[#b8860b] bg-[#f7f8fa] px-4 py-3">
-          <p className="text-[11px] font-medium text-[#b8860b]">战略意图与北极星</p>
+        <section className="mb-4 border-l-4 border-[var(--color-accent)] bg-[#f7f8fa] px-4 py-3">
+          <p className="text-[11px] font-medium text-[var(--color-accent)]">战略意图与北极星</p>
           <h2 className="mt-1 text-lg font-semibold">{intent.title}</h2>
           {intent.lead ? <p className="mt-1 text-sm leading-5 text-[#475569]">{intent.lead}</p> : null}
           {intent.metrics?.length ? (
@@ -47,7 +47,7 @@ export function RehearsalSignInPrintLayout({
       <div className="grid grid-cols-2 gap-3">
         {sections.map((slide) => (
           <section key={slide.id} className="break-inside-avoid border border-[#d9dee7] p-3">
-            <p className="text-[10px] font-medium text-[#b8860b]">{slide.eyebrow}</p>
+            <p className="text-[10px] font-medium text-[var(--color-accent)]">{slide.eyebrow}</p>
             <h2 className="mt-0.5 text-sm font-semibold">{slide.title}</h2>
             <ul className="mt-1.5 space-y-1 text-[11px] leading-4 text-[#475569]">
               {slide.bullets.slice(0, 4).map((bullet) => <li key={bullet}>· {bullet}</li>)}

@@ -79,7 +79,7 @@ export default async function CommandPage() {
       <PageHeader
         eyebrow={`${brand.taglineZh} · ${brand.taglineEn}`}
         title="指挥舱"
-        subtitle={`此刻集团态势如何 · 有什么要立即决策 · ${activePeriod} · 数据源 ${deck.source === "database" ? "DB" : "Demo"}`}
+        subtitle={`此刻集团态势如何 · 有什么要立即决策 · ${activePeriod}`}
         actions={
           <>
             <Link href="/inbox" className="stratos-btn stratos-btn--ghost relative">

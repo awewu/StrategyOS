@@ -20,9 +20,9 @@ export function computeCommitmentSummary(records: CommitmentRecord[]): Commitmen
   return { total, done, overdue, inflight, rate, maxDaysOverdue };
 }
 
-/** Fulfillment-rate color: ≥70 green · ≥50 amber · else red. */
+/** Fulfillment-rate color: ≥70 green · ≥50 yellow · else red. */
 export function fulfillmentRateColor(rate: number): string {
   if (rate >= 70) return "var(--signal-green)";
-  if (rate >= 50) return "var(--signal-amber, #d97706)";
+  if (rate >= 50) return "var(--signal-yellow)";
   return "var(--signal-red)";
 }

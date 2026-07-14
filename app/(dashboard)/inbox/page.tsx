@@ -11,7 +11,7 @@ export default async function InboxPage() {
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="战略态势 · 交付闭环"
+        eyebrow="交付闭环"
         title="议题 Inbox"
         subtitle={`待议 ${items.length} 项 · 紧急 ${critical} · 已议/指派/推迟持久化 · 写回承诺账本`}
       />

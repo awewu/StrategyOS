@@ -74,8 +74,8 @@ export function CapitalTab({
             <div className="bg-[var(--color-accent)]" style={{ width: "100%" }} title="Budget" />
           </div>
           <div className="mt-1 flex h-3 overflow-hidden rounded-full bg-black/[0.04]">
-            <div className="bg-sky-500" style={{ width: `${bPct}%` }} title="Actual" />
-            <div className="bg-violet-500/70" style={{ width: `${fPct - bPct}%` }} title="Forecast" />
+            <div className="bg-[var(--chart-baf-actual)]" style={{ width: `${bPct}%` }} title="Actual" />
+            <div className="bg-[var(--chart-baf-forecast)]" style={{ width: `${fPct - bPct}%` }} title="Forecast" />
           </div>
         </div>
         <div className="grid gap-4 text-sm md:grid-cols-3">

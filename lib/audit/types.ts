@@ -22,6 +22,10 @@ export const USAGE_ACTIONS = [
   "permission_update",
   "import_commit",
   "budget_version_update",
+  "commitment_update",
+  "commitment_nudge",
+  "board_resolution_sign",
+  "board_pack_lock",
 ] as const;
 
 export type UsageAction = (typeof USAGE_ACTIONS)[number];
@@ -55,6 +59,10 @@ export const ACTION_LABELS: Partial<Record<UsageAction, string>> = {
   diff_persist: "Diff 持久化",
   import_commit: "Sheet 导入入库",
   budget_version_update: "预算版本流转",
+  commitment_update: "承诺状态更新",
+  commitment_nudge: "承诺催办",
+  board_resolution_sign: "董事决议签署",
+  board_pack_lock: "上会材料锁定",
   workos_webhook: "WorkOS Webhook",
   hermes_scan: "Hermes 市场扫描",
   fpa_view: "FPA 财务查看",

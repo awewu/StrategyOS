@@ -1,5 +1,6 @@
 import type { ResolvedScoreboard } from "@/lib/execution/scoreboard-access";
 import type { KeyResult } from "@/lib/types/stratos";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 function KrProgressBar({ kr }: { kr: KeyResult }) {
   const pct = kr.confidence ? Math.round(kr.confidence * 100) : 0;
@@ -24,11 +25,8 @@ function KrProgressBar({ kr }: { kr: KeyResult }) {
 
 export function Scoreboard4DX({ scoreboard }: { scoreboard: ResolvedScoreboard }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
-      <div className="mb-4 text-xs uppercase tracking-wider text-[var(--color-text-muted)]">
-        4DX 记分板 · WIG
-      </div>
-      <p className="mb-4 text-lg font-medium text-[var(--color-accent)]">WIG：{scoreboard.wigLabel}</p>
+    <SectionCard title="4DX 记分板" accent="gold" dense>
+      <p className="mb-4 text-subsection font-medium text-[var(--color-accent)]">WIG：{scoreboard.wigLabel}</p>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-4">
           <h3 className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
@@ -49,6 +47,6 @@ export function Scoreboard4DX({ scoreboard }: { scoreboard: ResolvedScoreboard }
           </div>
         ) : null}
       </div>
-    </section>
+    </SectionCard>
   );
 }

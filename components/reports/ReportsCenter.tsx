@@ -122,7 +122,7 @@ export function ReportsCenter({
       <p className="text-xs text-[var(--color-text-muted)]">
         Agent 管道 · 数据源 {source}
         {llmAvailable === true && (
-          <span className="ml-2 text-violet-400">· LLM 已配置</span>
+          <span className="ml-2 text-[var(--accent-sim)]">· LLM 已配置</span>
         )}
         {llmAvailable === false && (
           <span className="ml-2">· 规则引擎 fallback</span>
@@ -271,10 +271,10 @@ export function ReportsCenter({
       </div>
 
       {parseResult && (
-        <section className="surface-elevated rounded-2xl border border-violet-500/25 p-6">
-          <h3 className="mb-2 text-sm font-medium text-violet-400">Agent Trace</h3>
+        <section className="surface-elevated rounded-2xl border border-[color-mix(in_srgb,var(--accent-sim)_25%,transparent)] p-6">
+          <h3 className="mb-2 text-sm font-medium text-[var(--accent-sim)]">Agent Trace</h3>
           {parseResult.engine && (
-            <p className="mb-2 text-xs text-violet-400">解析引擎：{parseResult.engine}</p>
+            <p className="mb-2 text-xs text-[var(--accent-sim)]">解析引擎：{parseResult.engine}</p>
           )}
           <ul className="space-y-1 font-mono text-xs text-[var(--color-text-muted)]">
             {parseResult.agentTrace?.map((t) => (

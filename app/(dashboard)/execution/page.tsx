@@ -32,12 +32,12 @@ export default async function ExecutionPage({
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="运行监测 · 集团全览"
+        eyebrow="集团全览"
         title={resolved ? `执行 · 全览 · ${resolved.slice.label}` : "执行 · 全览"}
         subtitle={
           resolved
-            ? `专家页 · 已按 ${resolved.kind === "bu" ? "运营 BU" : "职能"} 过滤 · 数据源 ${data.source === "database" ? "DB" : "Demo"}`
-            : `张力 · 成熟度 · 承诺账本 · Vx / 4DX / TechSignal · 数据源 ${data.source === "database" ? "DB" : "Demo"}`
+            ? `专家页 · 已按 ${resolved.kind === "bu" ? "运营 BU" : "职能"} 过滤`
+            : "张力 · 成熟度 · 承诺账本 · Vx / 4DX / TechSignal"
         }
         actions={
           <>

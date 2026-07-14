@@ -52,6 +52,12 @@
   --color-accent-vivid:  var(--ruud-cyan);
   --color-accent-dim:    rgba(0, 118, 129, 0.1);
 
+  /* ── Simulation / exploration accent ──
+   * Reserved semantic: counterfactual 反事实, agent 推演, H3 探索 层面.
+   * Deep violet, AA (~6.6:1) as text on white; -dim for tinted fills. */
+  --accent-sim:     #6d3fc0;
+  --accent-sim-dim: color-mix(in srgb, var(--accent-sim) 12%, white);
+
   /* ── Signal red: Ruud's own deep red, risk only ── */
   --color-signal-red: #8b0e04;
 
@@ -740,6 +746,32 @@ body {
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
   font-size: var(--type-caption);
   line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.stratos-section-title__dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 9999px;
+  vertical-align: 0.125em;
+}
+
+.stratos-section-header--dense {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
+}
+
+.stratos-card--dense.stratos-card--padded {
+  padding: 1rem 1.25rem;
+}
+
+.stratos-section-footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--surface-border);
+  font-size: var(--type-caption);
   color: var(--color-text-muted);
 }
 

@@ -1578,6 +1578,21 @@ model IntelReport {
   @@map("intel_reports")
 }
 
+/// 指标期次快照：兑现率 / Robust 等"只有当前值"的指标每期落一行，
+/// 攒出跨期趋势线（"兑现率连续三个月下滑"类信号的数据基础）。
+model MetricSnapshot {
+  id         String   @id @default(uuid())
+  period     String   @db.VarChar(10)
+  metricKey  String   @map("metric_key") @db.VarChar(40)
+  value      Decimal  @db.Decimal(14, 4)
+  metadata   Json?
+  capturedAt DateTime @updatedAt @map("captured_at")
+
+  @@unique([period, metricKey])
+  @@index([metricKey])
+  @@map("metric_snapshots")
+}
+
 enum UserRole {
   ceo
   cfo
@@ -1586,6 +1601,7 @@ enum UserRole {
   pm
   staff
   observer
+  board
 }
 
 enum SnapshotType {

@@ -11,7 +11,7 @@ export default async function MonitorHealthPage() {
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="运行监测 · 集团"
+        eyebrow="集团"
         title="集团健康"
         subtitle="BSC 四灯 · Robust · 当期 KPI · 十二维下钻（角色）"
       />

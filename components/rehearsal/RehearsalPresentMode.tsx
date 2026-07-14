@@ -344,7 +344,7 @@ export function RehearsalPresentMode({
                         onClick={() => persistCheck(key, !done)}
                         className={`flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                           done
-                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                            ? "border-[color-mix(in_srgb,var(--signal-green)_40%,transparent)] bg-[color-mix(in_srgb,var(--signal-green)_10%,white)] text-[var(--signal-green)]"
                             : "border-[var(--surface-border)] bg-black/[0.04]"
                         }`}
                       >

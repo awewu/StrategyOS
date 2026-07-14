@@ -58,6 +58,7 @@ export const ROLES = {
   pm: { label: "项目经理", desc: "本项目进度/预算/里程碑" },
   staff: { label: "职能专员", desc: "数据录入、报告生成" },
   observer: { label: "观察员", desc: "只读，战略地图与健康度" },
+  board: { label: "董事", desc: "治理视界：仅董事会包 · 决议签署" },
 } as const;
 
 export type RoleKey = keyof typeof ROLES;

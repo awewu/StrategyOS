@@ -118,14 +118,18 @@ const SOURCE_LABELS: Record<ChainVerification["source"], string> = {
 
 function IntegrityBadge({ integrity }: { integrity: ChainVerification }) {
   const ok = integrity.ok;
-  const color = ok ? "#1a7f37" : "#b3261e";
+  const color = ok ? "var(--signal-green)" : "var(--signal-red)";
   const label = ok
     ? `链完整 · 已校验 ${integrity.checked} 条（${SOURCE_LABELS[integrity.source]}）`
     : `链异常 · 第 ${(integrity.break?.index ?? 0) + 1} 条 ${integrity.break?.reason ?? ""}`;
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
-      style={{ color, background: `${color}14`, border: `1px solid ${color}33` }}
+      style={{
+        color,
+        background: `color-mix(in srgb, ${color} 8%, transparent)`,
+        border: `1px solid color-mix(in srgb, ${color} 20%, transparent)`,
+      }}
       title={ok ? "SHA-256 哈希链校验通过" : "哈希链校验失败"}
     >
       <span style={{ width: 6, height: 6, borderRadius: 9999, background: color }} />

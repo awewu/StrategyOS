@@ -14,6 +14,7 @@ const ROLE_SHORT: Record<RoleKey, string> = {
   pm: "项目",
   staff: "职能",
   observer: "观察",
+  board: "董事",
 };
 
 function logRoleSwitch(from: RoleKey, to: RoleKey) {

@@ -36,6 +36,7 @@ export const NAV_HUBS: NavHub[] = [
       { href: "/compass", label: "战略罗盘" },
       { href: "/strategy", label: "一页纸" },
       { href: "/outlook", label: "战略展望" },
+      { href: "/board", label: "董事会包" },
     ],
   },
   {

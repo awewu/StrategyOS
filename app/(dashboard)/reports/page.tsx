@@ -3,21 +3,24 @@ import { AgentOrchestrationPanel } from "@/components/reports/AgentOrchestration
 import { MonthlyPulseForm } from "@/components/reports/MonthlyPulseForm";
 import { PulseOpsPanel } from "@/components/reports/PulseOpsPanel";
 import { ReportsArchive } from "@/components/reports/ReportsArchive";
+import { ReportReceipts } from "@/components/reports/ReportReceipts";
 import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getOrgUnitsSummary } from "@/lib/data/org-units-access";
 import { getEffectiveRole, getEffectiveSession } from "@/lib/auth/guard";
 import { getManagementReport, getFpaSummary } from "@/lib/data/strategy-data";
 import { getOrgScope } from "@/lib/auth/scope";
+import { getReportReceipts } from "@/lib/reports/receipts";
 
 export default async function ReportsPage() {
   const role = await getEffectiveRole();
   const session = await getEffectiveSession();
   const orgScope = getOrgScope(role, session);
-  const [orgUnits, mgmt, fpa] = await Promise.all([
+  const [orgUnits, mgmt, fpa, receipts] = await Promise.all([
     getOrgUnitsSummary(),
     getManagementReport(),
     getFpaSummary(),
+    getReportReceipts(orgScope),
   ]);
   const visibleOrgUnits =
     orgScope != null && orgScope.length > 0
@@ -38,6 +41,8 @@ export default async function ReportsPage() {
       </div>
 
       <ReportsArchive orgUnits={visibleOrgUnits} />
+
+      <ReportReceipts receipts={receipts} />
 
       <section className="stratos-card stratos-card--padded">
         <h2 className="text-title text-[var(--color-text-primary)]">AI 解析与经营全景</h2>

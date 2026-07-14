@@ -126,10 +126,7 @@ export function HealthPageClient({
 
       <BscLights lights={bscLights} />
 
-      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-        <div className="mb-4 flex items-baseline gap-4">
-          <span className="text-xs text-[var(--color-text-muted)]">当期 KPI · {healthOverview.kpis.length} 项</span>
-        </div>
+      <SectionCard title={`当期 KPI · ${healthOverview.kpis.length} 项`} dense>
         <table className="w-full text-left text-sm">
           <thead className="text-[var(--color-text-muted)]">
             <tr>
@@ -152,7 +149,7 @@ export function HealthPageClient({
             ))}
           </tbody>
         </table>
-      </section>
+      </SectionCard>
 
       {showTwelve && <TwelveDimEditor view={robustView} canEdit={showTwelve} />}
 

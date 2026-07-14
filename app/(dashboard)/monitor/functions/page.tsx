@@ -34,7 +34,7 @@ export default async function MonitorFunctionsPage({
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="运行监测 · N-1"
+        eyebrow="N-1"
         title="职能体系"
         subtitle="职能体系 · 研发 / CMO / 品牌 / HR / 财务 — N-1 轻量监测 · 专家视图见下方展开"
       />

@@ -6,23 +6,22 @@ export function PageHeader({
   title,
   subtitle,
   actions,
-  accent = "gold",
+  tone = "accent",
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: ReactNode;
   actions?: ReactNode;
-  accent?: "gold" | "white";
+  /** Eyebrow color: teal accent (default) or muted. */
+  tone?: "accent" | "muted";
 }) {
+  const eyebrowColor =
+    tone === "accent" ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]";
   return (
     <header className="stratos-page-header flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-3xl space-y-2">
         {eyebrow ? (
-          <p
-            className={`${typography.eyebrow} ${accent === "gold" ? "text-[var(--color-accent)]" : ""}`}
-          >
-            {eyebrow}
-          </p>
+          <p className={`text-label ${eyebrowColor}`}>{eyebrow}</p>
         ) : null}
         <h1 className={typography.h1}>{title}</h1>
         {subtitle ? <p className={`${typography.caption} max-w-2xl`}>{subtitle}</p> : null}

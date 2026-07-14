@@ -48,28 +48,57 @@ export function KpiTile({
   );
 }
 
+const SECTION_ACCENT: Record<string, string> = {
+  gold: "var(--color-accent)",
+  sky: "var(--ruud-cyan, var(--color-accent))",
+  violet: "var(--accent-sim, #6d3fc0)",
+  green: "var(--signal-green)",
+};
+
 export function SectionCard({
   title,
   subtitle,
   children,
+  accent,
   action,
+  footer,
+  dense = false,
+  id,
+  className = "",
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
   accent?: "gold" | "sky" | "violet" | "green";
   action?: ReactNode;
+  footer?: ReactNode;
+  dense?: boolean;
+  id?: string;
+  className?: string;
 }) {
   return (
-    <section className="stratos-card stratos-card--padded">
-      <header className="stratos-section-header">
+    <section
+      id={id}
+      className={`stratos-card stratos-card--padded ${dense ? "stratos-card--dense" : ""} ${className}`.trim()}
+    >
+      <header className={`stratos-section-header ${dense ? "stratos-section-header--dense" : ""}`.trim()}>
         <div>
-          <h2 className="stratos-section-title">{title}</h2>
+          <h2 className="stratos-section-title">
+            {accent ? (
+              <span
+                aria-hidden
+                className="stratos-section-title__dot"
+                style={{ backgroundColor: SECTION_ACCENT[accent] }}
+              />
+            ) : null}
+            {title}
+          </h2>
           {subtitle ? <p className="stratos-section-desc">{subtitle}</p> : null}
         </div>
         {action}
       </header>
       <div>{children}</div>
+      {footer ? <footer className="stratos-section-footer">{footer}</footer> : null}
     </section>
   );
 }

@@ -11,7 +11,7 @@ import { getVersionsBundle } from "@/lib/data/versions-data";
 import { getActivePeriod } from "@/lib/data/active-period";
 
 export default async function VersionsPage() {
-  const { snapshots, stratDiffs, strategyPattern, decisionLedger, snapshotFY25, snapshotFY26, source } =
+  const { snapshots, stratDiffs, strategyPattern, decisionLedger, snapshotFY25, snapshotFY26 } =
     await getVersionsBundle();
   const activePeriod = await getActivePeriod();
 
@@ -24,9 +24,9 @@ export default async function VersionsPage() {
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="战略制定 · 历史参照"
+        eyebrow="历史参照"
         title="历史版本 · 对照"
-        subtitle={`编制前先读 diff — 快照对比、反事实与涌现模式，支撑本版战略更新 · StratDiff ${stratDiffs.length} 条 · 数据源 ${source}`}
+        subtitle={`编制前先读 diff — 快照对比、反事实与涌现模式，支撑本版战略更新 · StratDiff ${stratDiffs.length} 条`}
         actions={
           <Link
             href="/strategy/input"

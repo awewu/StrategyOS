@@ -28,10 +28,10 @@ export function AgentOrchestrationPanel() {
   }
 
   return (
-    <section className="rounded-lg border border-violet-500/30 bg-[var(--color-bg-surface)] p-6">
+    <section className="rounded-lg border border-[color-mix(in_srgb,var(--accent-sim)_30%,transparent)] bg-[var(--color-bg-surface)] p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-violet-400">11-Agent 编排</h2>
+          <h2 className="text-sm font-medium text-[var(--accent-sim)]">11-Agent 编排</h2>
           <p className="text-xs text-[var(--color-text-muted)]">
             {STRAT_AGENTS.length} agents · LLM 优先 · 无 key 时规则兜底
           </p>
@@ -40,7 +40,7 @@ export function AgentOrchestrationPanel() {
           type="button"
           disabled={loading}
           onClick={runAll}
-          className="rounded bg-violet-500/20 px-4 py-2 text-sm text-violet-300 hover:bg-violet-500/30 disabled:opacity-50"
+          className="rounded bg-[var(--accent-sim-dim)] px-4 py-2 text-sm text-[var(--accent-sim)] hover:bg-[color-mix(in_srgb,var(--accent-sim)_20%,white)] disabled:opacity-50"
         >
           {loading ? "编排中…" : "运行全链路"}
         </button>
@@ -49,7 +49,7 @@ export function AgentOrchestrationPanel() {
       <div className="mb-4 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
         {STRAT_AGENTS.map((a) => (
           <div key={a.id} className="rounded border border-[var(--surface-border)] px-2 py-1.5 text-[11px]">
-            <span className="text-violet-400">{a.name}</span>
+            <span className="text-[var(--accent-sim)]">{a.name}</span>
             <span className="ml-2 text-[var(--color-text-muted)]">{a.role}</span>
           </div>
         ))}

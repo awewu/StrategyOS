@@ -62,7 +62,9 @@ export const colors = {
   stackGtm: "#0c8bab",
   printIvory: "#faf8f5",
   printNavy: "#0a1220",
-  sidebarRailBg: "#1c1f24",
+  /** Simulation / exploration accent — mirrors --accent-sim */
+  accentSim: "#6d3fc0",
+  sidebarRailBg: "#181b20",
 } as const;
 
 /** Typography scale — mirrors `--type-*` / `--text-*` in globals.css (UI_VI §4.2) */

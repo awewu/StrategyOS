@@ -38,6 +38,7 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { prefix: "/strategy/submissions", minLevel: 2 },
   { prefix: "/strategy/input", minLevel: 2 },
   { prefix: "/strategy", minLevel: 0, exact: true },
+  { prefix: "/board", minLevel: 0 },
   { prefix: "/command", minLevel: 3 },
   { prefix: "/inbox", minLevel: 3 },
   { prefix: "/compass", minLevel: 3 },
@@ -79,6 +80,7 @@ const HUB_MIN_LEVEL: Record<string, AccessLevel> = {
 export function roleToLevel(role: RoleKey): AccessLevel {
   switch (role) {
     case "observer":
+    case "board":
       return 0;
     case "pm":
       return 1;
@@ -108,6 +110,8 @@ export function roleHomePath(role: RoleKey): string {
   switch (role) {
     case "ceo":
       return "/command";
+    case "board":
+      return "/board";
     case "cfo":
       return "/finance";
     case "observer":
@@ -148,7 +152,16 @@ export function minRoleForPath(pathname: string): RoleKey | null {
   return roles.find((r) => roleToLevel(r) >= level) ?? "ceo";
 }
 
+/** 董事角色硬白名单：干净的治理视界，只看董事会包 */
+const BOARD_ALLOWED_PREFIXES = ["/board", "/login", "/api/auth", "/api/notifications", "/api/board"];
+
 export function canAccessRoute(role: RoleKey, pathname: string, config = getPermissionConfig()): boolean {
+  if (role === "board") {
+    return BOARD_ALLOWED_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    );
+  }
+
   const rule = getMatchingRule(pathname);
   if (!rule) return true;
 

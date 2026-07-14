@@ -5,7 +5,7 @@ export default function MeetingToolsPage() {
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="工具 · 会议闭环"
+        eyebrow="会议闭环"
         title="会议工具"
         subtitle="投票 · 表决 · 会中脉搏 → 议题 Inbox / 承诺账本"
       />

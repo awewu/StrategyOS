@@ -113,5 +113,25 @@ export async function transitionBudgetVersion(input: {
               decisionNote: input.note?.trim() || null,
             },
   });
+  // 批准即挂基准：该财年的管理报表 B 基准指向此版本（单一权威来源）
+  if (input.action === "approve") {
+    await prisma.systemSetting.upsert({
+      where: { key: `budget_baseline_${row.fiscalYear}` },
+      create: { key: `budget_baseline_${row.fiscalYear}`, value: row.id },
+      update: { value: row.id },
+    });
+  }
+  return toView(row);
+}
+
+/** 财年 B 基准：最后一个被批准并挂基准的预算版本；null = 基准未建立 */
+export async function getBudgetBaseline(fiscalYear: string): Promise<BudgetVersionView | null> {
+  if (!(await dbAvailable())) return null;
+  const setting = await prisma.systemSetting.findUnique({
+    where: { key: `budget_baseline_${fiscalYear}` },
+  });
+  if (!setting) return null;
+  const row = await prisma.finBudgetVersion.findUnique({ where: { id: setting.value } });
+  if (!row || row.status !== "approved") return null;
   return toView(row);
 }

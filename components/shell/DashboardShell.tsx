@@ -8,6 +8,7 @@ import { AccessDeniedBanner } from "@/components/shell/AccessDeniedBanner";
 import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { CommandPalette } from "@/components/shell/CommandPalette";
 import { HubSubNav } from "@/components/shell/HubSubNav";
+import { NotificationsBell } from "@/components/shell/NotificationsBell";
 
 function DevRoleSync({
   initialRole,
@@ -53,6 +54,7 @@ function ShellInner({
             {children}
           </div>
         </main>
+        <NotificationsBell />
         <CommandPalette />
       </div>
     </>

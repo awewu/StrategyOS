@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CommitmentQuickActions } from "@/components/cockpit/CommitmentQuickActions";
 import { computeCommitmentSummary, fulfillmentRateColor } from "@/lib/execution/commitment-summary";
 import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
 
@@ -33,6 +34,7 @@ function CommitmentRow({ c }: { c: CommitmentRecord }) {
       ) : (
         <span className="w-8" />
       )}
+      <CommitmentQuickActions id={c.id} status={c.status} />
     </div>
   );
 }
@@ -137,7 +139,7 @@ export function CommitmentCockpit({
                     <td className="px-4 py-2 font-medium">{r.owner}</td>
                     <td className="px-4 py-2 tabular-nums">{r.total}</td>
                     <td className="px-4 py-2 tabular-nums" style={{ color: r.overdue > 0 ? "var(--signal-red)" : "var(--color-text-muted)" }}>{r.overdue}</td>
-                    <td className="px-4 py-2 tabular-nums" style={{ color: r.rate >= 70 ? "var(--signal-green)" : r.rate >= 50 ? "var(--signal-amber, #d97706)" : "var(--signal-red)" }}>{r.rate}%</td>
+                    <td className="px-4 py-2 tabular-nums" style={{ color: r.rate >= 70 ? "var(--signal-green)" : r.rate >= 50 ? "var(--signal-yellow)" : "var(--signal-red)" }}>{r.rate}%</td>
                   </tr>
                 ))}
               </tbody>

@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import type { BudgetVersionView, BudgetAction } from "@/lib/finance/budget-versions";
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
-  draft: { text: "草案", cls: "bg-black/[0.06] text-[var(--color-text-secondary,#555)]" },
-  submitted: { text: "已上报", cls: "bg-amber-100 text-amber-800" },
-  approved: { text: "已批准", cls: "bg-emerald-100 text-emerald-800" },
-  rejected: { text: "已退回", cls: "bg-red-100 text-red-700" },
+  draft: { text: "草案", cls: "bg-black/[0.06] text-[var(--color-text-secondary)]" },
+  submitted: { text: "已上报", cls: "bg-[color-mix(in_srgb,var(--signal-yellow)_14%,white)] text-[var(--signal-yellow)]" },
+  approved: { text: "已批准", cls: "bg-[color-mix(in_srgb,var(--signal-green)_14%,white)] text-[var(--signal-green)]" },
+  rejected: { text: "已退回", cls: "bg-[color-mix(in_srgb,var(--signal-red)_14%,white)] text-[var(--signal-red)]" },
 };
 
 const ACTIONS_BY_STATUS: Record<string, { action: BudgetAction; label: string; needNote?: boolean }[]> = {
@@ -109,7 +109,7 @@ export function BudgetVersionsPanel({ initial }: { initial: BudgetVersionView[] 
             创建草案
           </button>
         </div>
-        {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
+        {error ? <p className="mt-2 text-xs text-[var(--signal-red)]">{error}</p> : null}
       </div>
 
       <div className="stratos-card stratos-card--padded">

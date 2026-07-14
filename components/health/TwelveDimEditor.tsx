@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RobustTrend } from "@/components/health/RobustTrend";
+import { SectionCard } from "@/components/ui/KpiTile";
 import { buildRobustView, type RobustView } from "@/lib/health/robust-view";
 import { pillarLabels } from "@/lib/health/twelve-dimensions";
 import type { TrafficLight } from "@/lib/types/stratos";
@@ -89,18 +90,13 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
   }
 
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-medium text-[var(--color-text-muted)]">
-            十二维健康度 · 战略部下钻
-          </h2>
-          <p className="text-xs text-[var(--color-text-muted)]">
-            当期值 · 信号阈值带 · 环比上期 · 目标线（可编辑）
-          </p>
-        </div>
+    <SectionCard
+      title="十二维健康度 · 战略部下钻"
+      subtitle="当期值 · 信号阈值带 · 环比上期 · 目标线（可编辑）"
+      dense
+      action={
         <div className="flex items-center gap-2">
-          {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
+          {msg ? <span className="text-caption text-[var(--color-accent)]">{msg}</span> : null}
           {canEdit && !editing ? (
             <button
               type="button"
@@ -108,7 +104,7 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
                 setRows(toRows(display));
                 setEditing(true);
               }}
-              className="text-xs text-[var(--color-accent)]"
+              className="text-caption text-[var(--color-accent)]"
             >
               编辑
             </button>
@@ -118,7 +114,7 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
               <button
                 type="button"
                 onClick={() => setEditing(false)}
-                className="text-xs text-[var(--color-text-muted)]"
+                className="text-caption text-[var(--color-text-muted)]"
               >
                 取消
               </button>
@@ -126,15 +122,15 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
                 type="button"
                 disabled={busy}
                 onClick={() => void save()}
-                className="rounded bg-[var(--color-accent)] px-2 py-1 text-xs text-white"
+                className="rounded bg-[var(--color-accent)] px-2 py-1 text-caption text-white"
               >
                 保存
               </button>
             </>
           ) : null}
         </div>
-      </div>
-
+      }
+    >
       {editing ? (
         <div className="grid gap-5 lg:grid-cols-3">
           {PILLARS.map((pillar) => (
@@ -193,6 +189,6 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
       ) : (
         <RobustTrend view={display} />
       )}
-    </section>
+    </SectionCard>
   );
 }

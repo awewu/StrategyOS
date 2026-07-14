@@ -22,7 +22,7 @@ export default async function StrategyPage() {
       <PageHeader
         eyebrow="战略 · 三栈 · 一页纸"
         title="战略总览"
-        subtitle={`我们的战略主张是什么 · 三栈与制胜逻辑 · ${activePeriod} · 数据源 ${bundle.source === "database" ? "DB" : "Demo"}`}
+        subtitle={`我们的战略主张是什么 · 三栈与制胜逻辑 · ${activePeriod}`}
       />
       <PlanLifecycleBar />
       <StrategyPageTabs

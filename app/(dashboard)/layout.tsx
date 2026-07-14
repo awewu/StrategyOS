@@ -1,5 +1,4 @@
 import { DashboardShell } from "@/components/shell/DashboardShell";
-import { DataSourceBanner } from "@/components/ui/DataSourceBanner";
 import { getEffectiveRole } from "@/lib/auth/guard";
 import { isDevBypassAuth } from "@/lib/auth/resolve-role";
 
@@ -17,7 +16,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
       secureMode={secureMode}
       devBypassAuth={isDevBypassAuth()}
     >
-      <DataSourceBanner />
       {children}
     </DashboardShell>
   );

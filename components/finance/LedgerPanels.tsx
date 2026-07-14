@@ -3,7 +3,7 @@ import type {
   TbDisplayRow,
 } from "@/lib/finance/ledger-queries";
 
-export type LedgerTab = "overview" | "tb" | "gl" | "facts" | "bridge" | "pvi" | "budget" | "accounts" | "depts" | "ops";
+export type LedgerTab = "overview" | "tb" | "gl" | "facts" | "bridge" | "pvi" | "budget" | "accounts" | "depts" | "ops" | "trend";
 
 const nf = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 2 });
 const money = (v: number | null) => (v == null ? "—" : nf.format(v));
@@ -533,6 +533,61 @@ function OpsPanel({ bundle }: { bundle: LedgerBundle }) {
   );
 }
 
+function TrendBarRow({ label, value, max }: { label: string; value: number; max: number }) {
+  const w = max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0;
+  return (
+    <div className="flex items-center gap-3 text-xs">
+      <span className="w-20 flex-shrink-0 font-mono text-[var(--color-text-muted)]">{label}</span>
+      <div className="h-3 flex-1 rounded bg-black/[0.05]">
+        <div className="h-full rounded bg-[var(--color-accent)]/60" style={{ width: `${w}%` }} />
+      </div>
+      <span className="w-28 flex-shrink-0 text-right font-mono">{money(value)}</span>
+    </div>
+  );
+}
+
+/** 多期趋势：逐月 GL 活动量 + 运营指标时间序列 */
+function TrendPanel({ bundle }: { bundle: LedgerBundle }) {
+  const gl = [...bundle.overview.glBalance].sort((a, b) => a.period.localeCompare(b.period));
+  const glMax = Math.max(0, ...gl.map((g) => g.debit));
+
+  const opsSeries = bundle.opsGroups.map((g) => {
+    const byPeriod = new Map<string, number>();
+    for (const f of g.facts) byPeriod.set(f.period, (byPeriod.get(f.period) ?? 0) + f.value);
+    const rows = [...byPeriod.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    return { metricType: g.metricType, unit: g.unit, rows, max: Math.max(0, ...rows.map(([, v]) => v)) };
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="stratos-card stratos-card--padded">
+        <h3 className="mb-1 text-sm font-semibold">GL 活动量 · 逐期（借方合计）</h3>
+        <p className="mb-4 text-xs text-[var(--color-text-muted)]">趋势看方向：活动量骤增/骤减往往先于报表异常</p>
+        <div className="space-y-2">
+          {gl.length === 0 ? (
+            <p className="text-sm text-[var(--color-text-muted)]">暂无 GL 数据。</p>
+          ) : (
+            gl.map((g) => <TrendBarRow key={g.period} label={g.period} value={g.debit} max={glMax} />)
+          )}
+        </div>
+      </div>
+      {opsSeries.map((s) => (
+        <div key={s.metricType} className="stratos-card stratos-card--padded">
+          <h3 className="mb-4 text-sm font-semibold">
+            {METRIC_LABEL[s.metricType] ?? s.metricType} · 逐期
+            {s.unit ? <span className="ml-2 text-xs font-normal text-[var(--color-text-muted)]">单位：{s.unit}</span> : null}
+          </h3>
+          <div className="space-y-2">
+            {s.rows.map(([period, v]) => (
+              <TrendBarRow key={period} label={period} value={v} max={s.max} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function LedgerPanels({
   tab,
   bundle,
@@ -552,5 +607,6 @@ export function LedgerPanels({
   if (tab === "accounts") return <AccountsPanel bundle={bundle} q={q} period={period} />;
   if (tab === "depts") return <DeptsPanel bundle={bundle} />;
   if (tab === "ops") return <OpsPanel bundle={bundle} />;
+  if (tab === "trend") return <TrendPanel bundle={bundle} />;
   return <OverviewPanel bundle={bundle} />;
 }

@@ -1,4 +1,5 @@
 import type { RiceItem, TechSignal, TrlRadarPoint } from "@/lib/types/stratos";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 const URGENCY: Record<string, string> = {
   watch: "观察",
@@ -8,10 +9,7 @@ const URGENCY: Record<string, string> = {
 
 export function TechSignalPanel({ signals }: { signals: TechSignal[] }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h2 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
-        TechSignal · TRL 雷达
-      </h2>
+    <SectionCard title="TechSignal · TRL 雷达" accent="sky" dense>
       <div className="space-y-3">
         {signals.map((s) => (
           <div key={s.id} className="flex flex-wrap items-center gap-3 rounded border border-[var(--surface-border)] p-3">
@@ -27,14 +25,13 @@ export function TechSignalPanel({ signals }: { signals: TechSignal[] }) {
           </div>
         ))}
       </div>
-    </section>
+    </SectionCard>
   );
 }
 
 export function TrlRadarChart({ points }: { points: TrlRadarPoint[] }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">TRL 能力雷达</h3>
+    <SectionCard title="TRL 能力雷达" dense>
       <div className="space-y-3">
         {points.map((p) => (
           <div key={p.domain}>
@@ -60,7 +57,7 @@ export function TrlRadarChart({ points }: { points: TrlRadarPoint[] }) {
           </div>
         ))}
       </div>
-    </section>
+    </SectionCard>
   );
 }
 
@@ -68,10 +65,7 @@ export function RiceScorecard({ items }: { items: RiceItem[] }) {
   const sorted = [...items].sort((a, b) => b.score - a.score);
 
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h2 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">
-        RICE 优先级 · 执行排序
-      </h2>
+    <SectionCard title="RICE 优先级 · 执行排序" dense>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px] text-left text-sm">
           <thead className="text-[var(--color-text-muted)]">
@@ -105,7 +99,7 @@ export function RiceScorecard({ items }: { items: RiceItem[] }) {
           </tbody>
         </table>
       </div>
-    </section>
+    </SectionCard>
   );
 }
 

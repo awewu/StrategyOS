@@ -27,13 +27,13 @@ export function buildPanoramaPdf(
 
     if (useChinese) doc.registerFont("Main", regular);
     const font = useChinese ? "Main" : "Helvetica";
-    const gold = "#b8860b";
+    const accentColor = "#007681"; // Ruud teal — current strategic accent (replaces retired brand gold)
     const navy = "#0a1628";
     const muted = "#64748b";
     const pageW = doc.page.width - 72;
 
     // Header — mirrors /print/panorama
-    doc.font(font).fillColor(gold).fontSize(20);
+    doc.font(font).fillColor(accentColor).fontSize(20);
     doc.text(zh ? `${vm.brandName} · 战略推演全景` : `${vm.brandName} · Panorama`);
     doc.fillColor(muted).fontSize(10);
     doc.text(
@@ -44,9 +44,9 @@ export function buildPanoramaPdf(
     doc.moveDown(0.6);
 
     // Core challenge card
-    drawCard(doc, 36, doc.y, pageW, 52, font, gold, navy);
+    drawCard(doc, 36, doc.y, pageW, 52, font, accentColor, navy);
     const cardY = doc.y;
-    doc.font(font).fillColor(gold).fontSize(12).text(zh ? "核心挑战" : "Challenge", 44, cardY + 8);
+    doc.font(font).fillColor(accentColor).fontSize(12).text(zh ? "核心挑战" : "Challenge", 44, cardY + 8);
     doc.fillColor(navy).fontSize(10);
     doc.text(vm.challenge, 44, cardY + 24, { width: pageW - 16 });
     doc.text(zh ? `Crux: ${vm.crux}` : `Crux: ${vm.crux}`, 44, cardY + 38, { width: pageW - 16 });
@@ -57,16 +57,16 @@ export function buildPanoramaPdf(
     const kpiY = doc.y;
     PANORAMA_KPI_CARDS.forEach((k, i) => {
       const x = 36 + i * (kpiW + 4);
-      drawCard(doc, x, kpiY, kpiW, 44, font, gold, navy);
+      drawCard(doc, x, kpiY, kpiW, 44, font, accentColor, navy);
       doc.font(font).fillColor(muted).fontSize(8).text(k.label, x + 8, kpiY + 8, { width: kpiW - 16 });
-      doc.fillColor(gold).fontSize(14).text(kpiValue(vm, k.key), x + 8, kpiY + 22, { width: kpiW - 16 });
+      doc.fillColor(accentColor).fontSize(14).text(kpiValue(vm, k.key), x + 8, kpiY + 22, { width: kpiW - 16 });
     });
     doc.y = kpiY + 52;
 
     // One-minute diagram
-    drawCard(doc, 36, doc.y, pageW, 118, font, gold, navy);
+    drawCard(doc, 36, doc.y, pageW, 118, font, accentColor, navy);
     const diagY = doc.y;
-    doc.font(font).fillColor(gold).fontSize(12).text(zh ? "一分钟看懂 StratOS" : "StratOS at a glance", 44, diagY + 8);
+    doc.font(font).fillColor(accentColor).fontSize(12).text(zh ? "一分钟看懂 StratOS" : "StratOS at a glance", 44, diagY + 8);
     doc.fillColor("#334155").fontSize(7.5);
     doc.text(vm.oneMinuteDiagram, 44, diagY + 24, { width: pageW - 16, lineGap: 1 });
     doc.y = diagY + 124;
@@ -74,12 +74,12 @@ export function buildPanoramaPdf(
     // BSC + Top diff row
     const halfW = (pageW - 8) / 2;
     const rowY = doc.y;
-    drawCard(doc, 36, rowY, halfW, 56, font, gold, navy);
-    doc.font(font).fillColor(gold).fontSize(10).text(zh ? "BSC 四灯" : "BSC", 44, rowY + 8);
+    drawCard(doc, 36, rowY, halfW, 56, font, accentColor, navy);
+    doc.font(font).fillColor(accentColor).fontSize(10).text(zh ? "BSC 四灯" : "BSC", 44, rowY + 8);
     doc.fillColor(navy).fontSize(9).text(vm.bscLightsLine, 44, rowY + 22, { width: halfW - 16 });
 
-    drawCard(doc, 36 + halfW + 8, rowY, halfW, 56, font, gold, navy);
-    doc.font(font).fillColor(gold).fontSize(10).text("Top StratDiff", 44 + halfW + 8, rowY + 8);
+    drawCard(doc, 36 + halfW + 8, rowY, halfW, 56, font, accentColor, navy);
+    doc.font(font).fillColor(accentColor).fontSize(10).text("Top StratDiff", 44 + halfW + 8, rowY + 8);
     let dy = rowY + 22;
     vm.topDiffs.slice(0, 3).forEach((d) => {
       doc.fillColor(navy).fontSize(8).text(`· [${d.severity}] ${d.title}`, 44 + halfW + 8, dy, {
@@ -90,14 +90,14 @@ export function buildPanoramaPdf(
     doc.y = rowY + 64;
 
     // FPA + CapStack appendix (same data as browser extended section)
-    doc.font(font).fillColor(gold).fontSize(10).text(zh ? "FPA B-A-F" : "FPA", 36, doc.y);
+    doc.font(font).fillColor(accentColor).fontSize(10).text(zh ? "FPA B-A-F" : "FPA", 36, doc.y);
     doc.fillColor(navy).fontSize(8);
     vm.fpaLines.forEach((l) => {
       doc.text(l, 36, doc.y + 2);
       doc.moveDown(0.3);
     });
     doc.moveDown(0.2);
-    doc.fillColor(gold).fontSize(10).text("CapStack", 36, doc.y);
+    doc.fillColor(accentColor).fontSize(10).text("CapStack", 36, doc.y);
     doc.fillColor(navy).fontSize(8);
     vm.capStackLines.forEach((l) => {
       doc.text(l, 36, doc.y + 2);
@@ -106,7 +106,7 @@ export function buildPanoramaPdf(
 
     if (vm.activeAssertion) {
       doc.moveDown(0.3);
-      doc.fillColor("#e65100").fontSize(9).text(`⚠ ${vm.activeAssertion}`, 36, doc.y);
+      doc.fillColor("#8b0e04").fontSize(9).text(`⚠ ${vm.activeAssertion}`, 36, doc.y);
     }
 
     doc.font(font).fontSize(7).fillColor(muted);
@@ -137,10 +137,10 @@ function drawCard(
   w: number,
   h: number,
   _font: string,
-  gold: string,
+  accentColor: string,
   _navy: string
 ) {
   doc.save();
-  doc.roundedRect(x, y, w, h, 4).lineWidth(0.5).strokeColor(`${gold}66`).stroke();
+  doc.roundedRect(x, y, w, h, 4).lineWidth(0.5).strokeColor(`${accentColor}66`).stroke();
   doc.restore();
 }

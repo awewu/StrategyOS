@@ -38,7 +38,7 @@ export default async function MonitorBuPage({
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="运行监测 · N-1"
+        eyebrow="N-1"
         title="事业部"
         subtitle="运营 BU · 空调 / 热水 / BD / 制造 — N-1 轻量监测 · 专家视图见下方展开或执行全览"
       />
