@@ -3,16 +3,19 @@
 import { useCallback, useRef, useState } from "react";
 import { BscEditor } from "@/components/decode/BscEditor";
 import { HoshinEditor } from "@/components/decode/HoshinEditor";
+import { OkrEditor } from "@/components/decode/OkrEditor";
+import type { OkrBundle } from "@/lib/decode/okr-access";
 import { StratosTabButtons } from "@/components/ui/StratosTabNav";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { HoshinRowPayload } from "@/lib/decode/data-access";
 
-type Tab = "bsc" | "hoshin";
+type Tab = "bsc" | "hoshin" | "okr";
 
 type Initial = {
   bsc: BscDimensionRow[];
   hoshinFlat: HoshinRowPayload[];
   source: "database" | "demo";
+  okr: OkrBundle;
 };
 
 export function DecodeWorkspace({
@@ -148,6 +151,7 @@ export function DecodeWorkspace({
         tabs={[
           { id: "bsc", label: "BSC 战略地图" },
           { id: "hoshin", label: "Hoshin X-Matrix" },
+          { id: "okr", label: "OKR 目标承接" },
         ]}
       />
 
@@ -155,7 +159,15 @@ export function DecodeWorkspace({
       {tab === "hoshin" && (
         <HoshinEditor rows={hoshinRows} editing={editing} onChange={setHoshinRows} />
       )}
+      {tab === "okr" && (
+        <OkrEditor
+          objectives={initial.okr.objectives}
+          source={initial.okr.source}
+          canEdit={canEdit}
+        />
+      )}
 
+      {tab !== "okr" && (
       <div className="stratos-card stratos-card--padded flex flex-wrap items-center gap-3">
         <span className="text-caption">
           数据源 {source === "database" ? "DB" : "Demo"} · 在线录入 / Excel 导入
@@ -217,6 +229,7 @@ export function DecodeWorkspace({
           />
         </div>
       </div>
+      )}
     </div>
   );
 }

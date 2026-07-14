@@ -3,6 +3,7 @@ import { DecodeWorkspace } from "@/components/decode/DecodeWorkspace";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getDecodeBundle } from "@/lib/data/strategy-data";
+import { getOkrBundle } from "@/lib/decode/okr-access";
 import { getStrategyOnePager } from "@/lib/strategy/one-pager-store";
 
 export default async function DecodePage({
@@ -11,17 +12,19 @@ export default async function DecodePage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { tab } = await searchParams;
-  const [{ source, bsc, hoshinFlat }, onePager] = await Promise.all([
+  const [{ source, bsc, hoshinFlat }, okr, onePager] = await Promise.all([
     getDecodeBundle(),
+    getOkrBundle(),
     getStrategyOnePager().catch(() => null),
   ]);
-  const initialTab = tab === "hoshin" ? ("hoshin" as const) : undefined;
+  const initialTab =
+    tab === "hoshin" ? ("hoshin" as const) : tab === "okr" ? ("okr" as const) : undefined;
   const strategyApproved = onePager?.status === "APPROVED";
 
   return (
     <div className="stratos-page">
       <PageHeader
-        eyebrow="制定 ② 发布 → ③ 解码 · BSC · X-Matrix"
+        eyebrow="制定 ② 发布 → ③ 解码 · BSC · X-Matrix · OKR"
         title="战略解码"
         subtitle="战略地图与执行对齐 · 在线录入 / Excel 导入"
       />
@@ -34,7 +37,7 @@ export default async function DecodePage({
         </div>
       ) : null}
       <DecodeWorkspace
-        initial={{ bsc, hoshinFlat, source }}
+        initial={{ bsc, hoshinFlat, source, okr }}
         initialTab={initialTab}
       />
       <ConceptGuide ids={["bsc", "okr", "hoshin"]} />

@@ -10,10 +10,12 @@ import { SwotPanel } from "@/components/market/SwotPanel";
 import { GrowthAnalyticsEditor } from "@/components/growth/GrowthAnalyticsEditor";
 import { getGrowthAnalytics } from "@/lib/fpa/growth-analytics-access";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { KpiTile } from "@/components/ui/KpiTile";
 import { buildMarketBrief } from "@/lib/market-intel/brief";
 import { demoSources, demoSignals, demoTracks, demoInternalSwot } from "@/lib/market-intel/demo-data";
 import { HERMES, runHermesScan, sourceHealth, blindSpots, rankSignals } from "@/lib/market-intel/hermes";
 import { buildSwot, generateTows, internalSwotFromPremises } from "@/lib/market-intel/swot";
+import { leadTimeOf } from "@/lib/market-intel/types";
 import { getMarketSelfScores } from "@/lib/market-intel/swot-access";
 import { loadWorkbench } from "@/lib/market-intel/workbench-data";
 import { getCompassBundle } from "@/lib/compass/data";
@@ -161,6 +163,33 @@ export default async function MarketPage({
         title="市场洞察"
         subtitle="简报 → 格局 → 深潜"
       />
+
+      <div className="stratos-slot-grid">
+        <KpiTile
+          label="威胁信号"
+          value={String(signals.filter((s) => s.impact === "threat").length)}
+          tone={signals.some((s) => s.impact === "threat") ? "red" : "green"}
+          sub={`共 ${signals.length} 条信号`}
+        />
+        <KpiTile
+          label="领先信号"
+          value={String(ranked.filter((s) => leadTimeOf(s.sourceKind) === "leading").length)}
+          tone="gold"
+          sub="提前 6–12 月预警"
+        />
+        <KpiTile
+          label="情报盲区"
+          value={String(spots.length)}
+          tone={spots.length > 0 ? "red" : "green"}
+          sub="缺失即预警"
+        />
+        <KpiTile
+          label="活跃来源"
+          value={`${active}/${sources.length}`}
+          tone={active < sources.length ? "gold" : "green"}
+          sub="Hermes 持续追踪"
+        />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <MarketBriefPanel items={brief} />
