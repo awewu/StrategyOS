@@ -8,7 +8,7 @@ export const mckinseyCadence = {
   preRead: { route: "/reports", labelZh: "预读 · 月报/季报入库" },
   discussion: { route: "/command", labelZh: "讨论 · 指挥舱 SCR + KPI" },
   decision: { route: "/versions", labelZh: "决策 · 版本快照与 diff" },
-  followUp: { route: "/print/panorama", labelZh: "跟进 · 董事会一页纸" },
+  followUp: { route: "/print/panorama", labelZh: "跟进 · 董事会 A3 全景" },
 } as const;
 
 export const mckinseySections = {
@@ -56,7 +56,7 @@ export const appleSurfaces = {
   cardPadding: "var(--space-card, 1.5rem)",
   sectionGap: "var(--space-section, 2rem)",
   borderSubtle: "border-white/[0.06]",
-  borderFocus: "border-[var(--color-accent-gold)]/35",
+  borderFocus: "border-[var(--color-accent)]/35",
   glass: "surface-glass",
   elevated: "surface-elevated",
 } as const;

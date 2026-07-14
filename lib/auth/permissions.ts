@@ -54,11 +54,11 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { prefix: "/reports", minLevel: 2 },
   { prefix: "/ops", minLevel: 2 },
   { prefix: "/tools", minLevel: 2 },
+  { prefix: "/council", minLevel: 2 },
   { prefix: "/rehearsal", minLevel: 2 },
   { prefix: "/gates", minLevel: 2 },
   { prefix: "/monitor", minLevel: 0 },
   { prefix: "/execution", minLevel: 1 },
-  { prefix: "/health", minLevel: 0 },
   { prefix: "/culture", minLevel: 0 },
   { prefix: "/brand", minLevel: 0 },
 ];
@@ -66,7 +66,7 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
 const HUB_MIN_LEVEL: Record<string, AccessLevel> = {
   posture: 0,
   formulate: 2,
-  ops: 2,
+  portfolio: 2,
   operate: 0,
   tools: 2,
   decode: 2,

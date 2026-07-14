@@ -293,7 +293,7 @@ export function CultureTabs({
               {winners.map((w, i) => (
                 <article
                   key={w.id}
-                  className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent-gold)]/[0.06] to-transparent px-5 py-4"
+                  className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent)]/[0.06] to-transparent px-5 py-4"
                 >
                   {editing ? (
                     <div className="grid gap-2 sm:grid-cols-2">

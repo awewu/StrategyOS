@@ -17,7 +17,6 @@ import { InboxNavBadge } from "@/components/shell/InboxNavBadge";
 import {
   NAV_ACCESS,
   NAV_MONITOR_HUB,
-  NAV_OPS_HUB,
   NAV_PRIMARY_HUBS,
   NAV_TOOLS_HUB,
   NAV_STANDALONE,
@@ -190,7 +189,7 @@ export function AppNav({
 
   const standalone = NAV_STANDALONE.filter((item) => filterNavHref(role, item.href));
   const primaryHubs = NAV_PRIMARY_HUBS.map((h) => filterHubForRole(h, role)).filter(Boolean) as NavHub[];
-  const bottomHubs = [NAV_OPS_HUB, NAV_MONITOR_HUB, NAV_TOOLS_HUB]
+  const bottomHubs = [NAV_MONITOR_HUB, NAV_TOOLS_HUB]
     .map((h) => filterHubForRole(h, role))
     .filter(Boolean) as NavHub[];
 

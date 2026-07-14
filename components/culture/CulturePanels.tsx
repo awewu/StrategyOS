@@ -107,7 +107,7 @@ export function DoctrinesPanel({ handbook }: { handbook?: CultureHandbookContent
       </div>
       <p className={`${typography.caption} mt-5`}>
         每笔重大决策须挂 Doctrine 审计 · 见{" "}
-        <Link href="/gates" className="text-[var(--color-accent)] hover:underline">
+        <Link href="/council?tab=gates" className="text-[var(--color-accent)] hover:underline">
           战略会准入
         </Link>
       </p>
@@ -214,7 +214,7 @@ export function ValuesAwardPanel() {
         {VALUES_AWARD_WINNERS.map((w) => (
           <article
             key={w.id}
-            className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent-gold)]/[0.06] to-transparent px-5 py-4"
+            className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent)]/[0.06] to-transparent px-5 py-4"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
@@ -281,7 +281,7 @@ export function CultureLinksBar() {
   const links = [
     { href: "/compass", label: "战略罗盘" },
     { href: "/decode", label: "战略解码" },
-    { href: "/gates", label: "Gate 清单" },
+    { href: "/council?tab=gates", label: "Gate 清单" },
     { href: "/monitor/health", label: "集团健康" },
   ] as const;
 

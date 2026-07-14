@@ -31,7 +31,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
                     ? "var(--signal-green)"
                     : sc.name === "悲观"
                       ? "var(--signal-red)"
-                      : "var(--color-accent-gold)",
+                      : "var(--color-accent)",
               }}
               title={`${sc.name} ${sc.probability}%`}
             />
@@ -82,7 +82,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
               </div>
             </div>
             {sc.linkedAssumptionCodes.length > 0 && (
-              <div className="mt-2 text-[10px] text-[var(--color-text-muted)]">
+              <div className="mt-2 text-[11px] text-[var(--color-text-muted)]">
                 Hx: {sc.linkedAssumptionCodes.join(", ")}
               </div>
             )}

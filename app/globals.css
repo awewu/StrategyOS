@@ -5,6 +5,16 @@
  * Typography: Inter (clean industrial sans) + Noto Sans SC
  * Accent: Rheem Red #e4002b — strategic signal, not decoration
  * Dark theme preserved; Apple-discipline type scale retained
+ *
+ * ═══ 分层目录（自上而下，勿打乱级联顺序）═══════════════════════
+ * L0 Tokens        :root — surfaces / motion / accent / typography / signals
+ * L1 Theme bridge  @theme inline — 映射 tokens 给 Tailwind utilities
+ * L2 Shell         .stratos-shell-* / sidebar / nav / role-rail / flyout
+ * L3 Primitives    overlay (modal/drawer) / type scale / cards / forms /
+ *                  buttons / segmented / chips / tables / empty / skeleton
+ * L4 Pages         command deck / one-pager board deck / decode / icons
+ * L5 Print         @media print（board 主题 + A3 landscape）
+ * 新增样式请归入对应层的既有分区注释下，token 一律进 L0。
  */
 
 :root {
@@ -25,6 +35,14 @@
   --radius-card: 10px;
   --radius-control: 8px;
 
+  /* ── Motion ──
+   * fast: hover / 微交互；base: overlay / 展开折叠；slow: 骨架屏呼吸。
+   * 统一缓动曲线：快进慢出（decelerate）。 */
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-slow: 300ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+
   /* ── Interactive color: authentic Ruud cyan ──
    * Ruud links/buttons = #50c8e8, hover #3eb5d4. For AA text/icon contrast
    * on white we anchor the functional token to a deepened member of the same
@@ -36,10 +54,6 @@
 
   /* ── Signal red: Ruud's own deep red, risk only ── */
   --color-signal-red: #8b0e04;
-
-  /* legacy alias — interactive teal (Ruud secondary); red reserved for brand/risk */
-  --color-accent-gold:     var(--ruud-teal);
-  --color-accent-gold-dim: rgba(0, 118, 129, 0.1);
 
   /* ── Typography ── */
   /* Ruud slate family: #4d585a headers, #4e5758 body, #979a9c muted */
@@ -178,6 +192,36 @@ body {
     linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+/* ── Overlay primitives (Modal / Drawer) — 200ms enter ── */
+@keyframes stratos-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes stratos-overlay-pop {
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes stratos-drawer-slide {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.stratos-overlay-backdrop {
+  animation: stratos-overlay-fade var(--motion-base) ease-out;
+}
+.stratos-overlay-panel {
+  animation: stratos-overlay-pop var(--motion-base) var(--motion-ease);
+}
+.stratos-drawer-panel {
+  animation: stratos-drawer-slide var(--motion-base) var(--motion-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stratos-overlay-backdrop,
+  .stratos-overlay-panel,
+  .stratos-drawer-panel {
+    animation: none;
+  }
 }
 
 /* ── Shell sidebar rail (icon + label) ── */
@@ -993,6 +1037,15 @@ a.stratos-segment__item {
   gap: 1.5rem;
 }
 
+/* Equal-height cards per grid row */
+.stratos-command-board > div {
+  display: flex;
+  flex-direction: column;
+}
+.stratos-command-board > div > * {
+  flex: 1;
+}
+
 .stratos-command-board__fpa {
   grid-column: 1 / -1;
 }
@@ -1026,11 +1079,11 @@ a.stratos-segment__item {
   }
 
   .stratos-command-board__fpa {
-    grid-column: span 8;
+    grid-column: span 9;
   }
 
   .stratos-command-board__baf {
-    grid-column: span 4;
+    grid-column: span 3;
   }
 
   .stratos-command-board__robust,
@@ -1174,6 +1227,13 @@ a.stratos-segment__item {
 @keyframes stratos-pulse {
   0% { background-position: 100% 0; }
   100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stratos-skeleton {
+    animation: none;
+    background: var(--surface-raised);
+  }
 }
 
 /* Signal dots */

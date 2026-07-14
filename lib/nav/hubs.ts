@@ -35,7 +35,6 @@ export const NAV_HUBS: NavHub[] = [
       { href: "/inbox", label: "议题 Inbox" },
       { href: "/compass", label: "战略罗盘" },
       { href: "/strategy", label: "一页纸" },
-      { href: "/print/panorama", label: "董事会全景 · A3" },
       { href: "/outlook", label: "战略展望" },
     ],
   },
@@ -47,19 +46,20 @@ export const NAV_HUBS: NavHub[] = [
     defaultHref: "/strategy/input",
     children: [
       { href: "/strategy/input", label: "编制战略" },
-      { href: "/innovation", label: "创新底座" },
-      { href: "/ma", label: "并购 · 资本交易" },
       { href: "/versions", label: "历史版本 · 对照" },
       { href: "/mandates", label: "战略职责" },
     ],
   },
   {
-    id: "ops",
-    label: "Ops",
-    shortLabel: "Ops",
-    icon: "ops",
-    defaultHref: "/reports",
-    children: [{ href: "/reports", label: "OPS 运营" }],
+    id: "portfolio",
+    label: "增长与投资组合",
+    shortLabel: "增长",
+    icon: "portfolio",
+    defaultHref: "/innovation",
+    children: [
+      { href: "/innovation", label: "创新底座 · 内生（build）" },
+      { href: "/ma", label: "并购 · 外延（buy）" },
+    ],
   },
   {
     id: "operate",
@@ -73,6 +73,7 @@ export const NAV_HUBS: NavHub[] = [
       { href: "/monitor/bu", label: "事业部" },
       { href: "/monitor/health", label: "集团健康" },
       { href: "/execution", label: "执行 · 全览" },
+      { href: "/reports", label: "报告中心 · OPS" },
     ],
   },
   {
@@ -80,11 +81,10 @@ export const NAV_HUBS: NavHub[] = [
     label: "工具",
     shortLabel: "工具",
     icon: "tools",
-    defaultHref: "/rehearsal",
+    defaultHref: "/council",
     children: [
-      { href: "/rehearsal", label: "彩排" },
-      { href: "/gates", label: "战略会准入" },
-      { href: "/tools/meeting", label: "会议工具" },
+      { href: "/council", label: "战略会（彩排 · 准入 · 会议）" },
+      { href: "/tools/import", label: "数据导入" },
     ],
   },
 ];
@@ -120,13 +120,12 @@ export const NAV_STANDALONE: NavStandalone[] = [
   },
 ];
 
-/** 侧栏底部：Ops → 监测 → 工具 */
-export const NAV_OPS_HUB = NAV_HUBS.find((h) => h.id === "ops")!;
+/** 侧栏底部：监测 → 工具 */
 export const NAV_MONITOR_HUB = NAV_HUBS.find((h) => h.id === "operate")!;
 export const NAV_TOOLS_HUB = NAV_HUBS.find((h) => h.id === "tools")!;
 
 export const NAV_PRIMARY_HUBS = NAV_HUBS.filter(
-  (h) => h.id !== "ops" && h.id !== "operate" && h.id !== "tools",
+  (h) => h.id !== "operate" && h.id !== "tools",
 );
 
 export const NAV_ACCESS = {
@@ -146,8 +145,11 @@ export function matchesNavRoute(pathname: string, href: string): boolean {
 
 export function hubContainsPath(hub: NavHub, pathname: string): boolean {
   if (hub.id === "operate") {
-    if (pathname === "/health" || pathname.startsWith("/monitor/")) return true;
+    if (pathname.startsWith("/monitor/")) return true;
     if (pathname === "/execution" || pathname.startsWith("/execution/")) return true;
+  }
+  if (hub.id === "tools") {
+    if (pathname === "/rehearsal" || pathname === "/gates" || pathname.startsWith("/tools/meeting")) return true;
   }
   if (hub.id === "posture" && matchesNavRoute(pathname, "/outlook")) return true;
   if (hub.id === "posture" && matchesNavRoute(pathname, "/inbox")) return true;
@@ -169,7 +171,7 @@ export type PaletteGroup = (typeof PALETTE_GROUPS)[number];
 const HUB_PALETTE_GROUP: Record<string, PaletteGroup> = {
   posture: "指挥",
   formulate: "战略",
-  ops: "执行",
+  portfolio: "战略",
   operate: "执行",
   tools: "工具",
 };
@@ -192,10 +194,12 @@ export function flattenNavLinks(): { href: string; label: string; group: Palette
     out.push({ href: s.href, label: s.label, group: paletteGroupForStandalone(s.id) });
   }
   out.push(
-    { href: "/health", label: "集团健康（兼容链）", group: "执行" },
+    { href: "/council?tab=rehearsal", label: "战略会 · 彩排", group: "工具" },
+    { href: "/council?tab=gates", label: "战略会 · 准入 Gate", group: "工具" },
+    { href: "/council?tab=meeting", label: "战略会 · 会议工具", group: "工具" },
     { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "战略" },
-    { href: "/decode?tab=stratsim", label: "战略解码 · 反馈环", group: "战略" },
     { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
+    { href: "/finance/ledger", label: "FPA · 总账中台", group: "财务" },
   );
   return out;
 }

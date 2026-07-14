@@ -105,7 +105,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
           onChange={(e) => setQ(e.target.value)}
           rows={2}
           placeholder="例：史密斯热泵专利对 V4 12 个月窗口意味着什么？"
-          className="w-full rounded-lg border border-[var(--surface-border)] bg-white px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--color-accent-gold)]"
+          className="w-full rounded-lg border border-[var(--surface-border)] bg-white px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
         />
         <button
           type="submit"

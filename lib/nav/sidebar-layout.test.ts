@@ -1,14 +1,14 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { CEO_RAIL_STANDALONE_IDS, layoutSidebarNav } from "./sidebar-layout";
-import { NAV_OPS_HUB, NAV_MONITOR_HUB, NAV_TOOLS_HUB, NAV_STANDALONE, NAV_PRIMARY_HUBS } from "./hubs";
+import { NAV_MONITOR_HUB, NAV_TOOLS_HUB, NAV_STANDALONE, NAV_PRIMARY_HUBS } from "./hubs";
 
 describe("sidebar-layout · CEO", () => {
   it("keeps FPA on rail and folds secondary standalones into 更多", () => {
     const layout = layoutSidebarNav("ceo", {
       primaryHubs: NAV_PRIMARY_HUBS,
       standalone: NAV_STANDALONE,
-      bottomHubs: [NAV_OPS_HUB, NAV_MONITOR_HUB, NAV_TOOLS_HUB],
+      bottomHubs: [NAV_MONITOR_HUB, NAV_TOOLS_HUB],
       includeAccess: true,
     });
 
