@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { Modal as BaseModal } from "@/components/ui/Modal";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useRouter } from "next/navigation";
 import type { Holding, Mandate, MandateBundle, Meeting } from "@/lib/mandate/types";
 import {
@@ -144,9 +146,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
         <div className="space-y-4">
           <p className="text-xs text-[var(--color-text-muted)]">每条职责是跨会议延续的主线。下方时间线显示历次会议谁认领、交账或移交——人变,线不断。</p>
           {bundle.mandates.length === 0 && (
-            <div className="rounded-xl border border-dashed border-[var(--surface-border-strong)] p-8 text-center text-sm text-[var(--color-text-muted)]">
-              尚无战略职责。点击右上角「+ 新建职责」建立第一条主线。
-            </div>
+            <EmptyState title="尚无战略职责" hint="点击右上角「+ 新建职责」建立第一条主线" />
           )}
           {bundle.mandates.map((m) => (
             <div key={m.id} className="rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5"
@@ -185,7 +185,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-medium text-[var(--color-text-secondary)]">{h.meetingTitle}</span>
                         <span className="text-xs text-[var(--color-text-muted)]">{MEETING_TYPE_LABEL[h.meetingType]}</span>
-                        <span className="rounded px-1.5 py-0.5 text-[10px]" style={{ backgroundColor: HOLDING_STATUS_COLOR[h.status] + "20", color: HOLDING_STATUS_COLOR[h.status] }}>
+                        <span className="rounded px-1.5 py-0.5 text-[11px]" style={{ backgroundColor: HOLDING_STATUS_COLOR[h.status] + "20", color: HOLDING_STATUS_COLOR[h.status] }}>
                           {HOLDING_STATUS_LABEL[h.status]}
                         </span>
                       </div>
@@ -199,8 +199,8 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                       {h.deliveryNote && <div className="mt-0.5 text-xs" style={{ color: h.status === "MISSED" ? "var(--signal-red)" : "var(--color-text-muted)" }}>交账: {h.deliveryNote}</div>}
                       {h.handoverNote && <div className="mt-0.5 text-xs text-[var(--signal-yellow)]">移交: {h.handoverNote}{h.handoverToName && ` → ${h.handoverToName}`}</div>}
                       <div className="mt-1 flex gap-2">
-                        <button onClick={() => setEditHolding({ ...h })} className="text-[10px] text-[var(--color-accent)] hover:underline">更新</button>
-                        <button onClick={() => del(`/api/mandate/holding?id=${h.id}`)} className="text-[10px] text-[var(--signal-red)] hover:underline">删</button>
+                        <button onClick={() => setEditHolding({ ...h })} className="text-[11px] text-[var(--color-accent)] hover:underline">更新</button>
+                        <button onClick={() => del(`/api/mandate/holding?id=${h.id}`)} className="text-[11px] text-[var(--signal-red)] hover:underline">删</button>
                       </div>
                     </div>
                   ))}
@@ -220,9 +220,9 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">{mt.title}</span>
                   <span className="text-xs text-[var(--color-text-muted)]">{MEETING_TYPE_LABEL[mt.meetingType]} · {mt.period}</span>
-                  <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[10px] text-[var(--color-text-secondary)]">{MEETING_STATUS_LABEL[mt.status]}</span>
-                  {mt.holdingCount > 0 && <span className="text-[10px] text-[var(--color-accent)]">{mt.holdingCount} 条职责认领</span>}
-                  {mt.todos.length > 0 && <span className="text-[10px] text-[var(--color-accent)]">待办 {mt.todos.filter(todo => todo.completed).length}/{mt.todos.length}</span>}
+                  <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[11px] text-[var(--color-text-secondary)]">{MEETING_STATUS_LABEL[mt.status]}</span>
+                  {mt.holdingCount > 0 && <span className="text-[11px] text-[var(--color-accent)]">{mt.holdingCount} 条职责认领</span>}
+                  {mt.todos.length > 0 && <span className="text-[11px] text-[var(--color-accent)]">待办 {mt.todos.filter(todo => todo.completed).length}/{mt.todos.length}</span>}
                 </div>
                 {mt.planLabel && <p className="mt-1 text-xs text-[var(--color-accent)]">关联战略: {mt.planLabel}</p>}
                 {mt.participants.length > 0 && <p className="mt-1 text-xs text-[var(--color-text-secondary)]">参会人员: {mt.participants.map(p => p.name).join("、")}</p>}
@@ -475,12 +475,9 @@ function TodoOwnerPicker({
 
 function Modal({ title, children, onClose, wide = false }: { title: string; children: React.ReactNode; onClose: () => void; wide?: boolean }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className={`w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6 shadow-xl max-h-[90vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
-        <h3 className="mb-4 text-base font-semibold">{title}</h3>
-        {children}
-      </div>
-    </div>
+    <BaseModal onClose={onClose} size={wide ? "2xl" : "lg"} title={title}>
+      {children}
+    </BaseModal>
   );
 }
 

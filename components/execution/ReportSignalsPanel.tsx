@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { ReportSignal } from "@/lib/data/strategy-data";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const SEVERITY_META: Record<ReportSignal["severity"], { label: string; color: string; bg: string; border: string }> = {
-  high:   { label: "高", color: "var(--signal-red)",   bg: "bg-red-600/[0.06]",    border: "border-red-600/25" },
+  high:   { label: "高", color: "var(--signal-red)",   bg: "bg-[var(--signal-red)]/10",    border: "border-[var(--signal-red)]/25" },
   medium: { label: "中", color: "var(--color-accent)", bg: "bg-[var(--color-accent-dim)]", border: "border-[var(--color-accent)]/25" },
   low:    { label: "低", color: "var(--color-text-secondary)", bg: "bg-black/[0.03]",      border: "border-[var(--surface-border)]" },
 };
@@ -25,11 +26,10 @@ export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
       </header>
 
       {signals.length === 0 ? (
-        <div className="rounded-md border border-dashed border-[var(--surface-border)] py-8 text-center">
-          <p className="text-xs text-[var(--color-text-muted)]">
-            暂无已存档报告产生的信号 · 在报告中心上传并存档报告后，红线与战略模式信号将在此汇聚
-          </p>
-        </div>
+        <EmptyState
+          title="暂无已存档报告产生的信号"
+          hint="在报告中心上传并存档报告后，红线与战略模式信号将在此汇聚"
+        />
       ) : (
         <ul className="space-y-2">
           {signals.map((s, i) => {
@@ -40,7 +40,7 @@ export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
                 className={`flex flex-wrap items-start gap-3 rounded-md border ${meta.border} ${meta.bg} px-3 py-2.5`}
               >
                 <span
-                  className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[10px] font-semibold text-white"
+                  className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[11px] font-semibold text-white"
                   style={{ backgroundColor: meta.color }}
                   title={`严重度 ${meta.label}`}
                 >

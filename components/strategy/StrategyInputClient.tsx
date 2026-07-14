@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrgUnit } from "@prisma/client";
+import { useRowsEditor, RowTable, AddRowButton, RemoveRowButton } from "@/components/ui/RowsEditor";
 
 type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 
@@ -199,9 +200,6 @@ function emptyProduct(): ProductQuarterlyDraft {
 function emptyOrg(): OrgChartNodeDraft {
   return { name: "", role: "", headcount: "", headcountNew: "", note: "" };
 }
-function emptyMarketInsight(): MarketInsightDraft {
-  return { category: "TREND", title: "", content: "", dataPoint: "", source: "" };
-}
 function emptyActionItem(): ActionItemDraft {
   return { initiativeTitle: "", year: "2026", quarter: "1", action: "", ownerName: "", acceptanceCriteria: "", checkDate: "", status: "PLAN" };
 }
@@ -264,6 +262,7 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
   useEffect(() => {
     if (initialPlan) return;
     const saved = sessionStorage.getItem("strategy_input_orgId");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR 安全：仅在客户端挂载后恢复 sessionStorage，避免 hydration mismatch
     if (saved) setSelectedOrgId(saved);
   }, [initialPlan]);
   const [step, setStep] = useState<Step>("intent");
@@ -457,12 +456,6 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
           </div>
         )}
 
-        {/* DEBUG: remove after fix confirmed */}
-        {process.env.NODE_ENV === "development" && typeof window !== "undefined" && (() => {
-          // eslint-disable-next-line no-console
-          console.log("[StrategyInput] selectedOrgId=", selectedOrgId, "selectedOrg=", selectedOrg, "allUnitsFlat.length=", allUnitsFlat.length, "ids=", allUnitsFlat.map(u => u.id));
-          return null;
-        })()}
         {!selectedOrg ? (
           <div className="flex h-96 items-center justify-center text-sm text-[var(--color-text-muted)]">
             ← 请先选择组织单位
@@ -522,7 +515,7 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
                 >
                   {s.label}
                   {s.buHint && !isBuUnit && (
-                    <span className="ml-1 text-[10px] text-[var(--signal-yellow)] opacity-70">BU</span>
+                    <span className="ml-1 text-[11px] text-[var(--signal-yellow)] opacity-70">BU</span>
                   )}
                 </button>
               ))}
@@ -678,7 +671,6 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
           return { dimension: d.key, objective: m.objective ?? "", keyResults: krs };
         })
       : f.objectives,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initiatives: Array.isArray(ea.initiatives) && ea.initiatives.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? ea.initiatives.map((i: any) => ({ title: i.title ?? "", ownerName: i.ownerName ?? "", okrKeyResult: i.okrKeyResult ?? "", okrTarget: i.okrTarget ?? "", okrBaseline: i.okrBaseline ?? "", q1Milestone: i.q1Milestone ?? "", q2Milestone: i.q2Milestone ?? "", q3Milestone: i.q3Milestone ?? "", q4Milestone: i.q4Milestone ?? "" }))
@@ -977,22 +969,18 @@ function hydrate(plan: any): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? plan.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty?.toString() ?? "", q1Revenue: p.q1Revenue?.toString() ?? "", q2Qty: p.q2Qty?.toString() ?? "", q2Revenue: p.q2Revenue?.toString() ?? "", q3Qty: p.q3Qty?.toString() ?? "", q3Revenue: p.q3Revenue?.toString() ?? "", q4Qty: p.q4Qty?.toString() ?? "", q4Revenue: p.q4Revenue?.toString() ?? "", annualQty: p.annualQty?.toString() ?? "", annualRevenue: p.annualRevenue?.toString() ?? "", note: p.note ?? "" }))
       : base.productQuarterly;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const marketInsights: MarketInsightDraft[] = (plan.marketInsights ?? []).length > 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? plan.marketInsights.map((m: any) => ({ category: m.category ?? "TREND", title: m.title ?? "", content: m.content ?? "", dataPoint: m.dataPoint ?? "", source: m.source ?? "" }))
     : base.marketInsights;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const actionItems: ActionItemDraft[] = (plan.actionItems ?? []).length > 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? plan.actionItems.map((a: any) => ({ initiativeTitle: a.initiativeTitle ?? "", year: String(a.year ?? 2026), quarter: String(a.quarter ?? 1), action: a.action ?? "", ownerName: a.ownerName ?? "", acceptanceCriteria: a.acceptanceCriteria ?? "", checkDate: a.checkDate ?? "", status: a.status ?? "PLAN" }))
     : base.actionItems;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const budgetItems: BudgetItemDraft[] = (plan.budgetItems ?? []).length > 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? plan.budgetItems.map((b: any) => ({ category: b.category ?? "OPEX", initiativeTitle: b.initiativeTitle ?? "", department: b.department ?? "", description: b.description ?? "", year1Amount: b.year1Amount ?? "", year2Amount: b.year2Amount ?? "", year3Amount: b.year3Amount ?? "", totalAmount: b.totalAmount ?? "", roiEstimate: b.roiEstimate ?? "", justification: b.justification ?? "" }))
     : base.budgetItems;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roadmapItems: RoadmapItemDraft[] = (plan.roadmapItems ?? []).length > 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? plan.roadmapItems.map((r: any) => ({ track: r.track ?? "举措", title: r.title ?? "", startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: r.milestone ?? "", color: r.color ?? "" }))
@@ -1176,19 +1164,8 @@ function InitiativesForm({
   form: PlanForm;
   setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
 }) {
-  function set(idx: number, field: keyof InitiativeDraft, value: string) {
-    setForm((f) => {
-      const initiatives = [...f.initiatives];
-      initiatives[idx] = { ...initiatives[idx], [field]: value };
-      return { ...f, initiatives };
-    });
-  }
-  function addRow() {
-    setForm((f) => ({ ...f, initiatives: [...f.initiatives, emptyInitiative()] }));
-  }
-  function removeRow(idx: number) {
-    setForm((f) => ({ ...f, initiatives: f.initiatives.filter((_, i) => i !== idx) }));
-  }
+  const rows = useRowsEditor<PlanForm, InitiativeDraft>(setForm, "initiatives", emptyInitiative);
+  const set = rows.update;
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">OKR 管理：每项关键举措作为一个 Objective，填写负责人、关键结果、基线、目标值与季度里程碑</p>
@@ -1222,14 +1199,12 @@ function InitiativesForm({
               </div>
             </div>
             {form.initiatives.length > 1 && (
-              <button onClick={() => removeRow(idx)} className="mt-0.5 text-xs text-[var(--signal-red)] hover:underline">删除</button>
+              <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
             )}
           </div>
         </div>
       ))}
-      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">
-        + 新增举措
-      </button>
+      <AddRowButton label="新增举措" onClick={() => rows.add()} />
     </div>
   );
 }
@@ -1241,13 +1216,7 @@ function ResourcesForm({
   form: PlanForm;
   setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
 }) {
-  function set(idx: number, field: keyof ResourceDraft, value: string) {
-    setForm((f) => {
-      const resources = [...f.resources];
-      resources[idx] = { ...resources[idx], [field]: value };
-      return { ...f, resources };
-    });
-  }
+  const set = useRowsEditor<PlanForm, ResourceDraft>(setForm, "resources", () => ({ resourceType: "", amount: "", justification: "" })).update;
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">资源请求 (Capex/Opex/Headcount)</p>
@@ -1281,14 +1250,8 @@ function AssumptionsForm({
   form: PlanForm;
   setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
 }) {
-  function set(idx: number, field: keyof AssumptionDraft, value: string | boolean) {
-    setForm((f) => {
-      const assumptions = [...f.assumptions];
-      assumptions[idx] = { ...assumptions[idx], [field]: value };
-      return { ...f, assumptions };
-    });
-  }
-  function addRow() { setForm((f) => ({ ...f, assumptions: [...f.assumptions, { assumption: "", critical: false }] })); }
+  const rows = useRowsEditor<PlanForm, AssumptionDraft>(setForm, "assumptions", () => ({ assumption: "", critical: false }));
+  const set = rows.update;
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">战略成立的关键前提假设（勾选 = 关键假设）</p>
@@ -1298,7 +1261,7 @@ function AssumptionsForm({
           <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm" rows={2} value={a.assumption} onChange={(e) => set(idx, "assumption", e.target.value)} placeholder={"假设 " + (idx + 1)} />
         </div>
       ))}
-      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增假设</button>
+      <AddRowButton label="新增假设" onClick={() => rows.add()} />
     </div>
   );
 }
@@ -1312,15 +1275,7 @@ const SWOT_META = [
 ];
 
 function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, content: string) {
-    setForm((f) => { const swotItems = [...f.swotItems]; swotItems[idx] = { ...swotItems[idx], content }; return { ...f, swotItems }; });
-  }
-  function addItem(quadrant: SwotItemDraft["quadrant"]) {
-    setForm((f) => ({ ...f, swotItems: [...f.swotItems, { quadrant, content: "" }] }));
-  }
-  function removeItem(idx: number) {
-    setForm((f) => ({ ...f, swotItems: f.swotItems.filter((_, i) => i !== idx) }));
-  }
+  const rows = useRowsEditor<PlanForm, SwotItemDraft>(setForm, "swotItems", () => ({ quadrant: "strength", content: "" }));
   return (
     <div className="grid grid-cols-2 gap-4">
       {SWOT_META.map((m) => {
@@ -1330,11 +1285,11 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
             <div className={"text-sm font-semibold " + m.color}>{m.label}</div>
             {items.map((s) => (
               <div key={s._idx} className="flex gap-1">
-                <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" rows={2} value={s.content} onChange={(e) => set(s._idx, e.target.value)} placeholder="输入条目" />
-                <button onClick={() => removeItem(s._idx)} className="text-xs text-[var(--signal-red)] hover:underline">×</button>
+                <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" rows={2} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
+                <RemoveRowButton onClick={() => rows.remove(s._idx)} />
               </div>
             ))}
-            <button onClick={() => addItem(m.key)} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
+            <button onClick={() => rows.add({ quadrant: m.key })} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
           </div>
         );
       })}
@@ -1344,41 +1299,35 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
 
 // ─── 产品季度推进表 ────────────────────────────────────────────────────────────
 function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof ProductQuarterlyDraft, value: string) {
-    setForm((f) => { const productQuarterly = [...f.productQuarterly]; productQuarterly[idx] = { ...productQuarterly[idx], [field]: value }; return { ...f, productQuarterly }; });
-  }
-  function addRow() { setForm((f) => ({ ...f, productQuarterly: [...f.productQuarterly, emptyProduct()] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, productQuarterly: f.productQuarterly.filter((_, i) => i !== idx) })); }
+  const rows = useRowsEditor<PlanForm, ProductQuarterlyDraft>(setForm, "productQuarterly", emptyProduct);
+  const set = rows.update;
   const cellCls = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs text-right";
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">产品数量与金额季度推进计划（万元）</p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
-              <th className="px-2 py-1.5 text-left font-medium">产品</th>
-              <th className="px-2 py-1.5 text-center font-medium">单位</th>
-              {["Q1","Q2","Q3","Q4"].map(q => (
-                <th key={q} colSpan={2} className="px-2 py-1.5 text-center font-medium border-l border-[var(--surface-border)]">{q}</th>
-              ))}
-              <th className="px-2 py-1.5 text-center font-medium border-l border-[var(--surface-border)]">全年收入</th>
-              <th className="px-1" />
-            </tr>
-            <tr className="text-[var(--color-text-muted)] bg-black/[0.02]">
-              <th /><th />
-              {["Q1","Q2","Q3","Q4"].map(q => (
-                <React.Fragment key={q}>
-                  <th className="px-2 py-1 text-center border-l border-[var(--surface-border)]">数量</th>
-                  <th className="px-2 py-1 text-center">收入</th>
-                </React.Fragment>
-              ))}
-              <th className="border-l border-[var(--surface-border)] px-2">万元</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {form.productQuarterly.map((p, idx) => (
+      <RowTable
+        columns={[
+          { label: "产品" },
+          { label: "单位", align: "center" },
+          ...["Q1", "Q2", "Q3", "Q4"].map((q) => ({ label: q, align: "center" as const, colSpan: 2, className: "border-l border-[var(--surface-border)]" })),
+          { label: "全年收入", align: "center", className: "border-l border-[var(--surface-border)]" },
+          { label: "" },
+        ]}
+        extraHeadRow={
+          <tr className="text-[var(--color-text-muted)] bg-black/[0.02]">
+            <th /><th />
+            {["Q1","Q2","Q3","Q4"].map(q => (
+              <React.Fragment key={q}>
+                <th className="px-2 py-1 text-center border-l border-[var(--surface-border)]">数量</th>
+                <th className="px-2 py-1 text-center">收入</th>
+              </React.Fragment>
+            ))}
+            <th className="border-l border-[var(--surface-border)] px-2">万元</th>
+            <th />
+          </tr>
+        }
+      >
+        {form.productQuarterly.map((p, idx) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
                 <td className="px-1 py-1"><input type="text" className={cellCls + " text-left w-24"} value={p.productName} onChange={(e) => set(idx, "productName", e.target.value)} placeholder="产品名" /></td>
                 <td className="px-1 py-1"><input type="text" className={cellCls + " w-12"} value={p.unit} onChange={(e) => set(idx, "unit", e.target.value)} placeholder="台/套" /></td>
@@ -1391,13 +1340,11 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
                 <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q4Qty} onChange={(e) => set(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
                 <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q4Revenue} onChange={(e) => set(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
                 <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-20"} value={p.annualRevenue} onChange={(e) => set(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-xs text-[var(--signal-red)] hover:underline">×</button></td>
+                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增产品行</button>
+      </RowTable>
+      <AddRowButton label="新增产品行" onClick={() => rows.add()} />
     </div>
   );
 }
@@ -1406,18 +1353,15 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
 const CHANNEL_TYPES = ["直销", "经销/代理", "电商", "OEM/ODM", "政府/项目", "海外出口"];
 
 function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof ChannelPlanDraft, value: string) {
-    setForm((f) => { const channelPlans = [...f.channelPlans]; channelPlans[idx] = { ...channelPlans[idx], [field]: value }; return { ...f, channelPlans }; });
-  }
-  function addRow(type: string) { setForm((f) => ({ ...f, channelPlans: [...f.channelPlans, { ...emptyChannel(), channelType: type }] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, channelPlans: f.channelPlans.filter((_, i) => i !== idx) })); }
+  const rows = useRowsEditor<PlanForm, ChannelPlanDraft>(setForm, "channelPlans", emptyChannel);
+  const set = rows.update;
   const ta = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
         <p className="text-xs text-[var(--color-text-muted)]">业务BU必填 · 渠道发展专题分析</p>
         {CHANNEL_TYPES.map((t) => (
-          <button key={t} onClick={() => addRow(t)} className="rounded border border-[var(--surface-border)] px-2 py-0.5 text-xs hover:bg-black/[0.04] transition-colors">{t}</button>
+          <button key={t} onClick={() => rows.add({ channelType: t })} className="rounded border border-[var(--surface-border)] px-2 py-0.5 text-xs hover:bg-black/[0.04] transition-colors">{t}</button>
         ))}
       </div>
       {form.channelPlans.map((ch, idx) => (
@@ -1429,7 +1373,7 @@ function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
               <input type="text" className="w-24 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1" value={ch.revenueTarget} onChange={(e) => set(idx, "revenueTarget", e.target.value)} placeholder="0" />
               <span className="text-[var(--color-text-muted)]">伙伴数量</span>
               <input type="text" className="w-16 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1" value={ch.partnerCount} onChange={(e) => set(idx, "partnerCount", e.target.value)} placeholder="0" />
-              <button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">删除</button>
+              <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -1451,11 +1395,8 @@ function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
 
 // ─── 客户发展专题（业务BU必填）────────────────────────────────────────────────
 function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof CustomerPlanDraft, value: string | boolean) {
-    setForm((f) => { const customerPlans = [...f.customerPlans]; customerPlans[idx] = { ...customerPlans[idx], [field]: value as string }; return { ...f, customerPlans }; });
-  }
-  function addRow(isNew: boolean) { setForm((f) => ({ ...f, customerPlans: [...f.customerPlans, emptyCustomer(isNew)] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, customerPlans: f.customerPlans.filter((_, i) => i !== idx) })); }
+  const rows = useRowsEditor<PlanForm, CustomerPlanDraft>(setForm, "customerPlans", () => emptyCustomer(false));
+  const set = rows.update;
   const inp = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   const ta = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   const existing = form.customerPlans.filter((c) => !c.isNew);
@@ -1466,7 +1407,7 @@ function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium">{label}</div>
-          <button onClick={() => addRow(isNew)} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增{isNew ? "新增" : "现有"}客户</button>
+          <button onClick={() => rows.add({ isNew })} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增{isNew ? "新增" : "现有"}客户</button>
         </div>
         {group.length === 0 && <div className="text-center py-4 text-xs text-[var(--color-text-muted)]">暂无数据，点击上方新增</div>}
         {group.map((cu, gi) => {
@@ -1481,7 +1422,7 @@ function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
                 <input type="text" className={inp + " w-16"} value={cu.targetCount} onChange={(e) => set(idx, "targetCount", e.target.value)} placeholder="家数" />
                 <span className="text-xs text-[var(--color-text-muted)]">客单值(万)</span>
                 <input type="text" className={inp + " w-20"} value={cu.revenuePerCustomer} onChange={(e) => set(idx, "revenuePerCustomer", e.target.value)} placeholder="0" />
-                <button onClick={() => removeRow(idx)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+                <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
               </div>
               <div className="grid grid-cols-4 gap-1.5">
                 {(["q1Count","q2Count","q3Count","q4Count"] as const).map((f, qi) => (
@@ -1572,11 +1513,8 @@ function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.D
 
 // ─── 作战计划 ─────────────────────────────────────────────────────────────────
 function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof ActionItemDraft, value: string) {
-    setForm((f) => { const arr = [...f.actionItems]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, actionItems: arr }; });
-  }
-  function addRow() { setForm((f) => ({ ...f, actionItems: [...f.actionItems, emptyActionItem()] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, actionItems: f.actionItems.filter((_, i) => i !== idx) })); }
+  const rows = useRowsEditor<PlanForm, ActionItemDraft>(setForm, "actionItems", emptyActionItem);
+  const set = rows.update;
   const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
   const sel = inp;
   const STATUS_OPTS = [
@@ -1588,23 +1526,20 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">年度作战计划 — 关键举措拆解到年度 / 季度具体行动，填写验收标准</p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
-              <th className="px-2 py-1.5 text-left font-medium w-28">关联举措</th>
-              <th className="px-2 py-1.5 text-center font-medium w-14">年份</th>
-              <th className="px-2 py-1.5 text-center font-medium w-10">季度</th>
-              <th className="px-2 py-1.5 text-left font-medium">具体行动</th>
-              <th className="px-2 py-1.5 text-left font-medium w-20">负责人</th>
-              <th className="px-2 py-1.5 text-left font-medium">验收标准</th>
-              <th className="px-2 py-1.5 text-center font-medium w-20">检查日期</th>
-              <th className="px-2 py-1.5 text-center font-medium w-16">状态</th>
-              <th className="px-1 w-6" />
-            </tr>
-          </thead>
-          <tbody>
-            {form.actionItems.map((ai, idx) => (
+      <RowTable
+        columns={[
+          { label: "关联举措", className: "w-28" },
+          { label: "年份", align: "center", className: "w-14" },
+          { label: "季度", align: "center", className: "w-10" },
+          { label: "具体行动" },
+          { label: "负责人", className: "w-20" },
+          { label: "验收标准" },
+          { label: "检查日期", align: "center", className: "w-20" },
+          { label: "状态", align: "center", className: "w-16" },
+          { label: "", className: "w-6" },
+        ]}
+      >
+        {form.actionItems.map((ai, idx) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
                 <td className="px-1 py-1"><input type="text" className={inp} value={ai.initiativeTitle} onChange={(e) => set(idx, "initiativeTitle", e.target.value)} placeholder="举措标题" /></td>
                 <td className="px-1 py-1">
@@ -1626,24 +1561,19 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
                     {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </td>
-                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增行动项</button>
+      </RowTable>
+      <AddRowButton label="新增行动项" onClick={() => rows.add()} />
     </div>
   );
 }
 
 // ─── 资源预算 ─────────────────────────────────────────────────────────────────
 function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof BudgetItemDraft, value: string) {
-    setForm((f) => { const arr = [...f.budgetItems]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, budgetItems: arr }; });
-  }
-  function addRow(cat: string) { setForm((f) => ({ ...f, budgetItems: [...f.budgetItems, emptyBudgetItem(cat)] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, budgetItems: f.budgetItems.filter((_, i) => i !== idx) })); }
+  const rowsEditor = useRowsEditor<PlanForm, BudgetItemDraft>(setForm, "budgetItems", emptyBudgetItem);
+  const set = rowsEditor.update;
   const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
   const CATS = ["CAPEX", "OPEX", "HC"] as const;
   const catLabel: Record<string, string> = { CAPEX: "资本性支出（Capex）", OPEX: "运营费用（Opex）", HC: "人员编制（HC）" };
@@ -1656,24 +1586,21 @@ function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch
           <div key={cat} className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{catLabel[cat]}</span>
-              <button onClick={() => addRow(cat)} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增</button>
+              <button onClick={() => rowsEditor.add({ category: cat })} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增</button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
-                    <th className="px-2 py-1 text-left font-medium">描述</th>
-                    <th className="px-2 py-1 text-left font-medium">关联举措</th>
-                    <th className="px-2 py-1 text-left font-medium">部门</th>
-                    <th className="px-2 py-1 text-center font-medium">2026</th>
-                    <th className="px-2 py-1 text-center font-medium">2027</th>
-                    <th className="px-2 py-1 text-center font-medium">2028</th>
-                    <th className="px-2 py-1 text-center font-medium">合计</th>
-                    <th className="px-2 py-1 text-left font-medium">ROI估算</th>
-                    <th className="px-1 w-6" />
-                  </tr>
-                </thead>
-                <tbody>
+            <RowTable
+              columns={[
+                { label: "描述" },
+                { label: "关联举措" },
+                { label: "部门" },
+                { label: "2026", align: "center" },
+                { label: "2027", align: "center" },
+                { label: "2028", align: "center" },
+                { label: "合计", align: "center" },
+                { label: "ROI估算" },
+                { label: "", className: "w-6" },
+              ]}
+            >
                   {rows.map(({ b, i }) => (
                     <tr key={i} className="border-b border-[var(--surface-border)]/50">
                       <td className="px-1 py-1"><input type="text" className={inp} value={b.description} onChange={(e) => set(i, "description", e.target.value)} placeholder="项目描述" /></td>
@@ -1684,15 +1611,13 @@ function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch
                       <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year3Amount} onChange={(e) => set(i, "year3Amount", e.target.value)} placeholder="万元" /></td>
                       <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.totalAmount} onChange={(e) => set(i, "totalAmount", e.target.value)} placeholder="万元" /></td>
                       <td className="px-1 py-1"><input type="text" className={inp} value={b.roiEstimate} onChange={(e) => set(i, "roiEstimate", e.target.value)} placeholder="如：18个月回本" /></td>
-                      <td className="px-1"><button onClick={() => removeRow(i)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+                      <td className="px-1"><RemoveRowButton onClick={() => rowsEditor.remove(i)} /></td>
                     </tr>
                   ))}
                   {rows.length === 0 && (
                     <tr><td colSpan={9} className="px-2 py-3 text-center text-[var(--color-text-muted)]">暂无条目，点击「+ 新增」添加</td></tr>
                   )}
-                </tbody>
-              </table>
-            </div>
+            </RowTable>
           </div>
         );
       })}
@@ -1710,11 +1635,8 @@ const COLORS: { value: string; label: string; cls: string }[] = [
 ];
 
 function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof RoadmapItemDraft, value: string) {
-    setForm((f) => { const arr = [...f.roadmapItems]; arr[idx] = { ...arr[idx], [field]: value }; return { ...f, roadmapItems: arr }; });
-  }
-  function addRow() { setForm((f) => ({ ...f, roadmapItems: [...f.roadmapItems, emptyRoadmapItem()] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, roadmapItems: f.roadmapItems.filter((_, i) => i !== idx) })); }
+  const rows = useRowsEditor<PlanForm, RoadmapItemDraft>(setForm, "roadmapItems", emptyRoadmapItem);
+  const set = rows.update;
   const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
   const YEARS = [2026, 2027, 2028];
   const QS = [1, 2, 3, 4];
@@ -1733,7 +1655,7 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
         <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)] p-3">
           <div className="text-xs font-medium mb-2">预览</div>
           <div className="relative" style={{ minWidth: 700 }}>
-            <div className="grid text-[10px] text-[var(--color-text-muted)] mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
+            <div className="grid text-[11px] text-[var(--color-text-muted)] mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
               <div />
               {quarters.map((q) => (
                 <div key={q.label} className={"text-center border-l border-[var(--surface-border)] " + (q.q === 1 ? "font-semibold" : "")}>{q.label}</div>
@@ -1746,10 +1668,10 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
               const colorCls = COLORS.find((c) => c.value === r.color)?.cls ?? COLORS[0].cls;
               return (
                 <div key={idx} className="grid items-center mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
-                  <div className="text-[10px] truncate pr-2 text-[var(--color-text-secondary)]">{r.track} · {r.title}</div>
+                  <div className="text-[11px] truncate pr-2 text-[var(--color-text-secondary)]">{r.track} · {r.title}</div>
                   {Array.from({ length: quarters.length }).map((_, ci) => (
                     ci === si
-                      ? <div key={ci} className={"rounded text-[10px] px-1 py-0.5 truncate " + colorCls} style={{ gridColumn: `span ${span}` }}>{r.milestone || r.title}</div>
+                      ? <div key={ci} className={"rounded text-[11px] px-1 py-0.5 truncate " + colorCls} style={{ gridColumn: `span ${span}` }}>{r.milestone || r.title}</div>
                       : ci > si && ci <= ei ? null
                       : <div key={ci} />
                   ))}
@@ -1761,23 +1683,20 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
       )}
 
       {/* 输入表格 */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
-              <th className="px-2 py-1.5 text-left font-medium">轨道</th>
-              <th className="px-2 py-1.5 text-left font-medium">标题</th>
-              <th className="px-2 py-1.5 text-center font-medium">开始年</th>
-              <th className="px-2 py-1.5 text-center font-medium">Q</th>
-              <th className="px-2 py-1.5 text-center font-medium">结束年</th>
-              <th className="px-2 py-1.5 text-center font-medium">Q</th>
-              <th className="px-2 py-1.5 text-left font-medium">关键里程碑</th>
-              <th className="px-2 py-1.5 text-center font-medium">颜色</th>
-              <th className="px-1 w-6" />
-            </tr>
-          </thead>
-          <tbody>
-            {form.roadmapItems.map((r, idx) => (
+      <RowTable
+        columns={[
+          { label: "轨道" },
+          { label: "标题" },
+          { label: "开始年", align: "center" },
+          { label: "Q", align: "center" },
+          { label: "结束年", align: "center" },
+          { label: "Q", align: "center" },
+          { label: "关键里程碑" },
+          { label: "颜色", align: "center" },
+          { label: "", className: "w-6" },
+        ]}
+      >
+        {form.roadmapItems.map((r, idx) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
                 <td className="px-1 py-1">
                   <select className={inp} value={r.track} onChange={(e) => set(idx, "track", e.target.value)}>
@@ -1811,13 +1730,11 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
                     {COLORS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </td>
-                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增节点</button>
+      </RowTable>
+      <AddRowButton label="新增节点" onClick={() => rows.add()} />
     </div>
   );
 }
@@ -1898,7 +1815,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
           <div className="grid grid-cols-2 gap-1 text-xs">
             {[["strength", "优势"], ["weakness", "劣势"], ["opportunity", "机会"], ["threat", "威胁"]].map(([q, label]) => (
               <div key={q} className="space-y-0.5">
-                <div className="font-medium text-[10px] text-[var(--color-text-muted)]">{label}</div>
+                <div className="font-medium text-[11px] text-[var(--color-text-muted)]">{label}</div>
                 {swotByQ(q).slice(0, 2).map((c, i) => <div key={i} className="line-clamp-1">{c}</div>)}
                 {swotByQ(q).length === 0 && <div className="text-[var(--color-text-muted)]">—</div>}
               </div>
@@ -1923,7 +1840,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
         </div>
       </div>
 
-      <div className="text-center text-[10px] text-[var(--color-text-muted)] border-t border-[var(--surface-border)] pt-2">
+      <div className="text-center text-[11px] text-[var(--color-text-muted)] border-t border-[var(--surface-border)] pt-2">
         本文件由 StratOS 战略编制系统生成 · 草稿版本 · 内部保密
       </div>
     </div>
@@ -1932,42 +1849,34 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
 
 // ─── 组织规划 ─────────────────────────────────────────────────────────────────
 function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  function set(idx: number, field: keyof OrgChartNodeDraft, value: string) {
-    setForm((f) => { const orgChartNodes = [...f.orgChartNodes]; orgChartNodes[idx] = { ...orgChartNodes[idx], [field]: value }; return { ...f, orgChartNodes }; });
-  }
-  function addRow() { setForm((f) => ({ ...f, orgChartNodes: [...f.orgChartNodes, emptyOrg()] })); }
-  function removeRow(idx: number) { setForm((f) => ({ ...f, orgChartNodes: f.orgChartNodes.filter((_, i) => i !== idx) })); }
+  const rows = useRowsEditor<PlanForm, OrgChartNodeDraft>(setForm, "orgChartNodes", emptyOrg);
+  const set = rows.update;
   const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   return (
     <div className="space-y-3">
       <p className="text-xs text-[var(--color-text-muted)]">组织架构规划 — 填写规划期末的目标组织设计</p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-[var(--surface-border)] text-[var(--color-text-muted)]">
-              <th className="px-2 py-1.5 text-left font-medium">部门/岗位</th>
-              <th className="px-2 py-1.5 text-left font-medium">职能描述</th>
-              <th className="px-2 py-1.5 text-center font-medium">现有编制</th>
-              <th className="px-2 py-1.5 text-center font-medium">新增编制</th>
-              <th className="px-2 py-1.5 text-left font-medium">备注</th>
-              <th className="px-1" />
-            </tr>
-          </thead>
-          <tbody>
-            {form.orgChartNodes.map((node, idx) => (
+      <RowTable
+        columns={[
+          { label: "部门/岗位" },
+          { label: "职能描述" },
+          { label: "现有编制", align: "center" },
+          { label: "新增编制", align: "center" },
+          { label: "备注" },
+          { label: "" },
+        ]}
+      >
+        {form.orgChartNodes.map((node, idx) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
                 <td className="px-1 py-1"><input type="text" className={inp} value={node.name} onChange={(e) => set(idx, "name", e.target.value)} placeholder="部门/岗位名称" /></td>
                 <td className="px-1 py-1"><input type="text" className={inp} value={node.role} onChange={(e) => set(idx, "role", e.target.value)} placeholder="主要职能" /></td>
                 <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount} onChange={(e) => set(idx, "headcount", e.target.value)} placeholder="0" /></td>
                 <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcountNew} onChange={(e) => set(idx, "headcountNew", e.target.value)} placeholder="0" /></td>
                 <td className="px-1 py-1"><input type="text" className={inp} value={node.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></td>
-                <td className="px-1"><button onClick={() => removeRow(idx)} className="text-[var(--signal-red)] hover:underline">×</button></td>
+                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <button onClick={addRow} className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors">+ 新增行</button>
+      </RowTable>
+      <AddRowButton label="新增行" onClick={() => rows.add()} />
     </div>
   );
 }

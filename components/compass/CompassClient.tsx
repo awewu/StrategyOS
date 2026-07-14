@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { CompassBundle, CompassMilestone, PremiseAudit } from "@/lib/compass/types";
 import {
   NorthStarEditModal,
@@ -226,7 +228,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             { label: "所需年复合增速", value: pct(requiredCagr), warn: requiredCagr > 0.25 },
           ].map(item => (
             <div key={item.label} className="rounded-lg bg-black/[0.025] px-3 py-2.5">
-              <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">{item.label}</div>
+              <div className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)]">{item.label}</div>
               <div className={`mt-1 font-data text-lg font-semibold ${item.warn ? "text-[var(--signal-red)]" : "text-[var(--color-text-primary)]"}`}>
                 {item.value}
               </div>
@@ -294,17 +296,20 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             ) : null}
           </div>
           {milestones.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--surface-border-strong)] py-10 text-sm text-[var(--color-text-muted)]">
-              <span>尚未生成路径里程碑。保存使命愿景后应自动生成；若仍为空可手动触发。</span>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={seedCompassPath}
-                className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60"
-              >
-                生成路径反推
-              </button>
-            </div>
+            <EmptyState
+              title="尚未生成路径里程碑"
+              hint="保存使命愿景后应自动生成；若仍为空可手动触发"
+              action={
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={seedCompassPath}
+                  className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60"
+                >
+                  生成路径反推
+                </button>
+              }
+            />
           ) : milestones.map((m) => {
             const v = riskVerdict(m.riskScore);
             const progressPct = m.revenueTarget && currentRevenue
@@ -367,7 +372,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
 
                 {m.keyConditions.length > 0 && (
                   <div className="mt-3">
-                    <div className="mb-1 text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">必要条件</div>
+                    <div className="mb-1 text-[11px] uppercase tracking-wider text-[var(--color-text-muted)]">必要条件</div>
                     <div className="flex flex-wrap gap-1.5">
                       {m.keyConditions.map((c, i) => (
                         <span key={i} className="rounded bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">{c}</span>
@@ -408,17 +413,20 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             ) : null}
           </div>
           {premises.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[var(--surface-border-strong)] py-10 text-sm text-[var(--color-text-muted)]">
-              <span>尚未录入战略前提。系统将生成 P1–P6 模板，可逐条更新置信度与失效信号。</span>
-              <button
-                type="button"
-                disabled={saving}
-                onClick={seedCompassPath}
-                className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60"
-              >
-                生成前提审计模板
-              </button>
-            </div>
+            <EmptyState
+              title="尚未录入战略前提"
+              hint="系统将生成 P1–P6 模板，可逐条更新置信度与失效信号"
+              action={
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={seedCompassPath}
+                  className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-60"
+                >
+                  生成前提审计模板
+                </button>
+              }
+            />
           ) : (
           <div className="overflow-x-auto rounded-xl border border-[var(--surface-border)]">
             <table className="w-full min-w-[700px] border-collapse text-sm">
@@ -462,14 +470,14 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                       {p.failSignal ? (
                         <div>
                           {p.signalSource?.startsWith("自动·") ? (
-                            <span className="mb-1 inline-block rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[10px] text-[var(--color-accent)]">
+                            <span className="mb-1 inline-block rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">
                               {p.signalSource}
                             </span>
                           ) : null}
                           <span className="inline-block rounded bg-[var(--signal-red)]/10 px-1.5 py-0.5 text-xs text-[var(--signal-red)]">⚠ 失效信号</span>
                           <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{p.failSignal}</div>
                           {p.signalSource && !p.signalSource.startsWith("自动·") ? (
-                            <div className="text-[10px] text-[var(--color-text-muted)]">{p.signalSource}</div>
+                            <div className="text-[11px] text-[var(--color-text-muted)]">{p.signalSource}</div>
                           ) : null}
                         </div>
                       ) : (
@@ -529,9 +537,7 @@ function MilestoneEditModal({ milestone, saving, onClose, onSave }: {
   const isNew = !form.id || !form.id.includes("-");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-      <div className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold">{isNew ? "添加路径里程碑" : `${form.year} 里程碑编辑`}</h3>
+    <Modal onClose={onClose} size="lg" title={isNew ? "添加路径里程碑" : `${form.year} 里程碑编辑`}>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -570,8 +576,7 @@ function MilestoneEditModal({ milestone, saving, onClose, onSave }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -585,9 +590,7 @@ function PremiseEditModal({ premise, saving, onClose, onSave }: {
   const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold">{form.code} 前提假设更新</h3>
+    <Modal onClose={onClose} size="lg" title={`${form.code} 前提假设更新`}>
         <div className="space-y-3">
           <textarea rows={3} className={inp} value={form.premise} onChange={e => setForm(f => ({ ...f, premise: e.target.value }))} placeholder="假设内容" />
           <div className="grid grid-cols-2 gap-3">
@@ -611,7 +614,6 @@ function PremiseEditModal({ premise, saving, onClose, onSave }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

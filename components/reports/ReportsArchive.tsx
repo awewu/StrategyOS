@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type OrgUnit = { id: string; name: string; level: string };
 type ReportRow = {
@@ -41,9 +42,9 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 };
 
 const APPROVAL_STYLE: Record<string, string> = {
-  PENDING: "bg-yellow-500/10 text-yellow-700",
-  APPROVED: "bg-green-600/10 text-green-700",
-  REJECTED: "bg-red-600/10 text-red-700",
+  PENDING: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]",
+  APPROVED: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
+  REJECTED: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]",
 };
 const APPROVAL_LABEL: Record<string, string> = {
   PENDING: "待审批",
@@ -333,9 +334,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
       {loading ? (
         <p className="text-sm text-[var(--color-text-muted)]">加载中…</p>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[var(--surface-border-strong)] py-12 text-center">
-          <p className="text-sm text-[var(--color-text-muted)]">暂无报告 · 点击「上传报告」提交第一份</p>
-        </div>
+        <EmptyState title="暂无报告" hint="点击「上传报告」提交第一份" />
       ) : (
         <div className="space-y-2">
           {rows.map((r) => (
@@ -348,15 +347,15 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                 className="flex-1 min-w-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-accent)]">
+                  <span className="text-[11px] font-medium uppercase tracking-widest text-[var(--color-accent)]">
                     {REPORT_TYPE_LABELS[r.reportType] ?? r.reportType}
                   </span>
                   {r.orgUnit && (
-                    <span className="text-[10px] text-[var(--color-text-muted)]">
+                    <span className="text-[11px] text-[var(--color-text-muted)]">
                       {r.orgUnit.name}
                     </span>
                   )}
-                  <span className="text-[10px] text-[var(--color-text-muted)]">{r.period}</span>
+                  <span className="text-[11px] text-[var(--color-text-muted)]">{r.period}</span>
                 </div>
                 <p className="mt-0.5 text-sm font-medium text-[var(--color-text-primary)] truncate">
                   {r.title}
@@ -371,7 +370,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                 </div>
               </Link>
               <div className="flex shrink-0 items-center gap-2">
-                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${APPROVAL_STYLE[r.approvalStatus]}`}>
+                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${APPROVAL_STYLE[r.approvalStatus]}`}>
                   {APPROVAL_LABEL[r.approvalStatus]}
                 </span>
                 {r.approvalStatus === "PENDING" && (
@@ -379,14 +378,14 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                     <button
                       type="button"
                       onClick={() => doApproval(r.id, "APPROVED")}
-                      className="rounded border border-green-600/30 px-2.5 py-0.5 text-[11px] text-green-700 hover:bg-green-600/10"
+                      className="rounded border border-[var(--signal-green)]/25 px-2.5 py-0.5 text-[11px] text-[var(--signal-green)] hover:bg-[var(--signal-green)]/10"
                     >
                       存档
                     </button>
                     <button
                       type="button"
                       onClick={() => doApproval(r.id, "REJECTED")}
-                      className="rounded border border-red-600/20 px-2.5 py-0.5 text-[11px] text-[var(--signal-red)] hover:bg-red-600/5"
+                      className="rounded border border-[var(--signal-red)]/25 px-2.5 py-0.5 text-[11px] text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10"
                     >
                       退回
                     </button>

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { OutlookEditor } from "@/components/finance/OutlookEditor";
 import { ScenarioAdvisor } from "@/components/command/ScenarioAdvisor";
-import { RobustBars } from "@/components/health/RobustBars";
+import { RobustTrend } from "@/components/health/RobustTrend";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SectionCard } from "@/components/ui/KpiTile";
-import { getFinanceBundle, getRobustScore } from "@/lib/data/strategy-data";
+import { getFinanceBundle, getRobustView } from "@/lib/data/strategy-data";
 
 const HORIZON_META = [
   { key: "H1", label: "H1 · 守成", desc: "当期主业 · 现金牛", tone: "var(--signal-green)" },
@@ -21,7 +21,7 @@ export default async function OutlookPage() {
       <PageHeader
         eyebrow="战略态势 · 前瞻"
         title="战略展望"
-        subtitle={`外部 → 三层面 → 情景 → 轨迹 → 稳健 · 数据源 ${data.outlookSource === "database" ? "DB" : "Demo"}`}
+        subtitle={`未来 3–5 年往哪走 · 外部 → 三层面 → 情景 → 轨迹 → 稳健 · 数据源 ${data.outlookSource === "database" ? "DB" : "Demo"}`}
         actions={
           <>
             <Link href="/finance?tab=forecast" className="stratos-btn stratos-btn--primary">

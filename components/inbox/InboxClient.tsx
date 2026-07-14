@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { InboxItemView } from "@/lib/inbox/persist";
 import type { PipelineStatus } from "@/lib/inbox/aggregate";
 
@@ -91,9 +92,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
 
   if (items.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-[var(--surface-border-strong)] p-8 text-center text-sm text-[var(--color-text-muted)]">
-        暂无待议议题 · 告警与失效信号将自动汇入
-      </p>
+      <EmptyState title="暂无待议议题" hint="告警与失效信号将自动汇入" />
     );
   }
 
@@ -107,10 +106,10 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
+                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-muted)]">
                   {STATUS_LABEL[item.status]}
                 </span>
-                <span className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)]">
+                <span className="text-[11px] uppercase tracking-wide text-[var(--color-text-muted)]">
                   {item.source}
                 </span>
               </div>
