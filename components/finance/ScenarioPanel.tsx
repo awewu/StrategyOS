@@ -1,4 +1,5 @@
 import type { Scenario } from "@/lib/types/stratos";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
   const weightedRev = scenarios.reduce(
@@ -12,13 +13,12 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[var(--color-bg-surface)] p-6">
-        <h3 className="mb-2 text-sm font-medium text-[var(--color-accent)]">
-          SPBP 2.0 · 概率 Living Model
-        </h3>
-        <p className="mb-4 text-xs text-[var(--color-text-muted)]">
-          加权期望 · 营收 {Math.round(weightedRev)} 万 · 利润 {Math.round(weightedProfit)} 万
-        </p>
+      <SectionCard
+        title="SPBP 2.0 · 概率 Living Model"
+        subtitle={`加权期望 · 营收 ${Math.round(weightedRev)} 万 · 利润 ${Math.round(weightedProfit)} 万`}
+        accent="gold"
+        dense
+      >
         <div className="flex h-3 overflow-hidden rounded-full">
           {scenarios.map((sc) => (
             <div
@@ -44,7 +44,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
             </span>
           ))}
         </div>
-      </section>
+      </SectionCard>
 
       <div className="grid gap-4 md:grid-cols-3">
         {scenarios.map((sc) => (

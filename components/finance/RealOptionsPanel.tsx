@@ -1,11 +1,9 @@
 import type { PostInvestDeviation, RealOptionTag } from "@/lib/types/stratos";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-accent)]">
-        Real Options · 分阶段投资
-      </h3>
+    <SectionCard title="Real Options · 分阶段投资" accent="gold" dense>
       <div className="space-y-3">
         {options.map((o) => (
           <div
@@ -36,16 +34,13 @@ export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
           </div>
         ))}
       </div>
-    </section>
+    </SectionCard>
   );
 }
 
 export function PostInvestPanel({ deviations }: { deviations: PostInvestDeviation[] }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-      <h3 className="mb-4 text-sm font-medium text-[var(--color-text-muted)]">
-        投后偏离追踪 · CAPEX vs IRR
-      </h3>
+    <SectionCard title="投后偏离追踪 · CAPEX vs IRR" dense>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[520px] text-left text-sm">
           <thead className="text-[var(--color-text-muted)]">
@@ -84,7 +79,7 @@ export function PostInvestPanel({ deviations }: { deviations: PostInvestDeviatio
           </tbody>
         </table>
       </div>
-    </section>
+    </SectionCard>
   );
 }
 

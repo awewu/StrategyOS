@@ -1,4 +1,5 @@
 import type { FpaSummary } from "@/lib/types/stratos";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 // Each metric row shows B/A/F as three parallel bars scaled to that metric's own max.
 function BafRow({ label, budget, actual, forecast }: {
@@ -32,15 +33,19 @@ function BafRow({ label, budget, actual, forecast }: {
 
 export function BafBar({ fpa }: { fpa: FpaSummary }) {
   return (
-    <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">B·A·F 三段对比</h3>
+    <SectionCard
+      title="B·A·F 三段对比"
+      dense
+      action={
         <span className={`font-data text-sm ${fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}`}>
           现金 runway {fpa.cashRunwayMonths} 月
         </span>
+      }
+    >
+      <div className="space-y-5">
+        <BafRow label="营收" budget={fpa.revenueBudget} actual={fpa.revenueActual} forecast={fpa.revenueForecast} />
+        <BafRow label="利润" budget={fpa.profitBudget} actual={fpa.profitActual} forecast={fpa.profitForecast} />
       </div>
-      <BafRow label="营收" budget={fpa.revenueBudget} actual={fpa.revenueActual} forecast={fpa.revenueForecast} />
-      <BafRow label="利润" budget={fpa.profitBudget} actual={fpa.profitActual} forecast={fpa.profitForecast} />
-    </section>
+    </SectionCard>
   );
 }

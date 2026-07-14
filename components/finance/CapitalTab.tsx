@@ -1,5 +1,6 @@
 import type { CapStackPeriod, CapacitySnapshot, InvestmentCase } from "@/lib/types/stratos";
 import { forecastAmount } from "@/lib/stratos/fpa-toggle";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 function KanbanColumn({
   title,
@@ -60,8 +61,7 @@ export function CapitalTab({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[var(--surface-panel)] p-6">
-        <h3 className="mb-4 text-sm font-medium text-[var(--color-accent)]">CapStack {capStack.period}</h3>
+      <SectionCard title={`CapStack ${capStack.period}`} accent="gold" dense>
         <div className="mb-4">
           <div className="mb-1 flex justify-between text-xs text-[var(--color-text-muted)]">
             <span>CAPEX B-A-F（万）</span>
@@ -99,7 +99,7 @@ export function CapitalTab({
             </span>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
       {/* Three-stack allocation breakdown */}
       <section className="grid gap-4 md:grid-cols-2">
@@ -143,15 +143,14 @@ export function CapitalTab({
         </div>
       </section>
 
-      <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
-        <h3 className="mb-3 text-sm font-medium text-[var(--color-text-muted)]">产能缺口反推</h3>
+      <SectionCard title="产能缺口反推" dense>
         <div className="grid gap-2 font-data text-sm md:grid-cols-4">
           <div>需求 {capacity.demandUnits.toLocaleString()} 台</div>
           <div>产能 {capacity.capacityUnits.toLocaleString()} 台</div>
           <div className="text-[var(--fpa-kpi-negative)]">缺口 {capacity.gapUnits.toLocaleString()} 台</div>
           <div>利用率 {capacity.utilizationPct}% → {capacity.linkedIcCode}</div>
         </div>
-      </section>
+      </SectionCard>
     </div>
   );
 }

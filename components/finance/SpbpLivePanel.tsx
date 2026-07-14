@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Scenario } from "@/lib/types/stratos";
 import { weightedRunway } from "@/lib/stratos/spbp-bayes";
+import { SectionCard } from "@/components/ui/KpiTile";
 
 export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario[] }) {
   const [scenarios, setScenarios] = useState(initialScenarios);
@@ -71,10 +72,12 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
         {note && <span className="text-xs text-[var(--color-text-muted)]">{note}</span>}
       </div>
 
-      <section className="rounded-lg border border-[var(--color-accent)]/20 bg-[var(--color-bg-surface)] p-6">
-        <p className="mb-4 text-xs text-[var(--color-text-muted)]">
-          加权期望 · 营收 {Math.round(weightedRev)} 万 · runway {wr.toFixed(1)} 月
-        </p>
+      <SectionCard
+        title="概率分布 · Live"
+        subtitle={`加权期望 · 营收 ${Math.round(weightedRev)} 万 · runway ${wr.toFixed(1)} 月`}
+        accent="gold"
+        dense
+      >
         <div className="flex h-3 overflow-hidden rounded-full">
           {scenarios.map((sc) => (
             <div
@@ -92,7 +95,7 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
             />
           ))}
         </div>
-      </section>
+      </SectionCard>
 
       <div className="grid gap-4 md:grid-cols-3">
         {scenarios.map((sc) => (

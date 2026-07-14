@@ -5,22 +5,20 @@ import { useState } from "react";
 import type { MarketBriefItem } from "@/lib/market-intel/brief";
 import type { IntelSignal } from "@/lib/market-intel/types";
 import { DIMENSION_LABEL, IMPACT_LABEL } from "@/lib/market-intel/types";
+import { SectionCard } from "@/components/ui/KpiTile";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export function MarketBriefPanel({ items }: { items: MarketBriefItem[] }) {
   if (items.length === 0) {
-    return (
-      <section className="rounded-xl border border-dashed border-[var(--surface-border)] p-6 text-sm text-[var(--color-text-muted)]">
-        暂无信号 · 配置来源后运行 Hermes 扫描
-      </section>
-    );
+    return <EmptyState title="暂无信号" hint="配置来源后运行 Hermes 扫描" />;
   }
 
   return (
-    <section className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">市场简报</h2>
-        <span className="text-xs text-[var(--color-text-muted)]">本周 Top {items.length} · So what 优先</span>
-      </div>
+    <SectionCard
+      title="市场简报"
+      dense
+      action={<span className="text-caption text-[var(--color-text-muted)]">本周 Top {items.length} · So what 优先</span>}
+    >
       <ul className="space-y-4">
         {items.map(({ signal, soWhat }) => (
           <li
@@ -54,7 +52,7 @@ export function MarketBriefPanel({ items }: { items: MarketBriefItem[] }) {
           </li>
         ))}
       </ul>
-    </section>
+    </SectionCard>
   );
 }
 
