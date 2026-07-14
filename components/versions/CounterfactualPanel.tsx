@@ -99,7 +99,7 @@ export function CounterfactualPanel() {
             <div className="text-sm font-medium">{s.premise}</div>
             <p className="mt-1 text-xs text-[var(--color-text-muted)]">{s.impact}</p>
             {s.linkedDiff.length > 0 && (
-              <span className="mt-2 inline-block font-mono text-[10px] text-violet-400/80">
+              <span className="mt-2 inline-block font-mono text-[11px] text-violet-400/80">
                 {s.linkedDiff.join(" · ")}
               </span>
             )}

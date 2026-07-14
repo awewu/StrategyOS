@@ -55,7 +55,7 @@ export function TrlRadarChart({ points }: { points: TrlRadarPoint[] }) {
               />
             </div>
             {p.gapNote && (
-              <p className="mt-0.5 text-[10px] text-[var(--color-text-muted)]">{p.gapNote}</p>
+              <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{p.gapNote}</p>
             )}
           </div>
         ))}
@@ -113,7 +113,7 @@ function TrlBadge({ trl }: { trl: number }) {
   const color = trl >= 7 ? "text-[var(--signal-green)]" : trl >= 4 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]";
   return (
     <div className={`flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-full border border-[var(--surface-border)] ${color}`}>
-      <span className="text-[10px] opacity-70">TRL</span>
+      <span className="text-[11px] opacity-70">TRL</span>
       <span className="font-data text-sm leading-none">{trl}</span>
     </div>
   );

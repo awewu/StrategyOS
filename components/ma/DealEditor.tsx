@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import type { DealType } from "@/lib/ma/types";
 import type { DealTypeProfileView, DealView } from "@/lib/ma/views";
 import { DEAL_STAGE_LABEL, DEAL_STAGE_ORDER, DEAL_TYPE_LABEL } from "@/lib/ma/views";
@@ -141,12 +142,8 @@ export function DealEditor({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{deal ? "编辑交易" : "新建交易"}</h3>
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">收购/并购/投资/合资同一模型——形态画像决定阈值与必备条款</p>
-
-        <div className="mt-4 space-y-4">
+    <Modal onClose={onClose} size="xl" title={deal ? "编辑交易" : "新建交易"} subtitle="收购/并购/投资/合资同一模型——形态画像决定阈值与必备条款">
+        <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-[1fr_130px_130px]">
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">交易名称</label>
@@ -312,7 +309,7 @@ export function DealEditor({
                 <select className={inp} value={f.status} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, status: e.target.value } : x))}>
                   <option value="open">未解</option><option value="mitigated">已缓解</option><option value="closed">已关</option>
                 </select>
-                <label className="flex items-center gap-1 text-[10px] text-[var(--signal-red)]">
+                <label className="flex items-center gap-1 text-[11px] text-[var(--signal-red)]">
                   <input type="checkbox" checked={f.dealBreaker} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, dealBreaker: e.target.checked } : x))} />
                   breaker
                 </label>
@@ -348,7 +345,6 @@ export function DealEditor({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

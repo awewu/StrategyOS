@@ -1,9 +1,9 @@
+import { resolveChecklistGate } from "@/lib/gates/checklist-gate";
 import type {
   DealEconomicsInput,
   DealEconomicsResult,
   DealGateInput,
   DealGateResult,
-  DealVerdict,
   FootballField,
   SynergyItem,
   ValuationRange,
@@ -79,10 +79,6 @@ export function evaluateDealGate(input: DealGateInput): DealGateResult {
     pending.push(`先决条件未关:${cp}`);
   }
 
-  let verdict: DealVerdict;
-  if (strict && hard.length > 0) verdict = "kill";
-  else if (hard.length > 0 || pending.length > 0) verdict = "hold";
-  else verdict = "go";
-
-  return { verdict, blockers: [...hard, ...pending], warnings };
+  const { verdict, blockers } = resolveChecklistGate(hard, pending, { strict });
+  return { verdict, blockers, warnings };
 }

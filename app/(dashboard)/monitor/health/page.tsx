@@ -25,7 +25,7 @@ export default async function MonitorHealthPage() {
         healthOverview={data.healthOverview}
         fpa={data.fpa}
         robustOverall={data.robustOverall}
-        robustScore={data.robustScore}
+        robustView={data.robustView}
         source={data.source}
         hideTitle
       />

@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import { TENSION_META, type TensionItem, type TensionType } from "@/lib/execution/tension-analysis";
 
-const SEV_COLOR = { high: "bg-red-500", medium: "bg-yellow-500", low: "bg-green-500" } as const;
+const SEV_COLOR = { high: "bg-[var(--signal-red)]", medium: "bg-[var(--signal-yellow)]", low: "bg-[var(--signal-green)]" } as const;
 const SEV_LABEL = { high: "高", medium: "中", low: "低" } as const;
 const tInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
@@ -52,9 +53,7 @@ function TensionModal({ item, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">{item.id ? "编辑张力" : "新增张力"}</h3>
+    <Modal onClose={onClose} size="lg" title={item.id ? "编辑张力" : "新增张力"}>
         {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -115,8 +114,7 @@ function TensionModal({ item, onClose, onSaved }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -143,12 +141,12 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
           <p className="text-sm">{item.diagnosis}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-md border border-red-900/30 bg-red-900/10 p-3">
-            <div className="mb-1 text-xs text-red-400">× 错误对策</div>
+          <div className="rounded-md border border-[var(--signal-red)]/25 bg-[var(--signal-red)]/10 p-3">
+            <div className="mb-1 text-xs text-[var(--signal-red)]">× 错误对策</div>
             <p className="text-xs text-[var(--color-text-muted)]">{meta.wrongResponse}</p>
           </div>
-          <div className="rounded-md border border-green-900/30 bg-green-900/10 p-3">
-            <div className="mb-1 text-xs text-green-400">→ 正确方向</div>
+          <div className="rounded-md border border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 p-3">
+            <div className="mb-1 text-xs text-[var(--signal-green)]">→ 正确方向</div>
             <p className="text-xs">{item.recommendation}</p>
           </div>
         </div>
@@ -201,7 +199,7 @@ export function TensionMap({ tensions }: { tensions: TensionItem[] }) {
               {meta.label} {items.length}
             </span>
           ))}
-          {highCount > 0 && <span className="text-red-400">{highCount} 项高风险</span>}
+          {highCount > 0 && <span className="text-[var(--signal-red)]">{highCount} 项高风险</span>}
           <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 新增张力</button>
         </div>
       </div>

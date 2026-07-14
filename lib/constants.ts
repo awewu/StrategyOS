@@ -88,7 +88,7 @@ export const MODULES = [
     id: "health",
     code: "StratHealth",
     name: "健康度",
-    href: "/health",
+    href: "/monitor/health",
     desc: "四维度红绿灯 · 综合评分",
   },
   {

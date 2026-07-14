@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { SOURCE_LABEL } from "@/lib/market-intel/types";
 import type { SourceKind } from "@/lib/market-intel/types";
 
@@ -98,11 +99,7 @@ export function IntelSourcesEditor({ sources: init, saving, post, del }: {
       </div>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="w-full max-w-md rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-            <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">
-              {editing === "new" ? "新增情报来源" : "编辑情报来源"}
-            </h3>
+        <Modal onClose={cancel} size="md" title={editing === "new" ? "新增情报来源" : "编辑情报来源"}>
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">竞品名称 *</label>
@@ -137,8 +134,7 @@ export function IntelSourcesEditor({ sources: init, saving, post, del }: {
                 {saving ? "保存中…" : "保存"}
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

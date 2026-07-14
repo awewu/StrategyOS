@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -26,7 +27,7 @@ function latestActualOf(series: MetricSeries | undefined): number | null {
 
 // ─── Signal colours ──────────────────────────────────────────────────────────
 const SIG_COLOR = { green: colors.signalGreen, yellow: colors.signalYellow, red: colors.signalRed } as const;
-const SIG_BG    = { green: "bg-green-900/30 text-green-400", yellow: "bg-yellow-900/30 text-yellow-400", red: "bg-red-900/30 text-red-400" } as const;
+const SIG_BG    = { green: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]", yellow: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]", red: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]" } as const;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function fmt(v: number | null, unit: string) {
@@ -90,17 +91,17 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
             <div className="mt-1 flex items-baseline gap-3">
               <span className="font-data text-2xl">{fmt(latestActual, metric.unit)}</span>
               {yoyDelta && (
-                <span className={`text-xs ${yoyDelta.up === metric.higherIsBetter ? "text-green-400" : "text-red-400"}`}>
+                <span className={`text-xs ${yoyDelta.up === metric.higherIsBetter ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
                   同比 {yoyDelta.text}
                 </span>
               )}
               {momDelta && (
-                <span className={`text-xs ${momDelta.up === metric.higherIsBetter ? "text-green-400" : "text-red-400"}`}>
+                <span className={`text-xs ${momDelta.up === metric.higherIsBetter ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
                   环比 {momDelta.text}
                 </span>
               )}
               {planDelta && (
-                <span className={`text-xs ${Math.abs(Number(planDelta.text)) < 3 ? "text-[var(--color-text-muted)]" : planDelta.up === metric.higherIsBetter ? "text-green-400" : "text-red-400"}`}>
+                <span className={`text-xs ${Math.abs(Number(planDelta.text)) < 3 ? "text-[var(--color-text-muted)]" : planDelta.up === metric.higherIsBetter ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
                   vs目标 {planDelta.text}
                 </span>
               )}
@@ -211,9 +212,9 @@ export function OpsHealthDashboard({ series }: { series: MetricSeries[] }) {
           </p>
         </div>
         <div className="flex gap-3 text-sm">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-400" />{greenCount} 正常</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-yellow-400" />{yellowCount} 注意</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-400" />{redCount} 异常</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--signal-green)]" />{greenCount} 正常</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--signal-yellow)]" />{yellowCount} 注意</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[var(--signal-red)]" />{redCount} 异常</span>
         </div>
       </div>
 
@@ -299,10 +300,7 @@ function OpsMetricInputModal({ metric, series, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-sm rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-1 text-base font-semibold text-[var(--color-text-primary)]">录入月度实绩 · {metric.name}</h3>
-        <p className="mb-4 text-xs text-[var(--color-text-muted)]">单位 {metric.unit} · 留空实际值表示未来规划月</p>
+    <Modal onClose={onClose} size="sm" title={`录入月度实绩 · ${metric.name}`} subtitle={`单位 ${metric.unit} · 留空实际值表示未来规划月`}>
         {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
         <div className="space-y-3">
           <div className="space-y-1">
@@ -328,7 +326,6 @@ function OpsMetricInputModal({ metric, series, onClose, onSaved }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import type { MarketEvidence, CompetitivePosition } from "@/lib/execution/market-response";
 
 const VERDICT_META = {
-  effective:        { label: "执行有效",   color: "var(--signal-green)", bg: "bg-green-900/20",  border: "border-green-500/30"  },
-  assumption_failed:{ label: "假设失效",   color: "var(--signal-red)", bg: "bg-red-900/20",    border: "border-red-500/30"    },
-  inconclusive:     { label: "证据不足",   color: "var(--signal-yellow)", bg: "bg-yellow-900/20", border: "border-yellow-500/30" },
+  effective:        { label: "执行有效",   color: "var(--signal-green)", bg: "bg-[var(--signal-green)]/10",  border: "border-[var(--signal-green)]/25"  },
+  assumption_failed:{ label: "假设失效",   color: "var(--signal-red)", bg: "bg-[var(--signal-red)]/10",    border: "border-[var(--signal-red)]/25"    },
+  inconclusive:     { label: "证据不足",   color: "var(--signal-yellow)", bg: "bg-[var(--signal-yellow)]/10", border: "border-[var(--signal-yellow)]/30" },
   empty:            { label: "待录入",     color: "var(--color-text-secondary)", bg: "bg-black/[0.03]",  border: "border-[var(--surface-border)] border-dashed" },
 } as const;
 
@@ -87,9 +88,7 @@ function EvidenceModal({ item, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">录入市场反馈 · {form.actionLabel}</h3>
+    <Modal onClose={onClose} size="lg" title={`录入市场反馈 · ${form.actionLabel}`}>
         {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
         <div className="space-y-3">
           <div className="space-y-1">
@@ -131,8 +130,7 @@ function EvidenceModal({ item, onClose, onSaved }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -158,9 +156,7 @@ function PositionModal({ item, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">录入竞争位移 · {form.dimension}</h3>
+    <Modal onClose={onClose} size="lg" title={`录入竞争位移 · ${form.dimension}`}>
         {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -194,8 +190,7 @@ function PositionModal({ item, onClose, onSaved }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -237,7 +232,7 @@ function CompetitiveTable({ positions, onEdit }: {
                   <td className="px-3 py-2.5">{p.theirValue ?? <span className="text-[var(--color-text-secondary)]">待录入</span>}</td>
                   <td className="px-3 py-2.5">
                     {p.delta
-                      ? <span className={p.delta.includes("落后") ? "text-red-400" : "text-green-400"}>{p.delta}</span>
+                      ? <span className={p.delta.includes("落后") ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}>{p.delta}</span>
                       : <span className="text-[var(--color-text-secondary)]">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">
@@ -299,14 +294,14 @@ export function MarketResponsePanel({
             </span>
           )}
           {failedCount > 0 && (
-            <span className="flex items-center gap-1.5 text-red-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+            <span className="flex items-center gap-1.5 text-[var(--signal-red)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--signal-red)]" />
               {failedCount} 假设失效
             </span>
           )}
           {effectiveCount > 0 && (
-            <span className="flex items-center gap-1.5 text-green-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+            <span className="flex items-center gap-1.5 text-[var(--signal-green)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--signal-green)]" />
               {effectiveCount} 执行有效
             </span>
           )}

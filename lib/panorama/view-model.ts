@@ -1,6 +1,5 @@
 import type { getCommandDeckBundle } from "@/lib/data/strategy-data";
 import { brand } from "@/lib/brand/tokens";
-import { computeRobustOverall } from "@/lib/stratos/robust-score";
 import {
   buildScrSummary,
   buildTopAlerts,
@@ -68,7 +67,7 @@ export function buildPanoramaViewModel(deck: PanoramaDeck): PanoramaViewModel {
     sourceLabel: deck.source === "database" ? "数据库" : "演示",
     challenge: deck.diagnosis.challengeStatement,
     crux: deck.diagnosis.crux,
-    robust: deck.robustOverall ?? computeRobustOverall(deck.robustScore),
+    robust: deck.robustOverall,
     runwayMonths: deck.fpa.cashRunwayMonths,
     revenueForecast: deck.fpa.revenueForecast,
     capexBudget: deck.capStack.capexBudget,

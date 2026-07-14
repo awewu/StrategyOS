@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { BscLights } from "@/components/health/BscLights";
 import { BafBar } from "@/components/finance/BafBar";
-import { TwelveDimPanel } from "@/components/health/TwelveDimPanel";
+import { TwelveDimEditor } from "@/components/health/TwelveDimEditor";
 import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { useRole } from "@/lib/context/role-context";
 import { roleToLevel } from "@/lib/auth/permissions";
 import type { HealthOverviewData } from "@/lib/data/entity-getters";
-import type { FpaSummary, RobustnessDimensions, TrafficLight } from "@/lib/types/stratos";
+import type { FpaSummary, TrafficLight } from "@/lib/types/stratos";
+import type { RobustView } from "@/lib/health/robust-view";
 
 function countLights(lights: Record<string, TrafficLight>, tone: TrafficLight) {
   return Object.values(lights).filter((l) => l === tone).length;
@@ -20,6 +21,7 @@ export function HealthPageClient({
   healthOverview,
   fpa,
   robustOverall,
+  robustView,
   source,
   hideTitle = false,
 }: {
@@ -32,7 +34,7 @@ export function HealthPageClient({
   healthOverview: HealthOverviewData;
   fpa: FpaSummary;
   robustOverall: number;
-  robustScore: RobustnessDimensions;
+  robustView: RobustView;
   source: string;
   hideTitle?: boolean;
 }) {
@@ -152,7 +154,7 @@ export function HealthPageClient({
         </table>
       </section>
 
-      {showTwelve && <TwelveDimPanel />}
+      {showTwelve && <TwelveDimEditor view={robustView} canEdit={showTwelve} />}
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">

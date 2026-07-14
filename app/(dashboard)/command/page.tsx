@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { requireRouteAccess } from "@/lib/auth/guard";
-import { StrategicImportPanel } from "@/components/compiler/StrategicImportPanel";
+import { PanoramaPrintLayout } from "@/components/print/PanoramaPrintLayout";
+import { DownloadPdfButton } from "@/components/brand/DownloadPdfButton";
 import { getInboxSummary } from "@/lib/inbox/count";
 import { CommandBoardShell } from "@/components/command/CommandBoardShell";
 import { TimelineEditor } from "@/components/command/TimelineEditor";
 import { DecisionsEditor } from "@/components/command/DecisionsEditor";
 import { TopAlertsPanel } from "@/components/command/TopAlertsPanel";
 import { ScenarioAdvisor } from "@/components/command/ScenarioAdvisor";
-import { BscLights } from "@/components/health/BscLights";
+import { BscTargetsBoard } from "@/components/command/BscTargetsBoard";
 import { BafBar } from "@/components/finance/BafBar";
-import { RobustBars } from "@/components/health/RobustBars";
+import { RobustTrend } from "@/components/health/RobustTrend";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { ExecutiveSummary } from "@/components/ui/ExecutiveSummary";
 import { ImplicationsBar } from "@/components/ui/ImplicationsBar";
@@ -18,6 +19,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { brand } from "@/lib/brand/tokens";
 import { getCommandDeckBundle } from "@/lib/data/strategy-data";
 import { getActivePeriod } from "@/lib/data/active-period";
+import { getDecodeBsc } from "@/lib/decode/data-access";
 import {
   buildScrSummary,
   buildTopAlerts,
@@ -64,6 +66,7 @@ export default async function CommandPage() {
     withTimeout(getInboxSummary(), 2500, { open: 0, critical: 0 }),
     getActivePeriod(),
   ]);
+  const bsc = await withTimeout(getDecodeBsc(activePeriod), 2500, { rows: [], source: "demo" as const });
   const top3 = topDiffs(deck.stratDiffs, 3);
   const scr = buildScrSummary(deck);
   const alerts = buildTopAlerts(deck);
@@ -76,7 +79,7 @@ export default async function CommandPage() {
       <PageHeader
         eyebrow={`${brand.taglineZh} · ${brand.taglineEn}`}
         title="指挥舱"
-        subtitle={`${brand.positioningZh} · ${activePeriod} · 数据源 ${deck.source === "database" ? "DB" : "Demo"}`}
+        subtitle={`此刻集团态势如何 · 有什么要立即决策 · ${activePeriod} · 数据源 ${deck.source === "database" ? "DB" : "Demo"}`}
         actions={
           <>
             <Link href="/inbox" className="stratos-btn stratos-btn--ghost relative">
@@ -87,10 +90,10 @@ export default async function CommandPage() {
                 </span>
               ) : null}
             </Link>
-            <Link href="/print/panorama" className="stratos-btn stratos-btn--primary">
-              董事会一页纸
+            <Link href="#board-a3" className="stratos-btn stratos-btn--primary">
+              董事会 A3 全景
             </Link>
-            <Link href="/rehearsal" className="stratos-btn">
+            <Link href="/council?tab=rehearsal" className="stratos-btn">
               Q3 彩排
             </Link>
           </>
@@ -115,7 +118,7 @@ export default async function CommandPage() {
             <Link href="/finance?tab=overview" className="text-[var(--color-accent)] hover:underline">
               FPA Runway →
             </Link>
-            <Link href="/gates" className="text-[var(--color-text-muted)] hover:underline">
+            <Link href="/council?tab=gates" className="text-[var(--color-text-muted)] hover:underline">
               Gate 准入 →
             </Link>
           </div>
@@ -132,14 +135,20 @@ export default async function CommandPage() {
       <CommandBoardShell>
       <section className="stratos-command-board" aria-label="指挥舱态势板">
         <div className="stratos-command-board__bsc">
-          <SectionCard title="BSC 四满意" subtitle="四灯 · 目标来自 DB" accent="green">
-            <BscLights lights={deck.bscLights} cards={deck.bscCards} />
+          <SectionCard title="BSC 四满意" subtitle="四灯 · 点卡查看年度目标与任务规划 · 配置在集团健康" accent="green">
+            <BscTargetsBoard
+              lights={deck.bscLights}
+              cards={deck.bscCards}
+              rows={bsc.rows}
+              period={activePeriod}
+              canEdit={false}
+            />
           </SectionCard>
         </div>
 
         <div className="stratos-command-board__robust">
-          <SectionCard title="StratRobust" subtitle="战略稳健性五维" accent="violet">
-            <RobustBars dims={deck.robustScore} />
+          <SectionCard title="StratRobust" subtitle="12 维稳健 · 环比趋势" accent="violet">
+            <RobustTrend view={deck.robustView} />
           </SectionCard>
         </div>
 
@@ -198,6 +207,34 @@ export default async function CommandPage() {
       </section>
       </CommandBoardShell>
 
+      {/* ③.5 董事会 A3 全景 · 内嵌预览（同源数据，导出/打印在此发起） */}
+      <section id="board-a3" className="stratos-card stratos-card--padded scroll-mt-24" aria-label="董事会 A3 全景">
+        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-label text-[var(--color-accent)]">董事会 A3 全景</p>
+            <p className="text-caption text-[var(--color-text-muted)]">
+              与指挥舱同源的一页纸呈现 · 打印/导出前的所见即所得预览
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <DownloadPdfButton />
+            <Link
+              href="/print/panorama"
+              target="_blank"
+              className="rounded border border-[var(--surface-border-strong)] px-4 py-2 text-sm"
+            >
+              打开打印视图 ↗
+            </Link>
+          </div>
+        </header>
+        <div
+          data-theme="print"
+          className="overflow-x-auto rounded-xl border border-[var(--surface-border)] bg-white p-6"
+        >
+          <PanoramaPrintLayout deck={deck} />
+        </div>
+      </section>
+
       {/* ④ 去向 · 模块快捷跳转 */}
       <nav className="stratos-card stratos-card--padded stratos-link-row" aria-label="模块快捷跳转">
         <span className="stratos-link-row__label">深入</span>
@@ -221,13 +258,6 @@ export default async function CommandPage() {
             derivedMilestones={deck.derivedTimeline}
             source={deck.timelineSource}
           />
-        </div>
-      </details>
-
-      <details className="stratos-disclosure stratos-disclosure--secondary">
-        <summary>战略资料导入 · PDF / Excel 编译</summary>
-        <div className="stratos-disclosure__body">
-          <StrategicImportPanel embedded />
         </div>
       </details>
     </div>

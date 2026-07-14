@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import type { NorthStar } from "@/lib/compass/types";
 
 export interface NorthStarForm {
@@ -48,14 +49,7 @@ export function NorthStarEditModal({
       : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-      <div className="max-h-[88vh] w-full max-w-lg overflow-y-auto stratos-card stratos-card--padded shadow-xl">
-        <h3 className="stratos-section-title mb-1">
-          {northStar ? "编辑使命愿景" : "录入使命愿景"}
-        </h3>
-        <p className="stratos-section-desc mb-4">
-          5 年终极方向；与战略罗盘同源，保存后两处同步更新。
-        </p>
+    <Modal onClose={onClose} size="lg" title={northStar ? "编辑使命愿景" : "录入使命愿景"} subtitle="5 年终极方向；与战略罗盘同源，保存后两处同步更新。">
         <div className="space-y-3">
           <div>
             <label className="label-xs">使命 · 为何存在</label>
@@ -143,8 +137,7 @@ export function NorthStarEditModal({
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 

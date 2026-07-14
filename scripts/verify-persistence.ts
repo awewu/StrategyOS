@@ -164,19 +164,6 @@ async function run() {
   });
 
   await roundTripConfig({
-    name: "feedback/loops (反馈环)",
-    getPath: "/api/feedback/loops",
-    pick: (g) => ({ loops: g.loops }),
-    mutate: (g) => {
-      const loops = structuredClone(g.loops);
-      loops[0].label = `${loops[0].label} ${TAG}`;
-      return { loops };
-    },
-    check: (g) => typeof g?.loops?.[0]?.label === "string" && g.loops[0].label.includes(TAG),
-    restore: (orig) => orig,
-  });
-
-  await roundTripConfig({
     name: "gates (门禁清单)",
     getPath: "/api/gates",
     pick: (g) => ({ checklists: g.checklists }),

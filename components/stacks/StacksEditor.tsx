@@ -175,7 +175,7 @@ function StackEditColumn({
               onChange={(e) => onTag(item.id, e.target.value)}
               placeholder="budget_tag"
             />
-            <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+            <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
               {item.status} · FPA {item.toggle}
             </p>
           </div>

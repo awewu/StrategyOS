@@ -61,7 +61,7 @@ export function SignalFeed({ signals }: { signals: IntelSignal[] }) {
             {sig.verdict && (
               <div className="mt-2 flex items-start gap-2">
                 <span
-                  className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${VERDICT_BADGE[sig.verdict] ?? ""}`}
+                  className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium ${VERDICT_BADGE[sig.verdict] ?? ""}`}
                   title="QC 反幻觉校验：信号须有原文佐证引文"
                 >
                   QC · {VERDICT_LABEL[sig.verdict]}

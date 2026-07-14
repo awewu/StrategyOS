@@ -1,12 +1,13 @@
 "use client";
 import { useMemo, useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
 
 const STATUS_META = {
-  completed:   { label: "已完成", color: "var(--signal-green)", bg: "bg-green-900/20",  border: "border-green-500/30"  },
-  overdue:     { label: "逾期",   color: "var(--signal-red)", bg: "bg-red-900/20",    border: "border-red-500/30"    },
-  in_progress: { label: "进行中", color: "var(--color-accent)", bg: "bg-blue-900/20",   border: "border-blue-500/30"   },
+  completed:   { label: "已完成", color: "var(--signal-green)", bg: "bg-[var(--signal-green)]/10",  border: "border-[var(--signal-green)]/25"  },
+  overdue:     { label: "逾期",   color: "var(--signal-red)", bg: "bg-[var(--signal-red)]/10",    border: "border-[var(--signal-red)]/25"    },
+  in_progress: { label: "进行中", color: "var(--color-accent)", bg: "bg-[var(--color-accent)]/10",   border: "border-[var(--color-accent)]/25"   },
   pending:     { label: "待启动", color: "var(--signal-neutral)", bg: "bg-black/[0.04]",       border: "border-[var(--surface-border)]"      },
 } as const;
 const cInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
@@ -44,9 +45,7 @@ function CommitmentModal({ item, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">{item.id ? "编辑承诺" : "新增承诺"}</h3>
+    <Modal onClose={onClose} size="lg" title={item.id ? "编辑承诺" : "新增承诺"}>
         {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
         <div className="space-y-3">
           <div className="space-y-1">
@@ -94,8 +93,7 @@ function CommitmentModal({ item, onClose, onSaved }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -131,7 +129,7 @@ function OwnerHeatmap({ records }: { records: CommitmentRecord[] }) {
                   return (
                     <td key={d} className="px-2 text-center">
                       <span className={`inline-block h-5 w-5 rounded text-xs leading-5 font-medium ${
-                        hasOverdue ? "bg-red-900/40 text-red-400" : allDone ? "bg-green-900/30 text-green-400" : "bg-blue-900/30 text-blue-400"
+                        hasOverdue ? "bg-[var(--signal-red)]/10 text-[var(--signal-red)]" : allDone ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]" : "bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
                       }`}>
                         {cell.length}
                       </span>
@@ -139,7 +137,7 @@ function OwnerHeatmap({ records }: { records: CommitmentRecord[] }) {
                   );
                 })}
                 <td className="py-2 pl-4 text-right">
-                  <span className={overdueRate > 30 ? "text-red-400" : overdueRate > 0 ? "text-yellow-400" : "text-green-400"}>
+                  <span className={overdueRate > 30 ? "text-[var(--signal-red)]" : overdueRate > 0 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-green)]"}>
                     {overdueRate}%
                   </span>
                 </td>
@@ -189,7 +187,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
         </div>
         <div className="flex items-center gap-3 text-xs">
           <span className="text-[var(--color-text-muted)]">兑现率</span>
-          <span className={`font-data text-xl ${fulfillmentRate >= 70 ? "text-green-400" : fulfillmentRate >= 50 ? "text-yellow-400" : "text-red-400"}`}>
+          <span className={`font-data text-xl ${fulfillmentRate >= 70 ? "text-[var(--signal-green)]" : fulfillmentRate >= 50 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]"}`}>
             {fulfillmentRate}%
           </span>
           <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 新增承诺</button>
@@ -218,9 +216,9 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
 
       {/* Assumption linkage warning */}
       {assumptionLinked.length > 0 && (
-        <div className="rounded-lg border border-yellow-500/30 bg-yellow-900/10 p-4">
-          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-yellow-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />
+        <div className="rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/10 p-4">
+          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[var(--signal-yellow)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--signal-yellow)]" />
             承诺逾期 × 假设联动预警
           </div>
           <div className="space-y-2">
@@ -228,7 +226,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
               <div key={r.id} className="flex items-start gap-3 text-xs">
                 <span className="text-[var(--color-text-muted)]">{r.owner}</span>
                 <span className="flex-1">{r.content}</span>
-                <span className="text-yellow-400 flex-shrink-0">→ 假设 {r.linkedAssumptionCode} 风险上升</span>
+                <span className="text-[var(--signal-yellow)] flex-shrink-0">→ 假设 {r.linkedAssumptionCode} 风险上升</span>
               </div>
             ))}
           </div>
@@ -245,7 +243,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
               <span className="flex-1">{r.content}</span>
               <span className="w-20 flex-shrink-0 text-xs text-[var(--color-text-muted)]">{r.owner}</span>
               <span className="w-20 flex-shrink-0 text-xs text-[var(--color-text-muted)]">{r.deadline}</span>
-              {r.daysOverdue && <span className="w-16 flex-shrink-0 text-xs text-red-400">逾期 {r.daysOverdue}天</span>}
+              {r.daysOverdue && <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red)]">逾期 {r.daysOverdue}天</span>}
               {r.linkedProjectCode && <span className="text-xs text-[var(--color-text-muted)]">→ {r.linkedProjectCode}</span>}
               <span className="flex flex-shrink-0 gap-2">
                 <button onClick={() => setEditItem(r)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>

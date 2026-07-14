@@ -2361,6 +2361,7 @@ model TwelveDimScore {
   period    String   @default("2026-FY") @db.VarChar(10)
   dimId     String   @map("dim_id") @db.VarChar(10)
   score     Int
+  target    Int?
   signal    String   @db.VarChar(10)
   source    String   @default("manual") @db.VarChar(20)
   note      String?
@@ -2658,17 +2659,31 @@ model InnovationClaim {
 
 // 创新底座 · 证据（6 级分级 · 可溯源 · stale 复研）
 model InnovationEvidence {
-  id         String          @id @default(uuid())
-  claimId    String          @map("claim_id")
-  level      Int
-  source     String          @db.VarChar(300)
-  note       String?         @db.VarChar(500)
+  id          String          @id @default(uuid())
+  claimId     String          @map("claim_id")
+  level       Int
+  source      String          @db.VarChar(300)
+  /// 接地物证（URL/文件/文档编号）——缺失时证据级别封顶 L2（见 lib/innovation/engine.ts groundedEvidenceLevel）
+  artifactRef String?         @map("artifact_ref") @db.VarChar(300)
+  note        String?         @db.VarChar(500)
   stale      Boolean         @default(false)
   capturedAt DateTime        @default(now()) @map("captured_at")
   claim      InnovationClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
 
   @@index([claimId])
   @@map("innovation_evidence")
+}
+
+// 导入管道 · Sheet 列映射画像（一次配置长期复用;columnMap = field→源表头）
+model SheetMappingProfile {
+  id        String   @id @default(uuid())
+  sheetType String   @map("sheet_type") @db.VarChar(30)
+  name      String   @db.VarChar(100)
+  columnMap Json     @default("{}") @map("column_map")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([sheetType, name])
+  @@map("sheet_mapping_profiles")
 }
 
 // M&A · 交易形态画像（收购/并购/投资/合资——阈值与必备条款可配）
@@ -2791,4 +2806,282 @@ model InnovationAssumption {
 
   @@index([betId])
   @@map("innovation_assumptions")
+}
+
+// ============================================================
+// 财务数据中台（Ledger Hub）
+// 三段式管道：中国账套 GL/TB → 科目/部门映射（中→美）→ 情景事实（预算/实际/滚动预测）
+// 源头：OneStream 月度装载工作簿 + Excel 导入
+// ============================================================
+
+// 科目主数据 + 中→美科目映射（来自 Acct Mapping 表）
+model LedgerAccount {
+  id            String            @id @default(uuid())
+  code          String            @unique @db.VarChar(30)
+  name          String            @db.VarChar(200)
+  accountType   LedgerAccountType @default(other) @map("account_type")
+  statement     LedgerStatement?
+  usAccountCode String?           @map("us_account_code") @db.VarChar(30)
+  usAccountDesc String?           @map("us_account_desc") @db.VarChar(200)
+  consolidateTo String?           @map("consolidate_to") @db.VarChar(30)
+  reportLine    String?           @map("report_line") @db.VarChar(120)
+  active        Boolean           @default(true)
+  effectiveFrom DateTime?         @map("effective_from") @db.Date
+  effectiveTo   DateTime?         @map("effective_to") @db.Date
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  tbLines       LedgerTbLine[]
+  glLines       LedgerGlLine[]
+
+  @@index([usAccountCode])
+  @@map("ledger_accounts")
+}
+
+// 部门主数据 + 中→美部门映射（单位码 → US Department / New P&L 层级）
+model LedgerDepartment {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(20)
+  name        String   @db.VarChar(200)
+  usDeptCode  String?  @map("us_dept_code") @db.VarChar(20)
+  usDeptName  String?  @map("us_dept_name") @db.VarChar(100)
+  plLevelCode String?  @map("pl_level_code") @db.VarChar(20)
+  plLevelName String?  @map("pl_level_name") @db.VarChar(100)
+  active      Boolean  @default(true)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([usDeptCode])
+  @@map("ledger_departments")
+}
+
+// 试算平衡/科目余额行（兼容两种源：科目余额表含期初/借/贷/期末；Oracle 段 TB 仅期末余额）
+model LedgerTbLine {
+  id          String         @id @default(uuid())
+  batchId     String         @map("batch_id")
+  period      String         @db.VarChar(10)
+  asOfDate    DateTime?      @map("as_of_date") @db.Date
+  entityCode  String         @default("590") @map("entity_code") @db.VarChar(10)
+  accountCode String         @map("account_code") @db.VarChar(30)
+  accountId   String?        @map("account_id")
+  dim1        String?        @db.VarChar(10)
+  dim2        String?        @db.VarChar(10)
+  dim3        String?        @db.VarChar(10)
+  dim4        String?        @db.VarChar(10)
+  currency    String         @default("CNY") @db.VarChar(3)
+  opening     Decimal?       @db.Decimal(16, 2)
+  debit       Decimal?       @db.Decimal(16, 2)
+  credit      Decimal?       @db.Decimal(16, 2)
+  closing     Decimal        @db.Decimal(16, 2)
+  account     LedgerAccount? @relation(fields: [accountId], references: [id])
+  batch       FinImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([period, accountCode])
+  @@index([batchId])
+  @@map("ledger_tb_lines")
+}
+
+// 总账日记账明细行
+model LedgerGlLine {
+  id          String         @id @default(uuid())
+  batchId     String         @map("batch_id")
+  period      String         @db.VarChar(10)
+  entryDate   DateTime?      @map("entry_date") @db.Date
+  journalNo   String?        @map("journal_no") @db.VarChar(30)
+  entityCode  String         @default("590") @map("entity_code") @db.VarChar(10)
+  accountCode String         @map("account_code") @db.VarChar(30)
+  accountId   String?        @map("account_id")
+  dim1        String?        @db.VarChar(10)
+  dim2        String?        @db.VarChar(10)
+  dim3        String?        @db.VarChar(10)
+  dim4        String?        @db.VarChar(10)
+  currency    String         @default("CNY") @db.VarChar(3)
+  drcr        LedgerDrCr     @default(dr)
+  amount      Decimal        @db.Decimal(16, 2)
+  memo        String?        @db.VarChar(300)
+  account     LedgerAccount? @relation(fields: [accountId], references: [id])
+  batch       FinImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([period, accountCode])
+  @@index([batchId])
+  @@map("ledger_gl_lines")
+}
+
+// 情景/预算版本（对齐 OneStream Scenario：Actual@BudgetRate / MgmtAdjBudget / mgmtadjXxxFcst…）
+model FinScenario {
+  id        String          @id @default(uuid())
+  code      String          @unique @db.VarChar(40)
+  name      String          @db.VarChar(100)
+  kind      FinScenarioKind
+  createdAt DateTime        @default(now()) @map("created_at")
+  facts     FinFactEntry[]
+
+  @@map("fin_scenarios")
+}
+
+// PVI 新品活力数据（New Product Vitality：全事业部新品逐月销售，$000s）
+model PviSalesFact {
+  id            String         @id @default(uuid())
+  batchId       String         @map("batch_id")
+  businessUnit  String         @map("business_unit") @db.VarChar(60)
+  reportingUnit String         @map("reporting_unit") @db.VarChar(80)
+  productName   String         @map("product_name") @db.VarChar(120)
+  channel       String?        @db.VarChar(30)
+  category      String?        @db.VarChar(60)
+  launchPeriod  String?        @map("launch_period") @db.VarChar(10)
+  period        String         @db.VarChar(10)
+  amount        Decimal        @db.Decimal(14, 2)
+  batch         FinImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([businessUnit, period])
+  @@index([productName])
+  @@index([batchId])
+  @@map("pvi_sales_facts")
+}
+
+// 情景事实（月 × 情景 × 科目/指标 × 部门 的金额，是预算 vs 实际 vs 预测的统一事实表）
+model FinFactEntry {
+  id          String         @id @default(uuid())
+  batchId     String         @map("batch_id")
+  scenarioId  String         @map("scenario_id")
+  period      String         @db.VarChar(10)
+  entityCode  String         @default("5RC") @map("entity_code") @db.VarChar(10)
+  accountCode String?        @map("account_code") @db.VarChar(30)
+  metricCode  String?        @map("metric_code") @db.VarChar(50)
+  deptCode    String?        @map("dept_code") @db.VarChar(20)
+  productCode String?        @map("product_code") @db.VarChar(30)
+  channelCode String?        @map("channel_code") @db.VarChar(30)
+  bridgeCode  String?        @map("bridge_code") @db.VarChar(30)
+  label       String?        @db.VarChar(120)
+  currency    String         @default("USD") @db.VarChar(3)
+  viewMode    FinViewMode    @default(periodic) @map("view_mode")
+  amount      Decimal        @db.Decimal(16, 2)
+  scenario    FinScenario    @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  batch       FinImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([period, scenarioId])
+  @@index([accountCode])
+  @@index([batchId])
+  @@map("fin_fact_entries")
+}
+
+// 运营指标事实（人头/发货台数/CapEx 等非货币或专项表单数据）
+model OpsMetricFact {
+  id         String         @id @default(uuid())
+  batchId    String         @map("batch_id")
+  metricType OpsMetricType  @map("metric_type")
+  period     String         @db.VarChar(10)
+  dim1       String?        @db.VarChar(100)
+  dim2       String?        @db.VarChar(100)
+  value      Decimal        @db.Decimal(16, 2)
+  unit       String?        @db.VarChar(20)
+  batch      FinImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([metricType, period])
+  @@index([batchId])
+  @@map("ops_metric_facts")
+}
+
+// 导入批次台账（每次 Excel 导入一条，可追溯、可整批回滚、可做新鲜度水位）
+model FinImportBatch {
+  id          String          @id @default(uuid())
+  sourceType  FinSourceType   @map("source_type")
+  fileName    String          @map("file_name") @db.VarChar(300)
+  sheetName   String?         @map("sheet_name") @db.VarChar(100)
+  period      String?         @db.VarChar(10)
+  rowCount    Int             @default(0) @map("row_count")
+  status      FinImportStatus @default(pending)
+  errorText   String?         @map("error_text") @db.VarChar(500)
+  contentHash String?         @map("content_hash") @db.VarChar(64)
+  importedBy  String?         @map("imported_by") @db.VarChar(100)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  tbLines     LedgerTbLine[]
+  glLines     LedgerGlLine[]
+  factEntries FinFactEntry[]
+  opsFacts    OpsMetricFact[]
+  pviFacts    PviSalesFact[]
+
+  @@index([sourceType, period])
+  @@map("fin_import_batches")
+}
+
+enum LedgerAccountType {
+  asset
+  liability
+  equity
+  revenue
+  expense
+  cost
+  other
+}
+
+enum LedgerStatement {
+  bs
+  pl
+}
+
+enum LedgerDrCr {
+  dr
+  cr
+}
+
+enum FinScenarioKind {
+  actual
+  budget
+  mgmt_adj
+  forecast
+}
+
+enum FinViewMode {
+  periodic
+  ytd
+}
+
+enum OpsMetricType {
+  headcount
+  units_shipped
+  capex
+}
+
+enum FinImportStatus {
+  pending
+  imported
+  failed
+}
+
+// 预算编制版本（草案→上报→批准/退回的工作流）
+model FinBudgetVersion {
+  id          String              @id @default(uuid())
+  fiscalYear  String              @map("fiscal_year") @db.VarChar(10)
+  name        String              @db.VarChar(120)
+  scenarioCode String?            @map("scenario_code") @db.VarChar(40)
+  status      FinBudgetStatus     @default(draft)
+  notes       String?             @db.VarChar(1000)
+  createdBy   String?             @map("created_by") @db.VarChar(100)
+  submittedAt DateTime?           @map("submitted_at")
+  submittedBy String?             @map("submitted_by") @db.VarChar(100)
+  decidedAt   DateTime?           @map("decided_at")
+  decidedBy   String?             @map("decided_by") @db.VarChar(100)
+  decisionNote String?            @map("decision_note") @db.VarChar(500)
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  @@index([fiscalYear, status])
+  @@map("fin_budget_versions")
+}
+
+enum FinBudgetStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+enum FinSourceType {
+  account_map
+  dept_map
+  trial_balance
+  gl_detail
+  fact_entry
+  form_headcount
+  form_units
+  form_capex
+  pvi_sales
 }

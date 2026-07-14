@@ -61,7 +61,7 @@ function SelfScoreEditor({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
+          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-muted)]">
             {source === "database" ? "已持久化" : "Demo"}
           </span>
           <button
@@ -218,7 +218,7 @@ function SwotQuadrant({ cat, items }: { cat: SwotCategory; items: SwotItem[] }) 
         <ul className="space-y-1.5">
           {items.slice(0, 6).map((i) => (
             <li key={i.id} className="text-xs text-[var(--color-text-secondary)]">
-              <span className="mr-1.5 inline-block rounded bg-black/[0.05] px-1 text-[10px] text-[var(--color-text-muted)]">
+              <span className="mr-1.5 inline-block rounded bg-black/[0.05] px-1 text-[11px] text-[var(--color-text-muted)]">
                 {i.weight}×{i.intensity}
               </span>
               {i.title}
@@ -327,7 +327,7 @@ export function SwotPanel({
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
           SWOT 盘面
-          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[10px] font-normal text-[var(--color-text-muted)]">
+          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] font-normal text-[var(--color-text-muted)]">
             S/W 源：{swotSource ?? "Demo 基线"} · O/T 源：Hermes
           </span>
         </h3>
@@ -343,7 +343,7 @@ export function SwotPanel({
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
             TOWS 战略建议
-            <span className="ml-2 rounded px-1.5 py-0.5 text-[10px]"
+            <span className="ml-2 rounded px-1.5 py-0.5 text-[11px]"
               style={{
                 background: engine === "llm" ? "var(--color-accent)" : "var(--surface-border)",
                 color: engine === "llm" ? "white" : "var(--color-text-muted)",
@@ -374,7 +374,7 @@ export function SwotPanel({
                       {r.links.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1.5">
                           {r.links.map((l) => (
-                            <a key={l} href={l} className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[10px] text-[var(--color-accent)] hover:underline">
+                            <a key={l} href={l} className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-accent)] hover:underline">
                               {l}
                             </a>
                           ))}

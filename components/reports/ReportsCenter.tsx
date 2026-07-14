@@ -231,10 +231,10 @@ export function ReportsCenter({
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider ${
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider ${
                     r.status === "parsed"
-                      ? "bg-[var(--signal-green)]/15 text-green-300"
-                      : "bg-[var(--signal-yellow)]/15 text-yellow-200"
+                      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]"
+                      : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"
                   }`}
                 >
                   {r.status === "parsed" ? "已解析" : "待确认"}
@@ -329,7 +329,7 @@ export function ReportsCenter({
         </section>
       )}
 
-      <Link href="/gates" className="text-sm text-[var(--color-accent)] hover:underline">
+      <Link href="/council?tab=gates" className="text-sm text-[var(--color-accent)] hover:underline">
         查看 Gate 风险清单 →
       </Link>
     </div>

@@ -18,7 +18,7 @@ export const Q3_REHEARSAL_AGENDA: RehearsalStep[] = [
     objectives: ["对齐 crux", "确认稳健性底线", "只看 Top 变化"],
     routes: [
       { href: "/command", label: "指挥舱" },
-      { href: "/print/panorama", label: "董事会一页纸" },
+      { href: "/print/panorama", label: "董事会 A3 全景" },
     ],
     talkingPoints: [
       "核心挑战：从 1 亿到 2.5 亿，渠道与产品化不同步",
@@ -36,7 +36,7 @@ export const Q3_REHEARSAL_AGENDA: RehearsalStep[] = [
     routes: [
       { href: "/finance?tab=management", label: "管理报表" },
       { href: "/ma", label: "并购 · 资本交易" },
-      { href: "/gates", label: "Gate 清单" },
+      { href: "/council?tab=gates", label: "Gate 清单" },
     ],
     talkingPoints: [
       "H1 62% / H2 28% / H3 10% — 是否符合 deliberate 意图",
@@ -87,7 +87,7 @@ export const Q3_REHEARSAL_AGENDA: RehearsalStep[] = [
     objectives: ["四维度 OKR 调整", "X-Matrix 对齐", "四品牌双卡"],
     routes: [
       { href: "/decode", label: "StratDecode" },
-      { href: "/health", label: "看健康 · 十二维" },
+      { href: "/monitor/health", label: "看健康 · 十二维" },
     ],
     talkingPoints: [
       "财务 O 投资驱动增长 — runway 约束下 OKR 是否减量",

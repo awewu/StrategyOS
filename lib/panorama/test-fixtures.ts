@@ -1,4 +1,5 @@
 import { buildManagementReport } from "@/lib/fpa/management-report";
+import { buildRobustView } from "@/lib/health/robust-view";
 import * as demo from "@/lib/stratos-demo-data";
 
 /** Minimal CommandDeck stub for panorama unit tests */
@@ -50,14 +51,13 @@ export function minimalCommandDeckStub() {
       learning: "green" as const,
     },
     bscCards: demo.bscCards,
-    robustScore: {
-      direction: 80,
-      logic: 68,
-      execution: 72,
-      baseline: 70,
-      doctrine: 85,
-      learning: 58,
-    },
+    robustView: buildRobustView({
+      period: "2026-FY",
+      priorPeriod: null,
+      source: "demo",
+      current: {},
+      prior: null,
+    }),
     robustOverall: 72,
     assertions: [{ id: "a1", assertionType: "runway" as const, active: true, message: "runway 硬阻断" }],
     stratDiffs: [{ category: "FPA_FORECAST" as const, severity: "warning" as const, title: "FPA 偏差" }],

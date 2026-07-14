@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { IntelSourcesEditor } from "@/components/market/IntelSourcesEditor";
 import type { SourceKind } from "@/lib/market-intel/types";
 
@@ -479,7 +480,7 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="font-medium text-[var(--color-text-primary)]">{p.name}</div>
-                  {p.modelCode && <div className="text-[10px] text-[var(--color-text-muted)]">{p.modelCode}</div>}
+                  {p.modelCode && <div className="text-[11px] text-[var(--color-text-muted)]">{p.modelCode}</div>}
                 </td>
                 <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">{brandName(p.brandId)}</td>
                 <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">{lineName(p.productLineId)}</td>
@@ -570,9 +571,7 @@ function FormModal({ title, children, onCancel, onSave, saving }: {
   onCancel: () => void; onSave: () => void; saving: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-md rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">{title}</h3>
+    <Modal onClose={onCancel} size="md" title={title}>
         <div className="space-y-3">{children}</div>
         <div className="mt-5 flex justify-end gap-2">
           <button onClick={onCancel} className="rounded-md border border-[var(--surface-border)] px-4 py-1.5 text-sm hover:bg-black/[0.04]">取消</button>
@@ -581,7 +580,6 @@ function FormModal({ title, children, onCancel, onSave, saving }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -57,12 +57,12 @@ export function BscCausalChain({ cards }: { cards: Card[] }) {
                 }}
               >
                 {isRoot && (
-                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-red)] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-red)] px-1.5 py-0.5 text-[11px] font-semibold text-white">
                     根因
                   </span>
                 )}
                 {propagated && (
-                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-yellow)] px-1.5 py-0.5 text-[10px] font-semibold text-black">
+                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-yellow)] px-1.5 py-0.5 text-[11px] font-semibold text-black">
                     受传导
                   </span>
                 )}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { OutlookEditor } from "@/components/finance/OutlookEditor";
+import { FiveYearForecast, SensitivityPanel } from "@/components/finance/FiveYearForecast";
 import { ScenarioAdvisor } from "@/components/command/ScenarioAdvisor";
 import { RobustTrend } from "@/components/health/RobustTrend";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -13,7 +13,7 @@ const HORIZON_META = [
 ] as const;
 
 export default async function OutlookPage() {
-  const [data, robust] = await Promise.all([getFinanceBundle(), getRobustScore()]);
+  const [data, robust] = await Promise.all([getFinanceBundle(), getRobustView()]);
   const byHorizon = data.capStack.byHorizon;
 
   return (
@@ -69,18 +69,22 @@ export default async function OutlookPage() {
         <ScenarioAdvisor scenarios={data.spbpScenarios} embedded />
       </SectionCard>
 
-      {/* ④ 财务轨迹 */}
-      <SectionCard title="④ 财务轨迹" subtitle="5 年预测与敏感性 · 可编辑保存" accent="gold">
-        <OutlookEditor
-          initialRows={data.fiveYearForecast}
-          initialDrivers={data.sensitivityDrivers}
-          source={data.outlookSource}
-        />
+      {/* ④ 财务轨迹（只读 · 编辑入口统一在 FPA） */}
+      <SectionCard title="④ 财务轨迹" subtitle="5 年预测与敏感性 · 只读预览" accent="gold">
+        <div className="mb-3 flex justify-end">
+          <Link href="/finance?tab=forecast" className="stratos-btn stratos-btn--ghost text-xs">
+            去 FPA 编辑 →
+          </Link>
+        </div>
+        <div className="space-y-6">
+          <FiveYearForecast rows={data.fiveYearForecast} />
+          <SensitivityPanel drivers={data.sensitivityDrivers} />
+        </div>
       </SectionCard>
 
       {/* ⑤ 稳健性 */}
-      <SectionCard title="⑤ 战略稳健性" subtitle="StratRobust 五维（当前）" accent="violet">
-        <RobustBars dims={robust} />
+      <SectionCard title="⑤ 战略稳健性" subtitle="StratRobust 12 维 · 环比趋势" accent="violet">
+        <RobustTrend view={robust} />
       </SectionCard>
     </div>
   );

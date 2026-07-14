@@ -286,17 +286,6 @@ export interface KellerBrandLayer {
   note?: string;
 }
 
-export type FeedbackLoopKind = "R" | "B" | "D";
-
-export interface FeedbackLoop {
-  id: string;
-  kind: FeedbackLoopKind;
-  label: string;
-  chain: string;
-  bscDimension: string;
-  fpaLinked?: boolean;
-}
-
 export interface TechSignal {
   id: string;
   domain: "heat_pump" | "controls" | "channel_tech" | "efficiency";

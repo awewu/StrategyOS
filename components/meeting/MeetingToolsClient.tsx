@@ -180,7 +180,7 @@ export function MeetingToolsClient() {
         <Link href="/inbox" className="text-[var(--color-accent)] hover:underline">
           议题 Inbox →
         </Link>
-        <Link href="/rehearsal" className="text-[var(--color-text-muted)] hover:underline">
+        <Link href="/council?tab=rehearsal" className="text-[var(--color-text-muted)] hover:underline">
           Q3 彩排 →
         </Link>
         <Link href="/mandates" className="text-[var(--color-text-muted)] hover:underline">

@@ -1,4 +1,3 @@
-import { GrowthAnalyticsEditor } from "@/components/strategy/GrowthAnalyticsEditor";
 import { SectionCard } from "@/components/ui/KpiTile";
 import { labelFor } from "@/lib/brand/display-labels";
 import type { getStrategyBundle } from "@/lib/data/strategy-data";
@@ -21,16 +20,10 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
           <p className="stratos-section-header__eyebrow">Prod / Gtm · 增长深度</p>
           <h2 className="stratos-section-header__title">产品与市场增长视图</h2>
           <p className="stratos-section-header__subtitle">
-            AARRR 漏斗 · Keller 品牌 · 路线图 · JTBD · 竞品差距 · {labelFor("gtmBets")}细分
+            路线图 · JTBD · 竞品差距 · {labelFor("gtmBets")}细分 · 增长诊断已移至市场洞察
           </p>
         </div>
       </header>
-
-      <GrowthAnalyticsEditor
-        initialAarrr={bundle.aarrrFunnel}
-        initialKeller={bundle.kellerBrandLayers}
-        source={bundle.growthAnalyticsSource}
-      />
 
       <SectionCard title="产品路线图" subtitle="Now / Next / Later · 与 Vx 联动">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

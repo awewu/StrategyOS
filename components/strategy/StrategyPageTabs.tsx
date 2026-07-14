@@ -38,7 +38,7 @@ export function StrategyPageTabs({
           onClick={() => setTab("onepager")}
           className={`stratos-segment__item ${tab === "onepager" ? "stratos-segment__item--active" : ""}`}
         >
-          董事会一页纸
+          战略一页纸
         </button>
       </div>
 

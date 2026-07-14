@@ -71,7 +71,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
               className="flex items-center gap-1.5 rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.04]">
               竞品筛选
               {hiddenBrands.size > 0 && (
-                <span className="rounded-full bg-[var(--color-accent)] px-1.5 text-[10px] text-white">{data.brands.length - hiddenBrands.size}/{data.brands.length}</span>
+                <span className="rounded-full bg-[var(--color-accent)] px-1.5 text-[11px] text-white">{data.brands.length - hiddenBrands.size}/{data.brands.length}</span>
               )}
             </button>
             {filterOpen && (
@@ -80,7 +80,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                   <label key={b.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-black/[0.04]">
                     <input type="checkbox" checked={!hiddenBrands.has(b.id)} onChange={() => toggleBrand(b.id)} className="accent-[var(--color-accent)]" />
                     <span>{b.name}</span>
-                    <span className="ml-auto text-[10px] text-[var(--color-text-muted)]">{b.tier === "core" ? "核心" : "观察"}</span>
+                    <span className="ml-auto text-[11px] text-[var(--color-text-muted)]">{b.tier === "core" ? "核心" : "观察"}</span>
                   </label>
                 ))}
               </div>
@@ -106,7 +106,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                 <th key={b.id} className="px-3 py-2 text-center">
                   <div className="font-medium text-[var(--color-text-secondary)] text-sm">{b.name}</div>
                   {hotForBrand(b.id).length > 0 && (
-                    <div className="text-[10px] font-normal text-[var(--signal-yellow)]">🔥 {hotForBrand(b.id).length}款爆品</div>
+                    <div className="text-[11px] font-normal text-[var(--signal-yellow)]">🔥 {hotForBrand(b.id).length}款爆品</div>
                   )}
                 </th>
               ))}
@@ -124,7 +124,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                       <span className="text-xs text-[var(--color-text-muted)]">{expandedRegions.has(row.id) ? "▾" : "▸"}</span>
                       {row.name}
                       {(provincesByRegion[row.id]?.length ?? 0) > 0 && (
-                        <span className="text-[10px] text-[var(--color-text-muted)]">({provincesByRegion[row.id]!.length}省)</span>
+                        <span className="text-[11px] text-[var(--color-text-muted)]">({provincesByRegion[row.id]!.length}省)</span>
                       )}
                     </button>
                   )}
@@ -147,7 +147,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                       ) : (
                         <button
                           onClick={() => setSelected({ regionId: row.id, competitorId: b.id })}
-                          className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-[10px] text-[var(--color-text-muted)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition-colors">
+                          className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-[11px] text-[var(--color-text-muted)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition-colors">
                           + 建档
                         </button>
                       )}

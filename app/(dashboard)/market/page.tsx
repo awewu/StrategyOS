@@ -7,6 +7,8 @@ import { LeadingIndicatorPanel } from "@/components/market/LeadingIndicatorPanel
 import { MarketAskAiPanel, MarketBriefPanel } from "@/components/market/MarketBriefPanel";
 import { MarketTabs } from "@/components/market/MarketTabs";
 import { SwotPanel } from "@/components/market/SwotPanel";
+import { GrowthAnalyticsEditor } from "@/components/growth/GrowthAnalyticsEditor";
+import { getGrowthAnalytics } from "@/lib/fpa/growth-analytics-access";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { buildMarketBrief } from "@/lib/market-intel/brief";
 import { demoSources, demoSignals, demoTracks, demoInternalSwot } from "@/lib/market-intel/demo-data";
@@ -76,11 +78,12 @@ export default async function MarketPage({
   const initialTab =
     tab === "swot" || tab === "workbench" || tab === "intel" ? tab : "landscape";
   const now = new Date();
-  const [db, workbench, compass, selfScoresBundle] = await Promise.all([
+  const [db, workbench, compass, selfScoresBundle, growth] = await Promise.all([
     loadMarketData(),
     loadWorkbench(),
     getCompassBundle(),
     getMarketSelfScores(),
+    getGrowthAnalytics(),
   ]);
   const sources = (db?.sources ?? demoSources).map((s) => ({ ...s, health: sourceHealth(s, now) }));
   const signals = db?.signals ?? demoSignals;
@@ -92,7 +95,16 @@ export default async function MarketPage({
   const active = sources.filter((s) => s.health === "active").length;
   const dataSource = db ? "DB" : "Demo";
 
-  const landscapeView = <CompetitorMatrix tracks={tracks} />;
+  const landscapeView = (
+    <div className="space-y-8">
+      <CompetitorMatrix tracks={tracks} />
+      <GrowthAnalyticsEditor
+        initialAarrr={growth.aarrrFunnel}
+        initialKeller={growth.kellerBrandLayers}
+        source={growth.source}
+      />
+    </div>
+  );
 
   const workbenchView = workbench ? (
     <div className="space-y-8">

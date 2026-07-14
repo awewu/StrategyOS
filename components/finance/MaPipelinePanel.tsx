@@ -43,12 +43,12 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
                       {item.synergyThesis}
                     </p>
                     {item.integrationMilestone100d && (
-                      <p className="mt-2 border-t border-[var(--surface-border)] pt-2 text-[10px] text-emerald-400/90">
+                      <p className="mt-2 border-t border-[var(--surface-border)] pt-2 text-[11px] text-[var(--signal-green)]">
                         D100: {item.integrationMilestone100d}
                       </p>
                     )}
                     {item.linkedAssumptionCodes.length > 0 && (
-                      <div className="mt-1 text-[10px] text-[var(--color-text-muted)]">
+                      <div className="mt-1 text-[11px] text-[var(--color-text-muted)]">
                         Hx: {item.linkedAssumptionCodes.join(", ")}
                       </div>
                     )}

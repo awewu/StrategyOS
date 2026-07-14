@@ -30,7 +30,7 @@ type ImportResult = {
 
 function riskColor(level: string) {
   if (level === "block") return "text-[var(--signal-red)]";
-  if (level === "warn") return "text-amber-800";
+  if (level === "warn") return "text-[var(--signal-yellow)]";
   return "text-[var(--color-text-muted)]";
 }
 
@@ -232,7 +232,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
 
       <div className="stratos-card stratos-card--flat stratos-card--padded min-h-[12rem] bg-[var(--surface-raised)] text-sm">
         {audit ? (
-          <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2.5 text-xs">
+          <div className="mb-4 rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/10 px-3 py-2.5 text-xs">
             <p className="font-semibold text-[var(--color-text-primary)]">误杀审计</p>
             {audit.summary.map((s) => (
               <p key={s} className="mt-1 text-[var(--color-text-muted)]">{s}</p>
@@ -245,7 +245,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
               ))}
             </div>
             {audit.reviewCandidates.length > 0 ? (
-              <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[11px] text-amber-900">
+              <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[11px] text-[var(--signal-yellow)]">
                 {audit.reviewCandidates.slice(0, 10).map((r, i) => (
                   <li key={i}>
                     [{r.reason}] {r.text.slice(0, 56)} — {r.reviewHint}
@@ -318,7 +318,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
         )}
 
         {result?.ok && result.imported ? (
-          <div className="mt-4 rounded-lg border border-green-600/20 bg-green-600/5 px-3 py-2 text-xs text-green-900">
+          <div className="mt-4 rounded-lg border border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 px-3 py-2 text-xs text-[var(--signal-green)]">
             已导入：{result.imported.join(" · ")}
           </div>
         ) : null}

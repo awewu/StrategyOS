@@ -108,7 +108,7 @@ export function CellDetailPanel({
                       <tr key={s.key} className="border-b border-[var(--surface-border)] last:border-0">
                         <td className="px-3 py-2 text-[var(--color-text-secondary)]">
                           {s.label}{s.unit ? " (" + s.unit + ")" : ""}
-                          {s.weight >= 3 && <span className="ml-1 text-[10px] text-[var(--color-accent)]">核心</span>}
+                          {s.weight >= 3 && <span className="ml-1 text-[11px] text-[var(--color-accent)]">核心</span>}
                         </td>
                         <td className="px-3 py-2 text-right font-data tabular-nums">{s.valueNum ?? s.valueText ?? "—"}</td>
                         <td className="px-3 py-2 text-right font-data tabular-nums">{c?.valueNum ?? c?.valueText ?? "—"}</td>
@@ -133,10 +133,10 @@ export function CellDetailPanel({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-xs text-[var(--color-accent)]">{DIM_LABEL[r.dimension]}</span>
                       <span className="text-sm font-medium">{r.subtopic}</span>
-                      <span className={"rounded px-1.5 py-0.5 text-[10px] " + STATUS_LABEL[r.status].cls}>{STATUS_LABEL[r.status].label}</span>
-                      {r.editedManually && <span className="rounded bg-[var(--signal-green)]/15 px-1.5 py-0.5 text-[10px] text-[var(--signal-green)]">人工确认</span>}
-                      {r.origin === "hermes" && !r.editedManually && <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-[10px] text-[var(--color-accent)]">Hermes 草稿</span>}
-                      <span className="ml-auto text-[10px] text-[var(--color-text-muted)]">置信 {r.confidence}</span>
+                      <span className={"rounded px-1.5 py-0.5 text-[11px] " + STATUS_LABEL[r.status].cls}>{STATUS_LABEL[r.status].label}</span>
+                      {r.editedManually && <span className="rounded bg-[var(--signal-green)]/15 px-1.5 py-0.5 text-[11px] text-[var(--signal-green)]">人工确认</span>}
+                      {r.origin === "hermes" && !r.editedManually && <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">Hermes 草稿</span>}
+                      <span className="ml-auto text-[11px] text-[var(--color-text-muted)]">置信 {r.confidence}</span>
                     </div>
                     {r.findings && <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{r.findings}</p>}
                   </div>
@@ -376,11 +376,11 @@ function WinLossTab({ regionId, competitorId, productLineId, records, onAdded }:
                   {w.outcome === "win" ? "赢单" : w.outcome === "loss" ? "丢单" : "未决"}
                 </span>
                 <span className="text-sm font-medium">{w.projectName}</span>
-                {w.customerType && <span className="text-[10px] text-[var(--color-text-muted)]">{w.customerType}</span>}
+                {w.customerType && <span className="text-[11px] text-[var(--color-text-muted)]">{w.customerType}</span>}
                 {w.dealSizeCny && <span className="ml-auto font-data text-xs text-[var(--color-text-muted)]">¥{(w.dealSizeCny / 10000).toFixed(0)}万</span>}
               </div>
               <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{w.winReason ?? w.lossReason}</p>
-              <p className="mt-1 text-[10px] text-[var(--color-text-muted)]">{w.recordedAt}</p>
+              <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">{w.recordedAt}</p>
             </div>
           ))}
         </div>

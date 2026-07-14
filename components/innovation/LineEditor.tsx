@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import type { LineView } from "@/lib/innovation/views";
 import { DEFAULT_GATE_THRESHOLDS } from "@/lib/innovation/views";
 
@@ -75,17 +76,8 @@ export function LineEditor({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div
-        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
-          {line?.id ? "编辑产品线画像" : "新建产品线画像"}
-        </h3>
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">内核不变 · 画像可配——权重与阈值只影响本线的引擎行为</p>
-
-        <div className="mt-4 space-y-4">
+    <Modal onClose={onClose} size="lg" title={line?.id ? "编辑产品线画像" : "新建产品线画像"} subtitle="内核不变 · 画像可配——权重与阈值只影响本线的引擎行为">
+        <div className="space-y-4">
           <div>
             <label className="text-xs text-[var(--color-text-secondary)]">产品线名称</label>
             <input className={inp} value={name} onChange={(e) => setName(e.target.value)} placeholder="例如:某产品线" />
@@ -236,7 +228,6 @@ export function LineEditor({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

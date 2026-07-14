@@ -20,7 +20,7 @@
     "smoke": "npx tsx scripts/smoke-health.ts",
     "verify:persistence": "npx tsx scripts/verify-persistence.ts",
     "plan:import": "npx tsx scripts/import-strategic-plan.ts",
-    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts lib/culture/*.test.ts lib/command/*.test.ts lib/execution/*.test.ts lib/market-intel/*.test.ts lib/health/*.test.ts lib/decode/*.test.ts lib/nav/*.test.ts lib/data/*.test.ts lib/innovation/*.test.ts lib/ma/*.test.ts lib/compiler/import-quality.test.ts lib/compiler/import-deduction.test.ts lib/compiler/import-llm.test.ts lib/compiler/import-audit.test.ts lib/reports/pulse-dedup.test.ts lib/reports/report-queries.test.ts lib/env/*.test.ts lib/rate-limit.test.ts lib/auth/*.test.ts",
+    "test": "node --import tsx --test lib/stratos/*.test.ts lib/audit/*.test.ts lib/panorama/*.test.ts lib/harness/*.test.ts lib/fpa/*.test.ts lib/culture/*.test.ts lib/command/*.test.ts lib/execution/*.test.ts lib/market-intel/*.test.ts lib/health/*.test.ts lib/decode/*.test.ts lib/nav/*.test.ts lib/data/*.test.ts lib/innovation/*.test.ts lib/ma/*.test.ts lib/gates/*.test.ts lib/review/*.test.ts lib/finance/*.test.ts lib/compiler/sheet-profiles.test.ts lib/compiler/sheet-diff.test.ts lib/compiler/import-quality.test.ts lib/compiler/import-deduction.test.ts lib/compiler/import-llm.test.ts lib/compiler/import-audit.test.ts lib/reports/pulse-dedup.test.ts lib/reports/report-queries.test.ts lib/env/*.test.ts lib/rate-limit.test.ts lib/auth/*.test.ts",
     "test:e2e": "playwright test",
     "test:compiler-chain": "npx tsx scripts/e2e-compiler-chain.ts",
     "harness": "npx tsx scripts/harness.ts",

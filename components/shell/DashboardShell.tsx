@@ -43,7 +43,7 @@ function ShellInner({
       <DevRoleSync initialRole={initialRole} devBypassAuth={devBypassAuth} />
       <div className="flex min-h-screen">
         <AppNav secureMode={secureMode} devBypassAuth={devBypassAuth} />
-        <main className="stratos-shell-bg stratos-shell-main flex-1 min-h-screen px-[var(--page-gutter)] py-7 md:py-9 max-md:px-5">
+        <main className="stratos-shell-bg stratos-shell-main flex-1 min-w-0 min-h-screen px-[var(--page-gutter)] py-7 md:py-9 max-md:px-5">
           <div className="mx-auto w-full max-w-7xl">
             <Suspense fallback={null}>
               <AccessDeniedBanner />

@@ -32,7 +32,10 @@ export const DEFAULT_GATE_THRESHOLDS: GateThresholds = {
 export interface EvidenceView {
   id: string;
   level: EvidenceLevel;
+  /** 接地后的有效级别：无 artifactRef 时封顶 L2 */
+  effectiveLevel: EvidenceLevel;
   source: string;
+  artifactRef: string | null;
   note: string | null;
   stale: boolean;
 }

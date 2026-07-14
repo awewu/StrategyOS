@@ -20,6 +20,8 @@ export const USAGE_ACTIONS = [
   "audit_export",
   "data_source_read",
   "permission_update",
+  "import_commit",
+  "budget_version_update",
 ] as const;
 
 export type UsageAction = (typeof USAGE_ACTIONS)[number];
@@ -51,6 +53,8 @@ export const ACTION_LABELS: Partial<Record<UsageAction, string>> = {
   counterfactual_run: "反事实推演",
   rehearsal_checklist: "彩排清单",
   diff_persist: "Diff 持久化",
+  import_commit: "Sheet 导入入库",
+  budget_version_update: "预算版本流转",
   workos_webhook: "WorkOS Webhook",
   hermes_scan: "Hermes 市场扫描",
   fpa_view: "FPA 财务查看",

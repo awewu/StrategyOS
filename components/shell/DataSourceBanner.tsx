@@ -29,7 +29,7 @@ export function DataSourceBanner() {
     red: "border-[var(--signal-red)]/30 bg-[var(--signal-red)]/8 text-[var(--signal-red)]",
     yellow:
       "border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/8 text-[var(--signal-yellow)]",
-    green: "border-emerald-500/30 bg-emerald-500/8 text-emerald-400",
+    green: "border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
   };
 
   return (
@@ -39,7 +39,11 @@ export function DataSourceBanner() {
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-medium">
-          {meta.source === "demo" ? "演示数据模式" : "数据新鲜度"}
+          {meta.source === "demo"
+            ? "演示数据模式"
+            : (meta.demoFallbacks?.length ?? 0) > 0
+              ? "部分演示数据"
+              : "数据新鲜度"}
         </span>
         <span className="text-[var(--color-text-primary)]">{meta.message}</span>
         {meta.source === "database" && meta.lastUpdates.activePeriod && (

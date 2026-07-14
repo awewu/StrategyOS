@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Drawer } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import type { DealType } from "@/lib/ma/types";
 import type { DealView, MaBundle } from "@/lib/ma/views";
@@ -32,7 +33,7 @@ function VerdictBadge({ verdict }: { verdict: string }) {
       : verdict === "hold"
         ? "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"
         : "bg-[var(--signal-red)]/15 text-[var(--signal-red)]";
-  return <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${cls}`}>{verdict.toUpperCase()}</span>;
+  return <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${cls}`}>{verdict.toUpperCase()}</span>;
 }
 
 function pct(v: number): string {
@@ -95,11 +96,11 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
           return (
             <div key={stage} className="min-w-[210px] flex-1">
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[10px] font-semibold text-[var(--color-accent)]">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[11px] font-semibold text-[var(--color-accent)]">
                   {idx + 1}
                 </span>
                 <span className="text-xs font-medium text-[var(--color-text-primary)]">{DEAL_STAGE_LABEL[stage]}</span>
-                <span className="text-[10px] text-[var(--color-text-muted)]">{STAGE_HINT[stage]}</span>
+                <span className="text-[11px] text-[var(--color-text-muted)]">{STAGE_HINT[stage]}</span>
               </div>
               <div className={`space-y-2 rounded-lg p-2 ${strict ? "bg-[var(--color-accent)]/[0.04]" : "bg-black/[0.03]"}`}>
                 {col.map((deal) => (
@@ -109,13 +110,13 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                     className="w-full rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-3 text-left transition hover:border-[var(--color-accent)]"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${TYPE_TONE[deal.dealType]}`}>
+                      <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${TYPE_TONE[deal.dealType]}`}>
                         {DEAL_TYPE_LABEL[deal.dealType]}
                       </span>
                       <VerdictBadge verdict={deal.gate.verdict} />
                     </div>
                     <div className="mt-1.5 truncate text-sm font-medium text-[var(--color-text-primary)]">{deal.name}</div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-[var(--color-text-muted)]">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[var(--color-text-muted)]">
                       <span>{deal.direction}</span>
                       {deal.price !== null && <span>对价 {deal.price.toLocaleString()}</span>}
                       {deal.price !== null && deal.synergyNpvValue > 0 && (
@@ -129,7 +130,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                     </div>
                   </button>
                 ))}
-                {col.length === 0 && <div className="py-5 text-center text-[10px] text-[var(--color-text-muted)]">—</div>}
+                {col.length === 0 && <div className="py-5 text-center text-[11px] text-[var(--color-text-muted)]">—</div>}
               </div>
             </div>
           );
@@ -140,12 +141,11 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
       </p>
 
       {detail && (
-        <div className="fixed inset-0 z-40 flex justify-end bg-black/20" onClick={() => setDetailId(null)}>
-          <div className="h-full w-full max-w-lg overflow-y-auto border-l border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5" onClick={(e) => e.stopPropagation()}>
+        <Drawer onClose={() => setDetailId(null)} size="lg">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${TYPE_TONE[detail.dealType]}`}>{DEAL_TYPE_LABEL[detail.dealType]}</span>
+                  <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${TYPE_TONE[detail.dealType]}`}>{DEAL_TYPE_LABEL[detail.dealType]}</span>
                   <VerdictBadge verdict={detail.gate.verdict} />
                   <span className="text-xs text-[var(--color-text-muted)]">{DEAL_STAGE_LABEL[detail.stage]}</span>
                 </div>
@@ -190,7 +190,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   <div className="bg-purple-400" style={{ width: pct(detail.dealStructure.stockPct ?? 0) }} title="股份" />
                   <div className="bg-[var(--signal-yellow)]" style={{ width: pct(detail.dealStructure.earnoutPct ?? 0) }} title="earnout" />
                 </div>
-                <div className="mt-1 flex gap-3 text-[10px] text-[var(--color-text-muted)]">
+                <div className="mt-1 flex gap-3 text-[11px] text-[var(--color-text-muted)]">
                   <span>现金 {pct(detail.dealStructure.cashPct ?? 0)}</span>
                   <span>股份 {pct(detail.dealStructure.stockPct ?? 0)}</span>
                   <span>earnout {pct(detail.dealStructure.earnoutPct ?? 0)}{detail.dealStructure.earnoutTerms ? ` · ${detail.dealStructure.earnoutTerms}` : ""}</span>
@@ -206,7 +206,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
               ].map((kpi) => (
                 <div key={kpi.label} className="rounded-lg bg-black/[0.03] p-2 text-center">
                   <div className="text-sm font-semibold text-[var(--color-text-primary)]">{kpi.value}</div>
-                  <div className="text-[10px] text-[var(--color-text-muted)]">{kpi.label}</div>
+                  <div className="text-[11px] text-[var(--color-text-muted)]">{kpi.label}</div>
                 </div>
               ))}
             </div>
@@ -222,7 +222,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                       </span>
                       <span className="flex items-center gap-2">
                         <span className="text-[var(--color-text-primary)]">{s.runRate.toLocaleString()}/年</span>
-                        <span className={`rounded px-1 py-0.5 text-[10px] ${s.evidenceLevel >= 4 ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"}`}>
+                        <span className={`rounded px-1 py-0.5 text-[11px] ${s.evidenceLevel >= 4 ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"}`}>
                           L{s.evidenceLevel}
                         </span>
                       </span>
@@ -255,9 +255,9 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   {detail.findings.map((f) => (
                     <div key={f.id} className="rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase text-[var(--color-text-muted)]">{f.workstream}</span>
+                        <span className="text-[11px] uppercase text-[var(--color-text-muted)]">{f.workstream}</span>
                         <span className="flex items-center gap-1.5">
-                          {f.dealBreaker && <span className="rounded bg-[var(--signal-red)]/15 px-1 py-0.5 text-[10px] font-semibold text-[var(--signal-red)]">deal-breaker</span>}
+                          {f.dealBreaker && <span className="rounded bg-[var(--signal-red)]/15 px-1 py-0.5 text-[11px] font-semibold text-[var(--signal-red)]">deal-breaker</span>}
                           <span className={f.status === "closed" ? "text-[var(--signal-green)]" : f.status === "mitigated" ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]"}>
                             {f.status === "closed" ? "已关" : f.status === "mitigated" ? "已缓解" : "未解"}
                           </span>
@@ -285,8 +285,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                 </div>
               </div>
             )}
-          </div>
-        </div>
+        </Drawer>
       )}
 
       {editDeal !== null && (

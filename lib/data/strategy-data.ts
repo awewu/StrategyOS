@@ -22,7 +22,6 @@ import {
   resolveScoreboardView,
 } from "@/lib/execution/scoreboard-access";
 import { getStratDiffs } from "@/lib/data/versions-data";
-import { computeRobustOverall } from "@/lib/stratos/robust-score";
 import {
   demoTensions, demoMaturityPoints, demoCommitments,
   type TensionItem, type ExecutionMaturityPoint, type CommitmentRecord,
@@ -36,7 +35,6 @@ import type {
   FpaSummary,
   HealthAssertion,
   InvestmentCase,
-  RobustnessDimensions,
   StrategicDiagnosis,
 } from "@/lib/types/stratos";
 import {
@@ -146,8 +144,9 @@ export async function getCapStack(): Promise<CapStackPeriod> {
   };
 }
 
-export async function getRobustScore(): Promise<RobustnessDimensions> {
-  return entities.getRobustScore();
+export async function getRobustView() {
+  const { getRobustView: load } = await import("@/lib/health/twelve-dim-access");
+  return load();
 }
 
 /** Bundle for command deck + PDF one-pager */
@@ -169,7 +168,7 @@ export async function getCommandDeckBundle() {
       getInvestmentCases(),
       entities.getBscLights(),
       entities.getBscCards(),
-      getRobustScore(),
+      getRobustView(),
       getManagementReport(),
       getStratDiffs(),
       getSnapshotList(),
@@ -185,8 +184,8 @@ export async function getCommandDeckBundle() {
     assertions,
     bscLights,
     bscCards,
-    robustScore: robust,
-    robustOverall: computeRobustOverall(robust),
+    robustView: robust,
+    robustOverall: robust.overall,
     stratDiffs,
     spbpScenarios,
     capStack,
@@ -662,13 +661,13 @@ export async function getReports(orgScope?: string[] | null): Promise<ReportList
 export async function getHealthBundle() {
   await requireDbAvailable();
   const { getBscConfig } = await import("@/lib/fpa/bsc-config-access");
-  const [source, fpa, bscLights, bscConfig, healthOverview, robustScore, bscCards] = await Promise.all([
+  const [source, fpa, bscLights, bscConfig, healthOverview, robustView, bscCards] = await Promise.all([
     getDataSource(),
     getFpaSummary(),
     entities.getBscLights(),
     getBscConfig(),
     entities.getHealthOverview(),
-    getRobustScore(),
+    getRobustView(),
     entities.getBscCards(),
   ]);
   return {
@@ -678,28 +677,23 @@ export async function getHealthBundle() {
     bscCards,
     bscConfigSource: bscConfig.source,
     healthOverview,
-    robustScore,
-    robustOverall: computeRobustOverall(robustScore),
+    robustView,
+    robustOverall: robustView.overall,
   };
 }
 
 /** Decode page bundle */
 export async function getDecodeBundle() {
   const { getDecodeBsc, getDecodeHoshin } = await import("@/lib/decode/data-access");
-  const { getFeedbackLoops } = await import("@/lib/feedback/data-access");
-  const [source, feedback, bsc, hoshin] = await Promise.all([
+  const [source, bsc, hoshin] = await Promise.all([
     getDataSource(),
-    getFeedbackLoops(),
     getDecodeBsc(),
     getDecodeHoshin(),
   ]);
   const dataSource =
-    bsc.source === "database" || hoshin.source === "database" || feedback.source === "database"
-      ? "database"
-      : source;
+    bsc.source === "database" || hoshin.source === "database" ? "database" : source;
   return {
     source: dataSource,
-    loops: feedback.loops,
     bsc: bsc.rows,
     hoshinQuadrants: hoshin.quadrants,
     hoshinFlat: hoshin.flat,

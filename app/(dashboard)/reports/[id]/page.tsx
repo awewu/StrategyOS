@@ -25,9 +25,9 @@ const APPROVAL_LABEL: Record<string, string> = {
 };
 
 const APPROVAL_STYLE: Record<string, string> = {
-  PENDING: "bg-yellow-500/10 text-yellow-700",
-  APPROVED: "bg-green-600/10 text-green-700",
-  REJECTED: "bg-red-600/10 text-red-700",
+  PENDING: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]",
+  APPROVED: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
+  REJECTED: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]",
 };
 
 function fmtBytes(n: number) {
@@ -207,7 +207,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
           <div>
             <p className="text-[11px] text-[var(--color-text-muted)]">审批状态</p>
             <span
-              className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium ${
+              className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                 APPROVAL_STYLE[report.approvalStatus] ?? ""
               }`}
             >

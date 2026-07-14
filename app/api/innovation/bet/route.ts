@@ -13,7 +13,7 @@ type ClaimPayload = {
   claim?: string;
   warrant?: string | null;
   rebuttal?: string | null;
-  evidence?: { level?: number; source?: string; note?: string | null; stale?: boolean }[];
+  evidence?: { level?: number; source?: string; artifactRef?: string | null; note?: string | null; stale?: boolean }[];
 };
 
 type AssumptionPayload = {
@@ -77,6 +77,7 @@ export async function POST(req: Request) {
               claimId: created.id,
               level: Math.min(6, Math.max(1, Number(e.level) || 1)),
               source: String(e.source),
+              artifactRef: e.artifactRef && String(e.artifactRef).trim() ? String(e.artifactRef).trim() : null,
               note: e.note ? String(e.note) : null,
               stale: e.stale === true,
             },

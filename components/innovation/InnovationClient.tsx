@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Drawer } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import type { BetView, InnovationBundle, LineView } from "@/lib/innovation/views";
 import { STAGE_LABEL, STAGE_ORDER } from "@/lib/innovation/views";
@@ -45,14 +46,14 @@ function VerdictBadge({ verdict }: { verdict: string }) {
         ? "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"
         : "bg-[var(--signal-red)]/15 text-[var(--signal-red)]";
   const label = verdict === "go" ? "GO" : verdict === "hold" ? "HOLD" : "KILL";
-  return <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${cls}`}>{label}</span>;
+  return <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${cls}`}>{label}</span>;
 }
 
 function EvidenceBadge({ level, bar }: { level: number; bar: number }) {
   const ok = level >= bar;
   return (
     <span
-      className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${ok ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-black/[0.06] text-[var(--color-text-muted)]"}`}
+      className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${ok ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-black/[0.06] text-[var(--color-text-muted)]"}`}
       title={`论证强度 = 证据最短板;门槛 L${bar}`}
     >
       证据 L{level}
@@ -127,17 +128,17 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-[var(--color-text-primary)]">{line.name}</span>
-                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[10px] text-[var(--color-text-secondary)]">
+                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-secondary)]">
                   {LIFECYCLE_LABEL[line.lifecycleStage] ?? line.lifecycleStage}期
                 </span>
                 {line.dominantProblems.map((p) => (
-                  <span key={p} className="rounded-full bg-[var(--signal-red)]/10 px-2 py-0.5 text-[10px] text-[var(--signal-red)]">
+                  <span key={p} className="rounded-full bg-[var(--signal-red)]/10 px-2 py-0.5 text-[11px] text-[var(--signal-red)]">
                     {PROBLEM_LABEL[p] ?? p}
                   </span>
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-[var(--color-text-muted)]">
+                <span className="text-[11px] text-[var(--color-text-muted)]">
                   Gate:回收≤{line.gateThresholds.maxPaybackYears}年 · 证据≥L{line.gateThresholds.minEvidenceLevel}
                 </span>
                 <button onClick={() => setEditLine(line)} className="rounded-md border border-[var(--surface-border)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]">
@@ -150,14 +151,14 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
             </div>
             {Object.keys(line.fAxisWeights).length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">F 轴权重</span>
+                <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)]">F 轴权重</span>
                 {Object.entries(line.fAxisWeights).map(([k, w]) => (
                   <div key={k} className="flex items-center gap-1.5">
                     <span className="text-[11px] text-[var(--color-text-secondary)]">{k}</span>
                     <div className="h-1.5 w-16 overflow-hidden rounded-full bg-black/[0.06]">
                       <div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${Math.min(100, Number(w) * 100)}%` }} />
                     </div>
-                    <span className="text-[10px] text-[var(--color-text-muted)]">{Number(w).toFixed(2)}</span>
+                    <span className="text-[11px] text-[var(--color-text-muted)]">{Number(w).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -170,11 +171,11 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
               return (
                 <div key={stage} className="min-w-[230px] flex-1">
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[10px] font-semibold text-[var(--color-accent)]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[11px] font-semibold text-[var(--color-accent)]">
                       {idx + 1}
                     </span>
                     <span className="text-xs font-medium text-[var(--color-text-primary)]">{STAGE_LABEL[stage]}</span>
-                    <span className="text-[10px] text-[var(--color-text-muted)]">{STAGE_HINT[stage]}</span>
+                    <span className="text-[11px] text-[var(--color-text-muted)]">{STAGE_HINT[stage]}</span>
                   </div>
                   <div className={`space-y-2 rounded-lg p-2 ${idx >= 2 ? "bg-[var(--color-accent)]/[0.04]" : "bg-black/[0.03]"}`}>
                     {col.map((bet) => (
@@ -189,12 +190,12 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                             <div className="mt-1 flex flex-wrap items-center gap-1.5">
                               <VerdictBadge verdict={bet.gate.verdict} />
                               <EvidenceBadge level={bet.minEvidence} bar={line.gateThresholds.minEvidenceLevel} />
-                              <span className="text-[10px] text-[var(--color-text-muted)]">{bet.horizon}</span>
+                              <span className="text-[11px] text-[var(--color-text-muted)]">{bet.horizon}</span>
                             </div>
                           </div>
                           <TriRadar d={bet.scores.d} f={bet.scores.f} v={bet.scores.v} size={54} tone={verdictTone(bet.gate.verdict)} />
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--surface-border)] pt-2 text-[10px] text-[var(--color-text-muted)]">
+                        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--surface-border)] pt-2 text-[11px] text-[var(--color-text-muted)]">
                           <span>回收 {fmtPayback(bet.paybackYears)}</span>
                           {bet.nextCommitAmount !== null && <span className="text-[var(--color-accent)]">下一笔 {bet.nextCommitAmount.toLocaleString()}</span>}
                           {bet.sourcing.filter((s) => s.decision !== "build").map((s) => (
@@ -205,7 +206,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                         </div>
                       </button>
                     ))}
-                    {col.length === 0 && <div className="py-5 text-center text-[10px] text-[var(--color-text-muted)]">—</div>}
+                    {col.length === 0 && <div className="py-5 text-center text-[11px] text-[var(--color-text-muted)]">—</div>}
                   </div>
                 </div>
               );
@@ -218,15 +219,14 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
       )}
 
       {detailBet && line && (
-        <div className="fixed inset-0 z-40 flex justify-end bg-black/20" onClick={() => setDetailBetId(null)}>
-          <div className="h-full w-full max-w-md overflow-y-auto border-l border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5" onClick={(e) => e.stopPropagation()}>
+        <Drawer onClose={() => setDetailBetId(null)} size="md">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{detailBet.title}</h3>
                 <div className="mt-1 flex items-center gap-2">
                   <VerdictBadge verdict={detailBet.gate.verdict} />
                   <span className="text-xs text-[var(--color-text-muted)]">{STAGE_LABEL[detailBet.stageGate]} · {detailBet.horizon}</span>
-                  {detailBet.abandonRight && <span className="text-[10px] text-[var(--signal-green)]">保留放弃权</span>}
+                  {detailBet.abandonRight && <span className="text-[11px] text-[var(--signal-green)]">保留放弃权</span>}
                 </div>
               </div>
               <div className="flex gap-1.5">
@@ -264,7 +264,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                         {s.decision !== "build" && (
                           <a
                             href={`/ma?new=1&dealType=${s.decision === "buy" ? "acquisition" : "jv"}&direction=${encodeURIComponent(s.capability)}&thesis=${encodeURIComponent(`${s.decision === "buy" ? "收购" : "合资"}获取「${s.capability}」能力——${s.reason}(来自创新下注:${detailBet.title})`)}&crux=${encodeURIComponent(detailBet.title)}`}
-                            className="rounded bg-[var(--color-accent)] px-1.5 py-0.5 text-[10px] text-white"
+                            className="rounded bg-[var(--color-accent)] px-1.5 py-0.5 text-[11px] text-white"
                           >
                             发起交易 →
                           </a>
@@ -283,14 +283,19 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                   {detailBet.claims.map((c) => (
                     <div key={c.id} className="rounded-md border border-[var(--surface-border)] p-2">
                       <div className="flex items-center gap-2">
-                        <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[var(--color-accent)]">{c.axis}</span>
+                        <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-[var(--color-accent)]">{c.axis}</span>
                         <EvidenceBadge level={c.strength} bar={line.gateThresholds.minEvidenceLevel} />
                       </div>
                       <p className="mt-1 text-xs text-[var(--color-text-primary)]">{c.claim}</p>
                       {c.rebuttal && <p className="mt-0.5 text-[11px] text-[var(--signal-red)]/80">反证:{c.rebuttal}</p>}
                       {c.evidence.map((e) => (
                         <p key={e.id} className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">
-                          L{e.level} · {e.source}{e.stale ? " · ⚠stale 需复研" : ""}
+                          {e.effectiveLevel < e.level ? (
+                            <span className="text-[var(--signal-yellow)]">L{e.level}→L{e.effectiveLevel} 未接地(缺物证)</span>
+                          ) : (
+                            <>L{e.level}</>
+                          )}
+                          {" · "}{e.source}{e.stale ? " · ⚠stale 需复研" : ""}
                         </p>
                       ))}
                     </div>
@@ -314,8 +319,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                 </div>
               </div>
             )}
-          </div>
-        </div>
+        </Drawer>
       )}
 
       {editLine !== null && (

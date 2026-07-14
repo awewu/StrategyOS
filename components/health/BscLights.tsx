@@ -52,11 +52,11 @@ export function BscLights({
             }`}
             style={{ borderLeft: `3px solid ${color}` }}
           >
-            <div className="label-xs" style={{ color }}>
+            <div className="label-xs text-[var(--color-text-muted)]">
               {d.satisfaction}
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-subsection font-semibold" style={{ color }}>
+              <span className="text-subsection font-semibold text-[var(--color-text-primary)]">
                 {d.label}
               </span>
               <TrafficLightDot signal={signal} showLabel />

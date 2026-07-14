@@ -57,7 +57,7 @@ export function StrategicTimeline({ milestones }: { milestones: TimelineMileston
               <p className="mt-1 text-xs text-[var(--color-text-muted)]">{m.detail}</p>
             ) : null}
             <span
-              className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium"
+              className="mt-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium"
               style={{
                 color: KIND_COLOR[m.kind],
                 background: `color-mix(in srgb, ${KIND_COLOR[m.kind]} 12%, transparent)`,

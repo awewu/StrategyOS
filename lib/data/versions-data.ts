@@ -2,12 +2,13 @@
  * Version library data — snapshots, diffs, strategy pattern.
  */
 import { dbAvailable, prisma } from "@/lib/db";
+import { buildDecisionLedger, type DecisionLedger } from "@/lib/review/decision-ledger";
 import { getMemoryDiffRecords } from "@/lib/stratos/persist-diff";
 import { computeStratDiff } from "@/lib/stratos/strat-diff";
 import type { DataSource } from "@/lib/data/strategy-data";
 import { getDataSource } from "@/lib/data/strategy-data";
 import * as demo from "@/lib/stratos-demo-data";
-import type { DiffRecord, StrategyPattern } from "@/lib/types/stratos";
+import type { DiffRecord, SnapshotStatePayload, StrategyPattern } from "@/lib/types/stratos";
 
 export interface SnapshotListItem {
   code: string;
@@ -74,12 +75,49 @@ export async function getStrategyPattern(): Promise<StrategyPattern> {
   };
 }
 
+/**
+ * 决策记分卡基准对：取最近两个 FROZEN 快照的 stateJson；不足两个时回退 demo FY25→FY26。
+ */
+async function getDecisionLedgerPair(): Promise<{
+  ledger: DecisionLedger;
+  fromCode: string;
+  toCode: string;
+  isDemoBaseline: boolean;
+}> {
+  const demoResult = {
+    ledger: buildDecisionLedger(demo.snapshotFY25, demo.snapshotFY26),
+    fromCode: "2025-FY-STRATEGIC",
+    toCode: "2026-FY-STRATEGIC",
+    isDemoBaseline: true,
+  };
+  if (!(await dbAvailable())) return demoResult;
+
+  const frozen = await prisma.strategicSnapshot.findMany({
+    where: { status: "FROZEN" },
+    orderBy: { frozenAt: "desc" },
+    take: 2,
+  });
+  if (frozen.length < 2) return demoResult;
+
+  const [toSnap, fromSnap] = frozen;
+  return {
+    ledger: buildDecisionLedger(
+      fromSnap.stateJson as SnapshotStatePayload,
+      toSnap.stateJson as SnapshotStatePayload,
+    ),
+    fromCode: fromSnap.code,
+    toCode: toSnap.code,
+    isDemoBaseline: false,
+  };
+}
+
 export async function getVersionsBundle() {
   const source: DataSource = await getDataSource();
-  const [snapshots, stratDiffs, strategyPattern] = await Promise.all([
+  const [snapshots, stratDiffs, strategyPattern, decisionLedger] = await Promise.all([
     getSnapshotList(),
     getStratDiffs(),
     getStrategyPattern(),
+    getDecisionLedgerPair(),
   ]);
 
   return {
@@ -87,6 +125,7 @@ export async function getVersionsBundle() {
     snapshots,
     stratDiffs,
     strategyPattern,
+    decisionLedger,
     snapshotFY25: demo.snapshotFY25,
     snapshotFY26: demo.snapshotFY26,
     compareDiffs:

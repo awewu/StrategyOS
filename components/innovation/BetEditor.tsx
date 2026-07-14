@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import type { BetView } from "@/lib/innovation/views";
 import { STAGE_LABEL, STAGE_ORDER } from "@/lib/innovation/views";
 
@@ -10,7 +11,7 @@ const sectionCls = "rounded-lg border border-[var(--surface-border)] p-3";
 const addBtn = "text-xs text-[var(--color-accent)]";
 const delBtn = "rounded px-2 py-1 text-xs text-[var(--signal-red)]";
 
-type EvidenceRow = { level: number; source: string; note: string };
+type EvidenceRow = { level: number; source: string; artifactRef: string; note: string };
 type ClaimRow = { axis: string; claim: string; warrant: string; rebuttal: string; evidence: EvidenceRow[] };
 type AssumptionRow = { code: string; statement: string; status: string; testPlan: string };
 type DimRow = { key: string; score: number; evidenceLevel: number };
@@ -54,7 +55,7 @@ export function BetEditor({
       claim: c.claim,
       warrant: c.warrant ?? "",
       rebuttal: c.rebuttal ?? "",
-      evidence: c.evidence.map((e) => ({ level: e.level, source: e.source, note: e.note ?? "" })),
+      evidence: c.evidence.map((e) => ({ level: e.level, source: e.source, artifactRef: e.artifactRef ?? "", note: e.note ?? "" })),
     })),
   );
   const [assumptions, setAssumptions] = useState<AssumptionRow[]>(
@@ -104,15 +105,8 @@ export function BetEditor({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div
-        className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{bet ? "编辑创新下注" : "新建创新下注"}</h3>
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">所有因素皆为数据——改了立即重算 D×F×V 与 Gate</p>
-
-        <div className="mt-4 space-y-4">
+    <Modal onClose={onClose} size="xl" title={bet ? "编辑创新下注" : "新建创新下注"} subtitle="所有因素皆为数据——改了立即重算 D×F×V 与 Gate">
+        <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-[1fr_90px_150px]">
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">标题</label>
@@ -238,13 +232,19 @@ export function BetEditor({
                   <input className={inp} placeholder="反证 Rebuttal(什么条件下不成立)" value={c.rebuttal} onChange={(e) => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, rebuttal: e.target.value } : x))} />
                 </div>
                 <div className="mt-2">
-                  <button type="button" className={addBtn} onClick={() => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, evidence: [...x.evidence, { level: 2, source: "", note: "" }] } : x))}>+ 证据</button>
+                  <button type="button" className={addBtn} onClick={() => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, evidence: [...x.evidence, { level: 2, source: "", artifactRef: "", note: "" }] } : x))}>+ 证据</button>
                   {c.evidence.map((e, k) => (
                     <div key={k} className="mt-1 flex items-center gap-2">
                       <select className={`${inp} w-20`} value={e.level} onChange={(ev) => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, evidence: x.evidence.map((y, m) => m === k ? { ...y, level: Number(ev.target.value) } : y) } : x))}>
                         {[1, 2, 3, 4, 5, 6].map((l) => <option key={l} value={l}>L{l}</option>)}
                       </select>
                       <input className={inp} placeholder="来源/引用(必须可溯源)" value={e.source} onChange={(ev) => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, evidence: x.evidence.map((y, m) => m === k ? { ...y, source: ev.target.value } : y) } : x))} />
+                      <input
+                        className={`${inp} ${e.level >= 3 && !e.artifactRef.trim() ? "border-[var(--signal-yellow)]" : ""}`}
+                        placeholder={e.level >= 3 ? "物证 URL/文件号(L3+必填,否则按 L2 计)" : "物证 URL/文件号(可选)"}
+                        value={e.artifactRef}
+                        onChange={(ev) => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, evidence: x.evidence.map((y, m) => m === k ? { ...y, artifactRef: ev.target.value } : y) } : x))}
+                      />
                       <button type="button" className={delBtn} onClick={() => setClaims((cur) => cur.map((x, j) => j === i ? { ...x, evidence: x.evidence.filter((_, m) => m !== k) } : x))}>删</button>
                     </div>
                   ))}
@@ -281,7 +281,6 @@ export function BetEditor({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

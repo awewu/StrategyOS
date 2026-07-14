@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -41,9 +42,7 @@ function MaturityModal({ item, onClose, onSaved }: {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--surface-border)] bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-base font-semibold text-[var(--color-text-primary)]">{item.projectCode ? "编辑成熟度" : "新增项目成熟度"}</h3>
+    <Modal onClose={onClose} size="lg" title={item.projectCode ? "编辑成熟度" : "新增项目成熟度"}>
         {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -98,8 +97,7 @@ function MaturityModal({ item, onClose, onSaved }: {
             {saving ? "保存中…" : "保存"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -177,7 +175,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
           <span>均速 <span className="text-[var(--color-text-primary)]">{avgSpeed}%</span></span>
           <span>均学 <span className="text-[var(--color-text-primary)]">{avgLearn}%</span></span>
           {highRisk.length > 0 && (
-            <span className="text-red-400">{highRisk.map((p) => p.projectCode).join("、")} 高风险</span>
+            <span className="text-[var(--signal-red)]">{highRisk.map((p) => p.projectCode).join("、")} 高风险</span>
           )}
           <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 录入项目</button>
         </div>
@@ -224,7 +222,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">负责人</span><span>{selectedPoint.owner}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">层面</span><span>{selectedPoint.horizon}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">响应延迟</span>
-                  <span className={selectedPoint.responseLatencyDays > 14 ? "text-red-400" : "text-green-400"}>{selectedPoint.responseLatencyDays} 天</span>
+                  <span className={selectedPoint.responseLatencyDays > 14 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}>{selectedPoint.responseLatencyDays} 天</span>
                 </div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">主要张力</span>
                   <span style={{ color: meta.color }}>{meta.label}</span>

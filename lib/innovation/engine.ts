@@ -1,3 +1,4 @@
+import { resolveChecklistGate } from "@/lib/gates/checklist-gate";
 import type {
   ArbitrageInput,
   CapabilityGap,
@@ -8,7 +9,6 @@ import type {
   FeasibilityDimension,
   GateInput,
   GateResult,
-  GateVerdict,
   OdiInput,
   SourcingOptions,
   SourcingResult,
@@ -68,6 +68,18 @@ export function evidenceStrength(levels: EvidenceLevel[]): EvidenceLevel {
   return levels.reduce((min, l) => (l < min ? l : min), levels[0]);
 }
 
+/**
+ * 接地门（对称 Hermes 的引文校验）：
+ * 未挂物证(artifact)的证据,宣称级别再高也封顶 L2(专家判断)。
+ * 防止 L1/L2 论断被标成 L4+ 绕过 evidenceBar。
+ */
+export const UNGROUNDED_EVIDENCE_CAP: EvidenceLevel = 2;
+
+export function groundedEvidenceLevel(level: EvidenceLevel, hasArtifact: boolean): EvidenceLevel {
+  if (hasArtifact) return level;
+  return level > UNGROUNDED_EVIDENCE_CAP ? UNGROUNDED_EVIDENCE_CAP : level;
+}
+
 export function evaluateGate(input: GateInput): GateResult {
   const { scores, minEvidence, thresholds, economics, killerAssumptions } = input;
   const hardBlockers: string[] = [];
@@ -93,12 +105,7 @@ export function evaluateGate(input: GateInput): GateResult {
     .filter((k) => k.status === "pending")
     .map((k) => `杀手假设待证伪:${k.code}`);
 
-  let verdict: GateVerdict;
-  if (hardBlockers.length > 0) verdict = "kill";
-  else if (pendingKillers.length > 0) verdict = "hold";
-  else verdict = "go";
-
-  return { verdict, blockers: [...hardBlockers, ...pendingKillers] };
+  return resolveChecklistGate(hardBlockers, pendingKillers);
 }
 
 export function recommendSourcing(

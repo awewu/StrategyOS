@@ -2,8 +2,8 @@
  * Entity-level DB getters — demo fallback when DATABASE_URL unset or empty tables.
  */
 import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
-import { healthOverview as demoHealthOverview } from "@/lib/demo-data";
 import * as demo from "@/lib/stratos-demo-data";
+import { demoHealthOverview } from "@/lib/stratos-demo-data";
 import { getActivePeriod } from "@/lib/data/active-period";
 import type {
   Assumption,
@@ -14,7 +14,6 @@ import type {
   KeyResult,
   ProductBet,
   Project,
-  RobustnessDimensions,
   TrafficLight,
 } from "@/lib/types/stratos";
 
@@ -236,77 +235,6 @@ export async function getHealthOverview(): Promise<HealthOverviewData> {
     dimensions: lights,
     kpis: kpis.length >= 4 ? kpis : demoHealthOverview.kpis,
   };
-}
-
-export async function getRobustScore(): Promise<RobustnessDimensions> {
-  return safeDbQuery(async () => {
-    const rows = await prisma.twelveDimScore.findMany({ where: { period: await getActivePeriod() } });
-    if (rows.length > 0) {
-      const byId = Object.fromEntries(rows.map((r) => [r.dimId, r.score]));
-      const avg = (ids: string[]) => {
-        const vals = ids.map((id) => byId[id]).filter((v): v is number => v != null);
-        return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : undefined;
-      };
-      return {
-        direction: avg(["d1", "d4"]) ?? demo.robustScore.direction,
-        logic: avg(["d2", "d10"]) ?? demo.robustScore.logic,
-        execution: avg(["d3", "d9", "d11"]) ?? demo.robustScore.execution,
-        baseline: avg(["d7", "d12"]) ?? demo.robustScore.baseline,
-        doctrine: avg(["d2", "d6"]) ?? demo.robustScore.doctrine,
-        learning: avg(["d3", "d5"]) ?? demo.robustScore.learning,
-      };
-    }
-
-    const opsRows = await prisma.opsMetricActual.findMany();
-    if (opsRows.length > 0) {
-      const { DOMAINS, getSignal } = await import("@/lib/health/ops-metrics");
-      const metricDefs = new Map(DOMAINS.flatMap((d) => d.metrics.map((m) => [m.id, m] as const)));
-      const latestByMetric = new Map<string, { actual: number; planned: number; month: string }>();
-      for (const r of opsRows) {
-        if (r.actual == null) continue;
-        const prev = latestByMetric.get(r.metricId);
-        if (!prev || r.month > prev.month) {
-          latestByMetric.set(r.metricId, {
-            actual: Number(r.actual),
-            planned: Number(r.planned),
-            month: r.month,
-          });
-        }
-      }
-      let green = 0;
-      let yellow = 0;
-      let red = 0;
-      for (const [metricId, { actual, planned }] of latestByMetric) {
-        const def = metricDefs.get(metricId);
-        if (!def || planned === 0) continue;
-        const ratio = def.higherIsBetter ? (actual / planned) * 100 : (planned / actual) * 100;
-        const sig = getSignal(ratio, def);
-        if (sig === "green") green++;
-        else if (sig === "yellow") yellow++;
-        else red++;
-      }
-      const total = green + yellow + red;
-      if (total > 0) {
-        const composite = Math.round((green * 100 + yellow * 65 + red * 35) / total);
-        return {
-          direction: composite,
-          logic: Math.min(100, composite + 5),
-          execution: Math.max(0, composite - 5),
-          baseline: Math.max(0, composite - 8),
-          doctrine: composite,
-          learning: Math.min(100, composite + 2),
-        };
-      }
-    }
-
-    return demo.robustScore;
-  }, demo.robustScore);
-}
-
-export async function getFeedbackLoops() {
-  const { getFeedbackLoops: load } = await import("@/lib/feedback/data-access");
-  const { loops } = await load();
-  return loops;
 }
 
 export async function getBscCards() {

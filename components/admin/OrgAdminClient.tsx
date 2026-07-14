@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 
 type Level = "GROUP" | "EXECUTIVE" | "OPERATING_UNIT";
@@ -101,7 +102,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
           <span className="text-sm text-[var(--color-text-primary)] truncate">{u.name}</span>
           {u.nameEn && <span className="text-xs text-[var(--color-text-muted)] truncate">{u.nameEn}</span>}
           {u.planCount > 0 && (
-            <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[10px] text-[var(--color-accent)]">
+            <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">
               {u.planCount} 份战略
             </span>
           )}
@@ -167,11 +168,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
       </div>
 
       {edit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6 shadow-xl">
-            <h3 className="mb-4 text-base font-semibold">
-              {edit.id ? "编辑" : "新增"} · {LEVEL_LABEL[edit.level]}
-            </h3>
+        <Modal onClose={() => setEdit(null)} size="md" title={`${edit.id ? "编辑" : "新增"} · ${LEVEL_LABEL[edit.level]}`}>
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">名称</label>
@@ -219,8 +216,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
                 {saving ? "保存中…" : "保存"}
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

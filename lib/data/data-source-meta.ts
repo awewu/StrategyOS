@@ -3,6 +3,7 @@
  */
 import { prisma } from "@/lib/db";
 import { getDataSource } from "@/lib/data/strategy-data";
+import { getDemoFallbackEntities, watermarkSignal } from "@/lib/data/demo-watermark";
 
 export type DataSourceSignal = "green" | "yellow" | "red";
 
@@ -11,6 +12,8 @@ export interface DataSourceMeta {
   signal: DataSourceSignal;
   lastUpdates: Record<string, string | null>;
   staleItems: string[];
+  /** DB 可用但单表为空、正在回退演示数据的实体 */
+  demoFallbacks: string[];
   message: string;
 }
 
@@ -34,6 +37,7 @@ export async function getDataSourceMeta(): Promise<DataSourceMeta> {
       signal: "red",
       lastUpdates: {},
       staleItems: [],
+      demoFallbacks: [],
       message: "当前使用演示数据，请勿用于战略会决策",
     };
   }
@@ -47,6 +51,7 @@ export async function getDataSourceMeta(): Promise<DataSourceMeta> {
     latestProject,
     latestReport,
     latestAssertion,
+    demoFallbacks,
   ] = await Promise.all([
     prisma.strategicDiagnosis.findFirst({ orderBy: { updatedAt: "desc" } }),
     prisma.fpaPeriod.findFirst({ orderBy: { updatedAt: "desc" } }),
@@ -54,6 +59,7 @@ export async function getDataSourceMeta(): Promise<DataSourceMeta> {
     prisma.project.findFirst({ orderBy: { updatedAt: "desc" } }),
     prisma.report.findFirst({ orderBy: { uploadedAt: "desc" } }),
     prisma.healthAssertion.findFirst({ orderBy: { triggeredAt: "desc" } }),
+    getDemoFallbackEntities().catch(() => [] as string[]),
   ]);
 
   const lastUpdates: Record<string, string | null> = {
@@ -80,15 +86,19 @@ export async function getDataSourceMeta(): Promise<DataSourceMeta> {
     staleItems.push("报告");
   }
 
-  const signal: DataSourceSignal =
+  const staleSignal: DataSourceSignal =
     staleItems.length >= 2 ? "red" : staleItems.length === 1 ? "yellow" : "green";
+  const fallbackSignal = watermarkSignal(demoFallbacks.length);
+  const rank: Record<DataSourceSignal, number> = { green: 0, yellow: 1, red: 2 };
+  const signal = rank[fallbackSignal] > rank[staleSignal] ? fallbackSignal : staleSignal;
 
-  const message =
-    signal === "red"
-      ? `多项核心数据超过更新阈值：${staleItems.join("、")}`
-      : signal === "yellow"
-        ? `${staleItems[0]} 数据较旧，建议更新`
-        : "数据来自数据库，核心表近期有更新";
+  const parts: string[] = [];
+  if (demoFallbacks.length > 0) {
+    parts.push(`${demoFallbacks.length} 类实体无真实数据，正展示演示数据：${demoFallbacks.join("、")}`);
+  }
+  if (staleSignal === "red") parts.push(`多项核心数据超过更新阈值：${staleItems.join("、")}`);
+  else if (staleSignal === "yellow") parts.push(`${staleItems[0]} 数据较旧，建议更新`);
+  const message = parts.length > 0 ? parts.join("；") : "数据来自数据库，核心表近期有更新";
 
-  return { source, signal, lastUpdates, staleItems, message };
+  return { source, signal, lastUpdates, staleItems, demoFallbacks, message };
 }

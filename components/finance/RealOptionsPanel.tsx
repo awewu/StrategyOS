@@ -18,7 +18,7 @@ export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
                 <div className="text-sm font-medium">{o.title}</div>
               </div>
               {o.abandonRight && (
-                <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-400">
+                <span className="rounded bg-[var(--signal-green)]/10 px-2 py-0.5 text-[11px] text-[var(--signal-green)]">
                   放弃权
                 </span>
               )}
@@ -90,8 +90,8 @@ export function PostInvestPanel({ deviations }: { deviations: PostInvestDeviatio
 
 function StatusBadge({ status }: { status: PostInvestDeviation["status"] }) {
   const map = {
-    on_track: { label: "正常", cls: "text-emerald-400 bg-emerald-500/20" },
-    watch: { label: "关注", cls: "text-amber-400 bg-amber-500/20" },
+    on_track: { label: "正常", cls: "text-[var(--signal-green)] bg-[var(--signal-green)]/10" },
+    watch: { label: "关注", cls: "text-[var(--signal-yellow)] bg-[var(--signal-yellow)]/10" },
     critical: { label: "临界", cls: "text-[var(--fpa-kpi-negative)] bg-[color-mix(in_srgb,var(--signal-red)_20%,transparent)]" },
   };
   const { label, cls } = map[status];

@@ -53,6 +53,7 @@ async function FinanceContent({
     { href: "/finance?tab=capital", label: "资本配置", active: activeTab === "capital" },
     { href: "/finance?tab=forecast", label: "5 年展望", active: activeTab === "forecast" },
     { href: "/finance?tab=scenarios", label: "SPBP 情景", active: activeTab === "scenarios" },
+    { href: "/finance/ledger", label: "总账中台", active: false },
   ];
 
   return (
@@ -62,7 +63,7 @@ async function FinanceContent({
         title="FPA 财务"
         subtitle={`管理报表优先 · 数据源 ${data.source === "database" ? "DB" : "Demo"}`}
         actions={
-          <Link href="/health" className="stratos-btn stratos-btn--ghost text-xs">
+          <Link href="/monitor/health" className="stratos-btn stratos-btn--ghost text-xs">
             集团健康
           </Link>
         }

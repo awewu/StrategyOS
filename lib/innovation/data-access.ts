@@ -8,6 +8,7 @@ import {
   computeViability,
   evaluateGate,
   evidenceStrength,
+  groundedEvidenceLevel,
   recommendSourcing,
 } from "./engine";
 import type {
@@ -104,7 +105,7 @@ export function computeBetView(
       claim: string;
       warrant: string | null;
       rebuttal: string | null;
-      evidence: { id: string; level: number; source: string; note: string | null; stale: boolean }[];
+      evidence: { id: string; level: number; source: string; artifactRef: string | null; note: string | null; stale: boolean }[];
     }[];
     assumptions: { id: string; code: string; statement: string; status: string; testPlan: string | null }[];
   },
@@ -126,11 +127,17 @@ export function computeBetView(
     claim: c.claim,
     warrant: c.warrant,
     rebuttal: c.rebuttal,
-    strength: evidenceStrength(c.evidence.filter((e) => !e.stale).map((e) => e.level as EvidenceLevel)),
+    strength: evidenceStrength(
+      c.evidence
+        .filter((e) => !e.stale)
+        .map((e) => groundedEvidenceLevel(e.level as EvidenceLevel, Boolean(e.artifactRef?.trim()))),
+    ),
     evidence: c.evidence.map((e) => ({
       id: e.id,
       level: e.level as EvidenceLevel,
+      effectiveLevel: groundedEvidenceLevel(e.level as EvidenceLevel, Boolean(e.artifactRef?.trim())),
       source: e.source,
+      artifactRef: e.artifactRef,
       note: e.note,
       stale: e.stale,
     })),

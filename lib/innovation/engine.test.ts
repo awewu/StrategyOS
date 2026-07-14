@@ -9,10 +9,31 @@ import {
   computeViability,
   evaluateGate,
   evidenceStrength,
+  groundedEvidenceLevel,
   odiOpportunity,
   recommendSourcing,
 } from "./engine";
 import type { FeasibilityDimension, GateThresholds } from "./types";
+
+describe("接地门:无物证证据封顶 L2", () => {
+  it("L4 无物证 → 按 L2 计", () => {
+    assert.equal(groundedEvidenceLevel(4, false), 2);
+  });
+
+  it("L4 有物证 → 保持 L4", () => {
+    assert.equal(groundedEvidenceLevel(4, true), 4);
+  });
+
+  it("L1/L2 不受影响", () => {
+    assert.equal(groundedEvidenceLevel(1, false), 1);
+    assert.equal(groundedEvidenceLevel(2, false), 2);
+  });
+
+  it("未接地的 L6 无法拉高最短板绕过 evidenceBar", () => {
+    const grounded = [groundedEvidenceLevel(6, false), groundedEvidenceLevel(5, false)];
+    assert.equal(evidenceStrength(grounded), 2);
+  });
+});
 
 const thresholds: GateThresholds = {
   maxPaybackYears: 3,

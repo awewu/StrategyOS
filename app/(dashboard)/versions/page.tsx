@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { CounterfactualPanel } from "@/components/versions/CounterfactualPanel";
+import { DecisionLedgerPanel } from "@/components/versions/DecisionLedgerPanel";
 import { SnapshotComparePanel } from "@/components/versions/SnapshotComparePanel";
 import { StrategyPatternPanel } from "@/components/versions/StrategyPatternPanel";
 import { SnapshotFreezePanel } from "@/components/versions/SnapshotFreezePanel";
@@ -10,7 +11,7 @@ import { getVersionsBundle } from "@/lib/data/versions-data";
 import { getActivePeriod } from "@/lib/data/active-period";
 
 export default async function VersionsPage() {
-  const { snapshots, stratDiffs, strategyPattern, snapshotFY25, snapshotFY26, source } =
+  const { snapshots, stratDiffs, strategyPattern, decisionLedger, snapshotFY25, snapshotFY26, source } =
     await getVersionsBundle();
   const activePeriod = await getActivePeriod();
 
@@ -52,7 +53,7 @@ export default async function VersionsPage() {
             </div>
             <span
               className={`mt-2 inline-block text-xs ${
-                s.status === "FROZEN" ? "text-green-400" : "text-[var(--color-accent)]"
+                s.status === "FROZEN" ? "text-[var(--signal-green)]" : "text-[var(--color-accent)]"
               }`}
             >
               {s.status}
@@ -60,6 +61,13 @@ export default async function VersionsPage() {
           </div>
         ))}
       </section>
+
+      <DecisionLedgerPanel
+        ledger={decisionLedger.ledger}
+        fromCode={decisionLedger.fromCode}
+        toCode={decisionLedger.toCode}
+        isDemoBaseline={decisionLedger.isDemoBaseline}
+      />
 
       <SnapshotComparePanel />
       <SnapshotFreezePanel activePeriod={activePeriod} />

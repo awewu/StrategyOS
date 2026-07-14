@@ -57,14 +57,14 @@ export async function PulseOpsPanel() {
             {stats.duplicateBlocks.map((block) => (
               <li
                 key={`${block.orgUnitId}-${block.period}`}
-                className="rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2 text-xs text-[var(--color-text-secondary)]"
+                className="rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/10 px-3 py-2 text-xs text-[var(--color-text-secondary)]"
               >
                 <span className="font-medium text-[var(--color-text-primary)]">{block.orgUnitName}</span>
                 {" · "}
                 {block.period}
                 {" · "}
                 {block.count} 条
-                <span className="ml-2 font-mono text-[10px] text-[var(--color-text-muted)]">
+                <span className="ml-2 font-mono text-[11px] text-[var(--color-text-muted)]">
                   {block.reportIds.slice(0, 3).join(", ")}
                   {block.reportIds.length > 3 ? "…" : ""}
                 </span>

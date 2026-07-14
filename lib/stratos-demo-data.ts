@@ -15,9 +15,30 @@ import type {
   StrategicDiagnosis,
 } from "./types/stratos";
 import { computeStratDiff } from "./stratos/strat-diff";
-import { CURRENT_PERIOD } from "@/lib/constants";
+import { CURRENT_PERIOD, type TrafficLight } from "@/lib/constants";
 
 export { CURRENT_PERIOD };
+
+export const demoHealthOverview = {
+  score: 72,
+  quarter: CURRENT_PERIOD,
+  dimensions: {
+    financial: "yellow" as TrafficLight,
+    customer: "green" as TrafficLight,
+    process: "yellow" as TrafficLight,
+    learning: "green" as TrafficLight,
+  },
+  kpis: [
+    { name: "季度营收", value: "1,280 万", target: "1,500 万", status: "yellow" as TrafficLight },
+    { name: "季度利润", value: "186 万", target: "220 万", status: "yellow" as TrafficLight },
+    { name: "现金余额", value: "420 万", target: "≥300 万", status: "green" as TrafficLight },
+    { name: "NPS", value: "—", target: "≥45", status: "green" as TrafficLight },
+    { name: "客户满意度", value: "91%", target: "≥90%", status: "green" as TrafficLight },
+    { name: "员工流失率", value: "8%", target: "≤10%", status: "green" as TrafficLight },
+    { name: "单王人才", value: "3/5", target: "5/5", status: "yellow" as TrafficLight },
+    { name: "项目准时率", value: "70%", target: "≥85%", status: "red" as TrafficLight },
+  ],
+};
 
 export const diagnosis: StrategicDiagnosis = {
   id: "diag-fy26",
@@ -471,33 +492,6 @@ export const kellerBrandLayers = [
   { layer: 4, name: "Judgments", score: 70, target: 78 },
   { layer: 5, name: "Feelings", score: 68, target: 75 },
   { layer: 6, name: "Resonance", score: 62, target: 70, note: "酒店业主社群弱" },
-];
-
-export const feedbackLoops = [
-  {
-    id: "fl-r1",
-    kind: "R" as const,
-    label: "签约口碑增强环",
-    chain: "签约↑ → 案例↑ → 口碑↑ → 签约↑",
-    bscDimension: "客户",
-    fpaLinked: false,
-  },
-  {
-    id: "fl-b1",
-    kind: "B" as const,
-    label: "降价份额调节环",
-    chain: "降价↑ → 份额↑ → 利润↓ → 投入↓",
-    bscDimension: "财务",
-    fpaLinked: true,
-  },
-  {
-    id: "fl-d1",
-    kind: "D" as const,
-    label: "培训中标延迟",
-    chain: "渠道培训 → 6月后 → 中标率↑",
-    bscDimension: "流程",
-    fpaLinked: false,
-  },
 ];
 
 export const techSignals = [
