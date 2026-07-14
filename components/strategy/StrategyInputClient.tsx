@@ -31,6 +31,26 @@ const ALL_STEPS: { id: Step; label: string; buHint?: boolean }[] = [
   { id: "onepager",  label: "一页纸摘要" },
 ];
 
+function stepDone(form: PlanForm, id: Step): boolean {
+  switch (id) {
+    case "intent": return form.intent.trim().length > 0 || form.northStar.trim().length > 0;
+    case "market": return form.marketInsights.some((m) => m.title.trim() || m.content.trim());
+    case "swot": return form.swotItems.some((s) => s.content.trim());
+    case "objectives": return form.objectives.some((o) => o.objective.trim());
+    case "initiatives": return form.initiatives.some((i) => i.title.trim());
+    case "action": return form.actionItems.some((a) => a.action.trim());
+    case "product": return form.productQuarterly.some((p) => p.productName.trim());
+    case "channel": return form.channelPlans.some((c) => c.channelType.trim());
+    case "customer": return form.customerPlans.some((c) => c.customerSegment.trim());
+    case "org": return form.orgChartNodes.some((n) => n.name.trim());
+    case "budget": return form.budgetItems.some((b) => b.description.trim() || b.totalAmount.trim());
+    case "resources": return form.resources.some((r) => r.justification.trim() || r.amount.trim());
+    case "assumptions": return form.assumptions.some((a) => a.assumption.trim());
+    case "roadmap": return form.roadmapItems.some((r) => r.title.trim());
+    case "onepager": return false;
+  }
+}
+
 const DIMENSIONS = [
   { key: "FINANCIAL", label: "财务" },
   { key: "CUSTOMER", label: "客户" },
@@ -501,24 +521,37 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
               onAttachmentSaved={(attachment) => setAttachments((prev) => [...prev, attachment])}
             />
 
-            {/* 步骤导航 */}
-            <div className="flex flex-wrap gap-2 border-b border-[var(--surface-border)]">
-              {ALL_STEPS.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setStep(s.id)}
-                  className={'relative border-b-2 px-4 py-2 text-sm transition-colors ' + (
-                    step === s.id
-                      ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
-                      : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-                  )}
-                >
-                  {s.label}
-                  {s.buHint && !isBuUnit && (
-                    <span className="ml-1 text-[11px] text-[var(--signal-yellow)] opacity-70">BU</span>
-                  )}
-                </button>
-              ))}
+            {/* 步骤导航 · 带完成度 */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-[var(--surface-border)]">
+              {ALL_STEPS.map((s) => {
+                const done = stepDone(form, s.id);
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setStep(s.id)}
+                    className={'relative flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors ' + (
+                      step === s.id
+                        ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
+                        : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    )}
+                  >
+                    {s.id !== "onepager" && (
+                      <span
+                        aria-hidden
+                        className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: done ? "var(--signal-green)" : "var(--surface-border-strong)" }}
+                      />
+                    )}
+                    {s.label}
+                    {s.buHint && !isBuUnit && (
+                      <span className="ml-1 text-[11px] text-[var(--signal-yellow)] opacity-70">BU</span>
+                    )}
+                  </button>
+                );
+              })}
+              <span className="ml-auto pb-1 pr-1 font-data text-caption">
+                已填 {ALL_STEPS.filter((s) => s.id !== "onepager" && stepDone(form, s.id)).length}/{ALL_STEPS.length - 1}
+              </span>
             </div>
 
             <div className="space-y-4">
