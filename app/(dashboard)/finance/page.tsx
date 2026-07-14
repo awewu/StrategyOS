@@ -13,6 +13,7 @@ import { StacksEditor } from "@/components/stacks/StacksEditor";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StratosTabNav } from "@/components/ui/StratosTabNav";
+import { KpiTile } from "@/components/ui/KpiTile";
 import { getFinanceBundle } from "@/lib/data/strategy-data";
 import { getStacksBundle } from "@/lib/stacks/data-access";
 import { getBudgetBaseline } from "@/lib/finance/budget-versions";
@@ -78,6 +79,33 @@ async function FinanceContent({
 
       {activeTab === "management" && (
         <>
+          <div className="stratos-slot-grid">
+            <KpiTile
+              label="营收 F"
+              value={`${data.fpa.revenueForecast.toLocaleString("zh-CN")} 万`}
+              tone="neutral"
+              delta={{ value: data.fpa.revenueForecast - data.fpa.revenueBudget, label: "vs B" }}
+            />
+            <KpiTile
+              label="利润 F"
+              value={`${data.fpa.profitForecast.toLocaleString("zh-CN")} 万`}
+              tone="neutral"
+              delta={{ value: data.fpa.profitForecast - data.fpa.profitBudget, label: "vs B" }}
+            />
+            <KpiTile
+              label="现金 Runway"
+              value={`${data.fpa.cashRunwayMonths} 月`}
+              tone={data.fpa.cashRunwayMonths < 3 ? "red" : "green"}
+              sub="红线 3 月"
+            />
+            <KpiTile
+              label="B 基准"
+              value={baseline ? `FY${baseline.fiscalYear}` : "未受控"}
+              tone={baseline ? "green" : "red"}
+              sub={baseline ? baseline.name : "去预算版本建立基准"}
+              href="/finance/ledger?tab=budget"
+            />
+          </div>
           {baseline ? (
             <p className="text-caption -mt-2">
               B 基准：FY{baseline.fiscalYear} 「{baseline.name}」· 批准于 {baseline.decidedAt?.slice(0, 10)}
