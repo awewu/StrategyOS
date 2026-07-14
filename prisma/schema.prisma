@@ -591,12 +591,16 @@ model CashPosition {
 }
 
 model Objective {
-  id         String      @id @default(uuid())
-  period     String      @db.VarChar(10)
-  title      String      @db.VarChar(300)
-  ownerId    String?     @map("owner_id")
-  createdAt  DateTime    @default(now()) @map("created_at")
-  keyResults KeyResult[]
+  id            String      @id @default(uuid())
+  period        String      @db.VarChar(10)
+  title         String      @db.VarChar(300)
+  intent        String?
+  ownerName     String?     @map("owner_name") @db.VarChar(50)
+  hoshinEntryId String?     @map("hoshin_entry_id")
+  sortOrder     Int         @default(0) @map("sort_order")
+  ownerId       String?     @map("owner_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  keyResults    KeyResult[]
 
   @@index([period])
   @@map("objectives")
@@ -613,6 +617,8 @@ model KeyResult {
   projectId          String?      @map("project_id")
   targetValue        String?      @map("target_value") @db.VarChar(50)
   currentValue       String?      @map("current_value") @db.VarChar(50)
+  baselineValue      String?      @map("baseline_value") @db.VarChar(50)
+  unit               String?      @db.VarChar(20)
   confidence         Decimal?     @db.Decimal(3, 2)
   isLeadingIndicator Boolean      @default(false) @map("is_leading_indicator")
   objective          Objective    @relation(fields: [objectiveId], references: [id], onDelete: Cascade)

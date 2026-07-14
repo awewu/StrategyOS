@@ -15,6 +15,8 @@ import { CommitmentLedger } from "@/components/execution/CommitmentLedger";
 import { ExecutionAnalyticsEditor } from "@/components/execution/ExecutionAnalyticsEditor";
 import { MarketResponsePanel } from "@/components/execution/MarketResponsePanel";
 import { ReportSignalsPanel } from "@/components/execution/ReportSignalsPanel";
+import { KpiTile } from "@/components/ui/KpiTile";
+import { computeCommitmentSummary } from "@/lib/execution/commitment-summary";
 
 type ExecData = Awaited<ReturnType<typeof getExecutionBundle>>;
 
@@ -27,6 +29,9 @@ export function ExecutionDashboard({
   sliceLabel?: string;
   compact?: boolean;
 }) {
+  const cs = computeCommitmentSummary(data.commitments);
+  const redTensions = data.tensions.filter((t) => t.severity === "high").length;
+
   return (
     <div className="space-y-8">
       {sliceLabel ? (
@@ -37,6 +42,32 @@ export function ExecutionDashboard({
           </a>
         </p>
       ) : null}
+      <div className="stratos-slot-grid">
+        <KpiTile
+          label="承诺兑现率"
+          value={cs.total > 0 ? `${cs.rate}%` : "—"}
+          tone={cs.rate >= 70 ? "green" : cs.rate >= 50 ? "gold" : "red"}
+          sub={`${cs.done}/${cs.total} 已兑现`}
+        />
+        <KpiTile
+          label="逾期承诺"
+          value={String(cs.overdue)}
+          tone={cs.overdue > 0 ? "red" : "green"}
+          sub={cs.maxDaysOverdue ? `最长 ${cs.maxDaysOverdue} 天` : "无逾期"}
+        />
+        <KpiTile
+          label="高张力"
+          value={String(redTensions)}
+          tone={redTensions > 0 ? "red" : "green"}
+          sub={`共 ${data.tensions.length} 项张力`}
+        />
+        <KpiTile
+          label="领先 KR"
+          value={String(data.leadingKrs.length)}
+          tone="neutral"
+          sub={`Vx 项目 ${data.projects.length} 个`}
+        />
+      </div>
       <ReportSignalsPanel signals={data.reportSignals} />
       {!compact ? (
         <>
