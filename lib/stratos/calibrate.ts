@@ -1,18 +1,10 @@
-import type { FpaSummary } from "@/lib/types/stratos";
-import { DEFAULT_SIM_SEED, type SimSeed } from "./strat-sim";
-import type { DynamicsState } from "./strat-sim-dynamics";
-
 /**
  * Calibration utilities — turn historical Budget/Actual/Forecast history into
- * model parameters, and seed simulations from live FPA instead of constants.
+ * model parameters.
  *
  * This addresses the "heuristic hard-coded coefficients" gap: forecast bias is
- * fit from data, and simulation initial states are derived from the actual
- * financial position.
+ * fit from data instead of assumed.
  */
-
-/** The implicit cash burn per runway-month used by the stock/flow model. */
-export const CASH_PER_RUNWAY_MONTH = 800;
 
 export interface BafPoint {
   /** Budget (plan) value. */
@@ -68,35 +60,4 @@ export function applyForecastBias(forecast: number, cal: ForecastCalibration): n
   if (cal.n === 0) return forecast;
   const strength = Math.min(cal.n, BIAS_FULL_STRENGTH_N) / BIAS_FULL_STRENGTH_N;
   return forecast * (1 + cal.biasPct * strength);
-}
-
-/**
- * Derive the strat-sim seed from the live FPA summary. Financial stocks are
- * anchored to real numbers; operating defaults (signings/winRate/...) are kept
- * unless overridden, since they are not present in FPA.
- */
-export function deriveSimSeed(fpa: FpaSummary, base: SimSeed = DEFAULT_SIM_SEED): SimSeed {
-  return {
-    ...base,
-    profit: Number.isFinite(fpa.profitActual) ? fpa.profitActual : base.profit,
-    runway: Number.isFinite(fpa.cashRunwayMonths) ? fpa.cashRunwayMonths : base.runway,
-  };
-}
-
-/**
- * Derive the stock/flow initial state from FPA. Cash is reconstructed from the
- * runway (cash ≈ runwayMonths × burn/month), keeping the model consistent with
- * the dynamics' runway = cash / burn relationship.
- */
-export function deriveDynamicsInitial(
-  fpa: FpaSummary,
-  behavioral: DynamicsState,
-): DynamicsState {
-  return {
-    ...behavioral,
-    cash: Number.isFinite(fpa.cashRunwayMonths)
-      ? fpa.cashRunwayMonths * CASH_PER_RUNWAY_MONTH
-      : behavioral.cash,
-    profit: Number.isFinite(fpa.profitActual) ? fpa.profitActual : behavioral.profit,
-  };
 }

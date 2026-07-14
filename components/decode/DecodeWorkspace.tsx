@@ -1,26 +1,18 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { FeedbackLoopEditor } from "@/components/decode/FeedbackLoopEditor";
-import { StratSimPanel } from "@/components/decode/StratSimPanel";
 import { BscEditor } from "@/components/decode/BscEditor";
 import { HoshinEditor } from "@/components/decode/HoshinEditor";
 import { StratosTabButtons } from "@/components/ui/StratosTabNav";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { HoshinRowPayload } from "@/lib/decode/data-access";
-import type { SimSeed } from "@/lib/stratos/strat-sim";
-import type { DynamicsState } from "@/lib/stratos/strat-sim-dynamics";
-import type { FeedbackLoop } from "@/lib/types/stratos";
 
-type Tab = "bsc" | "hoshin" | "stratsim";
+type Tab = "bsc" | "hoshin";
 
 type Initial = {
   bsc: BscDimensionRow[];
   hoshinFlat: HoshinRowPayload[];
-  loops: FeedbackLoop[];
   source: "database" | "demo";
-  simSeed: SimSeed;
-  simInitial: DynamicsState;
 };
 
 export function DecodeWorkspace({
@@ -130,7 +122,7 @@ export function DecodeWorkspace({
     }
   }
 
-  const canEdit = tab === "bsc" || tab === "hoshin";
+  const canEdit = true;
 
   return (
     <div className="space-y-4">
@@ -156,24 +148,12 @@ export function DecodeWorkspace({
         tabs={[
           { id: "bsc", label: "BSC 战略地图" },
           { id: "hoshin", label: "Hoshin X-Matrix" },
-          { id: "stratsim", label: "反馈环 · StratSim" },
         ]}
       />
 
       {tab === "bsc" && <BscEditor rows={bscRows} editing={editing} onChange={setBscRows} />}
       {tab === "hoshin" && (
         <HoshinEditor rows={hoshinRows} editing={editing} onChange={setHoshinRows} />
-      )}
-      {tab === "stratsim" && (
-        <div className="space-y-6">
-          <FeedbackLoopEditor initialLoops={initial.loops} source={source} />
-          <StratSimPanel
-            loops={initial.loops}
-            seed={initial.simSeed}
-            initial={initial.simInitial}
-            source={initial.source}
-          />
-        </div>
       )}
 
       <div className="stratos-card stratos-card--padded flex flex-wrap items-center gap-3">
@@ -202,7 +182,7 @@ export function DecodeWorkspace({
             </>
           ) : null}
           <a
-            href={`/api/decode/template?type=${tab === "hoshin" ? "hoshin" : tab === "bsc" ? "bsc" : "combined"}`}
+            href={`/api/decode/template?type=${tab === "hoshin" ? "hoshin" : "bsc"}`}
             className="stratos-btn px-3 py-1.5 text-xs"
           >
             下载模板

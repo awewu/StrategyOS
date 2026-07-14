@@ -1,25 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import {
-  applyForecastBias,
-  calibrateForecastBias,
-  deriveDynamicsInitial,
-  deriveSimSeed,
-  CASH_PER_RUNWAY_MONTH,
-} from "./calibrate";
-import { DEFAULT_SIM_SEED } from "./strat-sim";
-import type { DynamicsState } from "./strat-sim-dynamics";
-import type { FpaSummary } from "@/lib/types/stratos";
-
-const fpa: FpaSummary = {
-  revenueBudget: 6000,
-  revenueActual: 5120,
-  revenueForecast: 5800,
-  profitBudget: 880,
-  profitActual: 720,
-  profitForecast: 820,
-  cashRunwayMonths: 2.1,
-};
+import { applyForecastBias, calibrateForecastBias } from "./calibrate";
 
 describe("calibrate", () => {
   it("detects optimistic plan bias from history", () => {
@@ -69,30 +50,6 @@ describe("calibrate", () => {
       { budget: 100, actual: 80 },
     ]);
     assert.ok(approx(applyForecastBias(1000, cal), 1000 * (1 + cal.biasPct)));
-  });
-
-  it("derives sim seed financial stocks from FPA", () => {
-    const seed = deriveSimSeed(fpa);
-    assert.equal(seed.profit, fpa.profitActual);
-    assert.equal(seed.runway, fpa.cashRunwayMonths);
-    // operating defaults preserved
-    assert.equal(seed.signings, DEFAULT_SIM_SEED.signings);
-  });
-
-  it("reconstructs dynamics cash from runway", () => {
-    const behavioral: DynamicsState = {
-      signings: 820,
-      reputation: 68,
-      profit: 0,
-      cash: 0,
-      pipeline: 420,
-      winRate: 58,
-      trainingStock: 0,
-    };
-    const init = deriveDynamicsInitial(fpa, behavioral);
-    assert.equal(init.cash, fpa.cashRunwayMonths * CASH_PER_RUNWAY_MONTH);
-    assert.equal(init.profit, fpa.profitActual);
-    assert.equal(init.pipeline, behavioral.pipeline);
   });
 });
 

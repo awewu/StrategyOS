@@ -8,7 +8,6 @@ import { flattenNavLinks, PALETTE_GROUPS, type PaletteGroup } from "@/lib/nav/hu
 
 const EXTRA_LINKS: { href: string; label: string; group: PaletteGroup; adminOnly?: boolean }[] = [
   { href: "/admin/org", label: "组织架构管理", group: "管理", adminOnly: true },
-  { href: "/decode?tab=stratsim", label: "战略解码 · 反馈环", group: "战略" },
   { href: "/finance?tab=capital", label: "FPA · 资本", group: "财务" },
   { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
   { href: "/finance?tab=scenarios", label: "SPBP 情景", group: "财务" },
@@ -16,8 +15,8 @@ const EXTRA_LINKS: { href: string; label: string; group: PaletteGroup; adminOnly
   { href: "/api/print/panorama?lang=zh", label: "下载中文董事会 PDF", group: "工具" },
   { href: "/api/print/panorama", label: "下载董事会 PDF", group: "工具" },
   { href: "/command", label: "指挥舱 · 态势板", group: "指挥" },
-  { href: "/rehearsal", label: "Q3 彩排", group: "工具" },
-  { href: "/print/panorama", label: "董事会一页纸", group: "指挥" },
+  { href: "/council?tab=rehearsal", label: "Q3 彩排", group: "工具" },
+  { href: "/print/panorama", label: "董事会 A3 全景 · 打印视图", group: "指挥" },
   { href: "/brand", label: "Brand Gallery", group: "工具" },
 ];
 
@@ -88,7 +87,7 @@ export function CommandPalette() {
         <ul className="max-h-72 overflow-y-auto py-2">
           {PALETTE_GROUPS.filter((g) => grouped.has(g)).map((group) => (
             <li key={group}>
-              <p className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
+              <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
                 {group}
               </p>
               <ul>

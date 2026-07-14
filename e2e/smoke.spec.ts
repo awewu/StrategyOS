@@ -42,9 +42,9 @@ test.describe("StratOS smoke (demo mode)", () => {
     await expect(page).toHaveURL(/\?denied=1|\/reports/);
   });
 
-  test("/decode loads StratSim tab area", async ({ page }) => {
+  test("/decode loads BSC / X-Matrix workspace", async ({ page }) => {
     await page.goto("/decode");
-    await expect(page.locator("body")).toContainText(/解码|Decode|StratSim|战略/i);
+    await expect(page.locator("body")).toContainText(/解码|Decode|X-Matrix|战略/i);
   });
 
   test("/rehearsal loads Q3 walkthrough", async ({ page }) => {

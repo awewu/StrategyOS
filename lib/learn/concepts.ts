@@ -118,17 +118,6 @@ export const CONCEPTS: Record<string, Concept> = {
     howItWorks: "战略解码中可与 BSC 战略地图切换视图；关联点即 OKR-O ↔ Vx ↔ Measure 的连接。",
     keyQuestion: "年度突破和长期战略、具体项目、考核指标，是否都连得上？",
   },
-  systemDynamics: {
-    id: "systemDynamics",
-    name: "系统动力学反馈环 (StratSim)",
-    origin: "System Dynamics（Forrester）· 增强环 R / 调节环 B / 延迟环 D",
-    tagline: "战略是反馈回路系统，因果是非线性、带时滞的。",
-    principle:
-      "增强环（R）自我强化（签约↑→口碑↑→签约↑）；调节环（B）自我平衡（降价→份额↑但利润↓）；延迟环（D）投入到见效有时间滞后（培训→数季后中标率↑）。忽视回路与延迟，就会把短期现象误当因果。",
-    howItWorks:
-      "战略解码的 StratSim 季度推演：调节 R/B/D 强度、降价与培训投入，观察 8 个季度签约/利润/现金 runway 的轨迹与预警（如 R 环过热、B 环压制利润）。",
-    keyQuestion: "我们看到的增长，是真实力还是被某个增强环暂时放大了？",
-  },
   fourDX: {
     id: "fourDX",
     name: "4DX 执行四原则",
