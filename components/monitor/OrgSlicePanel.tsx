@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CommitmentLedger } from "@/components/execution/CommitmentLedger";
+import { CommitmentSummaryCard } from "@/components/execution/CommitmentSummaryCard";
 import { ReportSignalsPanel } from "@/components/execution/ReportSignalsPanel";
 import { SliceExecutionExpand } from "@/components/monitor/SliceExecutionExpand";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
@@ -113,16 +113,7 @@ export async function OrgSlicePanel({
 
         <ReportSignalsPanel signals={reportSignals} />
 
-        {commitments.length > 0 ? (
-          <CommitmentLedger records={commitments} />
-        ) : (
-          <p className="rounded-lg border border-dashed border-[var(--surface-border)] p-4 text-sm text-[var(--color-text-muted)]">
-            暂无匹配承诺 · OPS 月报归档后将归集至此 ·{" "}
-            <Link href="/execution" className="text-[var(--color-accent)] hover:underline">
-              查看集团承诺账本
-            </Link>
-          </p>
-        )}
+        <CommitmentSummaryCard records={commitments} unit={slice.id} />
       </section>
 
       <SliceExecutionExpand slice={slice} data={exec} />

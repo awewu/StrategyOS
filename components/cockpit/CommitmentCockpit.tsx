@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { computeCommitmentSummary, fulfillmentRateColor } from "@/lib/execution/commitment-summary";
 import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
 
 type Group = "overdue" | "inflight" | "done";
@@ -45,11 +46,9 @@ export function CommitmentCockpit({
   sliceLabel?: string;
   myName?: string;
 }) {
-  const total = commitments.length;
-  const done = commitments.filter((c) => c.status === "completed").length;
+  const summary = computeCommitmentSummary(commitments);
+  const rateColor = fulfillmentRateColor(summary.rate);
   const overdue = commitments.filter((c) => c.status === "overdue");
-  const fulfillmentRate = total ? Math.round((done / total) * 100) : 0;
-  const rateColor = fulfillmentRate >= 70 ? "var(--signal-green)" : fulfillmentRate >= 50 ? "var(--signal-amber, #d97706)" : "var(--signal-red)";
 
   const mine = myName ? commitments.filter((c) => c.owner === myName) : [];
   const team = commitments.filter((c) => !myName || c.owner !== myName);
@@ -65,8 +64,6 @@ export function CommitmentCockpit({
     })
     .sort((a, b) => b.overdue - a.overdue);
 
-  const maxDays = overdue.reduce((m, c) => Math.max(m, c.daysOverdue ?? 0), 0);
-
   return (
     <section className="space-y-6">
       {/* Header · 兑现率 */}
@@ -77,8 +74,8 @@ export function CommitmentCockpit({
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-[var(--color-text-muted)]">本片兑现率</span>
-          <span className="font-data text-2xl tabular-nums" style={{ color: rateColor }}>{fulfillmentRate}%</span>
-          <span className="text-[var(--color-text-muted)]">· {done}/{total}</span>
+          <span className="font-data text-2xl tabular-nums" style={{ color: rateColor }}>{summary.rate}%</span>
+          <span className="text-[var(--color-text-muted)]">· {summary.done}/{summary.total}</span>
         </div>
       </div>
 
@@ -86,7 +83,7 @@ export function CommitmentCockpit({
       {overdue.length > 0 ? (
         <div className="rounded-xl border border-[var(--signal-red)]/35 bg-[color-mix(in_srgb,var(--signal-red)_7%,white)] p-4">
           <p className="text-label text-[var(--signal-red)]">
-            坚守告警 · {overdue.length} 项承诺已逾期{maxDays ? ` · 最长 ${maxDays} 天` : ""}
+            坚守告警 · {overdue.length} 项承诺已逾期{summary.maxDaysOverdue ? ` · 最长 ${summary.maxDaysOverdue} 天` : ""}
           </p>
           <div className="mt-3 space-y-2">
             {overdue.map((c) => (
