@@ -103,7 +103,7 @@ export function GrowthAnalyticsEditor({
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-muted)]">AARRR 漏斗</p>
-            <div className="hidden gap-1 px-2 text-[11px] text-[var(--color-text-muted)] sm:grid sm:grid-cols-4">
+            <div className="hidden gap-1 px-2 text-caption sm:grid sm:grid-cols-4">
               <span>阶段</span><span>人数</span><span>转化 %</span><span>行业基准 %</span>
             </div>
             {aarrr.map((s, i) => (
@@ -117,7 +117,7 @@ export function GrowthAnalyticsEditor({
           </div>
           <div className="space-y-2">
             <p className="text-xs font-medium text-[var(--color-text-muted)]">Keller 品牌心智四层</p>
-            <div className="hidden gap-1 px-2 text-[11px] text-[var(--color-text-muted)] sm:grid sm:grid-cols-4">
+            <div className="hidden gap-1 px-2 text-caption sm:grid sm:grid-cols-4">
               <span className="sm:col-span-2">层级名称</span><span>调研得分</span><span>目标</span>
             </div>
             {keller.map((l, i) => (

@@ -142,7 +142,7 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
                   <div key={r.dimId} className="rounded border border-[var(--surface-border)] p-2">
                     <div className="mb-1 text-xs">{r.name}</div>
                     <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
+                      <label className="flex items-center gap-1 text-caption">
                         分
                         <input
                           type="number"
@@ -153,7 +153,7 @@ export function TwelveDimEditor({ view, canEdit }: { view: RobustView; canEdit: 
                           className="w-14 rounded border border-[var(--surface-border)] px-1 py-0.5 text-xs"
                         />
                       </label>
-                      <label className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
+                      <label className="flex items-center gap-1 text-caption">
                         目标
                         <input
                           type="number"

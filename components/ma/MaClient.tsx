@@ -100,7 +100,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   {idx + 1}
                 </span>
                 <span className="text-xs font-medium text-[var(--color-text-primary)]">{DEAL_STAGE_LABEL[stage]}</span>
-                <span className="text-[11px] text-[var(--color-text-muted)]">{STAGE_HINT[stage]}</span>
+                <span className="text-caption">{STAGE_HINT[stage]}</span>
               </div>
               <div className={`space-y-2 rounded-lg p-2 ${strict ? "bg-[var(--color-accent)]/[0.04]" : "bg-black/[0.03]"}`}>
                 {col.map((deal) => (
@@ -116,7 +116,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                       <VerdictBadge verdict={deal.gate.verdict} />
                     </div>
                     <div className="mt-1.5 truncate text-sm font-medium text-[var(--color-text-primary)]">{deal.name}</div>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[var(--color-text-muted)]">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-caption">
                       <span>{deal.direction}</span>
                       {deal.price !== null && <span>对价 {deal.price.toLocaleString()}</span>}
                       {deal.price !== null && deal.synergyNpvValue > 0 && (
@@ -130,13 +130,13 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                     </div>
                   </button>
                 ))}
-                {col.length === 0 && <div className="py-5 text-center text-[11px] text-[var(--color-text-muted)]">—</div>}
+                {col.length === 0 && <div className="py-5 text-center text-caption">—</div>}
               </div>
             </div>
           );
         })}
       </div>
-      <p className="text-[11px] text-[var(--color-text-muted)]">
+      <p className="text-caption">
         审批起严格把关(红线一票否决);之前阶段宽进——阻断项作为待办清单显示,不 KILL。阈值与必备条款由交易形态画像决定。
       </p>
 
@@ -190,7 +190,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   <div className="bg-[var(--accent-sim)]" style={{ width: pct(detail.dealStructure.stockPct ?? 0) }} title="股份" />
                   <div className="bg-[var(--signal-yellow)]" style={{ width: pct(detail.dealStructure.earnoutPct ?? 0) }} title="earnout" />
                 </div>
-                <div className="mt-1 flex gap-3 text-[11px] text-[var(--color-text-muted)]">
+                <div className="mt-1 flex gap-3 text-caption">
                   <span>现金 {pct(detail.dealStructure.cashPct ?? 0)}</span>
                   <span>股份 {pct(detail.dealStructure.stockPct ?? 0)}</span>
                   <span>earnout {pct(detail.dealStructure.earnoutPct ?? 0)}{detail.dealStructure.earnoutTerms ? ` · ${detail.dealStructure.earnoutTerms}` : ""}</span>
@@ -206,7 +206,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
               ].map((kpi) => (
                 <div key={kpi.label} className="rounded-lg bg-black/[0.03] p-2 text-center">
                   <div className="text-sm font-semibold text-[var(--color-text-primary)]">{kpi.value}</div>
-                  <div className="text-[11px] text-[var(--color-text-muted)]">{kpi.label}</div>
+                  <div className="text-caption">{kpi.label}</div>
                 </div>
               ))}
             </div>

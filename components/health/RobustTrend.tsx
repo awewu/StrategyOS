@@ -10,10 +10,10 @@ const PILLARS = ["commitment", "values", "operations"] as const;
 
 function DeltaBadge({ delta }: { delta: number | null }) {
   if (delta == null) {
-    return <span className="text-[11px] text-[var(--color-text-muted)]">上期无数据</span>;
+    return <span className="text-caption">上期无数据</span>;
   }
   if (delta === 0) {
-    return <span className="text-[11px] text-[var(--color-text-muted)]">→ 持平</span>;
+    return <span className="text-caption">→ 持平</span>;
   }
   const up = delta > 0;
   return (
@@ -73,12 +73,12 @@ export function RobustTrend({ view }: { view: RobustView }) {
             </span>
             <DeltaBadge delta={view.overallDelta} />
           </div>
-          <p className="text-[11px] text-[var(--color-text-muted)]">
+          <p className="text-caption">
             12 维加权综合 ·{" "}
             {view.priorPeriod ? `对比 ${view.priorPeriod}` : "暂无上期基线"}
           </p>
         </div>
-        <p className="text-right text-[11px] text-[var(--color-text-muted)]">
+        <p className="text-right text-caption">
           {view.targetsSet > 0 ? `${view.targetsSet}/12 已设目标线` : "目标线未设"}
         </p>
       </div>
@@ -113,7 +113,7 @@ export function RobustTrend({ view }: { view: RobustView }) {
         })}
       </div>
 
-      <p className="text-[11px] text-[var(--color-text-muted)]">
+      <p className="text-caption">
         阈值带 = 各维红黄绿信号 · 环比 = vs {view.priorPeriod ?? "上期（无）"} · 竖线 = 目标线
         {view.source === "demo" ? " · 演示数据" : ""}
       </p>

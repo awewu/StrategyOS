@@ -49,10 +49,10 @@ export function HorizonBubbleChart({ items }: { items: HorizonBubble[] }) {
             </div>
           );
         })}
-        <div className="absolute bottom-2 right-3 text-[11px] text-[var(--color-text-muted)]">
+        <div className="absolute bottom-2 right-3 text-caption">
           → 投入
         </div>
-        <div className="absolute left-2 top-2 text-[11px] text-[var(--color-text-muted)]">
+        <div className="absolute left-2 top-2 text-caption">
           ↑ 回报
         </div>
       </div>

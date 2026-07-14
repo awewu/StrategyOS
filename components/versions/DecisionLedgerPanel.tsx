@@ -22,7 +22,7 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
     <div className="rounded-lg border border-[var(--surface-border)] p-3">
       <div className="text-caption">{label}</div>
       <div className="font-data mt-1 text-xl text-[var(--color-text-primary)]">{value}</div>
-      {sub && <div className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{sub}</div>}
+      {sub && <div className="mt-0.5 text-caption">{sub}</div>}
     </div>
   );
 }
@@ -95,7 +95,7 @@ export function DecisionLedgerPanel({
               <li key={i} className="text-sm text-[var(--color-text-primary)]">
                 <span className="text-[var(--signal-red)]">▾</span>{" "}
                 [{OBJECT_LABEL[r.objectType]}] {r.title}
-                <span className="font-data ml-2 text-[11px] text-[var(--color-text-muted)]">
+                <span className="font-data ml-2 text-caption">
                   {STATUS_LABEL[r.fromStatus] ?? r.fromStatus} → {STATUS_LABEL[r.toStatus] ?? r.toStatus}
                 </span>
               </li>
@@ -112,7 +112,7 @@ export function DecisionLedgerPanel({
               <li key={i} className="text-sm text-[var(--color-text-primary)]">
                 <span className="text-[var(--signal-yellow)]">▴</span>{" "}
                 [{OBJECT_LABEL[r.objectType]}] {r.title}
-                <span className="font-data ml-2 text-[11px] text-[var(--color-text-muted)]">
+                <span className="font-data ml-2 text-caption">
                   {STATUS_LABEL[r.fromStatus] ?? r.fromStatus} → {STATUS_LABEL[r.toStatus] ?? r.toStatus}
                 </span>
               </li>

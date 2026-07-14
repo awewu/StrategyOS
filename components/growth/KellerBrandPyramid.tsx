@@ -34,7 +34,7 @@ export function KellerBrandPyramid({ layers }: { layers: KellerBrandLayer[] }) {
                   </div>
                 </div>
                 {l.note && (
-                  <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{l.note}</p>
+                  <p className="mt-0.5 text-caption">{l.note}</p>
                 )}
               </div>
             </div>

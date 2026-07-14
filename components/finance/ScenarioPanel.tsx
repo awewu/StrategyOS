@@ -82,7 +82,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
               </div>
             </div>
             {sc.linkedAssumptionCodes.length > 0 && (
-              <div className="mt-2 text-[11px] text-[var(--color-text-muted)]">
+              <div className="mt-2 text-caption">
                 Hx: {sc.linkedAssumptionCodes.join(", ")}
               </div>
             )}

@@ -143,7 +143,7 @@ export function BetEditor({
 
           <div className={sectionCls}>
             <div className="text-sm font-medium text-[var(--color-text-primary)]">经济性(V 轴)</div>
-            <p className="text-[11px] text-[var(--color-text-muted)]">填「回收期」或「溢价+年节省」或「溢价+套利参数」任一组;ROIC/WACC 必填才计 V</p>
+            <p className="text-caption">填「回收期」或「溢价+年节省」或「溢价+套利参数」任一组;ROIC/WACC 必填才计 V</p>
             <div className="mt-2 grid grid-cols-3 gap-2">
               {([
                 ["costPremium", "初装溢价"],
@@ -157,7 +157,7 @@ export function BetEditor({
                 ["wacc", "WACC"],
               ] as const).map(([k, label]) => (
                 <div key={k}>
-                  <label className="text-[11px] text-[var(--color-text-muted)]">{label}</label>
+                  <label className="text-caption">{label}</label>
                   <input className={inp} type="number" step="any" value={econ[k]} onChange={(e) => setEcon((c) => ({ ...c, [k]: e.target.value }))} />
                 </div>
               ))}
@@ -188,9 +188,9 @@ export function BetEditor({
             </div>
             {odi.map((o, i) => (
               <div key={i} className="mt-2 flex items-center gap-2">
-                <label className="text-[11px] text-[var(--color-text-muted)]">重要度</label>
+                <label className="text-caption">重要度</label>
                 <input className={`${inp} w-20`} type="number" min="0" max="10" value={o.importance} onChange={(e) => setOdi((c) => c.map((x, j) => j === i ? { ...x, importance: Number(e.target.value) } : x))} />
-                <label className="text-[11px] text-[var(--color-text-muted)]">满意度</label>
+                <label className="text-caption">满意度</label>
                 <input className={`${inp} w-20`} type="number" min="0" max="10" value={o.satisfaction} onChange={(e) => setOdi((c) => c.map((x, j) => j === i ? { ...x, satisfaction: Number(e.target.value) } : x))} />
                 <button type="button" className={delBtn} onClick={() => setOdi((c) => c.filter((_, j) => j !== i))}>删</button>
               </div>

@@ -44,7 +44,7 @@ function KpiCard({ label, actual, budget, unit }: {
       <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">{label}</div>
       <div className="mt-1 flex items-baseline gap-2">
         <span className="font-data text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">{format(actual)}</span>
-        <span className="text-[11px] text-[var(--color-text-muted)]">预算 {format(budget)}</span>
+        <span className="text-caption">预算 {format(budget)}</span>
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/[0.04]">
         <div className="h-full rounded-full" style={{ width: `${Math.min(rate, 100)}%`, backgroundColor: color }} />
@@ -79,7 +79,7 @@ function OkrList({ investmentCases }: { investmentCases: InvestmentCase[] }) {
           <li key={ic.id} className="flex items-start justify-between gap-2 text-xs">
             <div className="min-w-0">
               <div className="truncate text-[var(--color-text-primary)]">{ic.title}</div>
-              <div className="text-[11px] text-[var(--color-text-muted)]">{ic.horizon} · {ic.gateStatus}</div>
+              <div className="text-caption">{ic.horizon} · {ic.gateStatus}</div>
             </div>
             <div className="flex-shrink-0 text-right font-data tabular-nums">
               {ic.expectedIrr ? `${ic.expectedIrr.toFixed(0)}% IRR` : "—"}
@@ -96,7 +96,7 @@ function DiagnosisCard({ diagnosis }: { diagnosis: StrategicDiagnosis }) {
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
       <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">市场驱动力</div>
       <p className="text-sm font-medium leading-snug text-[var(--color-text-primary)]">{diagnosis.challengeStatement}</p>
-      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-[var(--color-text-muted)]">
+      <div className="mt-2 flex flex-wrap gap-2 text-caption">
         <span className="rounded bg-black/[0.04] px-2 py-0.5">瓶颈·{diagnosis.bottleneckType}</span>
         <span className="rounded bg-black/[0.04] px-2 py-0.5">枢纽·{diagnosis.crux}</span>
       </div>

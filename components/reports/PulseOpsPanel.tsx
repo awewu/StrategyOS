@@ -31,15 +31,15 @@ export async function PulseOpsPanel() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-raised)] px-4 py-3">
-          <p className="text-[11px] text-[var(--color-text-muted)]">月度脉搏总数</p>
+          <p className="text-caption">月度脉搏总数</p>
           <p className="mt-1 text-xl font-semibold text-[var(--color-text-primary)]">{stats.pulseTotal}</p>
         </div>
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-raised)] px-4 py-3">
-          <p className="text-[11px] text-[var(--color-text-muted)]">近 30 天提交</p>
+          <p className="text-caption">近 30 天提交</p>
           <p className="mt-1 text-xl font-semibold text-[var(--color-text-primary)]">{stats.pulseLast30Days}</p>
         </div>
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-raised)] px-4 py-3">
-          <p className="text-[11px] text-[var(--color-text-muted)]">跨月相同一句话</p>
+          <p className="text-caption">跨月相同一句话</p>
           <p
             className={`mt-1 text-xl font-semibold ${
               stats.copyPasteSuspects > 0 ? "text-[var(--signal-yellow)]" : "text-[var(--color-text-primary)]"
@@ -64,7 +64,7 @@ export async function PulseOpsPanel() {
                 {block.period}
                 {" · "}
                 {block.count} 条
-                <span className="ml-2 font-mono text-[11px] text-[var(--color-text-muted)]">
+                <span className="ml-2 font-mono text-caption">
                   {block.reportIds.slice(0, 3).join(", ")}
                   {block.reportIds.length > 3 ? "…" : ""}
                 </span>

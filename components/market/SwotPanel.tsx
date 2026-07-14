@@ -61,7 +61,7 @@ function SelfScoreEditor({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-muted)]">
+          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-caption">
             {source === "database" ? "已持久化" : "Demo"}
           </span>
           <button
@@ -218,7 +218,7 @@ function SwotQuadrant({ cat, items }: { cat: SwotCategory; items: SwotItem[] }) 
         <ul className="space-y-1.5">
           {items.slice(0, 6).map((i) => (
             <li key={i.id} className="text-xs text-[var(--color-text-secondary)]">
-              <span className="mr-1.5 inline-block rounded bg-black/[0.05] px-1 text-[11px] text-[var(--color-text-muted)]">
+              <span className="mr-1.5 inline-block rounded bg-black/[0.05] px-1 text-caption">
                 {i.weight}×{i.intensity}
               </span>
               {i.title}

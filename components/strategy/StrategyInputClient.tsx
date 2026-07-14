@@ -1655,7 +1655,7 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
         <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)] p-3">
           <div className="text-xs font-medium mb-2">预览</div>
           <div className="relative" style={{ minWidth: 700 }}>
-            <div className="grid text-[11px] text-[var(--color-text-muted)] mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
+            <div className="grid text-caption mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
               <div />
               {quarters.map((q) => (
                 <div key={q.label} className={"text-center border-l border-[var(--surface-border)] " + (q.q === 1 ? "font-semibold" : "")}>{q.label}</div>
@@ -1815,7 +1815,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
           <div className="grid grid-cols-2 gap-1 text-xs">
             {[["strength", "优势"], ["weakness", "劣势"], ["opportunity", "机会"], ["threat", "威胁"]].map(([q, label]) => (
               <div key={q} className="space-y-0.5">
-                <div className="font-medium text-[11px] text-[var(--color-text-muted)]">{label}</div>
+                <div className="font-medium text-caption">{label}</div>
                 {swotByQ(q).slice(0, 2).map((c, i) => <div key={i} className="line-clamp-1">{c}</div>)}
                 {swotByQ(q).length === 0 && <div className="text-[var(--color-text-muted)]">—</div>}
               </div>
@@ -1840,7 +1840,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
         </div>
       </div>
 
-      <div className="text-center text-[11px] text-[var(--color-text-muted)] border-t border-[var(--surface-border)] pt-2">
+      <div className="text-center text-caption border-t border-[var(--surface-border)] pt-2">
         本文件由 StratOS 战略编制系统生成 · 草稿版本 · 内部保密
       </div>
     </div>

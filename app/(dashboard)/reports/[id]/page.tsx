@@ -76,7 +76,7 @@ function emptyParsedMessage(report: ReportDetail) {
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] text-[var(--color-text-muted)]">{label}</p>
+      <p className="text-caption">{label}</p>
       <p className="mt-1 truncate text-sm font-medium text-[var(--color-text-primary)]">{value || "-"}</p>
     </div>
   );
@@ -93,7 +93,7 @@ function FileLinkItem({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] text-[var(--color-text-muted)]">文件名</p>
+      <p className="text-caption">文件名</p>
       {fileName && filePath && fileAvailable ? (
         <a
           href={filePath}
@@ -205,7 +205,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
           <DetailItem label="组织单元" value={report.orgUnit?.name ?? "未关联"} />
           <DetailItem label="报告期" value={report.period} />
           <div>
-            <p className="text-[11px] text-[var(--color-text-muted)]">审批状态</p>
+            <p className="text-caption">审批状态</p>
             <span
               className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                 APPROVAL_STYLE[report.approvalStatus] ?? ""

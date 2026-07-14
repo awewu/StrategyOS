@@ -92,7 +92,7 @@ export function SensitivityPanel({ drivers }: { drivers: SensitivityDriver[] }) 
                 +{d.impactOnProfit.high}
               </span>
             </div>
-            <div className="mt-1 flex justify-between text-[11px] text-[var(--color-text-muted)]">
+            <div className="mt-1 flex justify-between text-caption">
               <span>
                 低情景 {d.baseValue + d.lowDelta}
                 {d.unit}

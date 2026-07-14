@@ -138,7 +138,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-[var(--color-text-muted)]">
+                <span className="text-caption">
                   Gate:回收≤{line.gateThresholds.maxPaybackYears}年 · 证据≥L{line.gateThresholds.minEvidenceLevel}
                 </span>
                 <button onClick={() => setEditLine(line)} className="rounded-md border border-[var(--surface-border)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]">
@@ -158,7 +158,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                     <div className="h-1.5 w-16 overflow-hidden rounded-full bg-black/[0.06]">
                       <div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${Math.min(100, Number(w) * 100)}%` }} />
                     </div>
-                    <span className="text-[11px] text-[var(--color-text-muted)]">{Number(w).toFixed(2)}</span>
+                    <span className="text-caption">{Number(w).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -175,7 +175,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                       {idx + 1}
                     </span>
                     <span className="text-xs font-medium text-[var(--color-text-primary)]">{STAGE_LABEL[stage]}</span>
-                    <span className="text-[11px] text-[var(--color-text-muted)]">{STAGE_HINT[stage]}</span>
+                    <span className="text-caption">{STAGE_HINT[stage]}</span>
                   </div>
                   <div className={`space-y-2 rounded-lg p-2 ${idx >= 2 ? "bg-[var(--color-accent)]/[0.04]" : "bg-black/[0.03]"}`}>
                     {col.map((bet) => (
@@ -190,12 +190,12 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                             <div className="mt-1 flex flex-wrap items-center gap-1.5">
                               <VerdictBadge verdict={bet.gate.verdict} />
                               <EvidenceBadge level={bet.minEvidence} bar={line.gateThresholds.minEvidenceLevel} />
-                              <span className="text-[11px] text-[var(--color-text-muted)]">{bet.horizon}</span>
+                              <span className="text-caption">{bet.horizon}</span>
                             </div>
                           </div>
                           <TriRadar d={bet.scores.d} f={bet.scores.f} v={bet.scores.v} size={54} tone={verdictTone(bet.gate.verdict)} />
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--surface-border)] pt-2 text-[11px] text-[var(--color-text-muted)]">
+                        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-[var(--surface-border)] pt-2 text-caption">
                           <span>回收 {fmtPayback(bet.paybackYears)}</span>
                           {bet.nextCommitAmount !== null && <span className="text-[var(--color-accent)]">下一笔 {bet.nextCommitAmount.toLocaleString()}</span>}
                           {bet.sourcing.filter((s) => s.decision !== "build").map((s) => (
@@ -206,13 +206,13 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                         </div>
                       </button>
                     ))}
-                    {col.length === 0 && <div className="py-5 text-center text-[11px] text-[var(--color-text-muted)]">—</div>}
+                    {col.length === 0 && <div className="py-5 text-center text-caption">—</div>}
                   </div>
                 </div>
               );
             })}
           </div>
-          <p className="text-[11px] text-[var(--color-text-muted)]">
+          <p className="text-caption">
             Business Case 起严格把关(证据/经济性/杀手假设一票否决);之前的阶段宽进,仅被证伪的杀手假设可 KILL。
           </p>
         </>
@@ -289,7 +289,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                       <p className="mt-1 text-xs text-[var(--color-text-primary)]">{c.claim}</p>
                       {c.rebuttal && <p className="mt-0.5 text-[11px] text-[var(--signal-red)]/80">反证:{c.rebuttal}</p>}
                       {c.evidence.map((e) => (
-                        <p key={e.id} className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">
+                        <p key={e.id} className="mt-0.5 text-caption">
                           {e.effectiveLevel < e.level ? (
                             <span className="text-[var(--signal-yellow)]">L{e.level}→L{e.effectiveLevel} 未接地(缺物证)</span>
                           ) : (

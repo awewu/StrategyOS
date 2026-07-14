@@ -52,7 +52,7 @@ export function TrlRadarChart({ points }: { points: TrlRadarPoint[] }) {
               />
             </div>
             {p.gapNote && (
-              <p className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{p.gapNote}</p>
+              <p className="mt-0.5 text-caption">{p.gapNote}</p>
             )}
           </div>
         ))}

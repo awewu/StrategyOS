@@ -63,7 +63,7 @@ export default function BrandGalleryPage() {
                   style={{ background: `var(${t.var})` }}
                 />
                 <p className="text-xs font-medium text-[var(--color-text-primary)]">{t.name}</p>
-                <p className="font-data text-[11px] text-[var(--color-text-muted)]">{t.var}</p>
+                <p className="font-data text-caption">{t.var}</p>
               </div>
             ))}
           </div>

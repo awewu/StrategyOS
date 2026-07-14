@@ -194,7 +194,7 @@ export function PlanLifecycleBar() {
       </div>
 
       {lifecycle.status === "LOCKED" && lifecycle.lockedAt ? (
-        <p className="text-[11px] text-[var(--color-text-muted)]">
+        <p className="text-caption">
           锁定于 {new Date(lifecycle.lockedAt).toLocaleString("zh-CN")} · 定稿后导入写入冻结，推演预览仍可用
         </p>
       ) : null}

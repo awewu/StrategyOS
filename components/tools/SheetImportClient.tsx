@@ -312,7 +312,7 @@ export function SheetImportClient() {
                   </tbody>
                 </table>
                 {result.preview.length > 8 && (
-                  <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+                  <p className="mt-1 text-caption">
                     仅展示前 8 行,预检共覆盖 {result.totalRows} 行
                   </p>
                 )}

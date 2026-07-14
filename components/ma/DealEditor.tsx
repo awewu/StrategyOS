@@ -197,7 +197,7 @@ export function DealEditor({
                 ["回收期(年)", payback, setPayback],
               ] as const).map(([label, val, set]) => (
                 <div key={label}>
-                  <label className="text-[11px] text-[var(--color-text-muted)]">{label}</label>
+                  <label className="text-caption">{label}</label>
                   <input className={inp} type="number" step="any" value={val} onChange={(e) => set(e.target.value)} />
                 </div>
               ))}
@@ -209,17 +209,17 @@ export function DealEditor({
                 ["earnout %", earnoutPct, setEarnoutPct],
               ] as const).map(([label, val, set]) => (
                 <div key={label}>
-                  <label className="text-[11px] text-[var(--color-text-muted)]">{label}</label>
+                  <label className="text-caption">{label}</label>
                   <input className={inp} type="number" value={val} onChange={(e) => set(e.target.value)} />
                 </div>
               ))}
               <div>
-                <label className="text-[11px] text-[var(--color-text-muted)]">earnout 条件</label>
+                <label className="text-caption">earnout 条件</label>
                 <input className={inp} value={earnoutTerms} onChange={(e) => setEarnoutTerms(e.target.value)} placeholder="挂协同兑现" />
               </div>
             </div>
             <div className="mt-2">
-              <label className="text-[11px] text-[var(--color-text-muted)]">预算标签(budget_tag → FPA)</label>
+              <label className="text-caption">预算标签(budget_tag → FPA)</label>
               <input className={inp} value={budgetTag} onChange={(e) => setBudgetTag(e.target.value)} />
             </div>
           </div>

@@ -477,7 +477,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                           <span className="inline-block rounded bg-[var(--signal-red)]/10 px-1.5 py-0.5 text-xs text-[var(--signal-red)]">⚠ 失效信号</span>
                           <div className="mt-0.5 text-caption">{p.failSignal}</div>
                           {p.signalSource && !p.signalSource.startsWith("自动·") ? (
-                            <div className="text-[11px] text-[var(--color-text-muted)]">{p.signalSource}</div>
+                            <div className="text-caption">{p.signalSource}</div>
                           ) : null}
                         </div>
                       ) : (

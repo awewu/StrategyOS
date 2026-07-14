@@ -88,7 +88,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-muted)]">
+          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-caption">
             {source === "database" ? "已持久化" : "Demo"}
           </span>
           <button
@@ -148,7 +148,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
                 ) : (
                   <>
                     {f.origin === "external" && (
-                      <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+                      <p className="mt-1 text-caption">
                         外部 · 引用 {f.sourceModule}
                       </p>
                     )}
@@ -178,7 +178,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
                   <td className="px-3 py-2 font-medium text-[var(--color-text-primary)]">{q.label}</td>
                   <td className="px-3 py-2 text-[var(--color-text-muted)]">
                     <div>{q.plain}</div>
-                    {q.note && <div className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{q.note}</div>}
+                    {q.note && <div className="mt-0.5 text-caption">{q.note}</div>}
                   </td>
                   <td className="px-3 py-2 text-right">
                     <span className="rounded px-1.5 py-0.5 text-[11px] text-white"

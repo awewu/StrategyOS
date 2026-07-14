@@ -129,7 +129,7 @@ export function BscTargetsBoard({
                 <p className="mt-2 text-caption text-[var(--color-text-muted)]">{c.target}</p>
               ) : null}
               {r && r.operating.length > 0 && (
-                <p className="mt-1.5 text-[11px] text-[var(--color-text-muted)]">
+                <p className="mt-1.5 text-caption">
                   {r.operating.length} 项经营任务 · 详情 →
                 </p>
               )}

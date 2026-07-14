@@ -106,7 +106,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-muted)]">
+                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-caption">
                   {STATUS_LABEL[item.status]}
                 </span>
                 <span className="text-[11px] uppercase tracking-wide text-[var(--color-text-muted)]">

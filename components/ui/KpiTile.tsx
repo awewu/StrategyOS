@@ -11,7 +11,7 @@ export function KpiDelta({
   higherIsBetter?: boolean;
 }) {
   if (value === 0) {
-    return <span className="text-[11px] text-[var(--color-text-muted)]">→ 持平{label ? ` · ${label}` : ""}</span>;
+    return <span className="text-caption">→ 持平{label ? ` · ${label}` : ""}</span>;
   }
   const up = value > 0;
   const good = up === higherIsBetter;

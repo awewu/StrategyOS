@@ -46,12 +46,12 @@ export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-medium text-[var(--color-text-primary)]">{s.label}</span>
                     {s.orgUnitName && (
-                      <span className="text-[11px] text-[var(--color-text-muted)]">{s.orgUnitName}</span>
+                      <span className="text-caption">{s.orgUnitName}</span>
                     )}
-                    <span className="text-[11px] text-[var(--color-text-muted)]">{s.period}</span>
+                    <span className="text-caption">{s.period}</span>
                   </div>
                   <p className="mt-0.5 text-sm leading-relaxed text-[var(--color-text-primary)]">{s.detail}</p>
-                  <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+                  <p className="mt-1 text-caption">
                     来源：{s.reportTitle} · {s.uploadedAt}
                   </p>
                 </div>

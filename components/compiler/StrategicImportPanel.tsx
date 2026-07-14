@@ -285,7 +285,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
               原始 {quality.rawObjectives} → 接受 {quality.acceptedObjectives} · 剔除 {quality.rejectedCount}
             </p>
             {rejected.length > 0 ? (
-              <ul className="mt-2 max-h-24 space-y-0.5 overflow-y-auto text-[11px] text-[var(--color-text-muted)]">
+              <ul className="mt-2 max-h-24 space-y-0.5 overflow-y-auto text-caption">
                 {rejected.slice(0, 6).map((r, i) => (
                   <li key={i}>[{r.reason}] {r.text.slice(0, 52)}</li>
                 ))}

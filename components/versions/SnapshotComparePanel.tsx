@@ -277,7 +277,7 @@ export function SnapshotComparePanel() {
                       </td>
                       <td className="px-3 py-3">
                         <div className="font-medium text-[var(--color-text-primary)]">{diff.title}</div>
-                        <div className="mt-1 font-mono text-[11px] text-[var(--color-text-muted)]">
+                        <div className="mt-1 font-mono text-caption">
                           {diff.category}
                         </div>
                       </td>

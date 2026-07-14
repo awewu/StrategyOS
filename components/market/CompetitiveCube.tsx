@@ -80,7 +80,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                   <label key={b.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-black/[0.04]">
                     <input type="checkbox" checked={!hiddenBrands.has(b.id)} onChange={() => toggleBrand(b.id)} className="accent-[var(--color-accent)]" />
                     <span>{b.name}</span>
-                    <span className="ml-auto text-[11px] text-[var(--color-text-muted)]">{b.tier === "core" ? "核心" : "观察"}</span>
+                    <span className="ml-auto text-caption">{b.tier === "core" ? "核心" : "观察"}</span>
                   </label>
                 ))}
               </div>
@@ -124,7 +124,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                       <span className="text-caption">{expandedRegions.has(row.id) ? "▾" : "▸"}</span>
                       {row.name}
                       {(provincesByRegion[row.id]?.length ?? 0) > 0 && (
-                        <span className="text-[11px] text-[var(--color-text-muted)]">({provincesByRegion[row.id]!.length}省)</span>
+                        <span className="text-caption">({provincesByRegion[row.id]!.length}省)</span>
                       )}
                     </button>
                   )}
@@ -147,7 +147,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                       ) : (
                         <button
                           onClick={() => setSelected({ regionId: row.id, competitorId: b.id })}
-                          className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-[11px] text-[var(--color-text-muted)] hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition-colors">
+                          className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-caption hover:border-[var(--color-accent)]/50 hover:text-[var(--color-accent)] transition-colors">
                           + 建档
                         </button>
                       )}

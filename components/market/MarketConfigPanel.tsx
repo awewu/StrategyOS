@@ -480,7 +480,7 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="font-medium text-[var(--color-text-primary)]">{p.name}</div>
-                  {p.modelCode && <div className="text-[11px] text-[var(--color-text-muted)]">{p.modelCode}</div>}
+                  {p.modelCode && <div className="text-caption">{p.modelCode}</div>}
                 </td>
                 <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">{brandName(p.brandId)}</td>
                 <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">{lineName(p.productLineId)}</td>

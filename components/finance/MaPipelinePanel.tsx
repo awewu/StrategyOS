@@ -48,7 +48,7 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
                       </p>
                     )}
                     {item.linkedAssumptionCodes.length > 0 && (
-                      <div className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+                      <div className="mt-1 text-caption">
                         Hx: {item.linkedAssumptionCodes.join(", ")}
                       </div>
                     )}

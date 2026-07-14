@@ -249,7 +249,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
               accept=".docx,.xlsx,.pdf,.pptx,.doc,.xls,.ppt"
               className="mt-1 block text-sm text-[var(--color-text-muted)] file:mr-3 file:rounded file:border-0 file:bg-[var(--color-accent-dim)] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[var(--color-accent)] hover:file:opacity-80"
             />
-            <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+            <p className="mt-1 text-caption">
               系统将自动提取文本内容用于 AI 分析；原文件存档留存
             </p>
           </div>
@@ -351,16 +351,16 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                     {REPORT_TYPE_LABELS[r.reportType] ?? r.reportType}
                   </span>
                   {r.orgUnit && (
-                    <span className="text-[11px] text-[var(--color-text-muted)]">
+                    <span className="text-caption">
                       {r.orgUnit.name}
                     </span>
                   )}
-                  <span className="text-[11px] text-[var(--color-text-muted)]">{r.period}</span>
+                  <span className="text-caption">{r.period}</span>
                 </div>
                 <p className="mt-0.5 text-sm font-medium text-[var(--color-text-primary)] truncate">
                   {r.title}
                 </p>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-[var(--color-text-muted)]">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-caption">
                   <span>{new Date(r.uploadedAt).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
                   {r.fileOrigName && (
                     <span>· {r.fileOrigName} {r.fileSizeBytes ? `(${fmtBytes(r.fileSizeBytes)})` : ""}</span>
@@ -421,7 +421,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
         </div>
       </div>
 
-      <p className="text-[11px] text-[var(--color-text-muted)]">
+      <p className="text-caption">
         已存档报告由 AI 解析后数据自动反哺至执行审计和指挥舱
       </p>
     </div>

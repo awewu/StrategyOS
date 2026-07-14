@@ -75,7 +75,7 @@ export function FiveForcesPanel({
             五力不是行业报告，而是战略会风险项。未缓解的高/极高威胁 {highCount} 项。
           </p>
         </div>
-        <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-muted)]">
+        <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-caption">
           {source === "database" ? "已持久化" : "Demo"}
         </span>
       </div>
@@ -156,7 +156,7 @@ export function FiveForcesPanel({
               />
 
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-[var(--color-text-muted)]">
+                <span className="text-caption">
                   {notes[r.force] && <span className="text-[var(--color-accent)]">{notes[r.force]}</span>}
                 </span>
                 <button
