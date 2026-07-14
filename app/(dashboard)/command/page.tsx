@@ -97,15 +97,11 @@ export default async function CommandPage() {
         }
       />
 
-      <details className="stratos-disclosure stratos-disclosure--secondary">
-        <summary>战略资料导入 · PDF / Excel 编译</summary>
-        <div className="stratos-disclosure__body">
-          <StrategicImportPanel embedded />
-        </div>
-      </details>
-
+      {/* ① 致辞 · 一句话态势 + 推论 */}
       <ExecutiveSummary scr={scr} />
+      <ImplicationsBar items={implications} />
 
+      {/* ② 风险与决策 */}
       {hardBlock ? (
         <section
           className="stratos-card stratos-card--padded border-[var(--signal-red)]/30 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]"
@@ -132,29 +128,19 @@ export default async function CommandPage() {
         source={deck.decisionsSource}
       />
 
-      <ImplicationsBar items={implications} />
-
-      <nav className="stratos-card stratos-card--padded stratos-link-row" aria-label="模块快捷跳转">
-        <span className="stratos-link-row__label">深入</span>
-        {QUICK_LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className="stratos-btn stratos-btn--ghost px-2.5 py-1.5"
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-
+      {/* ③ 态势板 · 状态亮点 → 变化 → 预警 */}
       <CommandBoardShell>
       <section className="stratos-command-board" aria-label="指挥舱态势板">
-        <div className="stratos-command-board__timeline">
-          <TimelineEditor
-            initialMilestones={deck.timeline}
-            derivedMilestones={deck.derivedTimeline}
-            source={deck.timelineSource}
-          />
+        <div className="stratos-command-board__bsc">
+          <SectionCard title="BSC 四满意" subtitle="四灯 · 目标来自 DB" accent="green">
+            <BscLights lights={deck.bscLights} cards={deck.bscCards} />
+          </SectionCard>
+        </div>
+
+        <div className="stratos-command-board__robust">
+          <SectionCard title="StratRobust" subtitle="战略稳健性五维" accent="violet">
+            <RobustBars dims={deck.robustScore} />
+          </SectionCard>
         </div>
 
         <div className="stratos-command-board__fpa">
@@ -179,18 +165,6 @@ export default async function CommandPage() {
         <div className="stratos-command-board__baf">
           <SectionCard title="B-A-F 闭环" subtitle="营收 · 利润 · 与 FPA 联动" accent="gold">
             <BafBar fpa={deck.fpa} />
-          </SectionCard>
-        </div>
-
-        <div className="stratos-command-board__bsc">
-          <SectionCard title="BSC 四满意" subtitle="四灯 · 目标来自 DB" accent="green">
-            <BscLights lights={deck.bscLights} cards={deck.bscCards} />
-          </SectionCard>
-        </div>
-
-        <div className="stratos-command-board__robust">
-          <SectionCard title="StratRobust" subtitle="战略稳健性五维" accent="violet">
-            <RobustBars dims={deck.robustScore} />
           </SectionCard>
         </div>
 
@@ -221,31 +195,41 @@ export default async function CommandPage() {
             <TopAlertsPanel alerts={alerts} embedded />
           </SectionCard>
         </div>
-
-        <div className="stratos-command-board__workflow">
-          <SectionCard title="战略工作流" subtitle="编制 → 解码 → 一页纸">
-            <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                { href: "/strategy/input", title: "编制战略", desc: "三级录入与提交" },
-                { href: "/decode", title: "战略解码", desc: "BSC · X-Matrix · 反馈环" },
-                { href: "/strategy", title: "一页纸", desc: "董事会战略摘要" },
-              ].map((step) => (
-                <Link
-                  key={step.href}
-                  href={step.href}
-                  className="group rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-3 transition-colors hover:border-[var(--color-accent)]/35 hover:bg-[var(--color-accent)]/5"
-                >
-                  <div className="text-subsection text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)]">
-                    {step.title}
-                  </div>
-                  <div className="mt-1 text-caption">{step.desc}</div>
-                </Link>
-              ))}
-            </div>
-          </SectionCard>
-        </div>
       </section>
       </CommandBoardShell>
+
+      {/* ④ 去向 · 模块快捷跳转 */}
+      <nav className="stratos-card stratos-card--padded stratos-link-row" aria-label="模块快捷跳转">
+        <span className="stratos-link-row__label">深入</span>
+        {QUICK_LINKS.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="stratos-btn stratos-btn--ghost px-2.5 py-1.5"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
+
+      {/* 附录 · 折叠：里程碑编辑 + 战略资料导入 */}
+      <details className="stratos-disclosure stratos-disclosure--secondary">
+        <summary>里程碑与决策时间轴 · 编辑</summary>
+        <div className="stratos-disclosure__body">
+          <TimelineEditor
+            initialMilestones={deck.timeline}
+            derivedMilestones={deck.derivedTimeline}
+            source={deck.timelineSource}
+          />
+        </div>
+      </details>
+
+      <details className="stratos-disclosure stratos-disclosure--secondary">
+        <summary>战略资料导入 · PDF / Excel 编译</summary>
+        <div className="stratos-disclosure__body">
+          <StrategicImportPanel embedded />
+        </div>
+      </details>
     </div>
   );
 }
