@@ -1,8 +1,10 @@
 # StratOS · API 端口全量审计报告
 
-**版本：** v1.0 · 2026-06-23  
+**版本：** v1.1 · 2026-07-14（复核校正 · 以代码为准）  
 **目的：** 盘点所有数据输入/输出槽位，验证鉴权、输入格式、是否落口  
 **共计：** 86 个 route 文件 · 约 130 个 HTTP 端点
+
+> **v1.1 校正**：第二节 7 个 LLM/写 DB 端点均已在代码中补 `requireApiMinLevel`（v1.0 文档滞后）；`/api/execution/commitment` v1.0 误标 ✅，实为无鉴权，本轮已补（GET L1 · POST/DELETE L2）。
 
 ---
 
@@ -279,7 +281,7 @@
 |------|------|------|---------|------|
 | `/api/data-source` | GET | ⚪ 无（设计有意） | — | 数据新鲜度信号灯（非敏感） |
 | `/api/execution/scoreboard` | GET, PUT | ✅ | JSON | 4DX 记分板 |
-| `/api/execution/commitment` | GET, POST, PUT | ✅ | JSON | 承诺库 CRUD |
+| `/api/execution/commitment` | GET, POST, DELETE | ✅ GET L1 · 写 L2 | JSON | 承诺库 CRUD（v1.1 补齐鉴权） |
 | `/api/execution/market-evidence` | GET, POST, PUT | ✅ | JSON | 市场证据 CRUD |
 | `/api/execution/maturity` | GET, PUT | ✅ | JSON | 执行成熟度 |
 | `/api/execution/position` | GET, PUT | ✅ | JSON | 竞争定位 |
@@ -291,21 +293,21 @@
 
 ---
 
-## 二、鉴权缺口专项清单
+## 二、鉴权缺口专项清单（v1.1：全部已闭合 ✅）
 
-以下端点**调用 LLM 或写入 DB，但缺少 `requireApiMinLevel` 鉴权**，存在未登录用户滥用风险：
+以下端点在 v1.0 曾标记缺鉴权，**经 v1.1 代码复核，已全部补齐** `requireApiMinLevel`：
 
-| 端点 | 风险 | 建议 |
-|------|------|------|
-| `POST /api/agents/orchestrate` | 触发 11-Agent LLM编排，写 DB | 加 `requireApiMinLevel(2)` |
-| `POST /api/reports/parse` | 触发 LLM 报告解析 | 加 `requireApiMinLevel(2)` |
-| `POST /api/reports/submit` | 文件写磁盘 + 写 DB | 加 `requireApiMinLevel(1)` |
-| `POST /api/market/scan` | 触发 Hermes LLM 扫描 + 写 DB | 加 `requireApiMinLevel(2)` |
-| `POST /api/market/ask` | 触发 LLM 问答 | 加 `requireApiMinLevel(1)` |
-| `POST /api/diffs/compute` | 计算并写 DiffRecord | 加 `requireApiMinLevel(2)` |
-| `POST /api/counterfactual` | 触发 LLM 推演 | 加 `requireApiMinLevel(2)` |
-
-> `POST /api/market/swot` — ✅ 已在本次修复中补充鉴权（commit `12206b0`）
+| 端点 | 现状 |
+|------|------|
+| `POST /api/agents/orchestrate` | ✅ L2 |
+| `POST /api/reports/parse` | ✅ L2 |
+| `POST /api/reports/submit` | ✅ POST L1 · PATCH L2 |
+| `POST /api/market/scan` | ✅ POST L2 · GET L1 |
+| `POST /api/market/ask` | ✅ L1 |
+| `POST /api/diffs/compute` | ✅ L2 |
+| `POST /api/counterfactual` | ✅ L2 |
+| `POST /api/market/swot` | ✅ L2（commit `12206b0`） |
+| `GET/POST/DELETE /api/execution/commitment` | ✅ v1.1 补齐（GET L1 · 写 L2） |
 
 ---
 
@@ -351,19 +353,9 @@
 - `POST /api/market/swot`：已修复（commit `12206b0`）
 - `persistHealthAssertions`：已改为原子事务（commit `1d5a27b`）
 
-### ⚠️ 未落口（待修）
+### ✅ 未落口项已全部闭合（v1.1）
 
-**7个 LLM/写DB 端点无鉴权**（见第二节），建议回公司后统一修复：
-
-```
-POST /api/agents/orchestrate    → requireApiMinLevel(2)
-POST /api/reports/parse         → requireApiMinLevel(2)
-POST /api/reports/submit        → requireApiMinLevel(1)
-POST /api/market/scan           → requireApiMinLevel(2)
-POST /api/market/ask            → requireApiMinLevel(1)
-POST /api/diffs/compute         → requireApiMinLevel(2)
-POST /api/counterfactual        → requireApiMinLevel(2)
-```
+v1.0 列出的 7 个 LLM/写 DB 端点 + `/api/execution/commitment` 均已补 `requireApiMinLevel`。当前**无已知无鉴权的写/LLM 端点**。
 
 ### ⚪ 有意设计（非缺陷）
 
@@ -371,4 +363,4 @@ POST /api/counterfactual        → requireApiMinLevel(2)
 
 ---
 
-*审计日期：2026-06-23 · 下次战略会前建议完成第二节7个端点修复*
+*审计日期：2026-06-23（v1.0）· 复核校正：2026-07-14（v1.1，以代码为准，鉴权缺口已全部闭合）*

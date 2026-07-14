@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -6,11 +7,15 @@ export const runtime = "nodejs";
 const VALID_STATUS = ["pending", "in_progress", "completed", "overdue"];
 
 export async function GET() {
+  const denied = await requireApiMinLevel(1);
+  if (denied) return denied;
   const rows = await prisma.commitment.findMany({ orderBy: { deadline: "asc" } });
   return NextResponse.json(rows);
 }
 
 export async function POST(req: Request) {
+  const denied = await requireApiMinLevel(2);
+  if (denied) return denied;
   try {
     const b = await req.json();
     if (!b.content || !b.ownerName || !b.deadline) {
@@ -38,6 +43,8 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const denied = await requireApiMinLevel(2);
+  if (denied) return denied;
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   try {
