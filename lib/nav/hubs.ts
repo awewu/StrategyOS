@@ -66,6 +66,7 @@ export const NAV_HUBS: NavHub[] = [
     icon: "operate",
     defaultHref: "/monitor/bu",
     children: [
+      { href: "/cockpit", label: "坚守驾驶舱" },
       { href: "/monitor/functions", label: "职能体系" },
       { href: "/monitor/bu", label: "事业部" },
       { href: "/monitor/health", label: "集团健康" },

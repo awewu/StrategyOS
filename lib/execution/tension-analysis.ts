@@ -26,8 +26,10 @@ export interface CommitmentRecord {
   deadline: string;
   status: "completed" | "overdue" | "in_progress" | "pending";
   daysOverdue?: number;
+  promiseTo?: string;
   linkedProjectCode?: string;
   linkedAssumptionCode?: string;
+  linkedKrId?: string;
 }
 
 export interface ExecutionMaturityPoint {

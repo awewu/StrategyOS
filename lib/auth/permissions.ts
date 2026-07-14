@@ -43,6 +43,7 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { prefix: "/compass", minLevel: 3 },
   { prefix: "/outlook", minLevel: 3 },
   { prefix: "/versions", minLevel: 3 },
+  { prefix: "/cockpit", minLevel: 2 },
   { prefix: "/mandates", minLevel: 2 },
   { prefix: "/finance", minLevel: 3 },
   { prefix: "/fpa", minLevel: 3 },
@@ -110,9 +111,9 @@ export function roleHomePath(role: RoleKey): string {
     case "observer":
       return "/strategy";
     case "vp":
-      return "/reports";
+      return "/cockpit";
     case "system_head":
-      return "/monitor/functions";
+      return "/cockpit";
     case "pm":
       return "/execution";
     case "staff":

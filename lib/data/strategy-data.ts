@@ -435,8 +435,10 @@ export async function getCommitmentRecords(): Promise<CommitmentRecord[]> {
       content: r.content, deadline: r.deadline.toISOString().slice(0, 10),
       status: overdue ? "overdue" : (r.status as CommitmentRecord["status"]),
       daysOverdue,
+      promiseTo: r.promiseTo,
       linkedProjectCode: r.linkedProjectCode ?? undefined,
       linkedAssumptionCode: r.linkedAssumptionCode ?? undefined,
+      linkedKrId: r.linkedKrId ?? undefined,
     };
   });
 }
