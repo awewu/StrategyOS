@@ -45,6 +45,8 @@ const REQUIRED_PRISMA_DELEGATES = [
   "executionScoreboardConfig",
   "innovationProductLine",
   "innovationBet",
+  "maDealTypeProfile",
+  "maDeal",
 ] as const;
 
 function resolveDatabaseUrl(): string | undefined {

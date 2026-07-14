@@ -48,6 +48,7 @@ export const NAV_HUBS: NavHub[] = [
     children: [
       { href: "/strategy/input", label: "编制战略" },
       { href: "/innovation", label: "创新底座" },
+      { href: "/ma", label: "并购 · 资本交易" },
       { href: "/versions", label: "历史版本 · 对照" },
       { href: "/mandates", label: "战略职责" },
     ],

@@ -12,7 +12,7 @@ const EXTRA_LINKS: { href: string; label: string; group: PaletteGroup; adminOnly
   { href: "/finance?tab=capital", label: "FPA · 资本", group: "财务" },
   { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
   { href: "/finance?tab=scenarios", label: "SPBP 情景", group: "财务" },
-  { href: "/finance?tab=ma", label: "M&A 管道", group: "财务" },
+  { href: "/ma", label: "并购 · 资本交易", group: "财务" },
   { href: "/api/print/panorama?lang=zh", label: "下载中文董事会 PDF", group: "工具" },
   { href: "/api/print/panorama", label: "下载董事会 PDF", group: "工具" },
   { href: "/command", label: "指挥舱 · 态势板", group: "指挥" },

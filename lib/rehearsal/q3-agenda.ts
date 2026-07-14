@@ -35,7 +35,7 @@ export const Q3_REHEARSAL_AGENDA: RehearsalStep[] = [
     objectives: ["三层面 CAPEX 比例", "IC 管道 Gate", "产能缺口反推"],
     routes: [
       { href: "/finance?tab=management", label: "管理报表" },
-      { href: "/finance?tab=ma", label: "M&A 管道" },
+      { href: "/ma", label: "并购 · 资本交易" },
       { href: "/gates", label: "Gate 清单" },
     ],
     talkingPoints: [

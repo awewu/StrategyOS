@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { logUsageEvent } from "@/lib/audit/log-event";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { CapitalConfigEditor } from "@/components/finance/CapitalConfigEditor";
 import { FpaEditor } from "@/components/finance/FpaEditor";
 import { OutlookEditor } from "@/components/finance/OutlookEditor";
 import { FinancialStatementsEditor } from "@/components/finance/FinancialStatementsEditor";
-import { MaPipelineEditor } from "@/components/finance/MaPipelineEditor";
 import { ManagementReportEditor } from "@/components/finance/ManagementReportEditor";
 import { CapitalTab } from "@/components/finance/CapitalTab";
 import { SpbpScenarioEditor } from "@/components/finance/SpbpScenarioEditor";
@@ -22,8 +22,7 @@ type FinanceTab =
   | "overview"
   | "capital"
   | "forecast"
-  | "scenarios"
-  | "ma";
+  | "scenarios";
 
 export default function FinancePage({
   searchParams,
@@ -40,6 +39,7 @@ async function FinanceContent({
 }) {
   await requireRouteAccess("/finance");
   const { tab } = await tabPromise;
+  if (tab === "ma") redirect("/ma");
   const activeTab = parseTab(tab);
   await logUsageEvent({ action: "fpa_view", resource: `/finance?tab=${activeTab}` });
   const data = await getFinanceBundle();
@@ -53,7 +53,6 @@ async function FinanceContent({
     { href: "/finance?tab=capital", label: "资本配置", active: activeTab === "capital" },
     { href: "/finance?tab=forecast", label: "5 年展望", active: activeTab === "forecast" },
     { href: "/finance?tab=scenarios", label: "SPBP 情景", active: activeTab === "scenarios" },
-    { href: "/finance?tab=ma", label: "M&A 管道", active: activeTab === "ma" },
   ];
 
   return (
@@ -115,10 +114,6 @@ async function FinanceContent({
         <SpbpScenarioEditor initialScenarios={data.spbpScenarios} source={data.spbpSource} />
       )}
 
-      {activeTab === "ma" && (
-        <MaPipelineEditor initialItems={data.maPipeline} source={data.maSource} />
-      )}
-
       <ConceptGuide ids={["fpa", "spbp"]} />
     </div>
   );
@@ -132,7 +127,6 @@ function parseTab(tab?: string): FinanceTab {
     "capital",
     "forecast",
     "scenarios",
-    "ma",
   ];
   if (tab && allowed.includes(tab as FinanceTab)) return tab as FinanceTab;
   return "management";

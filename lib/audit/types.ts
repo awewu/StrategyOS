@@ -15,6 +15,7 @@ export const USAGE_ACTIONS = [
   "hermes_scan",
   "fpa_view",
   "innovation_view",
+  "ma_view",
   "admin_view",
   "audit_export",
   "data_source_read",

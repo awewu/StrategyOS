@@ -2671,6 +2671,113 @@ model InnovationEvidence {
   @@map("innovation_evidence")
 }
 
+// M&A · 交易形态画像（收购/并购/投资/合资——阈值与必备条款可配）
+model MaDealTypeProfile {
+  id            String   @id @default(uuid())
+  dealType      String   @unique @map("deal_type") @db.VarChar(30)
+  name          String   @db.VarChar(50)
+  thresholds    Json     @default("{}")
+  requiredFlags Json     @default("[]") @map("required_flags")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("ma_deal_type_profiles")
+}
+
+// M&A · 交易主表（七阶段 · direction=买什么能力 · dealType=用什么形态）
+model MaDeal {
+  id                       String                 @id @default(uuid())
+  name                     String                 @db.VarChar(200)
+  dealType                 String                 @default("acquisition") @map("deal_type") @db.VarChar(30)
+  direction                String                 @db.VarChar(30)
+  stage                    String                 @default("sourcing") @db.VarChar(20)
+  thesis                   String                 @db.VarChar(500)
+  linkedCrux               String?                @map("linked_crux") @db.VarChar(300)
+  dealLead                 String?                @map("deal_lead") @db.VarChar(50)
+  budgetTag                String?                @map("budget_tag") @db.VarChar(50)
+  price                    Decimal?               @db.Decimal(16, 2)
+  walkAwayPrice            Decimal?               @map("walk_away_price") @db.Decimal(16, 2)
+  discountRate             Decimal                @default(0.12) @map("discount_rate") @db.Decimal(5, 4)
+  dealStructure            Json                   @default("{}") @map("deal_structure")
+  economics                Json                   @default("{}")
+  flags                    Json                   @default("{}")
+  screening                Json                   @default("[]")
+  integrationMilestone100d String?                @map("integration_milestone_100d")
+  linkedAssumptionCodes    String[]               @map("linked_assumption_codes")
+  period                   String                 @default("2026-FY") @db.VarChar(10)
+  updatedAt                DateTime               @updatedAt @map("updated_at")
+  valuations               MaValuation[]
+  synergies                MaSynergy[]
+  findings                 MaDdFinding[]
+  conditions               MaConditionPrecedent[]
+
+  @@index([stage])
+  @@map("ma_deals")
+}
+
+// M&A · 估值三角（DCF/可比/先例 低-基-高）
+model MaValuation {
+  id        String   @id @default(uuid())
+  dealId    String   @map("deal_id")
+  method    String   @db.VarChar(20)
+  low       Decimal  @db.Decimal(16, 2)
+  base      Decimal  @db.Decimal(16, 2)
+  high      Decimal  @db.Decimal(16, 2)
+  note      String?  @db.VarChar(300)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deal      MaDeal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("ma_valuations")
+}
+
+// M&A · 协同量化（run-rate + 爬坡 + 一次性成本 + 证据级）
+model MaSynergy {
+  id            String   @id @default(uuid())
+  dealId        String   @map("deal_id")
+  type          String   @db.VarChar(10)
+  title         String   @db.VarChar(200)
+  runRate       Decimal  @map("run_rate") @db.Decimal(14, 2)
+  ramp          Json     @default("[]")
+  oneTimeCost   Decimal  @default(0) @map("one_time_cost") @db.Decimal(14, 2)
+  evidenceLevel Int      @default(2) @map("evidence_level")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  deal          MaDeal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("ma_synergies")
+}
+
+// M&A · 尽调红旗登记册
+model MaDdFinding {
+  id          String   @id @default(uuid())
+  dealId      String   @map("deal_id")
+  workstream  String   @db.VarChar(30)
+  finding     String   @db.VarChar(500)
+  severity    String   @default("medium") @db.VarChar(10)
+  dealBreaker Boolean  @default(false) @map("deal_breaker")
+  status      String   @default("open") @db.VarChar(12)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deal        MaDeal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("ma_dd_findings")
+}
+
+// M&A · 先决条件（CP）追踪
+model MaConditionPrecedent {
+  id        String    @id @default(uuid())
+  dealId    String    @map("deal_id")
+  item      String    @db.VarChar(300)
+  owner     String?   @db.VarChar(50)
+  dueDate   DateTime? @map("due_date")
+  status    String    @default("open") @db.VarChar(12)
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deal      MaDeal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("ma_condition_precedents")
+}
+
 // 创新底座 · 杀手假设（错了就全垮 · 最便宜实验优先证伪）
 model InnovationAssumption {
   id        String        @id @default(uuid())
