@@ -617,6 +617,7 @@ model KeyResult {
   isLeadingIndicator Boolean      @default(false) @map("is_leading_indicator")
   objective          Objective    @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
   project            Project?     @relation(fields: [projectId], references: [id])
+  commitments        Commitment[]
 
   @@index([budgetTag])
   @@map("key_results")
@@ -682,10 +683,28 @@ model Commitment {
   completionNote       String?          @map("completion_note")
   linkedProjectCode    String?          @map("linked_project_code") @db.VarChar(10)
   linkedAssumptionCode String?          @map("linked_assumption_code") @db.VarChar(10)
+  linkedKrId           String?          @map("linked_kr_id")
   createdAt            DateTime         @default(now()) @map("created_at")
   user                 User?            @relation(fields: [userId], references: [id])
+  keyResult            KeyResult?       @relation(fields: [linkedKrId], references: [id])
 
+  @@index([linkedKrId])
   @@map("commitments")
+}
+
+model AccountabilityRecord {
+  id                String        @id @default(uuid())
+  sourceKind        String        @map("source_kind") @db.VarChar(20)
+  dimension         BscDimension?
+  ownerName         String?       @map("owner_name") @db.VarChar(50)
+  linkedKrId        String?       @map("linked_kr_id")
+  cultureGeneralRef String?       @map("culture_general_ref") @db.VarChar(50)
+  note              String?
+  active            Boolean       @default(true)
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  @@index([active])
+  @@map("accountability_records")
 }
 
 model Document {
@@ -945,8 +964,8 @@ model PlanSubmissionSnapshot {
   orgUnit       OrgUnit       @relation(fields: [orgUnitId], references: [id], onDelete: Cascade)
   plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
-  @@unique([orgUnitId, horizonStart, horizonEnd, version])
-  @@index([orgUnitId, horizonStart, horizonEnd, submittedAt])
+  @@unique([orgUnitId, horizonStart, horizonEnd, version], map: "pss_org_horizon_version_key")
+  @@index([orgUnitId, horizonStart, horizonEnd, submittedAt], map: "pss_org_horizon_submitted_idx")
   @@index([planId])
   @@map("plan_submission_snapshots")
 }

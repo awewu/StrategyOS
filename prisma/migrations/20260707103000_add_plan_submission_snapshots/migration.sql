@@ -16,10 +16,10 @@ CREATE TABLE "plan_submission_snapshots" (
     CONSTRAINT "plan_submission_snapshots_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "plan_submission_snapshots_org_unit_id_horizon_start_horizon_end_version_key"
+CREATE UNIQUE INDEX "pss_org_horizon_version_key"
   ON "plan_submission_snapshots"("org_unit_id", "horizon_start", "horizon_end", "version");
 
-CREATE INDEX "plan_submission_snapshots_org_unit_id_horizon_start_horizon_end_submitted_at_idx"
+CREATE INDEX "pss_org_horizon_submitted_idx"
   ON "plan_submission_snapshots"("org_unit_id", "horizon_start", "horizon_end", "submitted_at");
 
 CREATE INDEX "plan_submission_snapshots_plan_id_idx"
