@@ -99,7 +99,7 @@ export function DoctrinesPanel({ handbook }: { handbook?: CultureHandbookContent
             </p>
             <h3 className={`${typography.h3} mt-2`}>{d.zh}</h3>
             <p className={`${typography.caption} mt-2`}>{d.hint}</p>
-            <p className="mt-4 rounded-lg bg-black/[0.03] px-3 py-2 text-xs text-[var(--color-text-muted)]">
+            <p className="mt-4 rounded-lg bg-black/[0.03] px-3 py-2 text-caption">
               自检：{d.scenario}
             </p>
           </article>
@@ -246,10 +246,10 @@ export function ValuesUnderstandingPanel() {
         {VALUES_UNDERSTANDING_RECORDS.map((r) => (
           <li key={r.id} className="px-5 py-4">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <time className="font-data text-xs text-[var(--color-text-muted)]">{r.date}</time>
-              {r.unit !== "—" ? <span className="text-xs text-[var(--color-text-muted)]">{r.unit}</span> : null}
+              <time className="font-data text-caption">{r.date}</time>
+              {r.unit !== "—" ? <span className="text-caption">{r.unit}</span> : null}
               {r.relatedPrinciple ? (
-                <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-muted)]">
+                <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-caption">
                   {r.relatedPrinciple}
                 </span>
               ) : null}
@@ -290,7 +290,7 @@ export function CultureLinksBar() {
       className="flex flex-wrap items-center gap-x-1 gap-y-2 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-3 text-sm"
       aria-label="文化相关模块"
     >
-      <span className="mr-2 text-xs text-[var(--color-text-muted)]">相关模块</span>
+      <span className="mr-2 text-caption">相关模块</span>
       {links.map((link, i) => (
         <span key={link.href} className="inline-flex items-center">
           {i > 0 ? <span className="mx-2 text-[var(--color-text-muted)]">·</span> : null}

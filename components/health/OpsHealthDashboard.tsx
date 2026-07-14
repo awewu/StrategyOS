@@ -85,7 +85,7 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
               {signal === "green" ? "正常" : signal === "yellow" ? "注意" : "异常"}
             </span>
             <span className="text-sm font-medium">{metric.name}</span>
-            <span className="text-xs text-[var(--color-text-muted)]">{metric.unit}</span>
+            <span className="text-caption">{metric.unit}</span>
           </div>
           {latestActual !== null && (
             <div className="mt-1 flex items-baseline gap-3">
@@ -207,7 +207,7 @@ export function OpsHealthDashboard({ series }: { series: MetricSeries[] }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">运营健康度全景</h2>
-          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+          <p className="text-caption mt-0.5">
             2023–2025 历史 · 2026–2028 规划 · 月度颗粒度 · 同比/环比/目标差
           </p>
         </div>
@@ -237,7 +237,7 @@ export function OpsHealthDashboard({ series }: { series: MetricSeries[] }) {
           <div className="mb-3 flex items-center gap-2">
             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: domain.color }} />
             <span className="font-medium">{domain.name}</span>
-            <span className="text-xs text-[var(--color-text-muted)]">{domain.metrics.length} 项指标</span>
+            <span className="text-caption">{domain.metrics.length} 项指标</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {domain.metrics.map((m) => (

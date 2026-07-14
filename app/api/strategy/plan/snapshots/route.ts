@@ -36,7 +36,7 @@ function text(value: unknown): string {
   return "";
 }
 
-function normalizeList(items: unknown[] | undefined, picker: (item: any) => string): string[] {
+function normalizeList<T>(items: T[] | undefined, picker: (item: T) => string): string[] {
   return (items ?? []).map((item) => picker(item)).map((item) => item.trim()).filter(Boolean);
 }
 
@@ -94,8 +94,8 @@ function comparePlanSnapshots(from: PlanSnapshotPayload, to: PlanSnapshotPayload
     diffs,
     "BSC_OBJECTIVE",
     "BSC 目标/KPI",
-    normalizeList(from.objectives, (o) => `${text(o.dimension)} ${text(o.objective)} ${(o.keyResults ?? []).map((k: any) => `${text(k.keyResult)} ${text(k.target)}`).join(" ")}`),
-    normalizeList(to.objectives, (o) => `${text(o.dimension)} ${text(o.objective)} ${(o.keyResults ?? []).map((k: any) => `${text(k.keyResult)} ${text(k.target)}`).join(" ")}`),
+    normalizeList(from.objectives, (o) => `${text(o.dimension)} ${text(o.objective)} ${(o.keyResults ?? []).map((k) => `${text(k.keyResult)} ${text(k.target)}`).join(" ")}`),
+    normalizeList(to.objectives, (o) => `${text(o.dimension)} ${text(o.objective)} ${(o.keyResults ?? []).map((k) => `${text(k.keyResult)} ${text(k.target)}`).join(" ")}`),
     "high",
   );
   addListDiff(

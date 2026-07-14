@@ -96,7 +96,7 @@ export function AddRowButton({ label, onClick }: { label: string; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors"
+      className="w-full rounded border border-dashed border-[var(--surface-border)] py-2 text-caption hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors"
     >
       + {label}
     </button>

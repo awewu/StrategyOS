@@ -57,7 +57,7 @@ export function BscConfigEditor({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">BSC 四满意</h2>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-caption">
             文案可编辑 · 灯色来自健康信号 · 数据源 {source === "database" ? "DB" : "Demo"}
           </p>
         </div>

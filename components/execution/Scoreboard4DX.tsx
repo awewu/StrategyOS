@@ -18,7 +18,7 @@ function KrProgressBar({ kr }: { kr: KeyResult }) {
           style={{ width: `${pct}%`, background: "var(--chart-progress)" }}
         />
       </div>
-      <div className="mt-1 text-xs text-[var(--color-text-muted)]">信心 {pct}%</div>
+      <div className="mt-1 text-caption">信心 {pct}%</div>
     </div>
   );
 }

@@ -434,7 +434,7 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
           }
         </select>
         {selectedOrg && (
-          <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+          <span className="text-caption whitespace-nowrap">
             {selectedOrg.level === "GROUP" && "集团"}
             {selectedOrg.level === "EXECUTIVE" && "事业部/体系"}
             {selectedOrg.level === "OPERATING_UNIT" && "二级部门"}
@@ -469,13 +469,13 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
             <div className="flex items-center justify-between border-b border-[var(--surface-border)] pb-4">
               <div>
                 <h2 className="text-lg font-semibold">{selectedOrg.name}</h2>
-                <p className="text-xs text-[var(--color-text-muted)]">
+                <p className="text-caption">
                   {selectedOrg.level === "GROUP" && "集团战略报告"}
                   {selectedOrg.level === "EXECUTIVE" && "高管层 · 事业部/体系战略"}
                   {selectedOrg.level === "OPERATING_UNIT" && "执行层 · 二级部门战略"}
                 </p>
               </div>
-              <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+              <div className="flex items-center gap-3 text-caption">
                 {status && (
                   <span
                     className={'rounded-full px-2 py-0.5 ' + (
@@ -817,7 +817,7 @@ function AiExtractBar({
               {loadingStage === 1 ? "⏳ 阶段 1/2 · 降噪摘要中…" : "⚙️ 阶段 2/2 · 结构化提取中…"}
             </span>
           ) : (
-            <span className="text-xs text-[var(--color-text-muted)]">上传文件或粘贴文档内容，AI 两阶段智能提取</span>
+            <span className="text-caption">上传文件或粘贴文档内容，AI 两阶段智能提取</span>
           )}
         </div>
         <button onClick={() => setOpen((o) => !o)} className="text-xs text-[var(--color-accent)] hover:underline">
@@ -846,7 +846,7 @@ function AiExtractBar({
 
           {mode === "file" ? (
             <div className="space-y-2">
-              <p className="text-xs text-[var(--color-text-muted)]">支持 PPTX · DOCX · XLSX · PDF，最大 20 MB</p>
+              <p className="text-caption">支持 PPTX · DOCX · XLSX · PDF，最大 20 MB</p>
               <div className="flex items-center gap-3">
                 <label className={
                   "cursor-pointer rounded-lg border px-4 py-2 text-sm transition-colors " +
@@ -867,7 +867,7 @@ function AiExtractBar({
                   />
                 </label>
                 {fileName && !loading && (
-                  <span className="text-xs text-[var(--color-text-muted)] truncate max-w-[200px]">{fileName}</span>
+                  <span className="text-caption truncate max-w-[200px]">{fileName}</span>
                 )}
                 {loading && (
                   <span className="text-xs text-[var(--color-accent)] animate-pulse">正在提取内容并分析，请稍候…</span>
@@ -1052,7 +1052,7 @@ function IntentForm({
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm font-medium">战略 PPT / 附件</div>
-            <div className="text-xs text-[var(--color-text-muted)]">支持上传已有战略报告（PPT/PDF/Word），作为录入参考存档</div>
+            <div className="text-caption">支持上传已有战略报告（PPT/PDF/Word），作为录入参考存档</div>
           </div>
           <label className="cursor-pointer rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.04]">
             上传文件
@@ -1074,7 +1074,7 @@ function IntentForm({
               >
                 <span className="truncate">
                   {a.filename}
-                  <span className="ml-2 text-xs text-[var(--color-text-muted)]">
+                  <span className="ml-2 text-caption">
                     {(a.sizeBytes / 1024).toFixed(0)} KB
                   </span>
                 </span>
@@ -1118,7 +1118,7 @@ function ObjectivesForm({
   }
   return (
     <div className="space-y-4">
-      <p className="text-xs text-[var(--color-text-muted)]">BSC 四维度 KPI 管理：每个维度填写管理目标、KPI 指标与目标值</p>
+      <p className="text-caption">BSC 四维度 KPI 管理：每个维度填写管理目标、KPI 指标与目标值</p>
       {form.objectives.map((obj, oIdx) => (
         <div key={obj.dimension} className="rounded border border-[var(--surface-border)] p-4">
           <div className="mb-2 text-sm font-medium text-[var(--color-accent)]">
@@ -1168,7 +1168,7 @@ function InitiativesForm({
   const set = rows.update;
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">OKR 管理：每项关键举措作为一个 Objective，填写负责人、关键结果、基线、目标值与季度里程碑</p>
+      <p className="text-caption">OKR 管理：每项关键举措作为一个 Objective，填写负责人、关键结果、基线、目标值与季度里程碑</p>
       {form.initiatives.map((ini, idx) => (
         <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
           <div className="flex items-start gap-2">
@@ -1219,7 +1219,7 @@ function ResourcesForm({
   const set = useRowsEditor<PlanForm, ResourceDraft>(setForm, "resources", () => ({ resourceType: "", amount: "", justification: "" })).update;
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">资源请求 (Capex/Opex/Headcount)</p>
+      <p className="text-caption">资源请求 (Capex/Opex/Headcount)</p>
       {form.resources.map((r, idx) => (
         <div key={r.resourceType} className="flex items-center gap-3">
           <div className="w-24 text-sm">{r.resourceType}</div>
@@ -1254,7 +1254,7 @@ function AssumptionsForm({
   const set = rows.update;
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">战略成立的关键前提假设（勾选 = 关键假设）</p>
+      <p className="text-caption">战略成立的关键前提假设（勾选 = 关键假设）</p>
       {form.assumptions.map((a, idx) => (
         <div key={idx} className="flex gap-2">
           <input type="checkbox" className="mt-1" title="标记为关键假设" checked={a.critical} onChange={(e) => set(idx, "critical", e.target.checked)} />
@@ -1289,7 +1289,7 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
                 <RemoveRowButton onClick={() => rows.remove(s._idx)} />
               </div>
             ))}
-            <button onClick={() => rows.add({ quadrant: m.key })} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
+            <button onClick={() => rows.add({ quadrant: m.key })} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-caption hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
           </div>
         );
       })}
@@ -1304,7 +1304,7 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
   const cellCls = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs text-right";
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">产品数量与金额季度推进计划（万元）</p>
+      <p className="text-caption">产品数量与金额季度推进计划（万元）</p>
       <RowTable
         columns={[
           { label: "产品" },
@@ -1359,7 +1359,7 @@ function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <p className="text-xs text-[var(--color-text-muted)]">业务BU必填 · 渠道发展专题分析</p>
+        <p className="text-caption">业务BU必填 · 渠道发展专题分析</p>
         {CHANNEL_TYPES.map((t) => (
           <button key={t} onClick={() => rows.add({ channelType: t })} className="rounded border border-[var(--surface-border)] px-2 py-0.5 text-xs hover:bg-black/[0.04] transition-colors">{t}</button>
         ))}
@@ -1377,12 +1377,12 @@ function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div><div className="text-xs text-[var(--color-text-muted)] mb-1">现状</div><textarea className={ta} rows={2} value={ch.currentState} onChange={(e) => set(idx, "currentState", e.target.value)} placeholder="当前渠道状况" /></div>
-            <div><div className="text-xs text-[var(--color-text-muted)] mb-1">三年目标</div><textarea className={ta} rows={2} value={ch.targetState} onChange={(e) => set(idx, "targetState", e.target.value)} placeholder="期望达到的渠道状态" /></div>
+            <div><div className="text-caption mb-1">现状</div><textarea className={ta} rows={2} value={ch.currentState} onChange={(e) => set(idx, "currentState", e.target.value)} placeholder="当前渠道状况" /></div>
+            <div><div className="text-caption mb-1">三年目标</div><textarea className={ta} rows={2} value={ch.targetState} onChange={(e) => set(idx, "targetState", e.target.value)} placeholder="期望达到的渠道状态" /></div>
           </div>
           <div className="grid grid-cols-4 gap-2">
             {(["q1Action","q2Action","q3Action","q4Action"] as const).map((f, qi) => (
-              <div key={f}><div className="text-xs text-[var(--color-text-muted)] mb-1">Q{qi+1}行动</div><textarea className={ta} rows={2} value={ch[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder={"Q"+(qi+1)+"关键行动"} /></div>
+              <div key={f}><div className="text-caption mb-1">Q{qi+1}行动</div><textarea className={ta} rows={2} value={ch[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder={"Q"+(qi+1)+"关键行动"} /></div>
             ))}
           </div>
           <input type="text" className={ta} value={ch.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="备注" />
@@ -1409,29 +1409,29 @@ function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
           <div className="text-sm font-medium">{label}</div>
           <button onClick={() => rows.add({ isNew })} className="text-xs text-[var(--color-accent)] hover:underline">+ 新增{isNew ? "新增" : "现有"}客户</button>
         </div>
-        {group.length === 0 && <div className="text-center py-4 text-xs text-[var(--color-text-muted)]">暂无数据，点击上方新增</div>}
+        {group.length === 0 && <div className="text-center py-4 text-caption">暂无数据，点击上方新增</div>}
         {group.map((cu, gi) => {
           const idx = indices[gi];
           return (
             <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <input type="text" className={inp + " flex-1"} value={cu.customerSegment} onChange={(e) => set(idx, "customerSegment", e.target.value)} placeholder="客户类型/名称" />
-                <span className="text-xs text-[var(--color-text-muted)]">现有</span>
+                <span className="text-caption">现有</span>
                 <input type="text" className={inp + " w-16"} value={cu.currentCount} onChange={(e) => set(idx, "currentCount", e.target.value)} placeholder="家数" />
-                <span className="text-xs text-[var(--color-text-muted)]">年度目标</span>
+                <span className="text-caption">年度目标</span>
                 <input type="text" className={inp + " w-16"} value={cu.targetCount} onChange={(e) => set(idx, "targetCount", e.target.value)} placeholder="家数" />
-                <span className="text-xs text-[var(--color-text-muted)]">客单值(万)</span>
+                <span className="text-caption">客单值(万)</span>
                 <input type="text" className={inp + " w-20"} value={cu.revenuePerCustomer} onChange={(e) => set(idx, "revenuePerCustomer", e.target.value)} placeholder="0" />
                 <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
               </div>
               <div className="grid grid-cols-4 gap-1.5">
                 {(["q1Count","q2Count","q3Count","q4Count"] as const).map((f, qi) => (
-                  <div key={f}><div className="text-xs text-[var(--color-text-muted)] mb-0.5">Q{qi+1}家数</div><input type="text" className={inp + " w-full"} value={cu[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder="0" /></div>
+                  <div key={f}><div className="text-caption mb-0.5">Q{qi+1}家数</div><input type="text" className={inp + " w-full"} value={cu[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder="0" /></div>
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div><div className="text-xs text-[var(--color-text-muted)] mb-1">{isNew ? "获客策略" : "留存策略"}</div><textarea className={ta} rows={2} value={isNew ? cu.acquisitionStrategy : cu.retentionStrategy} onChange={(e) => set(idx, isNew ? "acquisitionStrategy" : "retentionStrategy", e.target.value)} placeholder={isNew ? "如何获取新客户" : "如何维系老客户"} /></div>
-                <div><div className="text-xs text-[var(--color-text-muted)] mb-1">备注</div><textarea className={ta} rows={2} value={cu.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></div>
+                <div><div className="text-caption mb-1">{isNew ? "获客策略" : "留存策略"}</div><textarea className={ta} rows={2} value={isNew ? cu.acquisitionStrategy : cu.retentionStrategy} onChange={(e) => set(idx, isNew ? "acquisitionStrategy" : "retentionStrategy", e.target.value)} placeholder={isNew ? "如何获取新客户" : "如何维系老客户"} /></div>
+                <div><div className="text-caption mb-1">备注</div><textarea className={ta} rows={2} value={cu.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></div>
               </div>
             </div>
           );
@@ -1441,7 +1441,7 @@ function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
   }
   return (
     <div className="space-y-6">
-      <p className="text-xs text-[var(--color-text-muted)]">业务BU必填 · 客户发展年度规划</p>
+      <p className="text-caption">业务BU必填 · 客户发展年度规划</p>
       {renderGroup(existing, "现有客户", false)}
       <hr className="border-[var(--surface-border)]" />
       {renderGroup(newCustomers, "新增客户", true)}
@@ -1480,7 +1480,7 @@ function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.D
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-[var(--color-text-muted)]">市场洞察 — 战略意图的依据，填写真实数据与趋势判断</p>
+      <p className="text-caption">市场洞察 — 战略意图的依据，填写真实数据与趋势判断</p>
       {MARKET_CATS.map((cat) => {
         const item = getOrCreate(cat.key);
         return (
@@ -1488,20 +1488,20 @@ function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.D
             <div className="text-sm font-medium">{cat.label}</div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <div className="text-xs text-[var(--color-text-muted)] mb-1">标题 / 结论</div>
+                <div className="text-caption mb-1">标题 / 结论</div>
                 <input type="text" className={inp} value={item.title} onChange={(e) => update(cat.key, "title", e.target.value)} placeholder="一句话结论" />
               </div>
               <div>
-                <div className="text-xs text-[var(--color-text-muted)] mb-1">关键数据点</div>
+                <div className="text-caption mb-1">关键数据点</div>
                 <input type="text" className={inp} value={item.dataPoint} onChange={(e) => update(cat.key, "dataPoint", e.target.value)} placeholder="如：市场规模 500 亿，增速 12%" />
               </div>
             </div>
             <div>
-              <div className="text-xs text-[var(--color-text-muted)] mb-1">详细描述</div>
+              <div className="text-caption mb-1">详细描述</div>
               <textarea className={inp} rows={3} value={item.content} onChange={(e) => update(cat.key, "content", e.target.value)} placeholder={cat.placeholder} />
             </div>
             <div>
-              <div className="text-xs text-[var(--color-text-muted)] mb-1">数据来源</div>
+              <div className="text-caption mb-1">数据来源</div>
               <input type="text" className={inp} value={item.source} onChange={(e) => update(cat.key, "source", e.target.value)} placeholder="如：IDC 2025 报告、内部调研" />
             </div>
           </div>
@@ -1525,7 +1525,7 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
   ];
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">年度作战计划 — 关键举措拆解到年度 / 季度具体行动，填写验收标准</p>
+      <p className="text-caption">年度作战计划 — 关键举措拆解到年度 / 季度具体行动，填写验收标准</p>
       <RowTable
         columns={[
           { label: "关联举措", className: "w-28" },
@@ -1579,7 +1579,7 @@ function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch
   const catLabel: Record<string, string> = { CAPEX: "资本性支出（Capex）", OPEX: "运营费用（Opex）", HC: "人员编制（HC）" };
   return (
     <div className="space-y-5">
-      <p className="text-xs text-[var(--color-text-muted)]">资源预算 — 按 Capex / Opex / HC 三类，关联举措，填写三年投入与产出估算</p>
+      <p className="text-caption">资源预算 — 按 Capex / Opex / HC 三类，关联举措，填写三年投入与产出估算</p>
       {CATS.map((cat) => {
         const rows = form.budgetItems.map((b, i) => ({ b, i })).filter(({ b }) => b.category === cat);
         return (
@@ -1648,7 +1648,7 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-[var(--color-text-muted)]">战略路线图 — 三年时间轴，按轨道展示关键节点</p>
+      <p className="text-caption">战略路线图 — 三年时间轴，按轨道展示关键节点</p>
 
       {/* 甘特可视化 */}
       {form.roadmapItems.some((r) => r.title.trim()) && (
@@ -1751,10 +1751,10 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
     <div className="space-y-4 print:text-xs">
       <div className="flex items-start justify-between border-b border-[var(--surface-border)] pb-3">
         <div>
-          <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-widest">战略规划摘要 · 董事会版</div>
+          <div className="text-caption uppercase tracking-widest">战略规划摘要 · 董事会版</div>
           <h2 className="text-lg font-bold mt-0.5">{selectedOrg?.name ?? "—"} · 2026–2028 三年战略</h2>
         </div>
-        <div className="text-xs text-[var(--color-text-muted)] text-right">
+        <div className="text-caption text-right">
           <div>StratOS · 战略编制系统</div>
           <div>保密 · 仅供内部</div>
         </div>
@@ -1764,7 +1764,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
       <div className="rounded-lg bg-[var(--color-accent)]/[0.06] border border-[var(--color-accent)]/20 px-4 py-3">
         <div className="text-xs font-semibold text-[var(--color-accent)] uppercase mb-1">战略意图</div>
         <p className="text-sm font-medium">{form.intent || "—"}</p>
-        {form.northStar && <p className="text-xs text-[var(--color-text-muted)] mt-1">北极星指标：{form.northStar}</p>}
+        {form.northStar && <p className="text-caption mt-1">北极星指标：{form.northStar}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -1773,7 +1773,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
           <div className="rounded-lg border border-[var(--surface-border)] p-3">
             <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">市场背景</div>
             <p className="text-xs">{topMarket.title}</p>
-            {topMarket.dataPoint && <p className="text-xs text-[var(--color-text-muted)] mt-1">{topMarket.dataPoint}</p>}
+            {topMarket.dataPoint && <p className="text-caption mt-1">{topMarket.dataPoint}</p>}
           </div>
         )}
 
@@ -1786,7 +1786,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
                 <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-[var(--color-accent)] flex-shrink-0" />
                 <span>{o.objective}</span>
               </li>
-            )) : <li className="text-xs text-[var(--color-text-muted)]">尚未填写目标</li>}
+            )) : <li className="text-caption">尚未填写目标</li>}
           </ul>
         </div>
       </div>
@@ -1804,7 +1804,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
                 {ini.okrKeyResult && <p className="text-[var(--color-text-muted)] mt-0.5">KR：{ini.okrKeyResult} {ini.okrTarget && `→ ${ini.okrTarget}`}</p>}
               </div>
             </div>
-          )) : <p className="text-xs text-[var(--color-text-muted)]">尚未填写举措</p>}
+          )) : <p className="text-caption">尚未填写举措</p>}
         </div>
       </div>
 
@@ -1835,7 +1835,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
             )) : form.assumptions.filter((a) => a.assumption.trim()).slice(0, 4).map((a, i) => (
               <li key={i} className="text-xs">{a.assumption}</li>
             ))}
-            {form.assumptions.filter((a) => a.assumption.trim()).length === 0 && <li className="text-xs text-[var(--color-text-muted)]">—</li>}
+            {form.assumptions.filter((a) => a.assumption.trim()).length === 0 && <li className="text-caption">—</li>}
           </ul>
         </div>
       </div>
@@ -1854,7 +1854,7 @@ function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
   const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[var(--color-text-muted)]">组织架构规划 — 填写规划期末的目标组织设计</p>
+      <p className="text-caption">组织架构规划 — 填写规划期末的目标组织设计</p>
       <RowTable
         columns={[
           { label: "部门/岗位" },

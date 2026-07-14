@@ -20,7 +20,7 @@ const STATUS_LABEL: Record<string, string> = {
 function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-lg border border-[var(--surface-border)] p-3">
-      <div className="text-xs text-[var(--color-text-muted)]">{label}</div>
+      <div className="text-caption">{label}</div>
       <div className="font-data mt-1 text-xl text-[var(--color-text-primary)]">{value}</div>
       {sub && <div className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{sub}</div>}
     </div>
@@ -46,7 +46,7 @@ export function DecisionLedgerPanel({
         <h2 className="text-sm font-medium text-[var(--color-accent)]">
           决策记分卡 · 我们上一版的判断对了几成
         </h2>
-        <span className="font-data text-xs text-[var(--color-text-muted)]">
+        <span className="font-data text-caption">
           {fromCode} → {toCode}
         </span>
         {isDemoBaseline && (
@@ -89,7 +89,7 @@ export function DecisionLedgerPanel({
 
       {gate.reversals.length > 0 && (
         <div className="mt-4">
-          <div className="mb-1 text-xs text-[var(--color-text-muted)]">go 后翻车清单</div>
+          <div className="mb-1 text-caption">go 后翻车清单</div>
           <ul className="space-y-1">
             {gate.reversals.map((r, i) => (
               <li key={i} className="text-sm text-[var(--color-text-primary)]">
@@ -106,7 +106,7 @@ export function DecisionLedgerPanel({
 
       {revivals.length > 0 && (
         <div className="mt-3">
-          <div className="mb-1 text-xs text-[var(--color-text-muted)]">kill 后复活清单</div>
+          <div className="mb-1 text-caption">kill 后复活清单</div>
           <ul className="space-y-1">
             {revivals.map((r, i) => (
               <li key={i} className="text-sm text-[var(--color-text-primary)]">
@@ -123,7 +123,7 @@ export function DecisionLedgerPanel({
 
       {assumptions.newlyFailed.length > 0 && (
         <div className="mt-3">
-          <div className="mb-1 text-xs text-[var(--color-text-muted)]">本版被证伪的假设</div>
+          <div className="mb-1 text-caption">本版被证伪的假设</div>
           <ul className="space-y-1">
             {assumptions.newlyFailed.map((a, i) => (
               <li key={i} className="text-sm text-[var(--color-text-primary)]">✗ {a}</li>

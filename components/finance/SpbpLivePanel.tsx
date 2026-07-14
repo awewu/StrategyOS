@@ -65,11 +65,11 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
           type="button"
           disabled={loading}
           onClick={() => applyEvidence("reset")}
-          className="rounded border border-[var(--surface-border)] px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04] disabled:opacity-50"
+          className="rounded border border-[var(--surface-border)] px-3 py-1.5 text-caption hover:bg-black/[0.04] disabled:opacity-50"
         >
           重置
         </button>
-        {note && <span className="text-xs text-[var(--color-text-muted)]">{note}</span>}
+        {note && <span className="text-caption">{note}</span>}
       </div>
 
       <SectionCard

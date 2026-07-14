@@ -51,10 +51,10 @@ export function StrategicTimeline({ milestones }: { milestones: TimelineMileston
             />
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm font-medium text-[var(--color-text-primary)]">{m.label}</p>
-              <span className="font-data text-xs text-[var(--color-text-muted)]">{m.period}</span>
+              <span className="font-data text-caption">{m.period}</span>
             </div>
             {m.detail ? (
-              <p className="mt-1 text-xs text-[var(--color-text-muted)]">{m.detail}</p>
+              <p className="mt-1 text-caption">{m.detail}</p>
             ) : null}
             <span
               className="mt-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium"

@@ -119,7 +119,7 @@ export function HermesPanel({
       )}
 
       {scanMeta && !scanMeta.didFetch && (
-        <div className="mt-4 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3 text-xs text-[var(--color-text-muted)]">
+        <div className="mt-4 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3 text-caption">
           本次没有信息更新。上方摘要来自当前情报库存。
         </div>
       )}
@@ -146,7 +146,7 @@ export function HermesPanel({
           {curation.dropList.length > 0 && (
             <ul className="mt-2 space-y-1 border-t border-[var(--surface-border)] pt-2">
               {curation.dropList.slice(0, 6).map((d, i) => (
-                <li key={i} className="text-xs text-[var(--color-text-muted)]">
+                <li key={i} className="text-caption">
                   <span className="text-[var(--signal-red)]">丢弃</span> · {d.competitor} · {d.title}
                   <span className="ml-1 italic">（{d.reason}）</span>
                 </li>
@@ -163,7 +163,7 @@ export function HermesPanel({
         {open ? "收起扫描日志" : "查看扫描日志"}
       </button>
       {open && (
-        <div className="mt-2 space-y-1 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3 font-data text-xs text-[var(--color-text-muted)]">
+        <div className="mt-2 space-y-1 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3 font-data text-caption">
           {scan.log.map((line, i) => (
             <div key={i}>{line}</div>
           ))}

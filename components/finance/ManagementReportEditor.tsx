@@ -73,7 +73,7 @@ export function ManagementReportEditor({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <span className="text-xs text-[var(--color-text-muted)]">
+        <span className="text-caption">
           利润桥 {bridgeSource === "database" ? "· 已自定义" : "· FPA 推导"}
         </span>
         {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}

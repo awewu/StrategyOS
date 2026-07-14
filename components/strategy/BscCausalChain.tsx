@@ -37,7 +37,7 @@ export function BscCausalChain({ cards }: { cards: Card[] }) {
   return (
     <section>
       <div className={`${typography.h3} mb-1`}>BSC 因果链 · 风险传导</div>
-      <p className="mb-4 text-xs text-[var(--color-text-muted)]">
+      <p className="mb-4 text-caption">
         卡普兰-诺顿因果逻辑：能力建设驱动流程，流程兑现客户价值，客户价值转化为财务成果。上游变红会向右传导。
       </p>
 

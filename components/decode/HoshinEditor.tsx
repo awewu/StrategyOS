@@ -63,21 +63,21 @@ export function HoshinEditor({
     <section className="space-y-6">
       <div className="stratos-card stratos-card--padded border-l-[3px] border-l-[var(--color-accent)]">
         <h2 className="mb-2 text-sm font-medium text-[var(--color-accent)]">Hoshin X-Matrix · I7</h2>
-        <p className="mb-4 text-xs text-[var(--color-text-muted)]">
+        <p className="mb-4 text-caption">
           南=长期突破 · 西=年度突破 · 北=改善项目 · 东=指标 · ● = correlation_dot
         </p>
         <div className="grid grid-cols-3 gap-px overflow-hidden rounded-lg bg-black/[0.06] text-sm">
           <div className="bg-[var(--color-bg-deep)] p-3" />
-          <div className="bg-[var(--color-bg-deep)] p-3 text-center text-xs text-[var(--color-text-muted)]">
+          <div className="bg-[var(--color-bg-deep)] p-3 text-center text-caption">
             东 · 指标
           </div>
-          <div className="bg-[var(--color-bg-deep)] p-3 text-center text-xs text-[var(--color-text-muted)]">
+          <div className="bg-[var(--color-bg-deep)] p-3 text-center text-caption">
             北 · Vx
           </div>
-          <div className="bg-[var(--color-bg-deep)] p-3 text-xs text-[var(--color-text-muted)]">南 · 长期</div>
+          <div className="bg-[var(--color-bg-deep)] p-3 text-caption">南 · 长期</div>
           <MatrixCell entries={quadrants[0]?.entries ?? []} />
           <MatrixCell entries={quadrants[1]?.entries ?? []} />
-          <div className="bg-[var(--color-bg-deep)] p-3 text-xs text-[var(--color-text-muted)]">西 · 年度</div>
+          <div className="bg-[var(--color-bg-deep)] p-3 text-caption">西 · 年度</div>
           <MatrixCell entries={quadrants[2]?.entries ?? []} />
           <MatrixCell entries={quadrants[3]?.entries ?? []} />
         </div>
@@ -85,7 +85,7 @@ export function HoshinEditor({
 
       <div className="stratos-table-wrap">
         <table className="stratos-table">
-          <thead className="border-b border-[var(--surface-border)] text-xs text-[var(--color-text-muted)]">
+          <thead className="border-b border-[var(--surface-border)] text-caption">
             <tr>
               <th className="p-3">行标签</th>
               <th className="p-3">列标签</th>
@@ -144,7 +144,7 @@ export function HoshinEditor({
           <div className="border-t border-[var(--surface-border)] p-3">
             <button
               type="button"
-              className="rounded-lg border border-dashed border-[var(--surface-border-strong)] px-3 py-2 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.03]"
+              className="rounded-lg border border-dashed border-[var(--surface-border-strong)] px-3 py-2 text-caption hover:bg-black/[0.03]"
               onClick={addRow}
             >
               + 添加 X-Matrix 行

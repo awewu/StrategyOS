@@ -25,7 +25,7 @@ export default function GlobalError({
               请刷新页面或返回首页。若问题持续，请检查服务日志与环境配置。
             </p>
             {error.digest ? (
-              <p className="mt-3 text-xs text-[var(--color-text-muted)]">Ref: {error.digest}</p>
+              <p className="mt-3 text-caption">Ref: {error.digest}</p>
             ) : null}
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button type="button" onClick={() => reset()} className="stratos-btn stratos-btn--primary">

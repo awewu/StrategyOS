@@ -16,7 +16,7 @@ export function TechSignalPanel({ signals }: { signals: TechSignal[] }) {
             <TrlBadge trl={s.trl} />
             <div className="flex-1 min-w-[200px]">
               <div className="text-sm font-medium">{s.title}</div>
-              <div className="text-xs text-[var(--color-text-muted)]">
+              <div className="text-caption">
                 {s.source} · {s.horizon}
                 {s.linkedProjectCode && ` · ${s.linkedProjectCode}`}
               </div>

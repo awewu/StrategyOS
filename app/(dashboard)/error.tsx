@@ -23,12 +23,12 @@ export default function DashboardError({
           可能是数据库连接或数据格式异常。请重试；若持续出现，请联系管理员。
         </p>
         {error.message ? (
-          <p className="mt-4 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-raised)] px-3 py-2 font-mono text-left text-xs text-[var(--color-text-muted)]">
+          <p className="mt-4 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-raised)] px-3 py-2 font-mono text-left text-caption">
             {error.message}
           </p>
         ) : null}
         {error.digest ? (
-          <p className="mt-2 text-xs text-[var(--color-text-muted)]">Ref: {error.digest}</p>
+          <p className="mt-2 text-caption">Ref: {error.digest}</p>
         ) : null}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button type="button" onClick={() => reset()} className="stratos-btn stratos-btn--primary">

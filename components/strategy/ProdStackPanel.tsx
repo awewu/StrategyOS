@@ -20,7 +20,7 @@ export function ProdStackPanel({
         <h3 className="text-sm font-medium" style={{ color: colors.stackProd }}>
           ProdStack · Innovate to Lead
         </h3>
-        <span className="font-data text-xs text-[var(--color-text-muted)]">
+        <span className="font-data text-caption">
           H1 {horizon.H1}% · H2 {horizon.H2}% · H3 {horizon.H3}%
         </span>
       </div>
@@ -33,7 +33,7 @@ export function ProdStackPanel({
               .map((r) => (
                 <div key={r.milestone} className="mb-2 text-sm">
                   <div>{r.milestone}</div>
-                  <div className="font-data text-xs text-[var(--color-text-muted)]">{r.quarter}</div>
+                  <div className="font-data text-caption">{r.quarter}</div>
                 </div>
               ))}
           </div>
@@ -41,7 +41,7 @@ export function ProdStackPanel({
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <div className="mb-2 text-xs text-[var(--color-text-muted)]">JTBD</div>
+          <div className="mb-2 text-caption">JTBD</div>
           {jtbd.map((j) => (
             <p key={j.product} className="text-sm">
               <span className="text-[var(--color-accent)]">{j.product}</span> · {j.statement}
@@ -49,7 +49,7 @@ export function ProdStackPanel({
           ))}
         </div>
         <div>
-          <div className="mb-2 text-xs text-[var(--color-text-muted)]">竞品差距</div>
+          <div className="mb-2 text-caption">竞品差距</div>
           {gaps.map((g) => (
             <div key={g.competitor} className="flex justify-between text-sm">
               <span>{g.competitor} · {g.dimension}</span>

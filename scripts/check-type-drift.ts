@@ -10,7 +10,7 @@
 import { execFileSync } from "node:child_process";
 
 // 2026-07-15 存量基线（app+components *.tsx 中的裸字号 class 出现次数）
-const BASELINE = 1687;
+const BASELINE = 1370;
 
 const PATTERN = "text-(xs|sm|lg|xl|2xl|3xl)\\b";
 

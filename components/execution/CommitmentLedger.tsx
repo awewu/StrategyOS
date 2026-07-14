@@ -181,7 +181,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
       <div className="flex items-baseline justify-between">
         <div>
           <h2 className="text-base font-semibold">承诺账本分析</h2>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-0.5 text-caption">
             逾期模式热力图 · 责任人追溯 · 承诺-假设联动预警
           </p>
         </div>
@@ -241,10 +241,10 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
             <div key={r.id} className={`flex items-center gap-4 rounded-lg border p-3 text-sm ${meta.bg} ${meta.border}`}>
               <span className="w-16 flex-shrink-0 text-xs font-medium" style={{ color: meta.color }}>{meta.label}</span>
               <span className="flex-1">{r.content}</span>
-              <span className="w-20 flex-shrink-0 text-xs text-[var(--color-text-muted)]">{r.owner}</span>
-              <span className="w-20 flex-shrink-0 text-xs text-[var(--color-text-muted)]">{r.deadline}</span>
+              <span className="w-20 flex-shrink-0 text-caption">{r.owner}</span>
+              <span className="w-20 flex-shrink-0 text-caption">{r.deadline}</span>
               {r.daysOverdue && <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red)]">逾期 {r.daysOverdue}天</span>}
-              {r.linkedProjectCode && <span className="text-xs text-[var(--color-text-muted)]">→ {r.linkedProjectCode}</span>}
+              {r.linkedProjectCode && <span className="text-caption">→ {r.linkedProjectCode}</span>}
               <span className="flex flex-shrink-0 gap-2">
                 <button onClick={() => setEditItem(r)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
                 <button onClick={() => remove(r.id)} className="text-xs text-[var(--signal-red)] hover:underline">删</button>

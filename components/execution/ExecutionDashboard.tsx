@@ -30,7 +30,7 @@ export function ExecutionDashboard({
   return (
     <div className="space-y-8">
       {sliceLabel ? (
-        <p className="text-xs text-[var(--color-text-muted)]">
+        <p className="text-caption">
           已过滤 · {sliceLabel} · 完整集团视图见{" "}
           <a href="/execution" className="text-[var(--color-accent)] hover:underline">
             执行 · 全览

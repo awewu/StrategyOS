@@ -34,7 +34,7 @@ export function BscEditor({
         {rows.map((row, i) => (
           <div key={`${row.dim}-${i}`} className="rounded border border-[var(--surface-border)] p-4">
             {editing ? (
-              <label className="block text-xs text-[var(--color-text-muted)]">
+              <label className="block text-caption">
                 维度
                 <input
                   className="mt-1 w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
@@ -46,7 +46,7 @@ export function BscEditor({
               <div className="text-xs text-[var(--color-accent)]">{row.dim}</div>
             )}
             {editing ? (
-              <label className="mt-2 block text-xs text-[var(--color-text-muted)]">
+              <label className="mt-2 block text-caption">
                 战略目标
                 <textarea
                   className="mt-1 w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
@@ -141,7 +141,7 @@ export function BscEditor({
       {editing && (
         <button
           type="button"
-          className="mt-4 rounded-lg border border-dashed border-[var(--surface-border-strong)] px-3 py-2 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.03]"
+          className="mt-4 rounded-lg border border-dashed border-[var(--surface-border-strong)] px-3 py-2 text-caption hover:bg-black/[0.03]"
           onClick={() =>
             onChange([
               ...rows,

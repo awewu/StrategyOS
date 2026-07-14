@@ -32,7 +32,7 @@ function EditableRow({
         <div className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</div>
         {bars.map(({ key, value, color }) => (
           <div key={key} className="flex items-center gap-2">
-            <span className="w-4 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{key}</span>
+            <span className="w-4 shrink-0 text-right font-data text-caption">{key}</span>
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.04]">
               <div className="h-full rounded-full" style={{ width: w(value), background: color }} />
             </div>
@@ -108,7 +108,7 @@ export function FpaEditor({ initial, source }: { initial: FpaSummary; source: "d
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">B·A·F 三段对比</h3>
-          <p className="text-xs text-[var(--color-text-muted)]">数据源 {source === "database" ? "DB" : "Demo"}</p>
+          <p className="text-caption">数据源 {source === "database" ? "DB" : "Demo"}</p>
         </div>
         <div className="flex items-center gap-2">
           {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}

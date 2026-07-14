@@ -13,7 +13,7 @@ function GateItemRow({ item }: { item: GateItem }) {
       <span className={`w-10 shrink-0 font-medium ${s.className}`}>{s.label}</span>
       <div>
         <span>{item.label}</span>
-        {item.note && <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{item.note}</p>}
+        {item.note && <p className="mt-0.5 text-caption">{item.note}</p>}
       </div>
     </li>
   );

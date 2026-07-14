@@ -71,7 +71,7 @@ export function FiveForcesPanel({
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">白话版波特五力 · 战略风险清单</h2>
-          <p className="text-xs text-[var(--color-text-muted)]">
+          <p className="text-caption">
             五力不是行业报告，而是战略会风险项。未缓解的高/极高威胁 {highCount} 项。
           </p>
         </div>
@@ -90,7 +90,7 @@ export function FiveForcesPanel({
             <div className="mb-2 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{r.label}</h3>
-                <p className="text-xs text-[var(--color-text-muted)]">{r.plain}</p>
+                <p className="text-caption">{r.plain}</p>
               </div>
               <span
                 className="rounded px-1.5 py-0.5 text-[11px] text-white"

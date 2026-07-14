@@ -174,7 +174,7 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
         </div>
       )}
       {!dup?.isDuplicate && dup?.message && (
-        <p className="text-xs text-[var(--color-text-muted)]">{dup.message}</p>
+        <p className="text-caption">{dup.message}</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
         <button

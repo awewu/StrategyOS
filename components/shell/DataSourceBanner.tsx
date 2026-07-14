@@ -47,14 +47,14 @@ export function DataSourceBanner() {
         </span>
         <span className="text-[var(--color-text-primary)]">{meta.message}</span>
         {meta.source === "database" && meta.lastUpdates.activePeriod && (
-          <span className="text-xs text-[var(--color-text-muted)]">
+          <span className="text-caption">
             周期 {meta.lastUpdates.activePeriod}
           </span>
         )}
       </div>
       <button
         type="button"
-        className="shrink-0 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+        className="shrink-0 text-caption hover:text-[var(--color-text-primary)]"
         onClick={() => setDismissed(true)}
       >
         关闭

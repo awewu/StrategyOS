@@ -23,7 +23,7 @@ export function TrafficLightDot({ signal, showLabel }: { signal: TrafficLight; s
   return (
     <span className="inline-flex items-center gap-2">
       <span className={`inline-block h-3 w-3 rounded-full ${s.bg} ${s.glow}`} />
-      {showLabel && <span className="text-xs text-[var(--color-text-muted)]">{s.label}</span>}
+      {showLabel && <span className="text-caption">{s.label}</span>}
     </span>
   );
 }

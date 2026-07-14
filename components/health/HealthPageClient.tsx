@@ -155,7 +155,7 @@ export function HealthPageClient({
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs text-[var(--color-text-muted)]">B·A·F 与 FPA 联动</span>
+          <span className="text-caption">B·A·F 与 FPA 联动</span>
           <Link href="/finance?tab=overview" className="text-sm text-[var(--color-accent)] hover:underline">
             FPA B-A-F 总览 →
           </Link>

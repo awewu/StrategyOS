@@ -167,11 +167,11 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
       <div className="flex items-baseline justify-between">
         <div>
           <h2 className="text-base font-semibold">执行成熟度矩阵</h2>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-0.5 text-caption">
             X 轴：里程碑准时率（速度）· Y 轴：假设命中率（学习速度）· 气泡大小 = 预算规模
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-4 text-caption">
           <span>均速 <span className="text-[var(--color-text-primary)]">{avgSpeed}%</span></span>
           <span>均学 <span className="text-[var(--color-text-primary)]">{avgLearn}%</span></span>
           {highRisk.length > 0 && (
@@ -234,7 +234,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
               </div>
             </div>
           ) : (
-            <div className="flex h-48 items-center justify-center rounded-lg border border-[var(--surface-border)] text-xs text-[var(--color-text-muted)]">
+            <div className="flex h-48 items-center justify-center rounded-lg border border-[var(--surface-border)] text-caption">
               点击矩阵中的项目查看详情
             </div>
           )}

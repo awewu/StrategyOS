@@ -53,7 +53,7 @@ export function ExecutionAnalyticsEditor({
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
             Horizon · RICE · TRL 分析
           </h2>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-caption">
             数据源 {source === "database" ? "DB" : "Demo"} · 三层面气泡 / 优先级 / 技术成熟度
           </p>
         </div>
@@ -96,7 +96,7 @@ export function ExecutionAnalyticsEditor({
 
       {editing ? (
         <div className="grid gap-4 lg:grid-cols-3">
-          <label className="block text-xs text-[var(--color-text-muted)]">
+          <label className="block text-caption">
             Horizon JSON
             <textarea
               className="mt-1 w-full rounded-lg border border-[var(--surface-border)] bg-transparent p-2 font-mono text-xs"
@@ -111,7 +111,7 @@ export function ExecutionAnalyticsEditor({
               }}
             />
           </label>
-          <label className="block text-xs text-[var(--color-text-muted)]">
+          <label className="block text-caption">
             RICE JSON
             <textarea
               className="mt-1 w-full rounded-lg border border-[var(--surface-border)] bg-transparent p-2 font-mono text-xs"
@@ -126,7 +126,7 @@ export function ExecutionAnalyticsEditor({
               }}
             />
           </label>
-          <label className="block text-xs text-[var(--color-text-muted)]">
+          <label className="block text-caption">
             TRL JSON
             <textarea
               className="mt-1 w-full rounded-lg border border-[var(--surface-border)] bg-transparent p-2 font-mono text-xs"
@@ -143,7 +143,7 @@ export function ExecutionAnalyticsEditor({
           </label>
         </div>
       ) : (
-        <p className="text-xs text-[var(--color-text-muted)]">
+        <p className="text-caption">
           {horizon.length} 个 Horizon 项目 · {rice.length} 条 RICE · {trl.length} 个 TRL 域
         </p>
       )}

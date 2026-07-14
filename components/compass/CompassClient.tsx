@@ -18,7 +18,7 @@ function pct(v: number) { return `${Math.round(v * 100)}%`; }
 function wan(v: number) { return v >= 10000 ? `${(v / 10000).toFixed(1)}亿` : `${Math.round(v)}万`; }
 
 function RiskBar({ score }: { score: number | null }) {
-  if (score === null) return <span className="text-xs text-[var(--color-text-muted)]">—</span>;
+  if (score === null) return <span className="text-caption">—</span>;
   const v = riskVerdict(score);
   return (
     <div className="flex items-center gap-2">
@@ -205,7 +205,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
               <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
                 BSC 目标 · 战略计划同源
               </span>
-              <span className="text-xs text-[var(--color-text-muted)]">
+              <span className="text-caption">
                 {planSource === "database" ? "数据库" : "Demo"}
               </span>
             </div>
@@ -254,7 +254,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
           {fragileCount > 0 && (
             <span className="text-[var(--signal-yellow)] font-medium">△ {fragileCount} 条高脆弱性假设置信度不足</span>
           )}
-          <span className="text-[var(--color-text-muted)] text-xs ml-auto">点击下方「前提审计」查看详情</span>
+          <span className="text-caption ml-auto">点击下方「前提审计」查看详情</span>
         </div>
       )}
 
@@ -272,7 +272,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
       {tab === "path" && (
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-[var(--color-text-muted)]">从终点目标逐年反推所需增速和关键条件，系统自动计算路径风险分。</p>
+            <p className="text-caption">从终点目标逐年反推所需增速和关键条件，系统自动计算路径风险分。</p>
             {persistedNorthStar ? (
               <button
                 type="button"
@@ -334,7 +334,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                       ) : null}
                     </div>
                     {m.revenueTarget && (
-                      <div className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      <div className="mt-1 text-caption">
                         目标营收 <span className="font-data font-medium text-[var(--color-text-secondary)]">{wan(m.revenueTarget)}</span>
                         {m.profitMarginTarget && <span> · 利润率 {pct(m.profitMarginTarget)}</span>}
                       </div>
@@ -345,7 +345,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
 
                 {progressPct !== null && (
                   <div className="mt-3">
-                    <div className="mb-1 flex justify-between text-xs text-[var(--color-text-muted)]">
+                    <div className="mb-1 flex justify-between text-caption">
                       <span>进度</span>
                       <span>{progressPct}% · {wan(m.revenueActual ?? currentRevenue)} / {wan(m.revenueTarget!)}</span>
                     </div>
@@ -356,7 +356,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                 )}
 
                 {m.progressNote && (
-                  <p className="mt-2 text-xs text-[var(--color-text-muted)]">{m.progressNote}</p>
+                  <p className="mt-2 text-caption">{m.progressNote}</p>
                 )}
 
                 {m.riskFactors.length > 0 && (
@@ -390,7 +390,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
       {tab === "premises" && (
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-[var(--color-text-muted)]">战略成立的核心前提假设。置信度低或出现失效信号时，整个路径需要重新检验。</p>
+            <p className="text-caption">战略成立的核心前提假设。置信度低或出现失效信号时，整个路径需要重新检验。</p>
             {persistedNorthStar ? (
               <div className="flex flex-wrap gap-2">
                 <button
@@ -446,9 +446,9 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                     <td className="px-3 py-3 font-data text-xs text-[var(--color-accent)]">{p.code}</td>
                     <td className="px-3 py-3 text-sm max-w-xs">
                       <div>{p.premise}</div>
-                      {p.validationNote && <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{p.validationNote}</div>}
+                      {p.validationNote && <div className="mt-0.5 text-caption">{p.validationNote}</div>}
                     </td>
-                    <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">{CATEGORY_LABEL[p.category] ?? p.category}</td>
+                    <td className="px-3 py-3 text-caption">{CATEGORY_LABEL[p.category] ?? p.category}</td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-1.5">
                         <div className="h-1 w-14 rounded-full bg-black/[0.06] overflow-hidden">
@@ -465,7 +465,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                         <span className="text-xs font-data">{p.fragility}%</span>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">{p.lastValidatedAt ?? "—"}</td>
+                    <td className="px-3 py-3 text-caption">{p.lastValidatedAt ?? "—"}</td>
                     <td className="px-3 py-3 max-w-xs">
                       {p.failSignal ? (
                         <div>
@@ -475,13 +475,13 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                             </span>
                           ) : null}
                           <span className="inline-block rounded bg-[var(--signal-red)]/10 px-1.5 py-0.5 text-xs text-[var(--signal-red)]">⚠ 失效信号</span>
-                          <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">{p.failSignal}</div>
+                          <div className="mt-0.5 text-caption">{p.failSignal}</div>
                           {p.signalSource && !p.signalSource.startsWith("自动·") ? (
                             <div className="text-[11px] text-[var(--color-text-muted)]">{p.signalSource}</div>
                           ) : null}
                         </div>
                       ) : (
-                        <span className="text-xs text-[var(--color-text-muted)]">无</span>
+                        <span className="text-caption">无</span>
                       )}
                     </td>
                     <td className="px-3 py-3">

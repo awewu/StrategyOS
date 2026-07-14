@@ -88,7 +88,7 @@ export function MeetingToolsClient() {
     <div className="space-y-8">
       <section className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
         <h2 className="text-base font-semibold">发起表决 / 脉搏</h2>
-        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+        <p className="mt-1 text-caption">
           表决结果可关闭 Inbox 议题 · 写回见「议题 Inbox」指派承诺
         </p>
         <div className="mt-4 space-y-3">
@@ -133,7 +133,7 @@ export function MeetingToolsClient() {
             return (
               <div key={poll.id} className="rounded-xl border border-[var(--surface-border)] p-5">
                 <p className="text-sm font-medium">{poll.question}</p>
-                <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                <p className="mt-1 text-caption">
                   {poll.pollType} · {poll.responses.length} 票
                 </p>
                 {poll.pollType === "PULSE" ? (
@@ -166,7 +166,7 @@ export function MeetingToolsClient() {
                 <button
                   type="button"
                   onClick={() => closePoll(poll.id)}
-                  className="mt-3 text-xs text-[var(--color-text-muted)] hover:underline"
+                  className="mt-3 text-caption hover:underline"
                 >
                   结束并归档
                 </button>

@@ -144,7 +144,7 @@ async function readZipEntry(buf: Buffer, targetName: string): Promise<string> {
   return (await readZipEntriesFromCentralDirectory(buf, (name) => name === targetName))[0] ?? "";
 }
 
-async function readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<string> {
+async function _readZipEntriesMatching(buf: Buffer, pattern: RegExp): Promise<string> {
   const { inflateRawSync } = await import("node:zlib");
   const parts: string[] = [];
   let offset = 0;

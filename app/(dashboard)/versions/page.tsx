@@ -96,7 +96,7 @@ export default async function VersionsPage() {
         </ul>
       </section>
 
-      <p className="text-xs text-[var(--color-text-muted)]">
+      <p className="text-caption">
         默认演示基线：2025-FY → 2026-FY · deliberate{" "}
         {snapshotFY25.strategyPattern?.deliberateRealizationRate}% →{" "}
         {snapshotFY26.strategyPattern?.deliberateRealizationRate}%；实际对比请以上方版本选择器为准。
@@ -126,7 +126,7 @@ function DiffRow({
         <span className="text-[var(--color-text-muted)]">[{d.category}] </span>
         {d.title}
         {d.detail && (
-          <span className="block text-xs text-[var(--color-text-muted)]">{d.detail}</span>
+          <span className="block text-caption">{d.detail}</span>
         )}
       </div>
     </li>

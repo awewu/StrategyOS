@@ -146,7 +146,7 @@ export function StrategySummaryPanel({
     <section>
       <div className="mb-3 flex items-baseline gap-2">
         <h2 className="text-base font-semibold text-[var(--color-text-primary)]">战略总览</h2>
-        <span className="text-xs text-[var(--color-text-muted)]">{period}</span>
+        <span className="text-caption">{period}</span>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
@@ -175,7 +175,7 @@ export function StrategySummaryPanel({
               </div>
             </div>
             {frame === "yoy" ? (
-              <div className="text-xs text-[var(--color-text-muted)]">
+              <div className="text-caption">
                 同期对比数据需接入历史同期口径，当前展示 YTD 对比。
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <KpiCard label="营收" actual={fpa.revenueActual} budget={fpa.revenueBudget} unit="currency" />

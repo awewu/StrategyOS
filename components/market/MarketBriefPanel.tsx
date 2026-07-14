@@ -94,7 +94,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
   return (
     <section className="rounded-xl border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.04] p-6">
       <h2 className="text-base font-semibold text-[var(--color-text-primary)]">问 AI · 市场推演</h2>
-      <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+      <p className="mt-1 text-caption">
         自动带入 Top 信号上下文 · SCR 结构 · 链到解码 / FPA
       </p>
       <form onSubmit={submit} className="mt-4 space-y-3">

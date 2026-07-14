@@ -147,7 +147,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                 <div className="flex items-center gap-2">
                   <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${TYPE_TONE[detail.dealType]}`}>{DEAL_TYPE_LABEL[detail.dealType]}</span>
                   <VerdictBadge verdict={detail.gate.verdict} />
-                  <span className="text-xs text-[var(--color-text-muted)]">{DEAL_STAGE_LABEL[detail.stage]}</span>
+                  <span className="text-caption">{DEAL_STAGE_LABEL[detail.stage]}</span>
                 </div>
                 <h3 className="mt-1 text-base font-semibold text-[var(--color-text-primary)]">{detail.name}</h3>
                 <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{detail.thesis}</p>

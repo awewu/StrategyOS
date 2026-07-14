@@ -66,7 +66,7 @@ export function StacksEditor({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-[var(--color-text-muted)]">数据源 {source === "database" ? "DB" : "Demo"}</p>
+        <p className="text-caption">数据源 {source === "database" ? "DB" : "Demo"}</p>
         <div className="flex items-center gap-2">
           {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
           {editing ? (

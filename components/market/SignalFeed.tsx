@@ -52,7 +52,7 @@ export function SignalFeed({ signals }: { signals: IntelSignal[] }) {
               >
                 {LEAD_TIME_LABEL[leadTimeOf(sig.sourceKind)]}
               </span>
-              <span className="ml-auto font-data text-xs text-[var(--color-text-muted)]">
+              <span className="ml-auto font-data text-caption">
                 相关度 {sig.relevance}
               </span>
             </div>

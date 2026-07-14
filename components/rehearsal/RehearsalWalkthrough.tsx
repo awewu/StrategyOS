@@ -11,23 +11,23 @@ function LiveBanner({ live }: { live: RehearsalLiveContext }) {
   return (
     <section className="grid gap-3 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4 text-sm md:grid-cols-4">
       <div>
-        <div className="text-xs text-[var(--color-text-muted)]">Crux · 数据源 {live.source}</div>
+        <div className="text-caption">Crux · 数据源 {live.source}</div>
         <div className="font-medium text-[var(--color-accent)]">{live.crux}</div>
       </div>
       <div>
-        <div className="text-xs text-[var(--color-text-muted)]">Runway · Robust</div>
+        <div className="text-caption">Runway · Robust</div>
         <div>
           {live.runwayMonths} 月 · R {live.robustOverall}
         </div>
       </div>
       <div>
-        <div className="text-xs text-[var(--color-text-muted)]">StratDiff · 刻意率</div>
+        <div className="text-caption">StratDiff · 刻意率</div>
         <div>
           {live.diffCount} 条 · WORKING {live.workingSnapshotRate}%
         </div>
       </div>
       <div>
-        <div className="text-xs text-[var(--color-text-muted)]">HardBlock</div>
+        <div className="text-caption">HardBlock</div>
         <div className={live.hardBlock ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}>
           {live.hardBlock ?? "无活跃否决"}
         </div>
@@ -84,7 +84,7 @@ function StrategyDeckPicker({
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-medium text-[var(--color-text-primary)]">投屏战略选择</h3>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-caption">
             先选部门和版本，再进入投屏；投屏页会锁定这份战略。
           </p>
         </div>
@@ -96,7 +96,7 @@ function StrategyDeckPicker({
       </div>
 
       <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_auto] md:items-end">
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           部门
           <select
             value={orgUnitId}
@@ -110,7 +110,7 @@ function StrategyDeckPicker({
             ))}
           </select>
         </label>
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           战略版本
           <select
             value={selectedVersion?.key ?? ""}

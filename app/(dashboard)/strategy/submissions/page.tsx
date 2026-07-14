@@ -167,7 +167,7 @@ export default async function StrategySubmissionsPage({
                   <span className="font-medium text-[var(--color-text-primary)]">{p.orgUnit.name}</span>
                   <StatusPill status={p.status} />
                 </div>
-                <div className="mt-1 text-xs text-[var(--color-text-muted)]">
+                <div className="mt-1 text-caption">
                   {p.horizonStart}-{p.horizonEnd} · 更新 {value(p.updatedAt)}
                 </div>
               </Link>

@@ -18,7 +18,7 @@ function BafRow({ label, budget, actual, forecast }: {
       <div className="text-xs font-medium text-[var(--color-text-secondary)]">{label}</div>
       {bars.map(({ key, value, color }) => (
         <div key={key} className="flex items-center gap-2">
-          <span className="w-4 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{key}</span>
+          <span className="w-4 shrink-0 text-right font-data text-caption">{key}</span>
           <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
             <div className="h-full rounded-full" style={{ width: w(value), background: color }} />
           </div>

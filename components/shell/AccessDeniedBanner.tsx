@@ -20,7 +20,7 @@ export function AccessDeniedBanner() {
       </p>
       <button
         type="button"
-        className="shrink-0 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+        className="shrink-0 text-caption hover:text-[var(--color-text-primary)]"
         onClick={() => setDismissed(true)}
       >
         关闭

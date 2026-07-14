@@ -271,19 +271,19 @@ export function RehearsalPresentMode({
             </button>
           </div>
           <div className="text-right">
-            <div className="text-xs text-[var(--color-text-muted)]">本环节</div>
+            <div className="text-caption">本环节</div>
             <div
               className={`font-data text-4xl tabular-nums ${overtime ? "text-[var(--signal-red)]" : "text-[var(--color-accent)]"}`}
             >
               {overtime ? "+" : ""}
               {formatClock(overtime ? segmentElapsed - segmentBudgetSec : segmentRemaining)}
             </div>
-            <div className="text-xs text-[var(--color-text-muted)]">
+            <div className="text-caption">
               预算 {step.durationMin} 分钟 · 清单 {checkedCount}/{step.checklist.length}
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-[var(--color-text-muted)]">全会</div>
+            <div className="text-caption">全会</div>
             <div className="font-data text-2xl tabular-nums text-[var(--color-text-muted)]">
               {formatClock(meetingElapsed)} / {REHEARSAL_TOTAL_MIN}:00
             </div>
@@ -355,7 +355,7 @@ export function RehearsalPresentMode({
                   );
                 })}
               </ul>
-              <div className="rounded-lg border border-[var(--surface-border)] p-4 text-xs text-[var(--color-text-muted)]">
+              <div className="rounded-lg border border-[var(--surface-border)] p-4 text-caption">
                 ← → 切换环节 · Space 暂停 · 超时会标橙 · 清单写入审计
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.06]">
                   <div

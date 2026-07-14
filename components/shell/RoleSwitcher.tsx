@@ -96,7 +96,7 @@ export function RoleSwitcher({ compact, hidden }: { compact?: boolean; hidden?: 
           setRole(next);
         }
       }}
-      className="rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-2 py-1.5 text-xs text-[var(--color-text-muted)]"
+      className="rounded border border-[var(--surface-border)] bg-[var(--color-bg-deep)] px-2 py-1.5 text-caption"
       aria-label="切换角色"
     >
       {(Object.keys(ROLES) as RoleKey[]).map((key) => (

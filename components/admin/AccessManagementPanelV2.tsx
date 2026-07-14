@@ -55,7 +55,7 @@ function Pagination({
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-caption">
       <span>
         {start}-{end} / {total}
       </span>
@@ -289,7 +289,7 @@ export function AccessManagementPanelV2({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-sm font-medium">权限开关</h2>
-            <p className="mt-1 text-xs text-[var(--color-text-muted)]">开放模式开启后，路由级别自动降低一档（observer 仍只读），用于 workshop / demo。</p>
+            <p className="mt-1 text-caption">开放模式开启后，路由级别自动降低一档（observer 仍只读），用于 workshop / demo。</p>
           </div>
           <label className="inline-flex cursor-pointer items-center gap-3">
             <span className="text-sm text-[var(--color-text-muted)]">开放模式</span>
@@ -304,7 +304,7 @@ export function AccessManagementPanelV2({
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-sm font-medium">用户列表</h2>
-            <p className="mt-1 text-xs text-[var(--color-text-muted)]">CEO / CFO 可分配用户角色、组织范围和项目范围；已登录用户需重新登录刷新会话。</p>
+            <p className="mt-1 text-caption">CEO / CFO 可分配用户角色、组织范围和项目范围；已登录用户需重新登录刷新会话。</p>
           </div>
           {error && <p className="text-xs text-[var(--signal-red)]">{error}</p>}
         </div>
@@ -339,7 +339,7 @@ export function AccessManagementPanelV2({
                           <div className="absolute z-20 mt-1 grid max-h-56 min-w-[260px] gap-1 overflow-y-auto rounded border border-[var(--surface-border)] bg-white p-2 shadow-lg">
                             <button
                               type="button"
-                              className="rounded px-2 py-1 text-left text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04]"
+                              className="rounded px-2 py-1 text-left text-caption hover:bg-black/[0.04]"
                               onClick={() => setDraft({ ...draft, orgScopeIds: [] })}
                             >
                               全公司/不限制
@@ -417,8 +417,8 @@ export function AccessManagementPanelV2({
                     <td className="py-2 pr-3">{log.userEmail}</td>
                     <td className="py-2 pr-3">{ACTION_LABELS[log.action as keyof typeof ACTION_LABELS] ?? log.action}</td>
                     <td className="py-2 pr-3 max-w-[200px] truncate" title={log.resource}>{log.resource}</td>
-                    <td className="py-2 pr-3 font-mono text-xs text-[var(--color-text-muted)]">{log.ip ?? "-"}</td>
-                    <td className="py-2 font-mono text-xs text-[var(--color-text-muted)]" title={log.hash}>{log.hash ? log.hash.slice(0, 10) : "-"}</td>
+                    <td className="py-2 pr-3 font-mono text-caption">{log.ip ?? "-"}</td>
+                    <td className="py-2 font-mono text-caption" title={log.hash}>{log.hash ? log.hash.slice(0, 10) : "-"}</td>
                   </tr>
                 ))}
               </tbody>

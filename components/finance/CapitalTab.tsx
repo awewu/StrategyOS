@@ -20,7 +20,7 @@ function KanbanColumn({
           >
             <div className="font-data text-xs text-[var(--color-accent)]">{ic.code}</div>
             <div className="mt-1 text-sm font-medium">{ic.title}</div>
-            <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--color-text-muted)]">
+            <div className="mt-2 flex flex-wrap gap-2 text-caption">
               <span>{ic.capexTotal} 万</span>
               {ic.expectedIrr && <span>IRR {ic.expectedIrr}%</span>}
               <span className="text-[var(--color-text-muted)]">{ic.budgetTag}</span>
@@ -28,7 +28,7 @@ function KanbanColumn({
           </div>
         ))}
         {items.length === 0 && (
-          <div className="py-4 text-center text-xs text-[var(--color-text-muted)]">—</div>
+          <div className="py-4 text-center text-caption">—</div>
         )}
       </div>
     </div>
@@ -63,7 +63,7 @@ export function CapitalTab({
     <div className="space-y-6">
       <SectionCard title={`CapStack ${capStack.period}`} accent="gold" dense>
         <div className="mb-4">
-          <div className="mb-1 flex justify-between text-xs text-[var(--color-text-muted)]">
+          <div className="mb-1 flex justify-between text-caption">
             <span>CAPEX B-A-F（万）</span>
             <span className="font-data">
               B {capStack.capexBudget} · A {capStack.capexActual} · F {forecast}
@@ -112,7 +112,7 @@ export function CapitalTab({
                 <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
                   <div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="w-8 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{pct}%</span>
+                <span className="w-8 shrink-0 text-right font-data text-caption">{pct}%</span>
               </div>
             ))}
           </div>
@@ -126,7 +126,7 @@ export function CapitalTab({
                 <div className="flex-1 h-2 rounded-full bg-black/[0.04] overflow-hidden">
                   <div className="h-full rounded-full bg-[var(--stack-prod)]" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="w-8 shrink-0 text-right font-data text-xs text-[var(--color-text-muted)]">{pct}%</span>
+                <span className="w-8 shrink-0 text-right font-data text-caption">{pct}%</span>
               </div>
             ))}
           </div>

@@ -75,7 +75,7 @@ export function DecisionsEditor({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <span className="text-xs text-[var(--color-text-muted)]">
+        <span className="text-caption">
           待决事项 {source === "database" ? "· 已自定义" : "· 指挥舱推导"}
         </span>
         {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}

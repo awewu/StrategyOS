@@ -27,7 +27,7 @@ export function EmptyState({
     <div className={"stratos-empty " + className}>
       {icon && <div className="mb-2 text-2xl opacity-60">{icon}</div>}
       <div className="text-sm font-medium text-[var(--color-text-secondary)]">{title}</div>
-      {hint && <div className="mt-1 text-xs text-[var(--color-text-muted)]">{hint}</div>}
+      {hint && <div className="mt-1 text-caption">{hint}</div>}
       {action && <div className="mt-3 flex justify-center">{action}</div>}
     </div>
   );

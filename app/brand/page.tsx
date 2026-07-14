@@ -74,7 +74,7 @@ export default function BrandGalleryPage() {
             <figure key={a.file} className="stratos-card overflow-hidden">
               <div className="border-b border-[var(--surface-border)] px-4 py-3">
                 <figcaption className="font-medium text-[var(--color-text-primary)]">{a.title}</figcaption>
-                <p className="text-xs text-[var(--color-text-muted)]">{a.desc}</p>
+                <p className="text-caption">{a.desc}</p>
               </div>
               <Image
                 src={`/brand/${a.file}`}

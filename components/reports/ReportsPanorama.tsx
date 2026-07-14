@@ -29,7 +29,7 @@ export function ReportsPanorama({ fpa, kpis }: { fpa: FpaSummary; kpis: Manageme
     <section className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">经营全景 · ROS / EBITDA</h2>
-        <span className="text-xs text-[var(--color-text-muted)]">{kpis.period}</span>
+        <span className="text-caption">{kpis.period}</span>
       </div>
 
       {/* Revenue + Profit achievement bars */}

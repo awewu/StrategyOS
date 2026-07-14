@@ -149,7 +149,7 @@ export function BscTargetsBoard({
               <h3 className="mt-1 text-base font-semibold text-[var(--color-text-primary)]">
                 {card?.label ?? meta.dim} · 年度目标交付
               </h3>
-              <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">{period} · BSC 战略地图同源</p>
+              <p className="mt-0.5 text-caption">{period} · BSC 战略地图同源</p>
             </div>
             {canEdit && !editing && (
               <button

@@ -11,7 +11,7 @@ export function RhauttBrandShowcase() {
       </p>
       <div className="grid gap-6 md:grid-cols-2">
         <figure className="overflow-hidden rounded-lg border border-[var(--surface-border)]">
-          <figcaption className="border-b border-[var(--surface-border)] px-4 py-2 text-xs text-[var(--color-text-muted)]">
+          <figcaption className="border-b border-[var(--surface-border)] px-4 py-2 text-caption">
             Sidebar · Dark rail
           </figcaption>
           <div
@@ -24,7 +24,7 @@ export function RhauttBrandShowcase() {
           </div>
         </figure>
         <figure className="overflow-hidden rounded-lg border border-[var(--surface-border)]">
-          <figcaption className="border-b border-[var(--surface-border)] px-4 py-2 text-xs text-[var(--color-text-muted)]">
+          <figcaption className="border-b border-[var(--surface-border)] px-4 py-2 text-caption">
             Brand · Light / print
           </figcaption>
           <div

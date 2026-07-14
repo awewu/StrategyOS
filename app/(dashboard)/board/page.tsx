@@ -178,7 +178,7 @@ export default async function BoardPackPage() {
             {minutes.map((m) => (
               <li key={m.id} className="flex flex-wrap items-baseline gap-3 text-sm">
                 <span className="text-[var(--color-text-primary)]">{m.title}</span>
-                <span className="text-xs text-[var(--color-text-muted)]">{m.period} · 归档 {m.uploadedAt}</span>
+                <span className="text-caption">{m.period} · 归档 {m.uploadedAt}</span>
                 <span className="text-xs" style={{ color: m.approvalStatus === "APPROVED" ? "var(--signal-green)" : "var(--signal-yellow)" }}>
                   {m.approvalStatus === "APPROVED" ? "已审阅" : "待审阅"}
                 </span>

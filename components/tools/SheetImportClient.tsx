@@ -206,7 +206,7 @@ export function SheetImportClient() {
             {busy ? "解析中…" : "上传并预检"}
           </button>
           {typeProfiles.length > 0 && (
-            <span className="text-xs text-[var(--color-text-muted)]">
+            <span className="text-caption">
               已存画像:{typeProfiles.map((p) => p.name).join("、")}
             </span>
           )}
@@ -262,7 +262,7 @@ export function SheetImportClient() {
                 保存画像
               </button>
               {result.errorRows > 0 && (
-                <span className="text-xs text-[var(--color-text-muted)]">修正 error 后才能保存</span>
+                <span className="text-caption">修正 error 后才能保存</span>
               )}
             </div>
           </section>
@@ -330,7 +330,7 @@ export function SheetImportClient() {
                   <span className="font-data text-[var(--color-text-muted)]">不变 {result.diff.unchanged}</span>
                 </>
               ) : (
-                <span className="text-xs text-[var(--color-text-muted)]">数据库不可用,无法对比</span>
+                <span className="text-caption">数据库不可用,无法对比</span>
               )}
             </div>
 

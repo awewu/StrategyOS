@@ -59,7 +59,7 @@ export function GrowthAnalyticsEditor({
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
             增长诊断 · 漏斗与品牌（参考）
           </h2>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-caption">
             市场侧参考视图 · 左：客户漏在哪一段（AARRR 漏斗）· 右：品牌心智短板在哪一层（Keller 金字塔）· 数据源 {source === "database" ? "DB" : "Demo"}
           </p>
         </div>

@@ -562,7 +562,7 @@ function TrendPanel({ bundle }: { bundle: LedgerBundle }) {
     <div className="space-y-4">
       <div className="stratos-card stratos-card--padded">
         <h3 className="mb-1 text-sm font-semibold">GL 活动量 · 逐期（借方合计）</h3>
-        <p className="mb-4 text-xs text-[var(--color-text-muted)]">趋势看方向：活动量骤增/骤减往往先于报表异常</p>
+        <p className="mb-4 text-caption">趋势看方向：活动量骤增/骤减往往先于报表异常</p>
         <div className="space-y-2">
           {gl.length === 0 ? (
             <p className="text-sm text-[var(--color-text-muted)]">暂无 GL 数据。</p>

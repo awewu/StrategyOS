@@ -56,7 +56,7 @@ function SelfScoreEditor({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">我方自评分</h3>
-          <p className="text-xs text-[var(--color-text-muted)]">
+          <p className="text-caption">
             0–100，用于十字轴定位。X = 产品+战略，Y = GTM+品牌。
           </p>
         </div>
@@ -74,7 +74,7 @@ function SelfScoreEditor({
           </button>
         </div>
       </div>
-      {saveNote && <p className="mb-2 text-xs text-[var(--color-text-muted)]">{saveNote}</p>}
+      {saveNote && <p className="mb-2 text-caption">{saveNote}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
         {dims.map((dim) => {
           const value = scores[dim] ?? 50;
@@ -112,7 +112,7 @@ function PositioningChart({ map }: { map: PositioningMap }) {
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">竞争定位十字轴</h3>
-        <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+        <p className="mt-0.5 text-caption">
           X：{map.xAxis.label} · Y：{map.yAxis.label} · 原点在中心 · 我方高亮
         </p>
       </div>
@@ -145,7 +145,7 @@ function PositioningChart({ map }: { map: PositioningMap }) {
           <Scatter data={data} shape={(props: unknown) => <EntityDot {...(props as EntityDotProps)} />} />
         </ScatterChart>
       </ResponsiveContainer>
-      <div className="mt-1 grid grid-cols-2 gap-x-8 gap-y-1 text-xs text-[var(--color-text-muted)]">
+      <div className="mt-1 grid grid-cols-2 gap-x-8 gap-y-1 text-caption">
         <span>右上 · 领先者（双强）</span>
         <span>左上 · 渠道驱动</span>
         <span>右下 · 产品驱动</span>
@@ -213,7 +213,7 @@ function SwotQuadrant({ cat, items }: { cat: SwotCategory; items: SwotItem[] }) 
         {SWOT_CATEGORY_LABEL[cat]} <span className="text-[var(--color-text-muted)]">· {items.length}</span>
       </h4>
       {items.length === 0 ? (
-        <p className="text-xs text-[var(--color-text-muted)]">暂无</p>
+        <p className="text-caption">暂无</p>
       ) : (
         <ul className="space-y-1.5">
           {items.slice(0, 6).map((i) => (
@@ -358,13 +358,13 @@ export function SwotPanel({
             {loading ? "推演中…" : "AI 推演"}
           </button>
         </div>
-        {note && <p className="mb-2 text-xs text-[var(--color-text-muted)]">{note}</p>}
+        {note && <p className="mb-2 text-caption">{note}</p>}
         <div className="grid gap-4 md:grid-cols-2">
           {TOWS_ORDER.map((t) => (
             <div key={t} className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
               <h4 className="mb-2 text-sm font-semibold text-[var(--color-text-primary)]">{TOWS_LABEL[t]}</h4>
               {tows[t].length === 0 ? (
-                <p className="text-xs text-[var(--color-text-muted)]">暂无</p>
+                <p className="text-caption">暂无</p>
               ) : (
                 <ul className="space-y-2">
                   {tows[t].map((r, idx) => (

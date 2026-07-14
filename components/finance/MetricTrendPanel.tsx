@@ -32,7 +32,7 @@ export function MetricTrendPanel({ series }: { series: MetricSeries[] }) {
                     {hint}
                   </span>
                 ) : (
-                  <span className="text-xs text-[var(--color-text-muted)]">
+                  <span className="text-caption">
                     {s.points.length} 期 · 满 3 期出趋势信号
                   </span>
                 )}

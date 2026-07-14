@@ -111,7 +111,7 @@ export function FinancialStatementsEditor({
   return (
     <div className="stratos-section-gap flex flex-col">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <span className="text-xs text-[var(--color-text-muted)]">
+        <span className="text-caption">
           三张表 {statementsSource === "database" ? "· 已自定义" : "· FPA 推导"}
           {editing ? " · 行级编辑" : ""}
         </span>

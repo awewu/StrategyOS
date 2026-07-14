@@ -32,7 +32,7 @@ export function AgentOrchestrationPanel() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-medium text-[var(--accent-sim)]">11-Agent 编排</h2>
-          <p className="text-xs text-[var(--color-text-muted)]">
+          <p className="text-caption">
             {STRAT_AGENTS.length} agents · LLM 优先 · 无 key 时规则兜底
           </p>
         </div>
@@ -84,7 +84,7 @@ export function AgentOrchestrationPanel() {
 
       {recommendations.length > 0 && (
         <div className="mt-4 border-t border-[var(--surface-border)] pt-3">
-          <div className="text-xs text-[var(--color-text-muted)]">Recommendations</div>
+          <div className="text-caption">Recommendations</div>
           <ul className="mt-1 text-sm">
             {recommendations.map((r) => (
               <li key={r}>· {r}</li>

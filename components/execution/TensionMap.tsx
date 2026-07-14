@@ -22,11 +22,11 @@ function TensionCard({ item, active, onClick }: { item: TensionItem; active: boo
         </div>
         <div className="flex items-center gap-1.5">
           <span className={`h-1.5 w-1.5 rounded-full ${SEV_COLOR[item.severity]}`} />
-          <span className="text-xs text-[var(--color-text-muted)]">严重度 {SEV_LABEL[item.severity]}</span>
+          <span className="text-caption">严重度 {SEV_LABEL[item.severity]}</span>
         </div>
       </div>
       <p className="mt-2 text-sm font-medium">{item.projectName}</p>
-      <p className="mt-1 text-xs text-[var(--color-text-muted)] line-clamp-2">{item.signal}</p>
+      <p className="mt-1 text-caption line-clamp-2">{item.signal}</p>
     </button>
   );
 }
@@ -124,7 +124,7 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
     <div className={`rounded-lg border p-5 ${meta.bgColor} ${meta.borderColor}`}>
       <div className="mb-4 flex items-center gap-2">
         <span className="text-sm font-semibold" style={{ color: meta.color }}>{meta.label}</span>
-        <span className="text-xs text-[var(--color-text-muted)]">·</span>
+        <span className="text-caption">·</span>
         <span className="text-sm">{item.projectName} ({item.projectCode})</span>
         <div className="ml-auto flex gap-3">
           <button onClick={onEdit} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
@@ -143,7 +143,7 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-md border border-[var(--signal-red)]/25 bg-[var(--signal-red)]/10 p-3">
             <div className="mb-1 text-xs text-[var(--signal-red)]">× 错误对策</div>
-            <p className="text-xs text-[var(--color-text-muted)]">{meta.wrongResponse}</p>
+            <p className="text-caption">{meta.wrongResponse}</p>
           </div>
           <div className="rounded-md border border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 p-3">
             <div className="mb-1 text-xs text-[var(--signal-green)]">→ 正确方向</div>
@@ -151,7 +151,7 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
           </div>
         </div>
         {(item.linkedAssumptionCode || item.linkedKr) && (
-          <div className="flex gap-2 text-xs text-[var(--color-text-muted)]">
+          <div className="flex gap-2 text-caption">
             {item.linkedAssumptionCode && <span className="rounded bg-black/[0.04] px-1.5 py-0.5">→ 假设 {item.linkedAssumptionCode}</span>}
             {item.linkedKr && <span className="rounded bg-black/[0.04] px-1.5 py-0.5">→ KR: {item.linkedKr}</span>}
           </div>
@@ -187,12 +187,12 @@ export function TensionMap({ tensions }: { tensions: TensionItem[] }) {
       <div className="flex items-baseline justify-between">
         <div>
           <h2 className="text-base font-semibold">战略-执行张力分析</h2>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-0.5 text-caption">
             诊断执行失败的结构性原因 · 主导张力：
             <span className="ml-1 font-medium" style={{ color: dominant.meta.color }}>{dominant.meta.label}</span>
           </p>
         </div>
-        <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-3 text-caption">
           {byType.map(({ type, meta, items }) => items.length > 0 && (
             <span key={type} className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: meta.color }} />

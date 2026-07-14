@@ -48,7 +48,7 @@ export function PlanReviewActions({
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {message ? <span className="text-xs text-[var(--color-text-muted)]">{message}</span> : null}
+      {message ? <span className="text-caption">{message}</span> : null}
       <button
         type="button"
         disabled={busy}

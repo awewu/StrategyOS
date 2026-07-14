@@ -58,7 +58,7 @@ export function GatesPageClient({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2 -mt-4">
-        <p className="font-data text-xs text-[var(--color-text-muted)]">
+        <p className="font-data text-caption">
           通过 {summary.pass} · 部分 {summary.partial} · 否 {summary.fail} · 数据源{" "}
           {dataSource === "database" ? "DB" : "Demo"}
         </p>

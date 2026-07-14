@@ -144,7 +144,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
 
       {tab === "mandates" && (
         <div className="space-y-4">
-          <p className="text-xs text-[var(--color-text-muted)]">每条职责是跨会议延续的主线。下方时间线显示历次会议谁认领、交账或移交——人变,线不断。</p>
+          <p className="text-caption">每条职责是跨会议延续的主线。下方时间线显示历次会议谁认领、交账或移交——人变,线不断。</p>
           {bundle.mandates.length === 0 && (
             <EmptyState title="尚无战略职责" hint="点击右上角「+ 新建职责」建立第一条主线" />
           )}
@@ -159,10 +159,10 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                     <span className="rounded px-1.5 py-0.5 text-xs" style={{ backgroundColor: MANDATE_STATUS_COLOR[m.status] + "20", color: MANDATE_STATUS_COLOR[m.status] }}>
                       {MANDATE_STATUS_LABEL[m.status]}
                     </span>
-                    {m.theme && <span className="text-xs text-[var(--color-text-muted)]">· {m.theme}</span>}
+                    {m.theme && <span className="text-caption">· {m.theme}</span>}
                   </div>
                   {m.description && <p className="mt-1 text-sm text-[var(--color-text-secondary)] max-w-2xl">{m.description}</p>}
-                  <div className="mt-1 flex gap-3 text-xs text-[var(--color-text-muted)]">
+                  <div className="mt-1 flex gap-3 text-caption">
                     {m.linkedProjectCode && <span>项目 {m.linkedProjectCode}</span>}
                     {m.linkedAssumptionCode && <span>假设 {m.linkedAssumptionCode}</span>}
                   </div>
@@ -170,7 +170,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                 <div className="flex shrink-0 gap-1">
                   <button onClick={() => setEditHolding({ mandateId: m.id })}
                     className="rounded px-2 py-1 text-xs text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10">+ 认领记录</button>
-                  <button onClick={() => setEditMandate(m)} className="rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04]">改</button>
+                  <button onClick={() => setEditMandate(m)} className="rounded px-2 py-1 text-caption hover:bg-black/[0.04]">改</button>
                   <button onClick={() => del(`/api/mandate?id=${m.id}`)} className="rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删</button>
                 </div>
               </div>
@@ -184,7 +184,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                         style={{ backgroundColor: HOLDING_STATUS_COLOR[h.status] }} />
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-medium text-[var(--color-text-secondary)]">{h.meetingTitle}</span>
-                        <span className="text-xs text-[var(--color-text-muted)]">{MEETING_TYPE_LABEL[h.meetingType]}</span>
+                        <span className="text-caption">{MEETING_TYPE_LABEL[h.meetingType]}</span>
                         <span className="rounded px-1.5 py-0.5 text-[11px]" style={{ backgroundColor: HOLDING_STATUS_COLOR[h.status] + "20", color: HOLDING_STATUS_COLOR[h.status] }}>
                           {HOLDING_STATUS_LABEL[h.status]}
                         </span>
@@ -213,24 +213,24 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
 
       {tab === "meetings" && (
         <div className="space-y-3">
-          <p className="text-xs text-[var(--color-text-muted)]">会议是职责被认领/交账/移交的时点。邀请时注明角色与议题责任,存档后永久保留。</p>
+          <p className="text-caption">会议是职责被认领/交账/移交的时点。邀请时注明角色与议题责任,存档后永久保留。</p>
           {bundle.meetings.map((mt) => (
             <div key={mt.id} className="flex items-center justify-between rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">{mt.title}</span>
-                  <span className="text-xs text-[var(--color-text-muted)]">{MEETING_TYPE_LABEL[mt.meetingType]} · {mt.period}</span>
+                  <span className="text-caption">{MEETING_TYPE_LABEL[mt.meetingType]} · {mt.period}</span>
                   <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[11px] text-[var(--color-text-secondary)]">{MEETING_STATUS_LABEL[mt.status]}</span>
                   {mt.holdingCount > 0 && <span className="text-[11px] text-[var(--color-accent)]">{mt.holdingCount} 条职责认领</span>}
                   {mt.todos.length > 0 && <span className="text-[11px] text-[var(--color-accent)]">待办 {mt.todos.filter(todo => todo.completed).length}/{mt.todos.length}</span>}
                 </div>
                 {mt.planLabel && <p className="mt-1 text-xs text-[var(--color-accent)]">关联战略: {mt.planLabel}</p>}
                 {mt.participants.length > 0 && <p className="mt-1 text-xs text-[var(--color-text-secondary)]">参会人员: {mt.participants.map(p => p.name).join("、")}</p>}
-                {mt.agenda && <p className="mt-1 text-xs text-[var(--color-text-muted)]">议程: {mt.agenda}</p>}
-                {mt.meetingDate && <p className="text-xs text-[var(--color-text-muted)]">{mt.meetingDate}</p>}
+                {mt.agenda && <p className="mt-1 text-caption">议程: {mt.agenda}</p>}
+                {mt.meetingDate && <p className="text-caption">{mt.meetingDate}</p>}
               </div>
               <div className="flex shrink-0 gap-1">
-                <button onClick={() => openMeetingEditor(mt)} className="rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04]">改</button>
+                <button onClick={() => openMeetingEditor(mt)} className="rounded px-2 py-1 text-caption hover:bg-black/[0.04]">改</button>
                 <button onClick={() => del(`/api/meeting?id=${mt.id}`)} className="rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删</button>
               </div>
             </div>
@@ -288,7 +288,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">参会人员 <span className="text-[var(--signal-red)]">*</span></label>
-                <span className="text-xs text-[var(--color-text-muted)]">已选 {(editMeeting.participantUserIds ?? []).length} 人</span>
+                <span className="text-caption">已选 {(editMeeting.participantUserIds ?? []).length} 人</span>
               </div>
               {selectedMeetingUsers.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
@@ -312,7 +312,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                 {participantPickerOpen && (
                   <div className="absolute z-20 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-1 shadow-lg">
                     {participantCandidates.length === 0 ? (
-                      <div className="px-3 py-2 text-xs text-[var(--color-text-muted)]">没有匹配人员</div>
+                      <div className="px-3 py-2 text-caption">没有匹配人员</div>
                     ) : participantCandidates.map(user => (
                       <button
                         key={user.id}
@@ -335,12 +335,12 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-[var(--color-text-primary)]">会议待办</div>
-                    <div className="text-xs text-[var(--color-text-muted)]">修改会议时可新增、分派和完成待办</div>
+                    <div className="text-caption">修改会议时可新增、分派和完成待办</div>
                   </div>
                   <button type="button" onClick={addTodo} className="rounded-md border border-[var(--color-accent)] px-2.5 py-1 text-xs text-[var(--color-accent)] hover:bg-[var(--color-accent)]/5">+ 添加待办</button>
                 </div>
                 {(editMeeting.todos ?? []).length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[var(--surface-border)] p-4 text-center text-xs text-[var(--color-text-muted)]">暂无待办</div>
+                  <div className="rounded-lg border border-dashed border-[var(--surface-border)] p-4 text-center text-caption">暂无待办</div>
                 )}
                 {(editMeeting.todos ?? []).map((todo, index) => (
                   <div key={todo.id ?? `new-${index}`} className="rounded-lg border border-[var(--surface-border)] p-3">
@@ -446,13 +446,13 @@ function TodoOwnerPicker({
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => { onChange(null); setQuery(""); setOpen(false); }}
-              className="w-full rounded-md px-3 py-2 text-left text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04]"
+              className="w-full rounded-md px-3 py-2 text-left text-caption hover:bg-black/[0.04]"
             >
               清除责任人
             </button>
           )}
           {candidates.length === 0 ? (
-            <div className="px-3 py-2 text-xs text-[var(--color-text-muted)]">没有匹配人员</div>
+            <div className="px-3 py-2 text-caption">没有匹配人员</div>
           ) : candidates.map((user) => (
             <button
               key={user.id}

@@ -37,7 +37,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
             />
           ))}
         </div>
-        <div className="mt-2 flex flex-wrap gap-4 text-xs text-[var(--color-text-muted)]">
+        <div className="mt-2 flex flex-wrap gap-4 text-caption">
           {scenarios.map((sc) => (
             <span key={sc.id}>
               {sc.name} {sc.probability}%

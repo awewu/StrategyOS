@@ -68,7 +68,7 @@ export function SensitivityPanel({ drivers }: { drivers: SensitivityDriver[] }) 
           <div key={d.id}>
             <div className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
               <span>{d.label}</span>
-              <span className="font-data text-xs text-[var(--color-text-muted)]">
+              <span className="font-data text-caption">
                 基准 {d.baseValue}
                 {d.unit}
               </span>

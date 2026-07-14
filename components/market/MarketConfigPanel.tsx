@@ -144,7 +144,7 @@ function RegionsEditor({ regions, setRegions, saving, post, del }: {
           <div className="flex items-center gap-3 border-b border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-2.5">
             <span className="font-medium text-[var(--color-text-primary)]">{zone.name}</span>
             <span className="text-caption">{zone.code}</span>
-            <span className={zone.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-xs text-[var(--color-text-muted)]"}>{zone.active ? "启用" : "停用"}</span>
+            <span className={zone.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{zone.active ? "启用" : "停用"}</span>
             <button onClick={() => startEdit(zone)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
             <button onClick={() => remove(zone.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
             <button onClick={() => startNew(zone.id)} className="text-xs text-[var(--color-accent)] hover:underline">+ 省</button>
@@ -154,7 +154,7 @@ function RegionsEditor({ regions, setRegions, saving, post, del }: {
               <div key={prov.id} className="flex items-center gap-3 px-4 py-2 pl-8 text-sm">
                 <span className="text-[var(--color-text-secondary)]">{prov.name}</span>
                 <span className="text-caption">{prov.code}</span>
-                <span className={prov.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-xs text-[var(--color-text-muted)]"}>{prov.active ? "启用" : "停用"}</span>
+                <span className={prov.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{prov.active ? "启用" : "停用"}</span>
                 <button onClick={() => startEdit(prov)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
                 <button onClick={() => remove(prov.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
               </div>
@@ -237,7 +237,7 @@ function ProductLinesEditor({ lines, setLines, saving, post, del }: {
           <div className="flex items-center gap-3 border-b border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-2.5">
             <span className="font-medium text-[var(--color-text-primary)]">{pl.name}</span>
             <span className="text-caption">{pl.code}</span>
-            <span className={pl.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-xs text-[var(--color-text-muted)]"}>{pl.active ? "启用" : "停用"}</span>
+            <span className={pl.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{pl.active ? "启用" : "停用"}</span>
             <button onClick={() => startEdit(pl)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
             <button onClick={() => remove(pl.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
             <button onClick={() => startNew(pl.id)} className="text-xs text-[var(--color-accent)] hover:underline">+ 细分</button>
@@ -248,7 +248,7 @@ function ProductLinesEditor({ lines, setLines, saving, post, del }: {
                 <span className="text-[var(--color-text-secondary)]">{sub.name}</span>
                 <span className="text-caption">{sub.code}</span>
                 {sub.description && <span className="text-caption truncate max-w-[200px]">{sub.description}</span>}
-                <span className={sub.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-xs text-[var(--color-text-muted)]"}>{sub.active ? "启用" : "停用"}</span>
+                <span className={sub.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{sub.active ? "启用" : "停用"}</span>
                 <button onClick={() => startEdit(sub)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
                 <button onClick={() => remove(sub.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
               </div>

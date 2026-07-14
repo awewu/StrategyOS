@@ -38,7 +38,7 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
               <p className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">
                 {item.milestone}
               </p>
-              <p className="mt-1 font-data text-xs text-[var(--color-text-muted)]">{item.quarter}</p>
+              <p className="mt-1 font-data text-caption">{item.quarter}</p>
               {"product" in item && item.product ? (
                 <p className="mt-1 text-xs text-[var(--stack-prod)]">{String(item.product)}</p>
               ) : null}
@@ -57,7 +57,7 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
               >
                 <p className="text-xs font-medium text-[var(--stack-prod)]">{card.product}</p>
                 <p className="mt-2 text-sm text-[var(--color-text-primary)]">{card.statement}</p>
-                <p className="mt-2 text-xs text-[var(--color-text-muted)]">细分 · {card.segment}</p>
+                <p className="mt-2 text-caption">细分 · {card.segment}</p>
               </li>
             ))}
           </ul>
@@ -96,7 +96,7 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--surface-border)] text-left text-xs text-[var(--color-text-muted)]">
+              <tr className="border-b border-[var(--surface-border)] text-left text-caption">
                 <th className="pb-2 pr-4 font-medium">代码</th>
                 <th className="pb-2 pr-4 font-medium">细分</th>
                 <th className="pb-2 pr-4 font-medium">优先级</th>

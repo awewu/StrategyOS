@@ -160,7 +160,7 @@ export function LineEditor({
                 </div>
               ))}
               {weights.length === 0 && (
-                <p className="text-xs text-[var(--color-text-muted)]">未配置 → 引擎按等权计算</p>
+                <p className="text-caption">未配置 → 引擎按等权计算</p>
               )}
             </div>
           </div>

@@ -181,7 +181,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
             onChange={(event) => void extractSelectedFile(event.target.files?.[0])}
             className="stratos-input mt-1 cursor-pointer file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-[var(--color-accent-dim)] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[var(--color-accent)]"
           />
-          {extracting ? <p className="mt-1 text-xs text-[var(--color-text-muted)]">正在提取文本...</p> : null}
+          {extracting ? <p className="mt-1 text-caption">正在提取文本...</p> : null}
           {!extracting && extractStatus ? (
             <p className={`mt-1 text-xs ${extractStatus.startsWith("已") ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
               {extractStatus}
@@ -202,7 +202,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
           />
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+        <label className="flex items-center gap-2 text-caption">
           <input
             type="checkbox"
             checked={!auditComparePlan}
@@ -314,7 +314,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
             ) : null}
           </div>
         ) : (
-          <p className="text-xs text-[var(--color-text-muted)]">运行推演或审计后，结果将显示在此面板。</p>
+          <p className="text-caption">运行推演或审计后，结果将显示在此面板。</p>
         )}
 
         {result?.ok && result.imported ? (

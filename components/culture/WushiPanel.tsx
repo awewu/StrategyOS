@@ -72,7 +72,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">五事七计 · 组织战略就绪度</h2>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-0.5 text-caption">
             《孙子兵法 · 始计篇》· 基于战略规划评估组织准备度（非打分，输出风险清单）·
             道/将/法 组织原生 · 天/地 引用市场洞察/战略罗盘 · 七计对标{rival.trim() || "主要对手"}
           </p>
@@ -101,11 +101,11 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
           </button>
         </div>
       </div>
-      {saveNote && <p className="text-xs text-[var(--color-text-muted)]">{saveNote}</p>}
+      {saveNote && <p className="text-caption">{saveNote}</p>}
 
       {/* 五事 */}
       <div>
-        <div className="mb-2 flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+        <div className="mb-2 flex items-center gap-3 text-caption">
           <span className="font-medium text-[var(--color-text-secondary)]">五事</span>
           <span style={{ color: STATUS_COLOR.ready }}>就绪 {readiness.ready}</span>
           <span style={{ color: STATUS_COLOR.partial }}>部分 {readiness.partial}</span>
@@ -163,7 +163,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
 
       {/* 七计 */}
       <div>
-        <div className="mb-2 flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+        <div className="mb-2 flex items-center gap-3 text-caption">
           <span className="font-medium text-[var(--color-text-secondary)]">七计 · 敌我对比</span>
           <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px]">由 Hermes 信号自动推导</span>
           <span style={{ color: VERDICT_COLOR.we_lead }}>我优 {tally.weLead}</span>
@@ -199,7 +199,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
           组织战略适配风险清单 <span className="text-[var(--color-text-muted)]">· {risks.length}</span>
         </h3>
         {risks.length === 0 ? (
-          <p className="text-xs text-[var(--color-text-muted)]">无风险项 —— 组织就绪</p>
+          <p className="text-caption">无风险项 —— 组织就绪</p>
         ) : (
           <ul className="space-y-1.5">
             {risks.map((r, i) => (

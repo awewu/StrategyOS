@@ -77,7 +77,7 @@ export function NotificationsBell() {
       {open ? (
         <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel,white)] p-2 shadow-lg">
           {items.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-[var(--color-text-muted)]">无待办通知 — 一切在控</p>
+            <p className="px-3 py-2 text-caption">无待办通知 — 一切在控</p>
           ) : (
             items.map((n) => (
               <Link

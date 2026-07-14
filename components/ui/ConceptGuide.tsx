@@ -25,7 +25,7 @@ export function ConceptGuide({
         />
         <h2 className="text-sm font-medium">{title}</h2>
       </div>
-      <p className="mb-3 text-xs text-[var(--color-text-muted)]">{subtitle}</p>
+      <p className="mb-3 text-caption">{subtitle}</p>
 
       <div className="divide-y divide-[var(--surface-border)]">
         {concepts.map((c) => (
@@ -33,9 +33,9 @@ export function ConceptGuide({
             <summary className="flex cursor-pointer list-none items-baseline justify-between gap-3">
               <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                 <span className="text-sm font-medium">{c.name}</span>
-                <span className="text-xs text-[var(--color-text-muted)]">{c.origin}</span>
+                <span className="text-caption">{c.origin}</span>
               </span>
-              <span className="select-none text-xs text-[var(--color-text-muted)] transition-transform group-open:rotate-180">
+              <span className="select-none text-caption transition-transform group-open:rotate-180">
                 ▾
               </span>
             </summary>

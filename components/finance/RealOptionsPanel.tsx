@@ -21,7 +21,7 @@ export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
                 </span>
               )}
             </div>
-            <div className="mt-2 text-xs text-[var(--color-text-muted)]">{o.stageGate}</div>
+            <div className="mt-2 text-caption">{o.stageGate}</div>
             <div className="mt-2 flex flex-wrap gap-4 text-sm">
               <span>
                 下期 commit{" "}
@@ -30,7 +30,7 @@ export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
                 </span>
               </span>
             </div>
-            <p className="mt-2 text-xs text-[var(--color-text-muted)]">{o.optionValueNote}</p>
+            <p className="mt-2 text-caption">{o.optionValueNote}</p>
           </div>
         ))}
       </div>

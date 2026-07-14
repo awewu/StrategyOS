@@ -48,7 +48,7 @@ export function DecisionReviewPanel({ cards }: { cards: DecisionReviewCard[] }) 
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-[var(--color-text-muted)]">该期无 FPA 落点数据</span>
+              <span className="text-caption">该期无 FPA 落点数据</span>
             )}
           </div>
           <div className="mt-4 space-y-2">
@@ -62,8 +62,8 @@ export function DecisionReviewPanel({ cards }: { cards: DecisionReviewCard[] }) 
                   style={{ backgroundColor: d.status === "open" ? "var(--signal-yellow)" : "var(--signal-green)" }}
                 />
                 <span className="flex-1">{d.title}</span>
-                {d.owner ? <span className="text-xs text-[var(--color-text-muted)]">{d.owner}</span> : null}
-                {d.deadline ? <span className="text-xs text-[var(--color-text-muted)]">{d.deadline}</span> : null}
+                {d.owner ? <span className="text-caption">{d.owner}</span> : null}
+                {d.deadline ? <span className="text-caption">{d.deadline}</span> : null}
                 <span className="text-xs" style={{ color: d.status === "open" ? "var(--signal-yellow)" : "var(--signal-green)" }}>
                   {d.status === "open" ? "未决/未闭环" : "已决"}
                 </span>

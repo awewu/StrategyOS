@@ -225,7 +225,7 @@ function CellEditForm({ productLineId, regionId, competitorId, existing, onSaved
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-[var(--color-text-muted)]">人工录入或修订该战场评估，保存后标记为&ldquo;人工确认&rdquo;。</p>
+      <p className="text-caption">人工录入或修订该战场评估，保存后标记为&ldquo;人工确认&rdquo;。</p>
       {err && <p className="rounded bg-[var(--signal-red)]/10 px-3 py-1.5 text-xs text-[var(--signal-red)]">{err}</p>}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
@@ -377,7 +377,7 @@ function WinLossTab({ regionId, competitorId, productLineId, records, onAdded }:
                 </span>
                 <span className="text-sm font-medium">{w.projectName}</span>
                 {w.customerType && <span className="text-[11px] text-[var(--color-text-muted)]">{w.customerType}</span>}
-                {w.dealSizeCny && <span className="ml-auto font-data text-xs text-[var(--color-text-muted)]">¥{(w.dealSizeCny / 10000).toFixed(0)}万</span>}
+                {w.dealSizeCny && <span className="ml-auto font-data text-caption">¥{(w.dealSizeCny / 10000).toFixed(0)}万</span>}
               </div>
               <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{w.winReason ?? w.lossReason}</p>
               <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">{w.recordedAt}</p>

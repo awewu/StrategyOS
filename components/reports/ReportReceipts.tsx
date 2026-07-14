@@ -31,9 +31,9 @@ export function ReportReceipts({ receipts }: { receipts: ReportReceipt[] }) {
             <div key={r.reportId} className="rounded-lg border border-[var(--surface-border)] p-4">
               <div className="flex flex-wrap items-baseline gap-3 text-sm">
                 <span className="font-medium text-[var(--color-text-primary)]">{r.title}</span>
-                <span className="text-xs text-[var(--color-text-muted)]">{r.period} · 提交 {r.uploadedAt}</span>
+                <span className="text-caption">{r.period} · 提交 {r.uploadedAt}</span>
                 <span className="text-xs" style={{ color: approval.color }}>{approval.text}</span>
-                <span className="text-xs text-[var(--color-text-muted)]">
+                <span className="text-caption">
                   {r.parsed ? `已解析 · ${r.triggerCount} 个触发信号` : "未解析"}
                 </span>
               </div>
@@ -57,7 +57,7 @@ export function ReportReceipts({ receipts }: { receipts: ReportReceipt[] }) {
                   ))}
                 </div>
               ) : r.parsed ? (
-                <p className="mt-2 text-xs text-[var(--color-text-muted)]">未触发议题 — 数据在控</p>
+                <p className="mt-2 text-caption">未触发议题 — 数据在控</p>
               ) : null}
             </div>
           );

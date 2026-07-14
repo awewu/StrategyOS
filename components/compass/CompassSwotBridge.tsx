@@ -31,7 +31,7 @@ export function CompassSwotBridge({ premises }: { premises: PremiseAudit[] }) {
             {SWOT_CATEGORY_LABEL.strength} · {strengths.length}
           </h4>
           {strengths.length === 0 ? (
-            <p className="text-xs text-[var(--color-text-muted)]">暂无（无高信心·低脆弱前提）</p>
+            <p className="text-caption">暂无（无高信心·低脆弱前提）</p>
           ) : (
             <ul className="space-y-1">
               {strengths.slice(0, 4).map((i) => (
@@ -45,7 +45,7 @@ export function CompassSwotBridge({ premises }: { premises: PremiseAudit[] }) {
             {SWOT_CATEGORY_LABEL.weakness} · {weaknesses.length}
           </h4>
           {weaknesses.length === 0 ? (
-            <p className="text-xs text-[var(--color-text-muted)]">暂无</p>
+            <p className="text-caption">暂无</p>
           ) : (
             <ul className="space-y-1">
               {weaknesses.slice(0, 4).map((i) => (

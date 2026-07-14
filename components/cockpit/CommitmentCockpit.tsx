@@ -24,13 +24,13 @@ function CommitmentRow({ c }: { c: CommitmentRecord }) {
     <div className={`flex items-center gap-4 rounded-lg border p-3 text-sm ${meta.bg} ${meta.border}`}>
       <span className="w-14 flex-shrink-0 text-xs font-medium" style={{ color: meta.color }}>{meta.label}</span>
       <span className="flex-1">{c.content}</span>
-      <span className="w-24 flex-shrink-0 text-xs text-[var(--color-text-muted)]">对 {c.promiseTo ?? c.department}</span>
-      <span className="w-20 flex-shrink-0 text-xs text-[var(--color-text-muted)]">{c.deadline}</span>
+      <span className="w-24 flex-shrink-0 text-caption">对 {c.promiseTo ?? c.department}</span>
+      <span className="w-20 flex-shrink-0 text-caption">{c.deadline}</span>
       {c.daysOverdue ? <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red)]">逾期 {c.daysOverdue}天</span> : <span className="w-16 flex-shrink-0" />}
       {c.linkedKrId ? (
         <span className="text-xs text-[var(--color-accent)]" title="已挂 KR → BSC 脊梁">↳ KR</span>
       ) : c.linkedProjectCode ? (
-        <span className="text-xs text-[var(--color-text-muted)]">→ {c.linkedProjectCode}</span>
+        <span className="text-caption">→ {c.linkedProjectCode}</span>
       ) : (
         <span className="w-8" />
       )}
@@ -72,7 +72,7 @@ export function CommitmentCockpit({
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-[var(--color-text-primary)]">承诺兑现{sliceLabel ? ` · ${sliceLabel}` : ""}</h2>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">坚守驾驶舱 · 逾期即示警 · 承诺挂 KR 冒泡 BSC</p>
+          <p className="mt-0.5 text-caption">坚守驾驶舱 · 逾期即示警 · 承诺挂 KR 冒泡 BSC</p>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="text-[var(--color-text-muted)]">本片兑现率</span>
@@ -102,7 +102,7 @@ export function CommitmentCockpit({
       {/* 我的承诺 */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-          我的承诺{myName ? ` · ${myName}` : ""} <span className="text-xs text-[var(--color-text-muted)]">({mine.length})</span>
+          我的承诺{myName ? ` · ${myName}` : ""} <span className="text-caption">({mine.length})</span>
         </h3>
         {mine.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)]">暂无归属你的承诺记录。</p>
@@ -118,7 +118,7 @@ export function CommitmentCockpit({
       {/* 我团队欠的 */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-[var(--color-text-primary)]">
-          我团队欠的 <span className="text-xs text-[var(--color-text-muted)]">(责任人 × 兑现)</span>
+          我团队欠的 <span className="text-caption">(责任人 × 兑现)</span>
         </h3>
         {teamByOwner.length === 0 ? (
           <p className="text-sm text-[var(--color-text-muted)]">本片无其他责任人的承诺。</p>
@@ -126,7 +126,7 @@ export function CommitmentCockpit({
           <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--surface-border)] text-left text-xs text-[var(--color-text-muted)]">
+                <tr className="border-b border-[var(--surface-border)] text-left text-caption">
                   <th className="px-4 py-2 font-normal">责任人</th>
                   <th className="px-4 py-2 font-normal">承诺数</th>
                   <th className="px-4 py-2 font-normal">逾期</th>

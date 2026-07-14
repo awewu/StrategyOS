@@ -116,7 +116,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
       {!line && (
         <div className="rounded-xl border border-dashed border-[var(--surface-border)] p-12 text-center">
           <p className="text-sm text-[var(--color-text-secondary)]">还没有产品线画像</p>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-caption">
             创新底座 = 一套方法论 × N 份画像。先建一条产品线,声明它的死穴与过关标准。
           </p>
         </div>
@@ -225,7 +225,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                 <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{detailBet.title}</h3>
                 <div className="mt-1 flex items-center gap-2">
                   <VerdictBadge verdict={detailBet.gate.verdict} />
-                  <span className="text-xs text-[var(--color-text-muted)]">{STAGE_LABEL[detailBet.stageGate]} · {detailBet.horizon}</span>
+                  <span className="text-caption">{STAGE_LABEL[detailBet.stageGate]} · {detailBet.horizon}</span>
                   {detailBet.abandonRight && <span className="text-[11px] text-[var(--signal-green)]">保留放弃权</span>}
                 </div>
               </div>

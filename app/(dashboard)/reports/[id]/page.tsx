@@ -237,7 +237,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
           <DetailItem label="解析状态" value={report.hasParsed ? parseEngineLabel(report.parseEngine) : "未解析"} />
         </div>
         {report.hasParsed && (
-          <div className="mt-4 grid gap-3 rounded-lg border border-[var(--surface-border)] bg-black/[0.02] p-3 text-xs text-[var(--color-text-muted)] sm:grid-cols-3">
+          <div className="mt-4 grid gap-3 rounded-lg border border-[var(--surface-border)] bg-black/[0.02] p-3 text-caption sm:grid-cols-3">
             <div>
               <span className="font-medium text-[var(--color-text-primary)]">{report.signalCount}</span> 条业务信号
             </div>

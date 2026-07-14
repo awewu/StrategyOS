@@ -100,7 +100,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
         style={{ marginLeft: depth * 16 }}>
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm text-[var(--color-text-primary)] truncate">{u.name}</span>
-          {u.nameEn && <span className="text-xs text-[var(--color-text-muted)] truncate">{u.nameEn}</span>}
+          {u.nameEn && <span className="text-caption truncate">{u.nameEn}</span>}
           {u.planCount > 0 && (
             <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">
               {u.planCount} 份战略
@@ -117,7 +117,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
               className="rounded px-2 py-1 text-xs text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10">+ 二级部门</button>
           )}
           <button onClick={() => editUnit(u)}
-            className="rounded px-2 py-1 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.04]">改</button>
+            className="rounded px-2 py-1 text-caption hover:bg-black/[0.04]">改</button>
           <button onClick={() => remove(u)}
             className="rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删</button>
         </div>
@@ -162,7 +162,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
           ))}
         </div>
 
-        <p className="mt-4 text-xs text-[var(--color-text-muted)]">
+        <p className="mt-4 text-caption">
           已挂战略计划的单位不可删除（保留历史）；有子部门的单位需先处理子部门。
         </p>
       </div>

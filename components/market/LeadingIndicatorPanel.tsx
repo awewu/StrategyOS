@@ -41,7 +41,7 @@ export function LeadingIndicatorPanel({ signals }: { signals: IntelSignal[] }) {
                   <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-xs text-[var(--color-accent)]">
                     {DIMENSION_LABEL[s.dimension]}
                   </span>
-                  <span className="font-data text-xs text-[var(--color-text-muted)]">相关度 {s.relevance}</span>
+                  <span className="font-data text-caption">相关度 {s.relevance}</span>
                 </div>
                 <p className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">{s.title}</p>
                 <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">{s.summary}</p>

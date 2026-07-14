@@ -194,7 +194,7 @@ export function CultureTabs({
         </div>
         {tab === "awards" ? (
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="text-xs text-[var(--color-text-muted)]">
+            <span className="text-caption">
               数据源 {source === "database" ? "DB" : "Demo"}
             </span>
             {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
@@ -447,10 +447,10 @@ export function CultureTabs({
                   ) : (
                     <>
                       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                        <time className="font-data text-xs text-[var(--color-text-muted)]">{r.date}</time>
-                        {r.unit !== "—" ? <span className="text-xs text-[var(--color-text-muted)]">{r.unit}</span> : null}
+                        <time className="font-data text-caption">{r.date}</time>
+                        {r.unit !== "—" ? <span className="text-caption">{r.unit}</span> : null}
                         {r.relatedPrinciple ? (
-                          <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-muted)]">
+                          <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-caption">
                             {r.relatedPrinciple}
                           </span>
                         ) : null}

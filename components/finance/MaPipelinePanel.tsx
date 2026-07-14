@@ -39,7 +39,7 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
                     <div className="mt-1 text-xs text-[var(--color-accent)]">
                       {DIR_LABEL[item.direction]} · {item.valuationRange}
                     </div>
-                    <p className="mt-2 text-xs text-[var(--color-text-muted)]">
+                    <p className="mt-2 text-caption">
                       {item.synergyThesis}
                     </p>
                     {item.integrationMilestone100d && (
@@ -55,7 +55,7 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
                   </div>
                 ))}
                 {col.length === 0 && (
-                  <div className="py-6 text-center text-xs text-[var(--color-text-muted)]">—</div>
+                  <div className="py-6 text-center text-caption">—</div>
                 )}
               </div>
             </div>

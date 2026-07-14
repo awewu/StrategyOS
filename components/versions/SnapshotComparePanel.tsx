@@ -170,7 +170,7 @@ export function SnapshotComparePanel() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-medium text-[var(--color-text-primary)]">组织战略版本对比</h2>
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-1 text-caption">
             先选择组织，再选择该组织的两个提交版本；对比结果只预览，不写入公司级 StratDiff
           </p>
         </div>
@@ -182,7 +182,7 @@ export function SnapshotComparePanel() {
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_auto] md:items-end">
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           组织
           <select
             value={orgUnitId}
@@ -196,7 +196,7 @@ export function SnapshotComparePanel() {
             ))}
           </select>
         </label>
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           旧版本
           <select
             value={fromId}
@@ -210,7 +210,7 @@ export function SnapshotComparePanel() {
             ))}
           </select>
         </label>
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           新版本
           <select
             value={toId}
@@ -237,7 +237,7 @@ export function SnapshotComparePanel() {
       {error ? <p className="mt-3 text-sm text-[var(--signal-red)]">{error}</p> : null}
 
       <div className="mt-5 border-t border-[var(--surface-border)] pt-4">
-        <div className="mb-3 flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-muted)]">
+        <div className="mb-3 flex flex-wrap items-center gap-3 text-caption">
           <span>差异 {diffs.length} 条</span>
           {source ? <span>数据源 {source}</span> : null}
           {snapshots.length < 2 ? <span>该组织至少需要两个提交版本才能对比</span> : null}
@@ -249,7 +249,7 @@ export function SnapshotComparePanel() {
         ) : (
           <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)]">
             <table className="min-w-[980px] w-full border-collapse text-left text-sm">
-              <thead className="bg-black/[0.03] text-xs text-[var(--color-text-muted)]">
+              <thead className="bg-black/[0.03] text-caption">
                 <tr>
                   <th className="w-32 px-3 py-2 font-medium">模块</th>
                   <th className="w-20 px-3 py-2 font-medium">级别</th>
@@ -270,7 +270,7 @@ export function SnapshotComparePanel() {
                         {group}
                       </td>
                       <td className="px-3 py-3">
-                        <span className="inline-flex items-center gap-2 whitespace-nowrap text-xs text-[var(--color-text-muted)]">
+                        <span className="inline-flex items-center gap-2 whitespace-nowrap text-caption">
                           <TrafficLightDot signal={severitySignal(diff.severity)} />
                           {severityLabel(diff.severity)}
                         </span>
@@ -291,7 +291,7 @@ export function SnapshotComparePanel() {
                           {diff.after ?? "-"}
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-xs text-[var(--color-text-muted)]">
+                      <td className="px-3 py-3 text-caption">
                         {diff.detail ?? "-"}
                       </td>
                     </tr>

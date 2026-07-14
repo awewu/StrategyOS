@@ -40,10 +40,10 @@ function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: Mark
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: meta.color }} />
             <span className="text-sm font-medium">{item.actionLabel}</span>
-            {item.actionCode && <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-xs text-[var(--color-text-muted)]">{item.actionCode}</span>}
+            {item.actionCode && <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-caption">{item.actionCode}</span>}
           </div>
           {item.linkedAssumptionCode && (
-            <span className="ml-3.5 text-xs text-[var(--color-text-muted)]">假设 {item.linkedAssumptionCode}</span>
+            <span className="ml-3.5 text-caption">假设 {item.linkedAssumptionCode}</span>
           )}
         </div>
         <div className="flex flex-shrink-0 items-center gap-2">
@@ -55,7 +55,7 @@ function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: Mark
       </div>
       <p className="text-sm leading-relaxed">{item.evidenceText}</p>
       {item.verdictNote && (
-        <p className="mt-2 text-xs text-[var(--color-text-muted)]">→ {item.verdictNote}</p>
+        <p className="mt-2 text-caption">→ {item.verdictNote}</p>
       )}
       <div className="mt-3 flex gap-3 text-xs text-[var(--color-text-secondary)]">
         {item.evidenceSource && <span>{item.evidenceSource}</span>}
@@ -203,7 +203,7 @@ function CompetitiveTable({ positions, onEdit }: {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs text-[var(--color-text-muted)]">竞争位移对标</span>
+        <span className="text-caption">竞争位移对标</span>
         {missingCount > 0 && (
           <span className="text-xs text-[var(--color-text-secondary)]">{missingCount} 项对标数据缺失</span>
         )}
@@ -282,7 +282,7 @@ export function MarketResponsePanel({
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-base font-semibold">市场-执行对照</h2>
-          <p className="mt-0.5 text-xs text-[var(--color-text-muted)]">
+          <p className="mt-0.5 text-caption">
             战略行动 × 市场反馈 × 假设验收 · 空白即预警——缺失数据反映对市场的把控程度
           </p>
         </div>
@@ -309,7 +309,7 @@ export function MarketResponsePanel({
       </div>
 
       {emptyCount > 0 && (
-        <div className="rounded-lg border border-[var(--surface-border-strong)] bg-[var(--surface-raised)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
+        <div className="rounded-lg border border-[var(--surface-border-strong)] bg-[var(--surface-raised)] px-4 py-3 text-caption">
           <span className="text-[var(--color-text-muted)]">{emptyCount} 个战略行动缺少市场反馈录入</span>
           {" "}— 战略会前要求责任人补录，缺失本身是对市场理解深度的考核。
           {cpMissingCount > 0 && <span> 竞争位移表另有 {cpMissingCount} 项对标数据缺失。</span>}

@@ -24,7 +24,7 @@ function PlanLifecycleHeader() {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">战略计划生命周期</h3>
-      <span className="rounded bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-muted)]">{HORIZON}</span>
+      <span className="rounded bg-black/[0.04] px-2 py-0.5 text-caption">{HORIZON}</span>
     </div>
   );
 }
@@ -138,7 +138,7 @@ export function PlanLifecycleBar() {
         <PlanLifecycleHeader />
         <PlanLifecycleTimeline activeIndex={-1} />
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-[var(--color-text-muted)]">
+          <p className="text-caption">
             暂无 {HORIZON} 战略计划。在「战略一页纸」或「战略解码」完成规划后，此处会自动识别生命周期状态。
           </p>
           <button type="button" disabled className="stratos-btn px-3 py-1.5 text-xs opacity-50">
@@ -198,7 +198,7 @@ export function PlanLifecycleBar() {
           锁定于 {new Date(lifecycle.lockedAt).toLocaleString("zh-CN")} · 定稿后导入写入冻结，推演预览仍可用
         </p>
       ) : null}
-      {msg ? <p className="text-xs text-[var(--color-text-muted)]">{msg}</p> : null}
+      {msg ? <p className="text-caption">{msg}</p> : null}
     </div>
   );
 }

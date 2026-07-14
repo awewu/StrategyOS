@@ -157,7 +157,7 @@ export function DecodeWorkspace({
       )}
 
       <div className="stratos-card stratos-card--padded flex flex-wrap items-center gap-3">
-        <span className="text-xs text-[var(--color-text-muted)]">
+        <span className="text-caption">
           数据源 {source === "database" ? "DB" : "Demo"} · 在线录入 / Excel 导入
         </span>
         <div className="ml-auto flex flex-wrap items-center gap-2">

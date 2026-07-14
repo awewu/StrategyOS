@@ -324,7 +324,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
             setPage(1);
             setFilters({ orgUnitId: "", reportType: "", period: "", approval: "" });
           }}
-          className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+          className="text-caption hover:text-[var(--color-text-primary)]"
         >
           清除筛选
         </button>
@@ -397,7 +397,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-caption">
         <span>
           共 {pagination.total} 条 · 第 {pagination.page} / {pagination.totalPages} 页
         </span>

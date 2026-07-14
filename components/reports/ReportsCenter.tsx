@@ -119,7 +119,7 @@ export function ReportsCenter({
 
   return (
     <div className="space-y-8">
-      <p className="text-xs text-[var(--color-text-muted)]">
+      <p className="text-caption">
         Agent 管道 · 数据源 {source}
         {llmAvailable === true && (
           <span className="ml-2 text-[var(--accent-sim)]">· LLM 已配置</span>
@@ -140,7 +140,7 @@ export function ReportsCenter({
           <button
             type="button"
             onClick={() => setShowTemplate((v) => !v)}
-            className="rounded-xl border border-[var(--surface-border)] px-3 py-2 text-xs text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-primary)]"
+            className="rounded-xl border border-[var(--surface-border)] px-3 py-2 text-caption transition-colors hover:text-[var(--color-text-primary)]"
           >
             {showTemplate ? "隐藏章节指南" : "章节指南"}
           </button>
@@ -225,7 +225,7 @@ export function ReportsCenter({
               <div>
                 <span className="font-data text-xs text-[var(--color-accent)]">{r.type}</span>
                 <h2 className="font-medium">{r.title}</h2>
-                <p className="text-xs text-[var(--color-text-muted)]">
+                <p className="text-caption">
                   {r.period} · {r.id}
                 </p>
               </div>
@@ -253,7 +253,7 @@ export function ReportsCenter({
             </div>
             {r.patterns.length > 0 && (
               <div className="mt-3 border-t border-white/[0.04] pt-3">
-                <div className="text-xs text-[var(--color-text-muted)]">§8 战略模式观察</div>
+                <div className="text-caption">§8 战略模式观察</div>
                 <ul className="mt-1 text-sm">
                   {r.patterns.map((p) => (
                     <li key={p}>· {p}</li>
@@ -276,7 +276,7 @@ export function ReportsCenter({
           {parseResult.engine && (
             <p className="mb-2 text-xs text-[var(--accent-sim)]">解析引擎：{parseResult.engine}</p>
           )}
-          <ul className="space-y-1 font-mono text-xs text-[var(--color-text-muted)]">
+          <ul className="space-y-1 font-mono text-caption">
             {parseResult.agentTrace?.map((t) => (
               <li key={t}>{t}</li>
             ))}
@@ -289,19 +289,19 @@ export function ReportsCenter({
               <dl className="mt-3 grid gap-3 text-sm md:grid-cols-2">
                 {parseResult.mckinsey.situation && (
                   <div>
-                    <dt className="text-xs text-[var(--color-text-muted)]">§S</dt>
+                    <dt className="text-caption">§S</dt>
                     <dd>{parseResult.mckinsey.situation}</dd>
                   </div>
                 )}
                 {parseResult.mckinsey.complication && (
                   <div>
-                    <dt className="text-xs text-[var(--color-text-muted)]">§C</dt>
+                    <dt className="text-caption">§C</dt>
                     <dd>{parseResult.mckinsey.complication}</dd>
                   </div>
                 )}
                 {parseResult.mckinsey.resolution && (
                   <div>
-                    <dt className="text-xs text-[var(--color-text-muted)]">§R</dt>
+                    <dt className="text-caption">§R</dt>
                     <dd>{parseResult.mckinsey.resolution}</dd>
                   </div>
                 )}

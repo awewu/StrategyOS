@@ -88,7 +88,7 @@ export function Scoreboard4DXEditor({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <span className="text-xs text-[var(--color-text-muted)]">
+        <span className="text-caption">
           4DX 记分板 {source === "database" ? "· 已自定义" : "· 诊断推导"}
         </span>
         {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}
@@ -138,7 +138,7 @@ export function Scoreboard4DXEditor({
 
       {editing ? (
         <section className="space-y-4 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-6">
-          <label className="block text-xs text-[var(--color-text-muted)]">
+          <label className="block text-caption">
             WIG 目标（Objective）
             <select
               className="mt-1 w-full rounded-lg border border-[var(--surface-border)] bg-transparent px-2 py-1.5 text-sm"
@@ -177,7 +177,7 @@ export function Scoreboard4DXEditor({
             <p className="mb-2 text-xs font-medium text-[var(--color-text-secondary)]">滞后指标 KR</p>
             <div className="flex flex-wrap gap-2">
               {laggingOptions.length === 0 ? (
-                <span className="text-xs text-[var(--color-text-muted)]">暂无滞后 KR</span>
+                <span className="text-caption">暂无滞后 KR</span>
               ) : (
                 laggingOptions.map((kr) => (
                   <label key={kr.id} className="flex items-center gap-1.5 text-xs">

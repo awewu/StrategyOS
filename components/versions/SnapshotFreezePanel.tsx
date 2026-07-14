@@ -47,7 +47,7 @@ export function SnapshotFreezePanel({ activePeriod }: { activePeriod: string }) 
   return (
     <section className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-2 text-sm font-medium">快照定稿 · Snapshot Freeze</h2>
-      <p className="mb-4 text-xs text-[var(--color-text-muted)]">
+      <p className="mb-4 text-caption">
         战略会定稿后只读 · 含 FPA + 三栈 + HealthAssertion · 断言未解除则硬阻断 · 有 DB 时持久化
       </p>
       <div className="flex flex-wrap gap-3">

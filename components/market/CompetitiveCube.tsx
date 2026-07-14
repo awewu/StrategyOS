@@ -121,7 +121,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                   ) : (
                     <button onClick={() => toggleExpand(row.id)}
                       className="flex w-full items-center gap-1 px-4 text-left text-sm text-[var(--color-text-primary)]">
-                      <span className="text-xs text-[var(--color-text-muted)]">{expandedRegions.has(row.id) ? "▾" : "▸"}</span>
+                      <span className="text-caption">{expandedRegions.has(row.id) ? "▾" : "▸"}</span>
                       {row.name}
                       {(provincesByRegion[row.id]?.length ?? 0) > 0 && (
                         <span className="text-[11px] text-[var(--color-text-muted)]">({provincesByRegion[row.id]!.length}省)</span>

@@ -116,7 +116,7 @@ export function LoginForm({
 
       {showDemo && (
         <div className="space-y-2">
-          <p className="text-xs text-[var(--color-text-muted)]">演示账号（开发 / 无 SSO 时）</p>
+          <p className="text-caption">演示账号（开发 / 无 SSO 时）</p>
           {DEMO_USERS.map((u) => (
             <button
               key={u.email}
@@ -136,12 +136,12 @@ export function LoginForm({
       )}
 
       {!showDemo && (showWorkos || tandemReady) && (
-        <p className="text-center text-xs text-[var(--color-text-muted)]">
+        <p className="text-center text-caption">
           演示登录已关闭 — 请使用上方企业 SSO 登录。
         </p>
       )}
 
-      <div className="rounded-lg border border-[var(--surface-border)] p-4 text-xs text-[var(--color-text-muted)]">
+      <div className="rounded-lg border border-[var(--surface-border)] p-4 text-caption">
         <p className="font-medium text-[var(--color-text-primary)]">Enterprise SSO</p>
         {workosReady ? (
           <p className="mt-1">WorkOS 已配置 — AuthKit SSO 可用。</p>

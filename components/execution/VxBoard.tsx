@@ -24,7 +24,7 @@ export function VxBoard({ projects }: { projects: Project[] }) {
               <tr key={vx.id} className="border-b border-[var(--surface-border)] hover:bg-black/[0.02]">
                 <td className="px-4 py-3">
                   <div className="font-medium">{vx.code}</div>
-                  <div className="text-xs text-[var(--color-text-muted)]">{vx.name}</div>
+                  <div className="text-caption">{vx.name}</div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="font-data">{vx.progressPercent}%</div>
@@ -41,7 +41,7 @@ export function VxBoard({ projects }: { projects: Project[] }) {
                 <td className="px-4 py-3">
                   <CynefinBadge domain={vx.cynefinDomain} />
                 </td>
-                <td className="px-4 py-3 font-data text-xs text-[var(--color-text-muted)]">
+                <td className="px-4 py-3 font-data text-caption">
                   {vx.horizon ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-[var(--color-text-muted)]">{vx.owner}</td>

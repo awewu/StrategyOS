@@ -74,7 +74,7 @@ export function IntelSourcesEditor({ sources: init, saving, post, del }: {
               <tr key={s.id} className={s.active ? "" : "opacity-40"}>
                 <td className="px-3 py-2.5 font-medium text-[var(--color-text-primary)]">{s.competitor}</td>
                 <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">{SOURCE_LABEL[s.kind]}</td>
-                <td className="px-3 py-2.5 max-w-[200px] truncate text-xs text-[var(--color-text-muted)]">
+                <td className="px-3 py-2.5 max-w-[200px] truncate text-caption">
                   {s.url ?? "—"}
                 </td>
                 <td className="px-3 py-2.5 font-data text-[var(--color-text-secondary)]">{s.cadenceDays}d</td>

@@ -31,7 +31,7 @@ export function CounterfactualPanel() {
   return (
     <section className="rounded-lg border border-[color-mix(in_srgb,var(--accent-sim)_30%,transparent)] bg-[var(--color-bg-surface)] p-6">
       <h2 className="mb-2 text-sm font-medium text-[var(--accent-sim)]">反事实 diff</h2>
-      <p className="mb-4 text-xs text-[var(--color-text-muted)]">
+      <p className="mb-4 text-caption">
         「如果当时选了 B 路径」— 基于当前工作版本基线 + 历史校准推演
       </p>
 
@@ -50,7 +50,7 @@ export function CounterfactualPanel() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-end gap-3 rounded border border-[var(--surface-border)] p-3">
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           类型
           <select
             value={customType}
@@ -62,7 +62,7 @@ export function CounterfactualPanel() {
             <option value="price_cut">降价幅度（0–0.4）</option>
           </select>
         </label>
-        <label className="text-xs text-[var(--color-text-muted)]">
+        <label className="text-caption">
           幅度
           <input
             type="number"
@@ -97,7 +97,7 @@ export function CounterfactualPanel() {
         ).map((s) => (
           <div key={s.id} className="rounded border border-[var(--surface-border)] p-4">
             <div className="text-sm font-medium">{s.premise}</div>
-            <p className="mt-1 text-xs text-[var(--color-text-muted)]">{s.impact}</p>
+            <p className="mt-1 text-caption">{s.impact}</p>
             {s.linkedDiff.length > 0 && (
               <span className="mt-2 inline-block font-mono text-[11px] text-[var(--accent-sim)]">
                 {s.linkedDiff.join(" · ")}

@@ -102,7 +102,7 @@ export async function OrgSlicePanel({
                 key={t.id}
                 className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4"
               >
-                <p className="text-xs text-[var(--color-text-muted)]">{t.projectCode}</p>
+                <p className="text-caption">{t.projectCode}</p>
                 <p className="mt-1 text-sm font-medium">{t.projectName}</p>
                 <p className="mt-2 line-clamp-2 text-xs text-[var(--color-text-secondary)]">{t.signal}</p>
               </li>
@@ -119,7 +119,7 @@ export async function OrgSlicePanel({
 
       <SliceExecutionExpand slice={slice} data={exec} />
 
-      <p className="text-xs text-[var(--color-text-muted)]">
+      <p className="text-caption">
         {kind === "bu" ? "事业部" : "职能体系"} · N-1 监测 · 数据源 {exec.source === "database" ? "DB" : "Demo"}
       </p>
     </div>

@@ -12,7 +12,7 @@ export function StrategyPatternPanel({ pattern }: { pattern: StrategyPattern }) 
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         <div>
-          <h3 className="mb-2 text-xs text-[var(--color-text-muted)]">涌现 emergent</h3>
+          <h3 className="mb-2 text-caption">涌现 emergent</h3>
           <ul className="space-y-1 text-sm">
             {pattern.emergentPatterns.map((e) => (
               <li key={e.title}>· {e.title}</li>
@@ -20,7 +20,7 @@ export function StrategyPatternPanel({ pattern }: { pattern: StrategyPattern }) 
           </ul>
         </div>
         <div>
-          <h3 className="mb-2 text-xs text-[var(--color-text-muted)]">未实现 unrealized</h3>
+          <h3 className="mb-2 text-caption">未实现 unrealized</h3>
           <ul className="space-y-1 text-sm">
             {pattern.unrealizedItems.map((u) => (
               <li key={u.title}>· {u.title}</li>
@@ -28,7 +28,7 @@ export function StrategyPatternPanel({ pattern }: { pattern: StrategyPattern }) 
           </ul>
         </div>
         <div>
-          <h3 className="mb-2 text-xs text-[var(--color-text-muted)]">偶成 serendipitous</h3>
+          <h3 className="mb-2 text-caption">偶成 serendipitous</h3>
           <ul className="space-y-1 text-sm">
             {pattern.serendipitousItems.map((s) => (
               <li key={s.title}>· {s.title}</li>

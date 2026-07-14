@@ -107,7 +107,7 @@ export function Modal({
           <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h3>
         )}
         {subtitle !== undefined && (
-          <p className="mt-1 text-xs text-[var(--color-text-muted)]">{subtitle}</p>
+          <p className="mt-1 text-caption">{subtitle}</p>
         )}
         {(title !== undefined || subtitle !== undefined) && <div className="mt-4" />}
         {children}

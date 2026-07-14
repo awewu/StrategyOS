@@ -16,7 +16,7 @@ function StackItemChip({
 }) {
   return (
     <div className="rounded border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3">
-      <div className="text-xs text-[var(--color-text-muted)]">{label}</div>
+      <div className="text-caption">{label}</div>
       <div className="mt-1 font-medium">{title}</div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs">
         <span className="rounded bg-black/[0.04] px-2 py-0.5">{status}</span>
@@ -44,7 +44,7 @@ export function ThreeStackPanel({
     <section className="space-y-4">
       <div>
         <h2 className="text-sm font-medium text-[var(--color-text-primary)]">{labelFor("threeStack")}</h2>
-        <p className="text-xs text-[var(--color-text-muted)]">资本 · 产品 · 渠道 — 每项可挂 budget_tag 联动 FPA</p>
+        <p className="text-caption">资本 · 产品 · 渠道 — 每项可挂 budget_tag 联动 FPA</p>
       </div>
       <div className="rounded-md bg-[var(--color-accent)]/10 px-4 py-2 text-sm text-[var(--color-accent)]">
         CapStack · {capSummary}

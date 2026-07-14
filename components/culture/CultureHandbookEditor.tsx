@@ -82,7 +82,7 @@ export function CultureHandbookEditor({
 
   const toolbar = (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <span className="text-xs text-[var(--color-text-muted)]">
+      <span className="text-caption">
         手册 {source === "database" ? "DB" : "Demo"}
       </span>
       {msg ? <span className="text-xs text-[var(--color-accent)]">{msg}</span> : null}
