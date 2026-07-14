@@ -25,7 +25,8 @@
     "test:compiler-chain": "npx tsx scripts/e2e-compiler-chain.ts",
     "harness": "npx tsx scripts/harness.ts",
     "harness:full": "npx tsx scripts/harness.ts --full",
-    "harness:ci": "npx tsx scripts/harness.ts --ci",
+    "check:type-drift": "npx tsx scripts/check-type-drift.ts",
+    "harness:ci": "npx tsx scripts/check-type-drift.ts && npx tsx scripts/harness.ts --ci",
     "check": "npm run harness:ci",
     "plan:export": "npx tsx scripts/export-strategic-plan.ts",
     "plan:restore": "npx tsx scripts/import-strategic-plan.ts"
