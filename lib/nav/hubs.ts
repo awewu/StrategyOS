@@ -199,6 +199,7 @@ export function flattenNavLinks(): { href: string; label: string; group: Palette
     { href: "/council?tab=gates", label: "战略会 · 准入 Gate", group: "工具" },
     { href: "/council?tab=meeting", label: "战略会 · 会议工具", group: "工具" },
     { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "战略" },
+    { href: "/decode?tab=okr", label: "战略解码 · OKR", group: "战略" },
     { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
     { href: "/finance/ledger", label: "FPA · 总账中台", group: "财务" },
   );
