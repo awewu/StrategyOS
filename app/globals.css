@@ -1130,15 +1130,15 @@ a.stratos-segment__item {
     grid-column: span 4;
   }
 
+  .stratos-command-board__robust {
+    grid-column: span 8;
+  }
+
   .stratos-command-board__fpa {
-    grid-column: span 9;
+    grid-column: span 4;
   }
 
-  .stratos-command-board__baf {
-    grid-column: span 3;
-  }
-
-  .stratos-command-board__robust,
+  .stratos-command-board__baf,
   .stratos-command-board__spbp,
   .stratos-command-board__diff,
   .stratos-command-board__alerts {
