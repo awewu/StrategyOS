@@ -590,6 +590,31 @@ model CashPosition {
   @@map("cash_positions")
 }
 
+/// 公司级 KPI 健康管理表：每行一个指标，6 维度（本期/目标/同期/季度/YTD/年度）。
+model KpiHealthMetric {
+  id             String     @id @default(uuid())
+  period         String     @db.VarChar(10)
+  scope          FpaScope   @default(company)
+  brandCode      BrandCode? @map("brand_code")
+  name           String     @db.VarChar(80)
+  category       String?    @db.VarChar(40)
+  unit           String     @default("percent") @db.VarChar(16)
+  currentValue   Decimal?   @map("current_value") @db.Decimal(18, 4)
+  targetValue    Decimal?   @map("target_value") @db.Decimal(18, 4)
+  priorYearValue Decimal?   @map("prior_year_value") @db.Decimal(18, 4)
+  qtdValue       Decimal?   @map("qtd_value") @db.Decimal(18, 4)
+  ytdValue       Decimal?   @map("ytd_value") @db.Decimal(18, 4)
+  fullYearValue  Decimal?   @map("full_year_value") @db.Decimal(18, 4)
+  higherIsBetter Boolean    @default(true) @map("higher_is_better")
+  sortOrder      Int        @default(0) @map("sort_order")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@unique([period, scope, brandCode, name])
+  @@index([period, scope])
+  @@map("kpi_health_metrics")
+}
+
 model Objective {
   id            String      @id @default(uuid())
   period        String      @db.VarChar(10)
@@ -2688,9 +2713,9 @@ model InnovationEvidence {
   /// 接地物证（URL/文件/文档编号）——缺失时证据级别封顶 L2（见 lib/innovation/engine.ts groundedEvidenceLevel）
   artifactRef String?         @map("artifact_ref") @db.VarChar(300)
   note        String?         @db.VarChar(500)
-  stale      Boolean         @default(false)
-  capturedAt DateTime        @default(now()) @map("captured_at")
-  claim      InnovationClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  stale       Boolean         @default(false)
+  capturedAt  DateTime        @default(now()) @map("captured_at")
+  claim       InnovationClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
 
   @@index([claimId])
   @@map("innovation_evidence")
@@ -3070,20 +3095,20 @@ enum FinImportStatus {
 
 // 预算编制版本（草案→上报→批准/退回的工作流）
 model FinBudgetVersion {
-  id          String              @id @default(uuid())
-  fiscalYear  String              @map("fiscal_year") @db.VarChar(10)
-  name        String              @db.VarChar(120)
-  scenarioCode String?            @map("scenario_code") @db.VarChar(40)
-  status      FinBudgetStatus     @default(draft)
-  notes       String?             @db.VarChar(1000)
-  createdBy   String?             @map("created_by") @db.VarChar(100)
-  submittedAt DateTime?           @map("submitted_at")
-  submittedBy String?             @map("submitted_by") @db.VarChar(100)
-  decidedAt   DateTime?           @map("decided_at")
-  decidedBy   String?             @map("decided_by") @db.VarChar(100)
-  decisionNote String?            @map("decision_note") @db.VarChar(500)
-  createdAt   DateTime            @default(now()) @map("created_at")
-  updatedAt   DateTime            @updatedAt @map("updated_at")
+  id           String          @id @default(uuid())
+  fiscalYear   String          @map("fiscal_year") @db.VarChar(10)
+  name         String          @db.VarChar(120)
+  scenarioCode String?         @map("scenario_code") @db.VarChar(40)
+  status       FinBudgetStatus @default(draft)
+  notes        String?         @db.VarChar(1000)
+  createdBy    String?         @map("created_by") @db.VarChar(100)
+  submittedAt  DateTime?       @map("submitted_at")
+  submittedBy  String?         @map("submitted_by") @db.VarChar(100)
+  decidedAt    DateTime?       @map("decided_at")
+  decidedBy    String?         @map("decided_by") @db.VarChar(100)
+  decisionNote String?         @map("decision_note") @db.VarChar(500)
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
 
   @@index([fiscalYear, status])
   @@map("fin_budget_versions")
