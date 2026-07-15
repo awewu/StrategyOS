@@ -31,7 +31,7 @@ export function KpiTile({
   value,
   sub,
   delta,
-  tone = "gold",
+  tone = "teal",
   href,
   size = "default",
   className = "",
@@ -40,7 +40,7 @@ export function KpiTile({
   value: string;
   sub?: string;
   delta?: { value: number; label?: string; higherIsBetter?: boolean };
-  tone?: "gold" | "green" | "red" | "neutral";
+  tone?: "teal" | "green" | "red" | "neutral";
   href?: string;
   size?: "default" | "hero";
   className?: string;
@@ -81,7 +81,7 @@ export function KpiTile({
 }
 
 const SECTION_ACCENT: Record<string, string> = {
-  gold: "var(--color-accent)",
+  teal: "var(--color-accent)",
   sky: "var(--ruud-cyan, var(--color-accent))",
   violet: "var(--accent-sim, #6d3fc0)",
   green: "var(--signal-green)",
@@ -101,7 +101,7 @@ export function SectionCard({
   title: string;
   subtitle?: string;
   children: ReactNode;
-  accent?: "gold" | "sky" | "violet" | "green";
+  accent?: "teal" | "sky" | "violet" | "green";
   action?: ReactNode;
   footer?: ReactNode;
   dense?: boolean;

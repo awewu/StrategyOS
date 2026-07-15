@@ -172,7 +172,7 @@ export default async function CommandPage() {
         </div>
 
         <div className="stratos-command-board__baf">
-          <SectionCard title="B-A-F 闭环" subtitle="营收 · 利润 · 与 FPA 联动" accent="gold">
+          <SectionCard title="B-A-F 闭环" subtitle="营收 · 利润 · 与 FPA 联动" accent="teal">
             <BafBar fpa={deck.fpa} />
           </SectionCard>
         </div>
@@ -184,7 +184,7 @@ export default async function CommandPage() {
         </div>
 
         <div className="stratos-command-board__diff">
-          <SectionCard title="Top3 StratDiff" subtitle="版本间关键变化" accent="gold">
+          <SectionCard title="Top3 StratDiff" subtitle="版本间关键变化" accent="teal">
             <ul className="space-y-3">
               {top3.map((d, i) => (
                 <li key={i} className="flex gap-3 stratos-prose">

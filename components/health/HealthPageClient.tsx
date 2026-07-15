@@ -112,7 +112,7 @@ export function HealthPageClient({
             label="BSC 预警"
             value={`${redLights} 红 · ${yellowLights} 黄`}
             sub="四满意灯色"
-            tone={redLights > 0 ? "red" : yellowLights > 0 ? "gold" : "green"}
+            tone={redLights > 0 ? "red" : yellowLights > 0 ? "teal" : "green"}
           />
           <KpiTile
             label="现金 Runway"

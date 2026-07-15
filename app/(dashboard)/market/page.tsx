@@ -174,7 +174,7 @@ export default async function MarketPage({
         <KpiTile
           label="领先信号"
           value={String(ranked.filter((s) => leadTimeOf(s.sourceKind) === "leading").length)}
-          tone="gold"
+          tone="teal"
           sub="提前 6–12 月预警"
         />
         <KpiTile
@@ -186,7 +186,7 @@ export default async function MarketPage({
         <KpiTile
           label="活跃来源"
           value={`${active}/${sources.length}`}
-          tone={active < sources.length ? "gold" : "green"}
+          tone={active < sources.length ? "teal" : "green"}
           sub="Hermes 持续追踪"
         />
       </div>

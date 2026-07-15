@@ -81,7 +81,7 @@ export default async function OutlookPage() {
       </SectionCard>
 
       {/* ④ 财务轨迹（只读 · 编辑入口统一在 FPA） */}
-      <SectionCard title="④ 财务轨迹" subtitle="5 年预测与敏感性 · 只读预览" accent="gold">
+      <SectionCard title="④ 财务轨迹" subtitle="5 年预测与敏感性 · 只读预览" accent="teal">
         <div className="mb-3 flex justify-end">
           <Link href="/finance?tab=forecast" className="stratos-btn stratos-btn--ghost text-xs">
             去 FPA 编辑 →
@@ -99,7 +99,7 @@ export default async function OutlookPage() {
       </SectionCard>
 
       {/* ⑥ what-if 推演 */}
-      <SectionCard title="⑥ What-if 推演" subtitle="驱动弹性 × 滑杆 · 即时看营收/利润/Runway 冲击" accent="gold">
+      <SectionCard title="⑥ What-if 推演" subtitle="驱动弹性 × 滑杆 · 即时看营收/利润/Runway 冲击" accent="teal">
         <WhatIfSliders fpa={data.fpa} />
       </SectionCard>
     </div>

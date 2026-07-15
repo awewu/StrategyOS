@@ -3,7 +3,7 @@ import { SectionCard } from "@/components/ui/KpiTile";
 
 export function RealOptionsPanel({ options }: { options: RealOptionTag[] }) {
   return (
-    <SectionCard title="Real Options · 分阶段投资" accent="gold" dense>
+    <SectionCard title="Real Options · 分阶段投资" accent="teal" dense>
       <div className="space-y-3">
         {options.map((o) => (
           <div

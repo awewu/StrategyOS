@@ -58,7 +58,7 @@ export function MissionVisionPanel({
   const targetYear = northStar?.targetYear;
 
   return (
-    <SectionCard title="使命愿景" subtitle="North Star · 文化手册同源" accent="gold" action={action}>
+    <SectionCard title="使命愿景" subtitle="North Star · 文化手册同源" accent="teal" action={action}>
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-[var(--surface-border)] bg-black/[0.02] px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">使命 · 为何存在</p>
@@ -120,7 +120,7 @@ export function CoreValuesPanel({ handbook }: { handbook?: CultureHandbookConten
   const intro = h.coreValuesIntro;
   const pillars = h.fourSatisfactionPillars;
   return (
-    <SectionCard title="四个满意" subtitle="核心价值观 · 系统最优，非零和博弈" accent="gold">
+    <SectionCard title="四个满意" subtitle="核心价值观 · 系统最优，非零和博弈" accent="teal">
       <p className={`${typography.body} text-[var(--color-text-secondary)]`}>{intro.body}</p>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {pillars.map((label, i) => (
@@ -187,7 +187,7 @@ export function BehaviorGuidelinesPanel({ handbook }: { handbook?: CultureHandbo
 
 export function ValuesAwardPanel() {
   return (
-    <SectionCard title="价值观评选大奖" subtitle="七大奖项 · 让优秀行为被看见" accent="gold">
+    <SectionCard title="价值观评选大奖" subtitle="七大奖项 · 让优秀行为被看见" accent="teal">
       <p className={`${typography.caption} mb-4`}>
         「四个满意」是行为准则，更是员工成长与企业长期发展的核心逻辑。符合价值观的行为应得到表彰和肯定。
       </p>

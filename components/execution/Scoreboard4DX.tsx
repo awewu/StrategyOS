@@ -25,7 +25,7 @@ function KrProgressBar({ kr }: { kr: KeyResult }) {
 
 export function Scoreboard4DX({ scoreboard }: { scoreboard: ResolvedScoreboard }) {
   return (
-    <SectionCard title="4DX 记分板" accent="gold" dense>
+    <SectionCard title="4DX 记分板" accent="teal" dense>
       <p className="mb-4 text-subsection font-medium text-[var(--color-accent)]">WIG：{scoreboard.wigLabel}</p>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-4">

@@ -61,7 +61,7 @@ export function CapitalTab({
 
   return (
     <div className="space-y-6">
-      <SectionCard title={`CapStack ${capStack.period}`} accent="gold" dense>
+      <SectionCard title={`CapStack ${capStack.period}`} accent="teal" dense>
         <div className="mb-4">
           <div className="mb-1 flex justify-between text-caption">
             <span>CAPEX B-A-F（万）</span>

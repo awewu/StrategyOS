@@ -255,7 +255,7 @@ export function CultureTabs({
 
       {tab === "awards" ? (
         <div className="space-y-6">
-          <SectionCard title="价值观评选大奖" subtitle="七大奖项 · 让优秀行为被看见" accent="gold">
+          <SectionCard title="价值观评选大奖" subtitle="七大奖项 · 让优秀行为被看见" accent="teal">
             <p className={`${typography.caption} mb-4`}>
               「四个满意」是行为准则，更是员工成长与企业长期发展的核心逻辑。
             </p>

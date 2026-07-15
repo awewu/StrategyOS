@@ -43,13 +43,13 @@ export default async function InnovationPage() {
         <KpiTile
           label="下期 commit"
           value={`${committed.toLocaleString("zh-CN")} 万`}
-          tone="gold"
+          tone="teal"
           sub="分段下注 · 错了止损"
         />
         <KpiTile
           label="Gate 阻断"
           value={String(kill + hold)}
-          tone={kill > 0 ? "red" : hold > 0 ? "gold" : "green"}
+          tone={kill > 0 ? "red" : hold > 0 ? "teal" : "green"}
           sub="举证不足则拦截"
         />
       </div>

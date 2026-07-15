@@ -75,7 +75,7 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
       <SectionCard
         title="概率分布 · Live"
         subtitle={`加权期望 · 营收 ${Math.round(weightedRev)} 万 · runway ${wr.toFixed(1)} 月`}
-        accent="gold"
+        accent="teal"
         dense
       >
         <div className="flex h-3 overflow-hidden rounded-full">

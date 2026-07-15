@@ -16,7 +16,7 @@ export function ScenarioPanel({ scenarios }: { scenarios: Scenario[] }) {
       <SectionCard
         title="SPBP 2.0 · 概率 Living Model"
         subtitle={`加权期望 · 营收 ${Math.round(weightedRev)} 万 · 利润 ${Math.round(weightedProfit)} 万`}
-        accent="gold"
+        accent="teal"
         dense
       >
         <div className="flex h-3 overflow-hidden rounded-full">

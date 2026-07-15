@@ -46,7 +46,7 @@ export function ExecutionDashboard({
         <KpiTile
           label="承诺兑现率"
           value={cs.total > 0 ? `${cs.rate}%` : "—"}
-          tone={cs.rate >= 70 ? "green" : cs.rate >= 50 ? "gold" : "red"}
+          tone={cs.rate >= 70 ? "green" : cs.rate >= 50 ? "teal" : "red"}
           sub={`${cs.done}/${cs.total} 已兑现`}
         />
         <KpiTile

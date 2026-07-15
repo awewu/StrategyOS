@@ -58,7 +58,7 @@ export default async function MaPage({
         <KpiTile
           label="投后/整合"
           value={String(postClose)}
-          tone="gold"
+          tone="teal"
           sub="投后追责中"
         />
         <KpiTile

@@ -89,7 +89,7 @@ export default async function BoardPackPage() {
       )}
 
       {/* ① 经营 KPI 快照 */}
-      <SectionCard title="① 经营快照" subtitle={`B-A-F · ${activePeriod}`} accent="gold">
+      <SectionCard title="① 经营快照" subtitle={`B-A-F · ${activePeriod}`} accent="teal">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiTile label="ROS 销售净利率" value={pct(kpis.rosActual)} sub={`B ${pct(kpis.rosBudget)} · F ${pct(kpis.rosForecast)}`} />
           <KpiTile label="EBITDA 利润率" value={pct(kpis.ebitdaMarginActual)} sub={`B ${pct(kpis.ebitdaMarginBudget)} · F ${pct(kpis.ebitdaMarginForecast)}`} />
