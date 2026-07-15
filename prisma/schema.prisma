@@ -3131,4 +3131,41 @@ enum FinSourceType {
   form_units
   form_capex
   pvi_sales
+  manual_ops
+  manual_pvi
+}
+
+// 手工调整变更集：编辑单元格 → 草稿 → 提交 → 审批（生效前双人复核）
+enum FinEditTarget {
+  ops_metric
+  pvi_sales
+}
+
+enum FinEditStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+model FinEditProposal {
+  id             String        @id @default(uuid())
+  target         FinEditTarget
+  period         String?       @db.VarChar(10)
+  title          String        @db.VarChar(200)
+  status         FinEditStatus @default(draft)
+  changesJson    Json          @map("changes_json")
+  note           String?       @db.VarChar(500)
+  createdBy      String?       @map("created_by") @db.VarChar(100)
+  submittedAt    DateTime?     @map("submitted_at")
+  submittedBy    String?       @map("submitted_by") @db.VarChar(100)
+  decidedAt      DateTime?     @map("decided_at")
+  decidedBy      String?       @map("decided_by") @db.VarChar(100)
+  decisionNote   String?       @map("decision_note") @db.VarChar(500)
+  appliedBatchId String?       @map("applied_batch_id") @db.VarChar(40)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([target, status])
+  @@map("fin_edit_proposals")
 }

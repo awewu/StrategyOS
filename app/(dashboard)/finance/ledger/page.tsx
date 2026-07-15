@@ -9,6 +9,10 @@ import { BudgetVersionsPanel } from "@/components/finance/BudgetVersionsPanel";
 import { listBudgetVersions } from "@/lib/finance/budget-versions";
 import { MetricTrendPanel } from "@/components/finance/MetricTrendPanel";
 import { captureMetricSnapshots, getMetricSeries } from "@/lib/metrics/snapshots";
+import { LedgerImportClient } from "@/components/finance/LedgerImportClient";
+import { listLedgerSources } from "@/lib/finance/ledger-import-access";
+import { ManualAdjustPanel } from "@/components/finance/ManualAdjustPanel";
+import { TARGET_FIELDS, listProposals, readEditableRows } from "@/lib/finance/edit-proposals";
 
 const TABS: { id: LedgerTab; label: string }[] = [
   { id: "overview", label: "总览 · 批次" },
@@ -22,6 +26,7 @@ const TABS: { id: LedgerTab; label: string }[] = [
   { id: "depts", label: "部门映射" },
   { id: "ops", label: "运营指标" },
   { id: "trend", label: "多期趋势" },
+  { id: "manual", label: "手工调整" },
 ];
 
 function parseTab(raw: string | undefined): LedgerTab {
@@ -45,6 +50,15 @@ export default async function LedgerPage({
     activeTab === "trend"
       ? await captureMetricSnapshots().then(() => getMetricSeries()).catch(() => [])
       : [];
+  const manualInitial =
+    activeTab === "manual"
+      ? {
+          target: "ops_metric" as const,
+          fields: TARGET_FIELDS.ops_metric.fields,
+          rows: await readEditableRows("ops_metric"),
+          proposals: await listProposals(),
+        }
+      : null;
 
   const query = (tab: LedgerTab) => {
     const sp = new URLSearchParams({ tab });
@@ -75,6 +89,13 @@ export default async function LedgerPage({
           <MetricTrendPanel series={metricSeries} />
           <LedgerPanels tab={activeTab} bundle={bundle} q={q} period={params.period} />
         </>
+      ) : bundle.available && activeTab === "overview" ? (
+        <>
+          <LedgerImportClient sources={listLedgerSources()} />
+          <LedgerPanels tab={activeTab} bundle={bundle} q={q} period={params.period} />
+        </>
+      ) : bundle.available && activeTab === "manual" && manualInitial ? (
+        <ManualAdjustPanel initial={manualInitial} />
       ) : bundle.available ? (
         <LedgerPanels tab={activeTab} bundle={bundle} q={q} period={params.period} />
       ) : (

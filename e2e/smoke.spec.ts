@@ -39,6 +39,18 @@ test.describe("StratOS smoke (demo mode)", () => {
     await expect(page.locator("body")).toContainText(/FPA|财务/i);
   });
 
+  test("/finance/ledger overview shows web import + download", async ({ page }) => {
+    await setRoleOnPage(page, "ceo");
+    await page.goto("/finance/ledger?tab=overview");
+    const body = page.locator("body");
+    if (await body.getByText(/数据库不可用/).count()) {
+      test.skip(true, "DB unavailable in this env");
+    }
+    await expect(body).toContainText(/网页导入/);
+    await expect(body).toContainText(/确认入库|预检/);
+    await expect(body).toContainText(/下载当前已入库数据/);
+  });
+
   test("/monitor/health KPI health table loads with period columns", async ({ page }) => {
     await setRoleOnPage(page, "ceo");
     await page.goto("/monitor/health");

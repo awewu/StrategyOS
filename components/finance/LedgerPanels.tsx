@@ -3,7 +3,7 @@ import type {
   TbDisplayRow,
 } from "@/lib/finance/ledger-queries";
 
-export type LedgerTab = "overview" | "tb" | "gl" | "facts" | "bridge" | "pvi" | "budget" | "accounts" | "depts" | "ops" | "trend";
+export type LedgerTab = "overview" | "tb" | "gl" | "facts" | "bridge" | "pvi" | "budget" | "accounts" | "depts" | "ops" | "trend" | "manual";
 
 const nf = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 2 });
 const money = (v: number | null) => (v == null ? "—" : nf.format(v));
