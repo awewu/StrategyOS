@@ -122,7 +122,7 @@ function PatternItem({ item }: { item: unknown }) {
   const title = typeof pattern.title === "string" ? pattern.title : stringifyValue(item);
   return (
     <div>
-      <div className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-accent)]">
+      <div className="text-[11px] font-medium tracking-wide text-[var(--color-accent)]">
         {formationType}
         {pattern.suggestDeliberate === true ? " · 建议写入 deliberate" : ""}
       </div>

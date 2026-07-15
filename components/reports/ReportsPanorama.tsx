@@ -61,7 +61,7 @@ export function ReportsPanorama({ fpa, kpis }: { fpa: FpaSummary; kpis: Manageme
 
       {/* KPI table */}
       <div>
-        <div className="grid grid-cols-5 gap-2 pb-1 text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+        <div className="grid grid-cols-5 gap-2 pb-1 text-[10px] font-medium tracking-wide text-[var(--color-text-muted)]">
           <span className="col-span-2">指标</span>
           <span className="text-right">实际</span>
           <span className="text-right">预算</span>

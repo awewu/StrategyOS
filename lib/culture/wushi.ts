@@ -82,7 +82,7 @@ export const WUSHI_FACTORS: WushiFactor[] = [
     question: "市场/区域根基是否稳固？（数据引用战略罗盘）",
     origin: "external",
     status: "ready",
-    sourceModule: "/compass",
+    sourceModule: "/command/compass",
   },
 ];
 

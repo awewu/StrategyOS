@@ -77,7 +77,7 @@ export async function computeInboxItems(): Promise<InboxItem[]> {
       title: d.title,
       summary: [d.owner, d.deadline].filter(Boolean).join(" · "),
       source: "待决策 DEC",
-      href: "/inbox#decisions",
+      href: "/command/issues#decisions",
       category: "decision",
     });
   }
@@ -90,7 +90,7 @@ export async function computeInboxItems(): Promise<InboxItem[]> {
       title: `${p.code} 前提失效`,
       summary: p.failSignal!,
       source: p.signalSource ?? "战略罗盘",
-      href: "/compass",
+      href: "/command/compass",
       category: "premise",
     });
   }
@@ -116,7 +116,7 @@ export async function computeInboxItems(): Promise<InboxItem[]> {
       title: `[${s.competitor}] ${s.title}`,
       summary: s.summary.slice(0, 160),
       source: s.linkedAssumptionCode ? `Hermes · 挑战 ${s.linkedAssumptionCode}` : "Hermes · 市场洞察",
-      href: s.linkedAssumptionCode ? `/compass` : "/market",
+      href: s.linkedAssumptionCode ? `/command/compass` : "/market",
       category: "market",
     });
   }

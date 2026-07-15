@@ -11,7 +11,7 @@ function KanbanColumn({
 }) {
   return (
     <div className="min-w-[200px] flex-1 rounded-lg bg-[var(--surface-raised)] p-3">
-      <div className="mb-3 text-xs uppercase tracking-wider text-[var(--color-text-muted)]">{title}</div>
+      <div className="mb-3 text-xs tracking-wide text-[var(--color-text-muted)]">{title}</div>
       <div className="space-y-2">
         {items.map((ic) => (
           <div
@@ -104,7 +104,7 @@ export function CapitalTab({
       {/* Three-stack allocation breakdown */}
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">品牌分配</h3>
+          <h3 className="mb-3 text-xs font-medium tracking-wide text-[var(--color-text-muted)]">品牌分配</h3>
           <div className="space-y-2">
             {Object.entries(capStack.byBrand ?? {}).map(([brand, pct]) => (
               <div key={brand} className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export function CapitalTab({
           </div>
         </div>
         <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">投入类型</h3>
+          <h3 className="mb-3 text-xs font-medium tracking-wide text-[var(--color-text-muted)]">投入类型</h3>
           <div className="space-y-2">
             {Object.entries(capStack.byType ?? {}).map(([type, pct]) => (
               <div key={type} className="flex items-center gap-2">

@@ -81,7 +81,7 @@ function SearchForm({ tab, q, period }: { tab: LedgerTab; q?: string; period?: s
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="stratos-card stratos-card--padded">
-      <p className="text-[11px] uppercase tracking-wide text-[var(--color-text-muted,#888)]">{label}</p>
+      <p className="text-[11px] tracking-wide text-[var(--color-text-muted,#888)]">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
       {hint ? <p className="mt-1 text-[11px] text-[var(--color-text-muted,#888)]">{hint}</p> : null}
     </div>
@@ -310,7 +310,7 @@ function FactsPanel({ bundle, q, period }: { bundle: LedgerBundle; q?: string; p
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {bundle.scenarioSummaries.map((s) => (
           <div key={s.code} className="stratos-card stratos-card--padded">
-            <p className="text-[11px] uppercase tracking-wide text-[var(--color-text-muted,#888)]">
+            <p className="text-[11px] tracking-wide text-[var(--color-text-muted,#888)]">
               {SCENARIO_KIND_LABEL[s.kind] ?? s.kind}
             </p>
             <p className="mt-1 truncate text-sm font-semibold" title={s.code}>{s.name}</p>

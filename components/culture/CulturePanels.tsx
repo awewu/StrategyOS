@@ -61,18 +61,18 @@ export function MissionVisionPanel({
     <SectionCard title="使命愿景" subtitle="North Star · 文化手册同源" accent="teal" action={action}>
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-[var(--surface-border)] bg-black/[0.02] px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">使命 · 为何存在</p>
+          <p className="text-xs font-semibold tracking-wide text-[var(--color-accent)]">使命 · 为何存在</p>
           <p className={`${typography.body} mt-3 text-[var(--color-text-primary)]`}>{mission}</p>
         </div>
         <div className="rounded-xl border border-[var(--surface-border)] bg-black/[0.02] px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+          <p className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">
             愿景{targetYear ? ` · ${targetYear}` : ""} · 渴望抵达的远方
           </p>
           <p className={`${typography.body} mt-3 text-[var(--color-text-secondary)]`}>{vision}</p>
         </div>
       </div>
       <div className="mt-5 flex flex-wrap gap-3 text-caption">
-        <Link href="/compass" className="text-[var(--color-text-muted)] hover:underline">
+        <Link href="/command/compass" className="text-[var(--color-text-muted)] hover:underline">
           战略罗盘 · 里程碑与前提 →
         </Link>
         <Link href="/strategy" className="text-[var(--color-text-muted)] hover:underline">
@@ -94,7 +94,7 @@ export function DoctrinesPanel({ handbook }: { handbook?: CultureHandbookContent
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-4"
             style={{ borderTopWidth: 3, borderTopColor: DOCTRINE_COLORS[i] }}
           >
-            <p className="font-data text-[0.65rem] font-semibold uppercase tracking-[0.12em]" style={{ color: DOCTRINE_COLORS[i] }}>
+            <p className="font-data text-[0.65rem] font-semibold tracking-[0.12em]" style={{ color: DOCTRINE_COLORS[i] }}>
               {d.en}
             </p>
             <h3 className={`${typography.h3} mt-2`}>{d.zh}</h3>
@@ -164,7 +164,7 @@ export function BehaviorGuidelinesPanel({ handbook }: { handbook?: CultureHandbo
             key={g.id}
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-4"
           >
-            <p className="font-data text-[0.65rem] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+            <p className="font-data text-[0.65rem] font-semibold tracking-wide text-[var(--color-text-muted)]">
               原则 {g.id}
             </p>
             <h3 className={`${typography.h3} mt-1.5`}>{g.title}</h3>
@@ -210,14 +210,14 @@ export function ValuesAwardPanel() {
         </table>
       </div>
       <div className="mt-6 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">近期获奖公示</p>
+        <p className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">近期获奖公示</p>
         {VALUES_AWARD_WINNERS.map((w) => (
           <article
             key={w.id}
             className="rounded-xl border border-[var(--color-accent)]/25 bg-gradient-to-br from-[var(--color-accent)]/[0.06] to-transparent px-5 py-4"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+              <p className="font-data text-xs font-semibold tracking-wide text-[var(--color-accent)]">
                 {w.period} · {w.year}
               </p>
               {w.awardName !== "—" ? (
@@ -261,7 +261,7 @@ export function ValuesUnderstandingPanel() {
         ))}
       </ul>
       <div className="mt-5 rounded-xl border border-dashed border-[var(--surface-border-strong)] bg-black/[0.02] px-5 py-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+        <p className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">
           {CI_CONTINUOUS_IMPROVEMENT.title}
         </p>
         <p className={`${typography.body} mt-2 text-[var(--color-text-secondary)]`}>{CI_CONTINUOUS_IMPROVEMENT.body}</p>
@@ -279,7 +279,7 @@ export function ValuesUnderstandingPanel() {
 
 export function CultureLinksBar() {
   const links = [
-    { href: "/compass", label: "战略罗盘" },
+    { href: "/command/compass", label: "战略罗盘" },
     { href: "/decode", label: "战略解码" },
     { href: "/council?tab=gates", label: "Gate 清单" },
     { href: "/monitor/health", label: "集团健康" },

@@ -32,7 +32,7 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
               key={`${item.milestone}-${i}`}
               className="stratos-kpi-slot rounded-lg border border-[var(--surface-border)] p-4"
             >
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+              <p className="text-xs font-medium tracking-wide text-[var(--color-text-muted)]">
                 {LANE_LABEL[item.lane] ?? item.lane}
               </p>
               <p className="mt-1 text-sm font-medium text-[var(--color-text-primary)]">

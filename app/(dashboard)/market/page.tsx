@@ -19,6 +19,8 @@ import { leadTimeOf } from "@/lib/market-intel/types";
 import { getMarketSelfScores } from "@/lib/market-intel/swot-access";
 import { loadWorkbench } from "@/lib/market-intel/workbench-data";
 import { getCompassBundle } from "@/lib/compass/data";
+import { InboxClient } from "@/components/inbox/InboxClient";
+import { getInboxItems } from "@/lib/inbox/aggregate";
 import { prisma } from "@/lib/db";
 import type { IntelSource, IntelSignal, CompetitorTrack } from "@/lib/market-intel/types";
 import { Suspense } from "react";
@@ -80,13 +82,15 @@ export default async function MarketPage({
   const initialTab =
     tab === "swot" || tab === "workbench" || tab === "intel" ? tab : "landscape";
   const now = new Date();
-  const [db, workbench, compass, selfScoresBundle, growth] = await Promise.all([
+  const [db, workbench, compass, selfScoresBundle, growth, inboxItems] = await Promise.all([
     loadMarketData(),
     loadWorkbench(),
     getCompassBundle(),
     getMarketSelfScores(),
     getGrowthAnalytics(),
+    getInboxItems().catch(() => []),
   ]);
+  const marketIssues = inboxItems.filter((i) => i.category === "market");
   const sources = (db?.sources ?? demoSources).map((s) => ({ ...s, health: sourceHealth(s, now) }));
   const signals = db?.signals ?? demoSignals;
   const tracks = db?.tracks ?? demoTracks;
@@ -144,6 +148,14 @@ export default async function MarketPage({
 
   const intelView = (
     <div className="space-y-8">
+      {marketIssues.length > 0 ? (
+        <section aria-label="市场威胁议题">
+          <p className="mb-3 text-label text-[var(--signal-red)]">
+            威胁议题 · 待裁决 {marketIssues.filter((i) => i.status === "OPEN").length} 条
+          </p>
+          <InboxClient initialItems={marketIssues} />
+        </section>
+      ) : null}
       <HermesPanel
         agent={{ name: HERMES.name, role: HERMES.role }}
         lastScan={lastScan}

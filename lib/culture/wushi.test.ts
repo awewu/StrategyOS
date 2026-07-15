@@ -25,7 +25,7 @@ describe("defaultWushiAssessment", () => {
     assert.deepEqual(internal, ["dao", "fa", "jiang"].sort());
     const di = a.factors.find((f) => f.key === "di")!;
     assert.equal(di.origin, "external");
-    assert.equal(di.sourceModule, "/compass");
+    assert.equal(di.sourceModule, "/command/compass");
   });
 });
 

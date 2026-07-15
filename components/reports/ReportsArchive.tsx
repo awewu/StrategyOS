@@ -347,7 +347,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                 className="flex-1 min-w-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] font-medium uppercase tracking-widest text-[var(--color-accent)]">
+                  <span className="text-[11px] font-medium tracking-wide text-[var(--color-accent)]">
                     {REPORT_TYPE_LABELS[r.reportType] ?? r.reportType}
                   </span>
                   {r.orgUnit && (

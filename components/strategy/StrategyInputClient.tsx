@@ -1784,7 +1784,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
     <div className="space-y-4 print:text-xs">
       <div className="flex items-start justify-between border-b border-[var(--surface-border)] pb-3">
         <div>
-          <div className="text-caption uppercase tracking-widest">战略规划摘要 · 董事会版</div>
+          <div className="text-caption tracking-wide">战略规划摘要 · 董事会版</div>
           <h2 className="text-lg font-bold mt-0.5">{selectedOrg?.name ?? "—"} · 2026–2028 三年战略</h2>
         </div>
         <div className="text-caption text-right">
@@ -1795,7 +1795,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
 
       {/* 战略意图 */}
       <div className="rounded-lg bg-[var(--color-accent)]/[0.06] border border-[var(--color-accent)]/20 px-4 py-3">
-        <div className="text-xs font-semibold text-[var(--color-accent)] uppercase mb-1">战略意图</div>
+        <div className="text-xs font-semibold text-[var(--color-accent)] mb-1">战略意图</div>
         <p className="text-sm font-medium">{form.intent || "—"}</p>
         {form.northStar && <p className="text-caption mt-1">北极星指标：{form.northStar}</p>}
       </div>
@@ -1804,7 +1804,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
         {/* 市场背景 */}
         {topMarket && (
           <div className="rounded-lg border border-[var(--surface-border)] p-3">
-            <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">市场背景</div>
+            <div className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)] mb-2">市场背景</div>
             <p className="text-xs">{topMarket.title}</p>
             {topMarket.dataPoint && <p className="text-caption mt-1">{topMarket.dataPoint}</p>}
           </div>
@@ -1812,7 +1812,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
 
         {/* 战略目标 */}
         <div className="rounded-lg border border-[var(--surface-border)] p-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">战略目标</div>
+          <div className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)] mb-2">战略目标</div>
           <ul className="space-y-1">
             {topObjectives.length > 0 ? topObjectives.map((o, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs">
@@ -1826,7 +1826,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
 
       {/* 关键举措 */}
       <div className="rounded-lg border border-[var(--surface-border)] p-3">
-        <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">关键举措（Top {topInitiatives.length}）</div>
+        <div className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)] mb-2">关键举措（Top {topInitiatives.length}）</div>
         <div className="grid grid-cols-1 gap-1.5">
           {topInitiatives.length > 0 ? topInitiatives.map((ini, i) => (
             <div key={i} className="flex items-start gap-2 text-xs">
@@ -1844,7 +1844,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
       <div className="grid grid-cols-2 gap-4">
         {/* SWOT 简版 */}
         <div className="rounded-lg border border-[var(--surface-border)] p-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">SWOT</div>
+          <div className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)] mb-2">SWOT</div>
           <div className="grid grid-cols-2 gap-1 text-xs">
             {[["strength", "优势"], ["weakness", "劣势"], ["opportunity", "机会"], ["threat", "威胁"]].map(([q, label]) => (
               <div key={q} className="space-y-0.5">
@@ -1858,7 +1858,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
 
         {/* 关键假设 */}
         <div className="rounded-lg border border-[var(--surface-border)] p-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">关键假设</div>
+          <div className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)] mb-2">关键假设</div>
           <ul className="space-y-1">
             {criticalAssumptions.length > 0 ? criticalAssumptions.slice(0, 4).map((a, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs">

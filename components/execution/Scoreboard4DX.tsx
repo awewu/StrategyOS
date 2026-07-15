@@ -29,7 +29,7 @@ export function Scoreboard4DX({ scoreboard }: { scoreboard: ResolvedScoreboard }
       <p className="mb-4 text-subsection font-medium text-[var(--color-accent)]">WIG：{scoreboard.wigLabel}</p>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-4">
-          <h3 className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
+          <h3 className="text-xs font-medium tracking-wide text-[var(--color-text-secondary)]">
             领先指标
           </h3>
           {scoreboard.leadingKrs.map((kr) => (
@@ -38,7 +38,7 @@ export function Scoreboard4DX({ scoreboard }: { scoreboard: ResolvedScoreboard }
         </div>
         {scoreboard.laggingKrs.length > 0 ? (
           <div className="space-y-4">
-            <h3 className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
+            <h3 className="text-xs font-medium tracking-wide text-[var(--color-text-secondary)]">
               滞后指标
             </h3>
             {scoreboard.laggingKrs.map((kr) => (

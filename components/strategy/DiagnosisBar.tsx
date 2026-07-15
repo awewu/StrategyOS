@@ -10,7 +10,7 @@ export function DiagnosisBar({ diagnosis }: { diagnosis: StrategicDiagnosis }) {
 
   return (
     <section className="rounded-lg border border-[var(--color-accent)]/30 bg-[var(--surface-panel)] p-6">
-      <div className="mb-2 text-xs uppercase tracking-wider text-[var(--color-accent)]">
+      <div className="mb-2 text-xs tracking-wide text-[var(--color-accent)]">
         Rumelt 诊断 · Diagnosis
       </div>
       <p className="text-xl font-medium leading-snug">{diagnosis.challengeStatement}</p>

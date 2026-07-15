@@ -61,7 +61,7 @@ function StrategySlide({
   return (
     <section className="flex min-h-[58vh] flex-1 flex-col justify-between rounded-lg border border-white/10 bg-white/[0.035] px-12 py-10 shadow-2xl">
       <div>
-        <p className="text-sm uppercase text-[var(--color-text-muted)]">{slide.eyebrow}</p>
+        <p className="text-sm text-[var(--color-text-muted)]">{slide.eyebrow}</p>
         <h2 className="mt-4 max-w-5xl text-5xl font-semibold leading-tight text-[var(--color-accent)]">
           {slide.title}
         </h2>

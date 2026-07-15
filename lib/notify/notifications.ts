@@ -66,7 +66,7 @@ export async function computeNotifications(role: RoleKey, myName?: string): Prom
         id: "inbox-critical",
         severity: "critical",
         title: `${criticalOpen} 条 critical 议题待裁决`,
-        href: "/inbox",
+        href: "/command/issues",
       });
     }
   }

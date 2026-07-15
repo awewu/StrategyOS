@@ -36,7 +36,7 @@ export function BscCards({
             }`}
           >
             {/* satisfaction label */}
-            <div className="text-[0.65rem] font-medium uppercase tracking-[0.1em]"
+            <div className="text-[0.65rem] font-medium tracking-[0.1em]"
               style={{ color: DIM_COLOR[c.key] + "b0" }}>
               {c.satisfaction}
             </div>

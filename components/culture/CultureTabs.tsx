@@ -281,7 +281,7 @@ export function CultureTabs({
             </div>
             <div className="mt-6 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                <p className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">
                   近期获奖公示
                 </p>
                 {editing ? (
@@ -354,7 +354,7 @@ export function CultureTabs({
                   ) : (
                     <>
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <p className="font-data text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+                        <p className="font-data text-xs font-semibold tracking-wide text-[var(--color-accent)]">
                           {w.period} · {w.year}
                         </p>
                         {w.awardName !== "—" ? (
@@ -464,7 +464,7 @@ export function CultureTabs({
               ))}
             </ul>
             <div className="mt-5 rounded-xl border border-dashed border-[var(--surface-border-strong)] bg-black/[0.02] px-5 py-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+              <p className="text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">
                 {CI_CONTINUOUS_IMPROVEMENT.title}
               </p>
               <p className={`${typography.body} mt-2 text-[var(--color-text-secondary)]`}>

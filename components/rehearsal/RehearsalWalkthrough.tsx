@@ -220,7 +220,7 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
         <div className="mb-4 flex flex-wrap items-baseline gap-3">
           <span className="font-data text-3xl text-[var(--color-accent)]">{step.durationMin}′</span>
           <div>
-            <div className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">
+            <div className="text-xs tracking-wide text-[var(--color-text-muted)]">
               {step.segment}
             </div>
             <h2 className="text-xl font-semibold">{step.title}</h2>

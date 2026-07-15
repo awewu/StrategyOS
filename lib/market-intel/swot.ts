@@ -318,7 +318,7 @@ export interface TowsRecommendation {
   type: TowsType;
   title: string;
   rationale: string;
-  /** 建议链到的模块路由，如 "/decode" "/gates" "/compass" */
+  /** 建议链到的模块路由，如 "/decode" "/gates" "/command/compass" */
   links: string[];
 }
 
@@ -354,7 +354,7 @@ export function generateTows(board: SwotBoard, perType = 1): TowsSet {
   };
 
   return {
-    SO: pair("SO", topS, topO, "乘势进攻", ["/decode", "/compass"]),
+    SO: pair("SO", topS, topO, "乘势进攻", ["/decode", "/command/compass"]),
     WO: pair("WO", topW, topO, "补短抓机", ["/decode", "/outlook"]),
     ST: pair("ST", topS, topT, "以长御险", ["/council?tab=gates", "/execution"]),
     WT: pair("WT", topW, topT, "收缩规避", ["/council?tab=gates", "/monitor/health"]),

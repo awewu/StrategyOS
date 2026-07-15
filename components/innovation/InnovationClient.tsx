@@ -151,7 +151,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
             </div>
             {Object.keys(line.fAxisWeights).length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)]">F 轴权重</span>
+                <span className="text-[11px] tracking-wide text-[var(--color-text-muted)]">F 轴权重</span>
                 {Object.entries(line.fAxisWeights).map(([k, w]) => (
                   <div key={k} className="flex items-center gap-1.5">
                     <span className="text-[11px] text-[var(--color-text-secondary)]">{k}</span>
@@ -283,7 +283,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                   {detailBet.claims.map((c) => (
                     <div key={c.id} className="rounded-md border border-[var(--surface-border)] p-2">
                       <div className="flex items-center gap-2">
-                        <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-[var(--color-accent)]">{c.axis}</span>
+                        <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--color-accent)]">{c.axis}</span>
                         <EvidenceBadge level={c.strength} bar={line.gateThresholds.minEvidenceLevel} />
                       </div>
                       <p className="mt-1 text-xs text-[var(--color-text-primary)]">{c.claim}</p>

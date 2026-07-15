@@ -4,6 +4,7 @@ import { PanoramaPrintLayout } from "@/components/print/PanoramaPrintLayout";
 import { DownloadPdfButton } from "@/components/brand/DownloadPdfButton";
 import { getInboxSummary } from "@/lib/inbox/count";
 import { CommandBoardShell } from "@/components/command/CommandBoardShell";
+import { CommandTabs } from "@/components/command/CommandTabs";
 import { TimelineEditor } from "@/components/command/TimelineEditor";
 import { DecisionsEditor } from "@/components/command/DecisionsEditor";
 import { TopAlertsPanel } from "@/components/command/TopAlertsPanel";
@@ -48,7 +49,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
 }
 
 const QUICK_LINKS = [
-  { href: "/inbox", label: "议题 Inbox" },
+  { href: "/command/issues", label: "议题" },
   { href: "/strategy/input", label: "编制战略" },
   { href: "/versions", label: "历史对照" },
   { href: "/decode", label: "战略解码" },
@@ -82,8 +83,8 @@ export default async function CommandPage() {
         subtitle={`此刻集团态势如何 · 有什么要立即决策 · ${activePeriod}`}
         actions={
           <>
-            <Link href="/inbox" className="stratos-btn stratos-btn--ghost relative">
-              议题 Inbox
+            <Link href="/command/issues" className="stratos-btn stratos-btn--ghost relative">
+              议题
               {inbox.open > 0 ? (
                 <span className="ml-1 inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-[var(--signal-red)] px-1.5 py-0.5 text-[0.625rem] font-semibold text-white">
                   {inbox.open}
@@ -99,6 +100,8 @@ export default async function CommandPage() {
           </>
         }
       />
+
+      <CommandTabs active="overview" />
 
       {/* ① 致辞 · 一句话态势 + 推论 */}
       <ExecutiveSummary scr={scr} />

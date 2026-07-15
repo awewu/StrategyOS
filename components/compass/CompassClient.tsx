@@ -191,18 +191,18 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
       {/* North Star card */}
       <section className="rounded-xl border border-[var(--color-accent)]/25 bg-[var(--color-bg-surface)] p-6">
         <div className="mb-1 flex items-center justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">使命</div>
+          <div className="text-xs font-semibold tracking-wide text-[var(--color-accent)]">使命</div>
           <button onClick={() => setEditNorthStar(true)}
             className="text-xs text-[var(--color-accent)] hover:underline">编辑使命愿景</button>
         </div>
         <p className="text-base font-medium text-[var(--color-text-primary)]">{northStar.mission}</p>
-        <div className="mt-4 mb-1 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">愿景 · {northStar.targetYear}</div>
+        <div className="mt-4 mb-1 text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">愿景 · {northStar.targetYear}</div>
         <p className="text-sm text-[var(--color-text-secondary)]">{northStar.vision}</p>
 
         {planBsc && planBsc.length > 0 ? (
           <div className="mt-5 rounded-lg border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/5 p-4">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-accent)]">
+              <span className="text-xs font-semibold tracking-wide text-[var(--color-accent)]">
                 BSC 目标 · 战略计划同源
               </span>
               <span className="text-caption">
@@ -228,7 +228,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             { label: "所需年复合增速", value: pct(requiredCagr), warn: requiredCagr > 0.25 },
           ].map(item => (
             <div key={item.label} className="rounded-lg bg-black/[0.025] px-3 py-2.5">
-              <div className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)]">{item.label}</div>
+              <div className="text-[11px] tracking-wide text-[var(--color-text-muted)]">{item.label}</div>
               <div className={`mt-1 font-data text-lg font-semibold ${item.warn ? "text-[var(--signal-red)]" : "text-[var(--color-text-primary)]"}`}>
                 {item.value}
               </div>
@@ -372,7 +372,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
 
                 {m.keyConditions.length > 0 && (
                   <div className="mt-3">
-                    <div className="mb-1 text-[11px] uppercase tracking-wider text-[var(--color-text-muted)]">必要条件</div>
+                    <div className="mb-1 text-[11px] tracking-wide text-[var(--color-text-muted)]">必要条件</div>
                     <div className="flex flex-wrap gap-1.5">
                       {m.keyConditions.map((c, i) => (
                         <span key={i} className="rounded bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">{c}</span>

@@ -109,7 +109,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
                 <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-caption">
                   {STATUS_LABEL[item.status]}
                 </span>
-                <span className="text-[11px] uppercase tracking-wide text-[var(--color-text-muted)]">
+                <span className="text-[11px] tracking-wide text-[var(--color-text-muted)]">
                   {item.source}
                 </span>
               </div>

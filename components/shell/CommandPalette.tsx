@@ -87,7 +87,7 @@ export function CommandPalette() {
         <ul className="max-h-72 overflow-y-auto py-2">
           {PALETTE_GROUPS.filter((g) => grouped.has(g)).map((group) => (
             <li key={group}>
-              <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--color-accent)]">
+              <p className="px-4 pb-1 pt-2 text-[11px] font-semibold tracking-[0.12em] text-[var(--color-accent)]">
                 {group}
               </p>
               <ul>

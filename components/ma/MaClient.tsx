@@ -255,7 +255,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   {detail.findings.map((f) => (
                     <div key={f.id} className="rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] uppercase text-[var(--color-text-muted)]">{f.workstream}</span>
+                        <span className="text-[11px] text-[var(--color-text-muted)]">{f.workstream}</span>
                         <span className="flex items-center gap-1.5">
                           {f.dealBreaker && <span className="rounded bg-[var(--signal-red)]/15 px-1 py-0.5 text-[11px] font-semibold text-[var(--signal-red)]">deal-breaker</span>}
                           <span className={f.status === "closed" ? "text-[var(--signal-green)]" : f.status === "mitigated" ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]"}>

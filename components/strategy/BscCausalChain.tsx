@@ -70,7 +70,7 @@ export function BscCausalChain({ cards }: { cards: Card[] }) {
                   <span className="text-sm font-semibold" style={{ color }}>{c.label}</span>
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: sig }} />
                 </div>
-                <div className="mt-1 text-[0.65rem] uppercase tracking-[0.08em]" style={{ color: color + "b0" }}>
+                <div className="mt-1 text-[0.65rem] tracking-[0.08em]" style={{ color: color + "b0" }}>
                   {CAUSAL_HINT[c.key]}
                 </div>
                 <p className="mt-2.5 font-data text-[0.72rem] tabular-nums leading-tight text-[var(--color-text-muted)]">

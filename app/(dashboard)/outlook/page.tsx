@@ -46,7 +46,7 @@ export default async function OutlookPage() {
       <SectionCard title="① 外部环境" subtitle="宏观 · 竞争 · 技术信号 · TRL" accent="sky">
         <p className="stratos-prose mb-5 text-sm text-[var(--color-text-secondary)]">
           外部趋势与竞争态势见 <Link href="/market" className="text-[var(--color-accent)] hover:underline">市场洞察</Link>
-          （五力 / Hermes）；愿景终点与假设前提审计见 <Link href="/compass" className="text-[var(--color-accent)] hover:underline">战略罗盘</Link>。
+          （五力 / Hermes）；愿景终点与假设前提审计见 <Link href="/command/compass" className="text-[var(--color-accent)] hover:underline">战略罗盘</Link>。
         </p>
         <div className="grid gap-5 lg:grid-cols-2">
           <TechSignalPanel signals={techSignals} />

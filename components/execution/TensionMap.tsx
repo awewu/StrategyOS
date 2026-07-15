@@ -133,11 +133,11 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
       </div>
       <div className="space-y-4">
         <div>
-          <div className="mb-1 text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">表面信号</div>
+          <div className="mb-1 text-xs font-medium text-[var(--color-text-muted)] tracking-wide">表面信号</div>
           <p className="text-sm">{item.signal}</p>
         </div>
         <div>
-          <div className="mb-1 text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">根因诊断</div>
+          <div className="mb-1 text-xs font-medium text-[var(--color-text-muted)] tracking-wide">根因诊断</div>
           <p className="text-sm">{item.diagnosis}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">

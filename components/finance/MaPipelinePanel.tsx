@@ -26,7 +26,7 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
           const col = items.filter((i) => i.stage === stage);
           return (
             <div key={stage} className="min-w-[220px] flex-1 rounded-lg bg-black/[0.04] p-3">
-              <div className="mb-3 text-xs uppercase tracking-wider text-[var(--color-text-muted)]">
+              <div className="mb-3 text-xs tracking-wide text-[var(--color-text-muted)]">
                 {STAGE_LABEL[stage]}
               </div>
               <div className="space-y-2">

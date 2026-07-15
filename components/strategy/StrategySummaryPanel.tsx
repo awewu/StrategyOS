@@ -41,7 +41,7 @@ function KpiCard({ label, actual, budget, unit }: {
   const color = rate >= 100 ? "var(--color-success)" : rate >= 80 ? "var(--color-warning)" : "var(--color-danger)";
   return (
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-3">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">{label}</div>
+      <div className="text-[11px] font-semibold tracking-wide text-[var(--color-text-muted)]">{label}</div>
       <div className="mt-1 flex items-baseline gap-2">
         <span className="font-data text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">{format(actual)}</span>
         <span className="text-caption">预算 {format(budget)}</span>
@@ -60,7 +60,7 @@ function BscCard({ card }: { card: { key: string; label: string; satisfaction: s
       style={{ borderLeftColor: BSC_COLOR[card.key], borderLeftWidth: 3 }}>
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-wider" style={{ color: BSC_COLOR[card.key] + "b0" }}>{card.satisfaction}</div>
+          <div className="text-[11px] tracking-wide" style={{ color: BSC_COLOR[card.key] + "b0" }}>{card.satisfaction}</div>
           <div className="mt-0.5 text-sm font-semibold" style={{ color: BSC_COLOR[card.key] }}>{card.label}</div>
         </div>
         <TrafficLightDot signal={card.light} />
@@ -73,7 +73,7 @@ function BscCard({ card }: { card: { key: string; label: string; satisfaction: s
 function OkrList({ investmentCases }: { investmentCases: InvestmentCase[] }) {
   return (
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-3">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">目标达成 · 投资主题 OKR</div>
+      <div className="mb-2 text-[11px] font-semibold tracking-wide text-[var(--color-text-muted)]">目标达成 · 投资主题 OKR</div>
       <ul className="space-y-2">
         {investmentCases.slice(0, 4).map((ic) => (
           <li key={ic.id} className="flex items-start justify-between gap-2 text-xs">
@@ -94,7 +94,7 @@ function OkrList({ investmentCases }: { investmentCases: InvestmentCase[] }) {
 function DiagnosisCard({ diagnosis }: { diagnosis: StrategicDiagnosis }) {
   return (
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">市场驱动力</div>
+      <div className="mb-2 text-[11px] font-semibold tracking-wide text-[var(--color-text-muted)]">市场驱动力</div>
       <p className="text-sm font-medium leading-snug text-[var(--color-text-primary)]">{diagnosis.challengeStatement}</p>
       <div className="mt-2 flex flex-wrap gap-2 text-caption">
         <span className="rounded bg-black/[0.04] px-2 py-0.5">瓶颈·{diagnosis.bottleneckType}</span>
@@ -107,7 +107,7 @@ function DiagnosisCard({ diagnosis }: { diagnosis: StrategicDiagnosis }) {
 function BrandCards({ brandCards }: { brandCards: { brandCode: string; whereToPlay: string; howToWin: string }[] }) {
   return (
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">品牌优势</div>
+      <div className="mb-2 text-[11px] font-semibold tracking-wide text-[var(--color-text-muted)]">品牌优势</div>
       <div className="space-y-2">
         {brandCards.map((b) => (
           <div key={b.brandCode} className="flex items-start gap-2 text-xs">
@@ -156,7 +156,7 @@ export function StrategySummaryPanel({
         <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[var(--color-text-muted)]">关键指标</div>
+              <div className="text-[11px] font-semibold tracking-wide text-[var(--color-text-muted)]">关键指标</div>
               <div className="flex gap-1">
                 {(Object.keys(TIME_FRAME_LABELS) as TimeFrame[]).map((key) => (
                   <button

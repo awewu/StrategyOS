@@ -79,7 +79,7 @@ export function HermesPanel({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-title">{agent.name}</h2>
-              <span className="rounded-full bg-[var(--color-accent-dim)] px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--color-accent)]">
+              <span className="rounded-full bg-[var(--color-accent-dim)] px-2 py-0.5 text-[11px] font-medium tracking-[0.06em] text-[var(--color-accent)]">
                 常驻 · 持续追踪
               </span>
             </div>

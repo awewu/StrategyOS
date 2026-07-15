@@ -177,8 +177,8 @@ export function MeetingToolsClient() {
       </section>
 
       <div className="flex flex-wrap gap-3 text-sm">
-        <Link href="/inbox" className="text-[var(--color-accent)] hover:underline">
-          议题 Inbox →
+        <Link href="/command/issues" className="text-[var(--color-accent)] hover:underline">
+          议题 →
         </Link>
         <Link href="/council?tab=rehearsal" className="text-[var(--color-text-muted)] hover:underline">
           Q3 彩排 →

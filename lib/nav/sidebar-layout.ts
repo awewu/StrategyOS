@@ -16,8 +16,8 @@ import { NAV_ACCESS, type NavHub, type NavStandalone } from "@/lib/nav/hubs";
 
 export type NavMoreLink = { href: string; label: string };
 
-/** Standalone items always visible on CEO rail (FPA ★) */
-export const CEO_RAIL_STANDALONE_IDS = new Set(["finance"]);
+/** Standalone items always visible on CEO rail（FPA 已并入「预算管理」Hub，暂无置顶项） */
+export const CEO_RAIL_STANDALONE_IDS = new Set<string>([]);
 
 export type SidebarNavLayout = {
   primaryHubs: NavHub[];

@@ -32,8 +32,8 @@ export const NAV_HUBS: NavHub[] = [
     defaultHref: "/command",
     children: [
       { href: "/command", label: "总览 · 指挥舱" },
-      { href: "/inbox", label: "议题 Inbox" },
-      { href: "/compass", label: "战略罗盘" },
+      { href: "/command/issues", label: "议题（告警 · 决策 · 前提）" },
+      { href: "/command/compass", label: "战略罗盘" },
       { href: "/strategy", label: "一页纸" },
       { href: "/outlook", label: "战略展望" },
       { href: "/board", label: "董事会包" },
@@ -63,12 +63,24 @@ export const NAV_HUBS: NavHub[] = [
     ],
   },
   {
+    id: "budget",
+    label: "预算管理",
+    shortLabel: "预算",
+    icon: "finance",
+    defaultHref: "/finance",
+    children: [
+      { href: "/finance", label: "FPA（报表 · 资本 · 展望）" },
+      { href: "/finance/ledger", label: "总账中台" },
+    ],
+  },
+  {
     id: "operate",
-    label: "运行监测",
+    label: "解码与监测",
     shortLabel: "监测",
     icon: "operate",
-    defaultHref: "/monitor/bu",
+    defaultHref: "/decode",
     children: [
+      { href: "/decode", label: "战略解码（BSC · X-Matrix · OKR）" },
       { href: "/cockpit", label: "坚守驾驶舱" },
       { href: "/monitor/functions", label: "职能体系" },
       { href: "/monitor/bu", label: "事业部" },
@@ -91,20 +103,6 @@ export const NAV_HUBS: NavHub[] = [
 ];
 
 export const NAV_STANDALONE: NavStandalone[] = [
-  {
-    id: "decode",
-    label: "战略解码",
-    shortLabel: "解码",
-    icon: "decode",
-    href: "/decode",
-  },
-  {
-    id: "finance",
-    label: "FPA",
-    shortLabel: "FPA",
-    icon: "finance",
-    href: "/finance",
-  },
   {
     id: "market",
     label: "市场洞察",
@@ -137,10 +135,12 @@ export const NAV_ACCESS = {
   icon: "access" as NavIconId,
 };
 
-/** Exact match for one-pager; exclude /strategy/input. */
+/** Exact match for one-pager and FPA overview; exclude /strategy/input and /finance/ledger. */
 export function matchesNavRoute(pathname: string, href: string): boolean {
   const pathOnly = href.split("?")[0]!;
   if (pathOnly === "/strategy") return pathname === "/strategy";
+  if (pathOnly === "/finance") return pathname === "/finance";
+  if (pathOnly === "/command") return pathname === "/command";
   return pathname === pathOnly || pathname.startsWith(`${pathOnly}/`);
 }
 
@@ -153,7 +153,7 @@ export function hubContainsPath(hub: NavHub, pathname: string): boolean {
     if (pathname === "/rehearsal" || pathname === "/gates" || pathname.startsWith("/tools/meeting")) return true;
   }
   if (hub.id === "posture" && matchesNavRoute(pathname, "/outlook")) return true;
-  if (hub.id === "posture" && matchesNavRoute(pathname, "/inbox")) return true;
+  if (hub.id === "posture" && pathname === "/inbox") return true;
   return hub.children.some((c) => matchesNavRoute(pathname, c.href));
 }
 
@@ -173,13 +173,12 @@ const HUB_PALETTE_GROUP: Record<string, PaletteGroup> = {
   posture: "指挥",
   formulate: "战略",
   portfolio: "战略",
+  budget: "财务",
   operate: "执行",
   tools: "工具",
 };
 
-function paletteGroupForStandalone(id: string): PaletteGroup {
-  if (id === "finance") return "财务";
-  if (id === "decode") return "战略";
+function paletteGroupForStandalone(_id: string): PaletteGroup {
   return "战略";
 }
 
@@ -198,10 +197,11 @@ export function flattenNavLinks(): { href: string; label: string; group: Palette
     { href: "/council?tab=rehearsal", label: "战略会 · 彩排", group: "工具" },
     { href: "/council?tab=gates", label: "战略会 · 准入 Gate", group: "工具" },
     { href: "/council?tab=meeting", label: "战略会 · 会议工具", group: "工具" },
-    { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "战略" },
-    { href: "/decode?tab=okr", label: "战略解码 · OKR", group: "战略" },
+    { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "执行" },
+    { href: "/decode?tab=okr", label: "战略解码 · OKR", group: "执行" },
+    { href: "/finance?tab=capital", label: "FPA · 资本配置", group: "财务" },
     { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
-    { href: "/finance/ledger", label: "FPA · 总账中台", group: "财务" },
+    { href: "/finance?tab=scenarios", label: "FPA · SPBP 情景", group: "财务" },
   );
   return out;
 }

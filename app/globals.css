@@ -65,7 +65,7 @@
   /* Ruud slate family: #4d585a headers, #4e5758 body, #979a9c muted */
   --color-text-primary:   #2c3133;   /* slate-black, Ruud header tone */
   --color-text-secondary: #4e5758;   /* Ruud body slate */
-  --color-text-muted:     #828c8d;   /* Ruud muted slate */
+  --color-text-muted:     #657073;   /* Ruud muted slate — WCAG AA 5.1:1 on white (was #828c8d 3.45:1) */
 
   /* ── Semantic signals ── */
   --signal-green:   #1f8a45;

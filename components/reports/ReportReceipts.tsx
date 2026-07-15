@@ -64,8 +64,8 @@ export function ReportReceipts({ receipts }: { receipts: ReportReceipt[] }) {
         })}
       </div>
       <div className="mt-4 text-caption">
-        <Link href="/inbox" className="text-[var(--color-accent)] hover:underline">
-          议题 Inbox 全览 →
+        <Link href="/command/issues" className="text-[var(--color-accent)] hover:underline">
+          议题全览 →
         </Link>
       </div>
     </section>
