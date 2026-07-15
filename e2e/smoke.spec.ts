@@ -19,6 +19,14 @@ test.describe("StratOS smoke (demo mode)", () => {
     await expect(page.locator("body")).toContainText(/战略录入|战略输入|StratDiff/i);
   });
 
+  test("/execution shows commit tab first, switches to detail", async ({ page }) => {
+    await setRoleOnPage(page, "ceo");
+    await page.goto("/execution");
+    await expect(page.locator("body")).toContainText(/承诺兑现率/);
+    await page.getByRole("link", { name: "明细", exact: true }).click();
+    await expect(page).toHaveURL(/tab=detail/);
+  });
+
   test("/inbox redirects to command issues", async ({ page }) => {
     await page.goto("/inbox");
     await expect(page).toHaveURL(/\/command\/issues/);
