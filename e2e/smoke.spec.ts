@@ -19,9 +19,10 @@ test.describe("StratOS smoke (demo mode)", () => {
     await expect(page.locator("body")).toContainText(/战略录入|战略输入|StratDiff/i);
   });
 
-  test("/inbox loads issue pipeline", async ({ page }) => {
+  test("/inbox redirects to command issues", async ({ page }) => {
     await page.goto("/inbox");
-    await expect(page.locator("body")).toContainText(/议题 Inbox|Inbox/i);
+    await expect(page).toHaveURL(/\/command\/issues/);
+    await expect(page.locator("body")).toContainText(/议题/);
   });
 
   test("/finance loads FPA for CEO role", async ({ page }) => {

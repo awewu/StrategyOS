@@ -1,5 +1,6 @@
 import { PlanLifecycleBar } from "@/components/strategy/PlanLifecycleBar";
 import { StrategyPageTabs } from "@/components/strategy/StrategyPageTabs";
+import { StrategyTabs } from "@/components/strategy/StrategyTabs";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCapitalSummaryLine } from "@/lib/data/entity-getters";
@@ -24,6 +25,7 @@ export default async function StrategyPage() {
         title="战略总览"
         subtitle={`我们的战略主张是什么 · 三栈与制胜逻辑 · ${activePeriod}`}
       />
+      <StrategyTabs active="onepager" />
       <PlanLifecycleBar />
       <StrategyPageTabs
         bundle={bundle}
