@@ -88,7 +88,7 @@ export default async function MarketPage({
     getCompassBundle(),
     getMarketSelfScores(),
     getGrowthAnalytics(),
-    getInboxItems().catch(() => []),
+    initialTab === "intel" ? getInboxItems().catch(() => []) : Promise.resolve([]),
   ]);
   const marketIssues = inboxItems.filter((i) => i.category === "market");
   const sources = (db?.sources ?? demoSources).map((s) => ({ ...s, health: sourceHealth(s, now) }));

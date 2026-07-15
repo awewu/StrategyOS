@@ -62,7 +62,7 @@ export function HealthPageClient({
               FPA 管理报表 →
             </Link>
             <Link
-              href="/outlook"
+              href="/strategy/outlook"
               className="rounded-xl border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
             >
               战略展望 →
@@ -78,7 +78,7 @@ export function HealthPageClient({
             FPA 管理报表 →
           </Link>
           <Link
-            href="/outlook"
+            href="/strategy/outlook"
             className="rounded-xl border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent)]/35 hover:text-[var(--color-accent)]"
           >
             战略展望 →

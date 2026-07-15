@@ -5,11 +5,11 @@ import { flattenNavLinks } from "@/lib/nav/hubs";
 
 const CEO_MAIN_ROUTES = [
   "/command",
-  "/inbox",
-  "/compass",
+  "/command/issues",
+  "/command/compass",
   "/strategy",
   "/strategy/input",
-  "/outlook",
+  "/strategy/outlook",
   "/versions",
   "/mandates",
   "/reports",

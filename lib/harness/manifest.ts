@@ -5,7 +5,7 @@ export const EXPECTED_PAGES = [
   "/command",
   "/command/issues",
   "/command/compass",
-  "/outlook",
+  "/strategy/outlook",
   "/strategy",
   "/strategy/input",
   "/execution",

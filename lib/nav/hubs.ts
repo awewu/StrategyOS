@@ -34,8 +34,7 @@ export const NAV_HUBS: NavHub[] = [
       { href: "/command", label: "总览 · 指挥舱" },
       { href: "/command/issues", label: "议题（告警 · 决策 · 前提）" },
       { href: "/command/compass", label: "战略罗盘" },
-      { href: "/strategy", label: "一页纸" },
-      { href: "/outlook", label: "战略展望" },
+      { href: "/strategy", label: "一页纸 · 展望" },
       { href: "/board", label: "董事会包" },
     ],
   },
@@ -152,8 +151,8 @@ export function hubContainsPath(hub: NavHub, pathname: string): boolean {
   if (hub.id === "tools") {
     if (pathname === "/rehearsal" || pathname === "/gates" || pathname.startsWith("/tools/meeting")) return true;
   }
-  if (hub.id === "posture" && matchesNavRoute(pathname, "/outlook")) return true;
-  if (hub.id === "posture" && pathname === "/inbox") return true;
+  if (hub.id === "posture" && (pathname === "/outlook" || pathname === "/inbox")) return true;
+  if (hub.id === "posture" && pathname.startsWith("/strategy/outlook")) return true;
   return hub.children.some((c) => matchesNavRoute(pathname, c.href));
 }
 
@@ -197,6 +196,9 @@ export function flattenNavLinks(): { href: string; label: string; group: Palette
     { href: "/council?tab=rehearsal", label: "战略会 · 彩排", group: "工具" },
     { href: "/council?tab=gates", label: "战略会 · 准入 Gate", group: "工具" },
     { href: "/council?tab=meeting", label: "战略会 · 会议工具", group: "工具" },
+    { href: "/command?tab=a3", label: "指挥舱 · 董事会 A3 全景", group: "指挥" },
+    { href: "/strategy?tab=onepager", label: "战略总览 · 战略一页纸", group: "指挥" },
+    { href: "/strategy/outlook", label: "战略总览 · 战略展望", group: "指挥" },
     { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "执行" },
     { href: "/decode?tab=okr", label: "战略解码 · OKR", group: "执行" },
     { href: "/finance?tab=capital", label: "FPA · 资本配置", group: "财务" },

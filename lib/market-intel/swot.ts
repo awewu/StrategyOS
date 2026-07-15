@@ -355,7 +355,7 @@ export function generateTows(board: SwotBoard, perType = 1): TowsSet {
 
   return {
     SO: pair("SO", topS, topO, "乘势进攻", ["/decode", "/command/compass"]),
-    WO: pair("WO", topW, topO, "补短抓机", ["/decode", "/outlook"]),
+    WO: pair("WO", topW, topO, "补短抓机", ["/decode", "/strategy/outlook"]),
     ST: pair("ST", topS, topT, "以长御险", ["/council?tab=gates", "/execution"]),
     WT: pair("WT", topW, topT, "收缩规避", ["/council?tab=gates", "/monitor/health"]),
   };

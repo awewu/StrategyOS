@@ -57,11 +57,17 @@ const QUICK_LINKS = [
   { href: "/finance", label: "FPA" },
   { href: "/monitor/bu", label: "事业部监测" },
   { href: "/monitor/health", label: "集团健康" },
-  { href: "/outlook", label: "战略展望" },
+  { href: "/strategy/outlook", label: "战略展望" },
 ] as const;
 
-export default async function CommandPage() {
+export default async function CommandPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   await requireRouteAccess("/command");
+  const { tab } = await searchParams;
+  const activeTab = tab === "a3" ? ("a3" as const) : ("overview" as const);
   const [deck, inbox, activePeriod] = await Promise.all([
     getCommandDeckBundle(),
     withTimeout(getInboxSummary(), 2500, { open: 0, critical: 0 }),
@@ -91,7 +97,7 @@ export default async function CommandPage() {
                 </span>
               ) : null}
             </Link>
-            <Link href="#board-a3" className="stratos-btn stratos-btn--primary">
+            <Link href="/command?tab=a3" className="stratos-btn stratos-btn--primary">
               董事会 A3 全景
             </Link>
             <Link href="/council?tab=rehearsal" className="stratos-btn">
@@ -101,8 +107,37 @@ export default async function CommandPage() {
         }
       />
 
-      <CommandTabs active="overview" />
+      <CommandTabs active={activeTab} />
 
+      {activeTab === "a3" ? (
+        <section id="board-a3" className="stratos-card stratos-card--padded" aria-label="董事会 A3 全景">
+          <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-label text-[var(--color-accent)]">董事会 A3 全景</p>
+              <p className="text-caption text-[var(--color-text-muted)]">
+                与指挥舱同源的一页纸呈现 · 打印/导出前的所见即所得预览
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 print:hidden">
+              <DownloadPdfButton />
+              <Link
+                href="/print/panorama"
+                target="_blank"
+                className="rounded border border-[var(--surface-border-strong)] px-4 py-2 text-sm"
+              >
+                打开打印视图 ↗
+              </Link>
+            </div>
+          </header>
+          <div
+            data-theme="print"
+            className="overflow-x-auto rounded-xl border border-[var(--surface-border)] bg-white p-6"
+          >
+            <PanoramaPrintLayout deck={deck} />
+          </div>
+        </section>
+      ) : (
+      <>
       {/* ① 致辞 · 一句话态势 + 推论 */}
       <ExecutiveSummary scr={scr} />
       <ImplicationsBar items={implications} />
@@ -210,34 +245,6 @@ export default async function CommandPage() {
       </section>
       </CommandBoardShell>
 
-      {/* ③.5 董事会 A3 全景 · 内嵌预览（同源数据，导出/打印在此发起） */}
-      <section id="board-a3" className="stratos-card stratos-card--padded scroll-mt-24" aria-label="董事会 A3 全景">
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-label text-[var(--color-accent)]">董事会 A3 全景</p>
-            <p className="text-caption text-[var(--color-text-muted)]">
-              与指挥舱同源的一页纸呈现 · 打印/导出前的所见即所得预览
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 print:hidden">
-            <DownloadPdfButton />
-            <Link
-              href="/print/panorama"
-              target="_blank"
-              className="rounded border border-[var(--surface-border-strong)] px-4 py-2 text-sm"
-            >
-              打开打印视图 ↗
-            </Link>
-          </div>
-        </header>
-        <div
-          data-theme="print"
-          className="overflow-x-auto rounded-xl border border-[var(--surface-border)] bg-white p-6"
-        >
-          <PanoramaPrintLayout deck={deck} />
-        </div>
-      </section>
-
       {/* ④ 去向 · 模块快捷跳转 */}
       <nav className="stratos-card stratos-card--padded stratos-link-row" aria-label="模块快捷跳转">
         <span className="stratos-link-row__label">深入</span>
@@ -263,6 +270,8 @@ export default async function CommandPage() {
           />
         </div>
       </details>
+      </>
+      )}
     </div>
   );
 }

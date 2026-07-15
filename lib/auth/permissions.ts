@@ -37,6 +37,7 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { prefix: "/print/panorama", minLevel: 3 },
   { prefix: "/strategy/submissions", minLevel: 2 },
   { prefix: "/strategy/input", minLevel: 2 },
+  { prefix: "/strategy/outlook", minLevel: 3 },
   { prefix: "/strategy", minLevel: 0, exact: true },
   { prefix: "/board", minLevel: 0 },
   { prefix: "/command", minLevel: 3 },
