@@ -4,6 +4,8 @@ import { StrategyGrowthPanel } from "@/components/strategy/StrategyGrowthPanel";
 import { StrategySummaryPanel } from "@/components/strategy/StrategySummaryPanel";
 import { ThreeStackPanel } from "@/components/strategy/ThreeStackPanel";
 import { StrategyTabs } from "@/components/strategy/StrategyTabs";
+import { GrowthAssetsEditor } from "@/components/strategy/GrowthAssetsEditor";
+import { getGrowthAssetsBundle } from "@/lib/strategy/growth-assets";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCapitalSummaryLine } from "@/lib/data/entity-getters";
@@ -20,11 +22,12 @@ export default async function StrategyPage({
   const { tab } = await searchParams;
   const activeTab = tab === "onepager" ? ("onepager" as const) : ("view" as const);
   const role = await getEffectiveRole();
-  const [bundle, onePager, capSummary, activePeriod] = await Promise.all([
+  const [bundle, onePager, capSummary, activePeriod, growthAssets] = await Promise.all([
     getStrategyBundle(),
     getStrategyOnePagerForViewer(role),
     getCapitalSummaryLine(),
     getActivePeriod(),
+    getGrowthAssetsBundle().catch(() => null),
   ]);
 
   return (
@@ -53,6 +56,14 @@ export default async function StrategyPage({
             capSummary={capSummary}
           />
           <StrategyGrowthPanel bundle={bundle} />
+          {growthAssets ? (
+            <details className="stratos-disclosure stratos-disclosure--secondary">
+              <summary>编辑增长资产 · 品牌卡 / 产品路线图 / JTBD</summary>
+              <div className="stratos-disclosure__body">
+                <GrowthAssetsEditor initial={growthAssets} />
+              </div>
+            </details>
+          ) : null}
         </div>
       ) : (
         <ChinaStrategyOnePager initial={onePager} />

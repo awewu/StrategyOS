@@ -1,6 +1,7 @@
 import type { CapStackPeriod, CapacitySnapshot, InvestmentCase } from "@/lib/types/stratos";
 import { forecastAmount } from "@/lib/stratos/fpa-toggle";
 import { SectionCard } from "@/components/ui/KpiTile";
+import { CapacityEditor } from "@/components/finance/CapacityEditor";
 
 function KanbanColumn({
   title,
@@ -150,6 +151,12 @@ export function CapitalTab({
           <div className="text-[var(--fpa-kpi-negative)]">缺口 {capacity.gapUnits.toLocaleString()} 台</div>
           <div>利用率 {capacity.utilizationPct}% → {capacity.linkedIcCode}</div>
         </div>
+        <details className="mt-3">
+          <summary className="cursor-pointer text-caption">记录本期产能快照</summary>
+          <div className="mt-3">
+            <CapacityEditor />
+          </div>
+        </details>
       </SectionCard>
     </div>
   );

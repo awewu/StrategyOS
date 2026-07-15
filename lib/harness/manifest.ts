@@ -75,6 +75,10 @@ export const EXPECTED_APIS = [
   "/api/reports/submit",
   "/api/compiler/import",
   "/api/spbp/update",
+  "/api/strategy/growth-assets",
+  "/api/market/track",
+  "/api/execution/capacity",
+  "/api/health/signals",
 ] as const;
 
 export const REQUIRED_FILES = [

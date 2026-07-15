@@ -2,6 +2,7 @@ import { BscConfigEditor } from "@/components/health/BscConfigEditor";
 import { HealthPageClient } from "@/components/health/HealthPageClient";
 import { OpsHealthDashboard } from "@/components/health/OpsHealthDashboard";
 import { KpiHealthEditor } from "@/components/finance/KpiHealthEditor";
+import { HealthSignalsEditor } from "@/components/health/HealthSignalsEditor";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getHealthBundle, getOpsHealthSeries } from "@/lib/data/strategy-data";
@@ -36,6 +37,20 @@ export default async function MonitorHealthPage() {
         hideTitle
       />
       <OpsHealthDashboard series={opsSeries} />
+      <details className="stratos-disclosure stratos-disclosure--secondary">
+        <summary>编辑 BSC 四灯与核心 KPI（落库 · 驱动指挥舱/一页纸同源信号）</summary>
+        <div className="stratos-disclosure__body">
+          <HealthSignalsEditor
+            initialLights={data.bscLights}
+            initialKpis={data.healthOverview.kpis.map((k) => ({
+              kpiName: k.name,
+              kpiValue: k.value,
+              kpiTarget: k.target,
+              signal: k.status,
+            }))}
+          />
+        </div>
+      </details>
       <section className="stratos-card stratos-card--padded">
         <header className="stratos-section-header">
           <div>

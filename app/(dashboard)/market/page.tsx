@@ -1,4 +1,5 @@
 import { CompetitorMatrix } from "@/components/market/CompetitorMatrix";
+import { CompetitorTrackEditor } from "@/components/market/CompetitorTrackEditor";
 import { CompetitiveCube } from "@/components/market/CompetitiveCube";
 import { HermesPanel } from "@/components/market/HermesPanel";
 import { SignalFeed } from "@/components/market/SignalFeed";
@@ -100,9 +101,25 @@ export default async function MarketPage({
   const brief = buildMarketBrief(ranked, 3);
   const active = sources.filter((s) => s.health === "active").length;
 
+  const trackEditorRows = tracks.map((t) => ({
+    competitor: t.competitor,
+    product: t.product ?? "",
+    gtm: t.gtm ?? "",
+    brand: t.brand ?? "",
+    strategy: t.strategy ?? "",
+    momentum: t.momentum ?? "flat",
+    momentumNote: t.momentumNote ?? "",
+  }));
+
   const landscapeView = (
     <div className="space-y-8">
       <CompetitorMatrix tracks={tracks} />
+      <details className="stratos-disclosure stratos-disclosure--secondary">
+        <summary>编辑竞品追踪矩阵</summary>
+        <div className="stratos-disclosure__body">
+          <CompetitorTrackEditor initial={trackEditorRows} />
+        </div>
+      </details>
       <GrowthAnalyticsEditor
         initialAarrr={growth.aarrrFunnel}
         initialKeller={growth.kellerBrandLayers}
