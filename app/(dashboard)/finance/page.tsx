@@ -7,8 +7,6 @@ import { FpaEditor } from "@/components/finance/FpaEditor";
 import { OutlookEditor } from "@/components/finance/OutlookEditor";
 import { FinancialStatementsEditor } from "@/components/finance/FinancialStatementsEditor";
 import { ManagementReportEditor } from "@/components/finance/ManagementReportEditor";
-import { KpiHealthEditor } from "@/components/finance/KpiHealthEditor";
-import { getKpiHealthMetrics } from "@/lib/fpa/kpi-health";
 import { CapitalTab } from "@/components/finance/CapitalTab";
 import { SpbpScenarioEditor } from "@/components/finance/SpbpScenarioEditor";
 import { StacksEditor } from "@/components/stacks/StacksEditor";
@@ -23,7 +21,6 @@ import { getActivePeriod } from "@/lib/data/active-period";
 
 type FinanceTab =
   | "management"
-  | "kpi-health"
   | "statements"
   | "overview"
   | "capital"
@@ -54,11 +51,9 @@ async function FinanceContent({
   const activePeriod = await getActivePeriod();
   const fiscalYear = activePeriod.slice(0, 4);
   const baseline = activeTab === "management" ? await getBudgetBaseline(fiscalYear) : null;
-  const kpiHealth = activeTab === "kpi-health" ? await getKpiHealthMetrics(activePeriod) : null;
 
   const tabs = [
     { href: "/finance", label: "管理报表", active: activeTab === "management" },
-    { href: "/finance?tab=kpi-health", label: "KPI 健康表", active: activeTab === "kpi-health" },
     { href: "/finance?tab=statements", label: "三张表", active: activeTab === "statements" },
     { href: "/finance?tab=overview", label: "B-A-F 总览", active: activeTab === "overview" },
     { href: "/finance?tab=capital", label: "资本配置", active: activeTab === "capital" },
@@ -132,18 +127,6 @@ async function FinanceContent({
         <FinancialStatementsEditor report={report} statementsSource={data.managementStatementsSource} />
       )}
 
-      {activeTab === "kpi-health" && kpiHealth && (
-        <section className="stratos-card stratos-card--padded">
-          <header className="stratos-section-header">
-            <div>
-              <h2 className="stratos-section-title">公司级 KPI 健康表</h2>
-              <p className="stratos-section-desc">各项指标 · 本期 / 目标 / 同期 / 季度 / YTD / 年度 · 达成信号</p>
-            </div>
-          </header>
-          <KpiHealthEditor bundle={kpiHealth} />
-        </section>
-      )}
-
       {activeTab === "overview" && <FpaEditor initial={data.fpa} source={data.source} />}
 
       {activeTab === "capital" && (
@@ -188,7 +171,6 @@ async function FinanceContent({
 function parseTab(tab?: string): FinanceTab {
   const allowed: FinanceTab[] = [
     "management",
-    "kpi-health",
     "statements",
     "overview",
     "capital",

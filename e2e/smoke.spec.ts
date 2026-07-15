@@ -39,9 +39,9 @@ test.describe("StratOS smoke (demo mode)", () => {
     await expect(page.locator("body")).toContainText(/FPA|财务/i);
   });
 
-  test("/finance KPI health table loads with period columns", async ({ page }) => {
+  test("/monitor/health KPI health table loads with period columns", async ({ page }) => {
     await setRoleOnPage(page, "ceo");
-    await page.goto("/finance?tab=kpi-health");
+    await page.goto("/monitor/health");
     await expect(page.locator("body")).toContainText(/公司级 KPI 健康表/);
     await expect(page.locator("body")).toContainText(/本期/);
     await expect(page.locator("body")).toContainText(/年度/);
