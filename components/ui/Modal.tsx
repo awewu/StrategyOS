@@ -19,6 +19,11 @@ const FOCUSABLE =
 
 function useOverlay(onClose: () => void) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -29,7 +34,7 @@ function useOverlay(onClose: () => void) {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !panelRef.current) return;
@@ -57,13 +62,13 @@ function useOverlay(onClose: () => void) {
       document.body.style.overflow = prevOverflow;
       prevActive?.focus?.();
     };
-  }, [onClose]);
+  }, []);
 
   const onBackdropClick = useCallback(
     (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) onClose();
+      if (e.target === e.currentTarget) onCloseRef.current();
     },
-    [onClose],
+    [],
   );
 
   return { panelRef, onBackdropClick };

@@ -229,6 +229,9 @@ function emptyBudgetItem(category = "OPEX"): BudgetItemDraft {
 function emptyRoadmapItem(): RoadmapItemDraft {
   return { track: "举措", title: "", startYear: "2026", startQ: "1", endYear: "2026", endQ: "4", milestone: "", color: "" };
 }
+function emptyKeyResult(): KeyResultDraft {
+  return { keyResult: "", target: "" };
+}
 
 function emptyForm(): PlanForm {
   return {
@@ -238,8 +241,8 @@ function emptyForm(): PlanForm {
       dimension: d.key,
       objective: "",
       keyResults: [
-        { keyResult: "", target: "" },
-        { keyResult: "", target: "" },
+        emptyKeyResult(),
+        emptyKeyResult(),
       ],
     })),
     initiatives: [1, 2, 3].map(() => emptyInitiative()),
@@ -1149,6 +1152,27 @@ function ObjectivesForm({
       return { ...f, objectives };
     });
   }
+  function addKr(oIdx: number) {
+    setForm((f) => {
+      const objectives = [...f.objectives];
+      objectives[oIdx] = {
+        ...objectives[oIdx],
+        keyResults: [...objectives[oIdx].keyResults, emptyKeyResult()],
+      };
+      return { ...f, objectives };
+    });
+  }
+  function removeKr(oIdx: number, kIdx: number) {
+    setForm((f) => {
+      const objectives = [...f.objectives];
+      const keyResults = objectives[oIdx].keyResults.filter((_, idx) => idx !== kIdx);
+      objectives[oIdx] = {
+        ...objectives[oIdx],
+        keyResults: keyResults.length > 0 ? keyResults : [emptyKeyResult()],
+      };
+      return { ...f, objectives };
+    });
+  }
   return (
     <div className="space-y-4">
       <p className="text-caption">BSC 四维度 KPI 管理：每个维度填写管理目标、KPI 指标与目标值</p>
@@ -1166,7 +1190,7 @@ function ObjectivesForm({
           />
           <div className="mt-2 space-y-1">
             {obj.keyResults.map((kr, kIdx) => (
-              <div key={kIdx} className="grid grid-cols-[1fr_140px] gap-2">
+              <div key={kIdx} className="grid grid-cols-[1fr_140px_auto] items-center gap-2">
                 <input
                   type="text"
                   className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
@@ -1181,8 +1205,14 @@ function ObjectivesForm({
                   onChange={(e) => setKr(oIdx, kIdx, "target", e.target.value)}
                   placeholder="KPI 目标值"
                 />
+                <div className="flex w-10 justify-end">
+                  {obj.keyResults.length > 1 && (
+                    <RemoveRowButton onClick={() => removeKr(oIdx, kIdx)} label="删除" />
+                  )}
+                </div>
               </div>
             ))}
+            <AddRowButton label="新增 KPI" onClick={() => addKr(oIdx)} />
           </div>
         </div>
       ))}
@@ -1343,7 +1373,7 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
           { label: "产品" },
           { label: "单位", align: "center" },
           ...["Q1", "Q2", "Q3", "Q4"].map((q) => ({ label: q, align: "center" as const, colSpan: 2, className: "border-l border-[var(--surface-border)]" })),
-          { label: "全年收入", align: "center", className: "border-l border-[var(--surface-border)]" },
+          { label: "全年", align: "center", colSpan: 2, className: "border-l border-[var(--surface-border)]" },
           { label: "" },
         ]}
         extraHeadRow={
@@ -1355,7 +1385,8 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
                 <th className="px-2 py-1 text-center">收入</th>
               </React.Fragment>
             ))}
-            <th className="border-l border-[var(--surface-border)] px-2">万元</th>
+            <th className="border-l border-[var(--surface-border)] px-2 py-1 text-center">数量</th>
+            <th className="px-2 py-1 text-center">收入</th>
             <th />
           </tr>
         }
@@ -1372,7 +1403,8 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
                 <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q3Revenue} onChange={(e) => set(idx, "q3Revenue", e.target.value)} placeholder="0" /></td>
                 <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q4Qty} onChange={(e) => set(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
                 <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q4Revenue} onChange={(e) => set(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-20"} value={p.annualRevenue} onChange={(e) => set(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.annualQty} onChange={(e) => set(idx, "annualQty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.annualRevenue} onChange={(e) => set(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
                 <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>
             ))}
