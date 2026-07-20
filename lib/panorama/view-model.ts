@@ -9,7 +9,9 @@ import {
 } from "@/lib/panorama/scr";
 import type { ScrSummary, AlertItem, DecisionItem, IssueTreeNode } from "@/lib/panorama/scr";
 
-export type PanoramaDeck = Awaited<ReturnType<typeof getCommandDeckBundle>>;
+type FullPanoramaDeck = Awaited<ReturnType<typeof getCommandDeckBundle>>;
+// bscComparison 仅供指挥舱 UI 使用；panorama 视图模型不消费 → 可选，避免既有测试 mock 失效。
+export type PanoramaDeck = Omit<FullPanoramaDeck, "bscComparison" | "bsc"> & Partial<Pick<FullPanoramaDeck, "bscComparison" | "bsc">>;
 
 export interface PanoramaViewModel {
   brandName: string;

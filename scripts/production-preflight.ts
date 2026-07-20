@@ -131,6 +131,13 @@ async function main() {
   console.log(`  ${mark(capabilities.llm.configured)} LLM (optional)`);
   console.log(`  ${mark(capabilities.fonts.available)} Chinese PDF fonts`);
 
+  const authRisk = process.env.NODE_ENV === "production" && !capabilities.workos.configured;
+  if (authRisk) {
+    console.log(
+      `  ${mark(false)} AUTH RISK: production without WorkOS SSO — anonymous requests default to ceo; mutation APIs lack real RBAC (configure WorkOS or wire SSO)`,
+    );
+  }
+
   const port = process.env.PORT ?? "3003";
   const baseUrl =
     process.env.STRATOS_BASE_URL?.trim() ??
@@ -159,7 +166,8 @@ async function main() {
     env.errors.length > 0 ||
     !dbOk ||
     (strict && !planOk) ||
-    (http && !httpOk);
+    (http && !httpOk) ||
+    (strict && authRisk);
 
   console.log(blocking ? "\n✗ Preflight FAILED — fix items above before go-live\n" : "\n✓ Preflight passed\n");
 

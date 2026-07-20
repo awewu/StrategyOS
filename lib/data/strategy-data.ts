@@ -156,8 +156,10 @@ export async function getCommandDeckBundle() {
   const { buildStrategicTimeline } = await import("@/lib/command/timeline");
   const { buildDecisionItems } = await import("@/lib/panorama/scr");
   const { getSnapshotList } = await import("@/lib/data/versions-data");
+  const { getBscComparison } = await import("@/lib/command/bsc-comparison-data");
+  const { getBscView } = await import("@/lib/decode/bsc-service");
 
-  const [diagnosis, fpa, assertions, source, spbpScenarios, capStack, investmentCases, bscLights, bscCards, robust, managementReport, stratDiffs, snapshots, decisionsConfig, timelineConfig] =
+  const [diagnosis, fpa, assertions, source, spbpScenarios, capStack, investmentCases, bscView, robust, managementReport, stratDiffs, snapshots, decisionsConfig, timelineConfig, bscComparison] =
     await Promise.all([
       getDiagnosis(),
       getFpaSummary(),
@@ -166,14 +168,14 @@ export async function getCommandDeckBundle() {
       getSpbpScenarios(),
       getCapStack(),
       getInvestmentCases(),
-      entities.getBscLights(),
-      entities.getBscCards(),
+      getBscView(),
       getRobustView(),
       getManagementReport(),
       getStratDiffs(),
       getSnapshotList(),
       getCommandDecisionsConfig(),
       getCommandTimelineConfig(),
+      getBscComparison(),
     ]);
 
   const base = {
@@ -182,8 +184,10 @@ export async function getCommandDeckBundle() {
     fpa,
     managementReport,
     assertions,
-    bscLights,
-    bscCards,
+    bscLights: bscView.lights,
+    bscCards: bscView.cards,
+    bsc: { rows: bscView.rows, source: bscView.source },
+    bscComparison,
     robustView: robust,
     robustOverall: robust.overall,
     stratDiffs,

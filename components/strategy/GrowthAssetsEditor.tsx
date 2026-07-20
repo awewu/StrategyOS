@@ -20,7 +20,7 @@ const STATUSES = [
   { value: "shipped", label: "已交付" },
   { value: "deferred", label: "推迟" },
 ] as const;
-const BRANDS = ["RUIMEI", "HENGRE", "RUUD", "TECH_HOME"] as const;
+const BRANDS = ["RHEEM", "EVERHOT", "RUUD", "AUQAHART"] as const;
 
 const inputCls =
   "w-full rounded border border-[var(--surface-border)] bg-transparent px-2 py-1 text-sm";
@@ -31,7 +31,7 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
   const [roadmap, setRoadmap] = useState<RoadmapRowInput[]>(initial.roadmap);
   const [jtbd, setJtbd] = useState<JtbdRowInput[]>(initial.jtbd);
   const [brandCards, setBrandCards] = useState<BrandCardRowInput[]>(initial.brandCards);
-  const [newLine, setNewLine] = useState({ code: "", name: "", brandCode: "RUIMEI" });
+  const [newLine, setNewLine] = useState({ code: "", name: "", brandCode: "RHEEM" });
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -102,7 +102,7 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
             type="button"
             className="stratos-btn stratos-btn--ghost text-xs"
             disabled={busy !== null}
-            onClick={() => post("productLine", { row: newLine }).then(() => setNewLine({ code: "", name: "", brandCode: "RUIMEI" }))}
+            onClick={() => post("productLine", { row: newLine }).then(() => setNewLine({ code: "", name: "", brandCode: "RHEEM" }))}
           >
             + 新建产品线
           </button>
@@ -118,7 +118,7 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
               type="button"
               className="stratos-btn stratos-btn--ghost text-xs"
               onClick={() =>
-                setBrandCards([...brandCards, { brandCode: "RUIMEI", winningAspiration: "", whereToPlay: "", howToWin: "" }])
+                setBrandCards([...brandCards, { brandCode: "RHEEM", winningAspiration: "", whereToPlay: "", howToWin: "" }])
               }
             >
               + 行

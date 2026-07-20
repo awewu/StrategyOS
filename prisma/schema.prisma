@@ -226,14 +226,16 @@ model HealthAssertion {
 }
 
 model HealthSignal {
-  id         String       @id @default(uuid())
-  period     String       @db.VarChar(10)
-  dimension  String       @db.VarChar(20)
-  signal     TrafficLight
-  kpiName    String?      @map("kpi_name") @db.VarChar(100)
-  kpiValue   String?      @map("kpi_value") @db.VarChar(50)
-  kpiTarget  String?      @map("kpi_target") @db.VarChar(50)
-  recordedAt DateTime     @map("recorded_at")
+  id           String       @id @default(uuid())
+  period       String       @db.VarChar(10)
+  dimension    String       @db.VarChar(20)
+  signal       TrafficLight
+  kpiName      String?      @map("kpi_name") @db.VarChar(100)
+  kpiValue     String?      @map("kpi_value") @db.VarChar(50)
+  kpiTarget    String?      @map("kpi_target") @db.VarChar(50)
+  kpiCode      String?      @map("kpi_code") @db.VarChar(40)
+  bscDimension String?      @map("bsc_dimension") @db.VarChar(20)
+  recordedAt   DateTime     @map("recorded_at")
 
   @@index([period, dimension])
   @@map("health_signals")
@@ -1022,6 +1024,7 @@ model PlanKeyResult {
   id          String        @id @default(uuid())
   objectiveId String        @map("objective_id")
   target      String?
+  kpiCode     String?       @map("kpi_code") @db.VarChar(40)
   sortOrder   Int           @default(999) @map("sort_order")
   createdAt   DateTime      @default(now()) @map("created_at")
   keyResult   String
@@ -1141,6 +1144,9 @@ model PlanSwotItem {
   planId    String        @map("plan_id")
   quadrant  SwotQuadrant
   content   String
+  weight    Int?
+  intensity Int?
+  dimension String?
   sortOrder Int           @default(0) @map("sort_order")
   createdAt DateTime      @default(now()) @map("created_at")
   plan      StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
@@ -1666,10 +1672,10 @@ enum DiagnosisStatus {
 }
 
 enum BrandCode {
-  RUIMEI
-  HENGRE
+  RHEEM
+  EVERHOT
   RUUD
-  TECH_HOME
+  AUQAHART
 }
 
 enum CynefinDomain {

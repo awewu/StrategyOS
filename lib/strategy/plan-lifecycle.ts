@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { PlanStatus } from "@prisma/client";
 import { DEFAULT_GROUP_ORG_UNIT_ID } from "@/lib/data/strategic-plan-data";
+import { writePlanSnapshot, promoteLatestSnapshotToLocked } from "@/lib/strategy/plan-snapshot";
 
 export const PLAN_HORIZON_START = 2026;
 export const PLAN_HORIZON_END = 2028;
@@ -66,7 +67,8 @@ export async function fetchPlanLifecycle(
     keyResultCount,
     canEdit: plan.status !== "LOCKED",
     canSubmit: plan.status === "DRAFT",
-    canLock: plan.status === "DRAFT" || plan.status === "SUBMITTED",
+    // 收紧：仅已提交计划可定稿锁定，确保锁定时已存在完整快照可提升为 LOCKED。
+    canLock: plan.status === "SUBMITTED",
     canReopen: plan.status === "LOCKED",
   };
 }
@@ -132,6 +134,16 @@ export async function transitionPlanLifecycle(input: {
         submittedById: input.submitterId ?? null,
       },
     });
+    // 统一提交语义：提交即冻结快照（与编制页 route.ts 同一构建器，消除 A2 状态分裂）。
+    await writePlanSnapshot({
+      planId: plan.id,
+      orgUnitId: input.orgUnitId,
+      horizonStart,
+      horizonEnd,
+      status: "SUBMITTED",
+      submittedById: input.submitterId ?? null,
+      submittedAt: now,
+    });
     return { ok: true, status: "SUBMITTED" };
   }
 
@@ -139,19 +151,26 @@ export async function transitionPlanLifecycle(input: {
     if (plan.status === "LOCKED") {
       return { ok: false, error: "计划已是定稿状态" };
     }
-    if (plan._count.objectives < 1) {
-      return { ok: false, error: "定稿前需至少一个 BSC 目标" };
+    if (plan.status !== "SUBMITTED") {
+      return { ok: false, error: "请先提交计划，再定稿锁定" };
     }
     await prisma.strategicPlan.update({
       where: { id: plan.id },
-      data: {
-        status: "LOCKED",
-        lockedAt: now,
-        ...(plan.status === "DRAFT"
-          ? { submittedAt: now, submittedById: input.submitterId ?? null }
-          : {}),
-      },
+      data: { status: "LOCKED", lockedAt: now },
     });
+    // 消除 A1 死路：把最新快照提升为 LOCKED；若无快照则从库补建一份 LOCKED 快照。
+    const promoted = await promoteLatestSnapshotToLocked(input.orgUnitId, horizonStart, horizonEnd);
+    if (!promoted) {
+      await writePlanSnapshot({
+        planId: plan.id,
+        orgUnitId: input.orgUnitId,
+        horizonStart,
+        horizonEnd,
+        status: "LOCKED",
+        submittedById: input.submitterId ?? null,
+        submittedAt: now,
+      });
+    }
     return { ok: true, status: "LOCKED" };
   }
 

@@ -4,7 +4,7 @@ import { extractTextFromDocumentDetailed } from "@/lib/compiler/strategic-compil
 
 export const runtime = "nodejs";
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024;
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 export async function POST(request: Request) {
   const denied = await requireApiMinLevel(2);
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "请选择需要提取的文件" }, { status: 400 });
     }
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "文件不能超过 25 MB" }, { status: 413 });
+      return NextResponse.json({ error: "文件不能超过 100 MB" }, { status: 413 });
     }
 
     const extraction = await extractTextFromDocumentDetailed(Buffer.from(await file.arrayBuffer()), file.name);

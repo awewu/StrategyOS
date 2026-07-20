@@ -7,8 +7,9 @@ const nextConfig: NextConfig = {
   staticPageGenerationTimeout: 120,
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   experimental: {
-    // proxy.ts buffers request bodies; default 10MB truncates large strategy PDFs
-    proxyClientMaxBodySize: "25mb",
+    // proxy.ts buffers request bodies; default 10MB truncates large strategy PDFs.
+    // Raised to 100MB so report import (11-agent trigger) can parse files up to 100MB.
+    proxyClientMaxBodySize: "100mb",
   },
 };
 

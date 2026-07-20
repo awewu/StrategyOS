@@ -23,7 +23,7 @@ const DEMO_NORTH_STAR: NorthStar = {
   profitMarginTarget: 0.12,
   marketPositionDesc: "热泵两联供市占率前三，酒店/精装工程渠道首选品牌",
   geographyDesc: "全国大区全覆盖，华东/华南深度渗透，海外布局东南亚试点",
-  brandDesc: "RUUD主攻高端工程，HENGRE守住中端家用，RUIMEI覆盖经济型，科技住宅打入智能生态",
+  brandDesc: "恒热EVERHOT主攻酒店/别墅大宅/工程配套，瑞美RHEEM覆盖暖通经销批发，瑞德RUUD做高端热泵零售门店，Auqahart预留水力系统部件新品类",
 };
 
 const DEMO_MILESTONES: CompassMilestone[] = [

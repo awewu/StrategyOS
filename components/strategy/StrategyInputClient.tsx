@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { OrgUnit } from "@prisma/client";
 import { useRowsEditor, RowTable, AddRowButton, RemoveRowButton } from "@/components/ui/RowsEditor";
+import { SwotTowsPanel } from "@/components/strategy/SwotTowsPanel";
 
 type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 
@@ -30,6 +31,34 @@ const ALL_STEPS: { id: Step; label: string; buHint?: boolean }[] = [
   { id: "roadmap",   label: "路线图" },
   { id: "onepager",  label: "一页纸摘要" },
 ];
+
+// 时间分层：每个板块属于哪一规划视野（愿景→3年路径→年度落地 + 研判/汇总）。
+type PlanLayer = "vision" | "insight" | "path" | "annual" | "summary";
+const STEP_LAYER: Record<Step, PlanLayer> = {
+  intent: "vision",
+  market: "insight",
+  swot: "insight",
+  assumptions: "insight",
+  objectives: "annual",
+  initiatives: "annual",
+  action: "annual",
+  product: "annual",
+  channel: "annual",
+  customer: "annual",
+  org: "annual",
+  resources: "annual",
+  budget: "path",
+  roadmap: "path",
+  onepager: "summary",
+};
+const LAYER_META: Record<PlanLayer, { label: string; full: string; hint: string; color: string }> = {
+  vision:  { label: "愿景", full: "愿景 · 3–5年终局", hint: "北极星、目标年、收入/利润终局（如 2030）——回答“我们要去哪”。", color: "#7c3aed" },
+  insight: { label: "研判", full: "研判 · 事实基线", hint: "市场洞察 / SWOT / 关键假设——外部事实与内部能力判断，不设时间轴。", color: "#0891b2" },
+  path:    { label: "3年路径", full: "中期路径 · 2026–2028", hint: "路线图、里程碑、跨年预算——3 年战略路径。", color: "#2563eb" },
+  annual:  { label: "年度", full: "年度落地 · 季度", hint: "目标/KR、举措、作战计划、产品/渠道/客户——按季度落地的本期执行。", color: "#16a34a" },
+  summary: { label: "汇总", full: "汇总输出", hint: "一页纸摘要，汇总以上各层。", color: "#6b7280" },
+};
+const LAYER_LEGEND: PlanLayer[] = ["vision", "insight", "path", "annual"];
 
 function stepDone(form: PlanForm, id: Step): boolean {
   switch (id) {
@@ -63,6 +92,7 @@ type DimensionKey = (typeof DIMENSIONS)[number]["key"];
 interface KeyResultDraft {
   keyResult: string;
   target: string;
+  kpiCode: string;
 }
 interface ObjectiveDraft {
   dimension: DimensionKey;
@@ -83,6 +113,9 @@ interface InitiativeDraft {
 interface SwotItemDraft {
   quadrant: "strength" | "weakness" | "opportunity" | "threat";
   content: string;
+  weight?: number | null;
+  intensity?: number | null;
+  dimension?: string | null;
 }
 interface OrgChartNodeDraft {
   name: string;
@@ -230,7 +263,7 @@ function emptyRoadmapItem(): RoadmapItemDraft {
   return { track: "举措", title: "", startYear: "2026", startQ: "1", endYear: "2026", endQ: "4", milestone: "", color: "" };
 }
 function emptyKeyResult(): KeyResultDraft {
-  return { keyResult: "", target: "" };
+  return { keyResult: "", target: "", kpiCode: "" };
 }
 
 function emptyForm(): PlanForm {
@@ -532,6 +565,7 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
                   <button
                     key={s.id}
                     onClick={() => setStep(s.id)}
+                    style={{ borderTopColor: LAYER_META[STEP_LAYER[s.id]].color, borderTopWidth: 2 }}
                     className={'relative flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors ' + (
                       step === s.id
                         ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
@@ -556,6 +590,31 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
                 已填 {ALL_STEPS.filter((s) => s.id !== "onepager" && stepDone(form, s.id)).length}/{ALL_STEPS.length - 1}
               </span>
             </div>
+
+            {/* 时间分层图例：板块顶部色条对应规划视野 */}
+            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[var(--color-text-muted)]">
+              <span>时间层：</span>
+              {LAYER_LEGEND.map((k) => (
+                <span key={k} className="inline-flex items-center gap-1">
+                  <span className="inline-block h-2 w-3 rounded-sm" style={{ backgroundColor: LAYER_META[k].color }} />
+                  {LAYER_META[k].full}
+                </span>
+              ))}
+            </div>
+
+            {/* 当前板块所属时间层 */}
+            {(() => {
+              const meta = LAYER_META[STEP_LAYER[step]];
+              return (
+                <div
+                  className="flex flex-wrap items-center gap-2 rounded-md border px-3 py-1.5 text-xs"
+                  style={{ borderColor: meta.color, color: meta.color, backgroundColor: meta.color + "12" }}
+                >
+                  <span className="font-semibold">{meta.full}</span>
+                  <span className="text-[var(--color-text-muted)]">{meta.hint}</span>
+                </div>
+              );
+            })()}
 
             <div className="space-y-4">
               {step === "intent" && (
@@ -702,8 +761,8 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
           const m = ea.objectives.find((o: any) => o.dimension === d.key);
           const base = f.objectives.find((b) => b.dimension === d.key)!;
           if (!m) return base;
-          const krs = (m.keyResults ?? []).map((k: { keyResult?: string; target?: string }) => ({ keyResult: k.keyResult ?? "", target: k.target ?? "" }));
-          while (krs.length < 2) krs.push({ keyResult: "", target: "" });
+          const krs = (m.keyResults ?? []).map((k: { keyResult?: string; target?: string; kpiCode?: string }) => ({ keyResult: k.keyResult ?? "", target: k.target ?? "", kpiCode: k.kpiCode ?? "" }));
+          while (krs.length < 2) krs.push({ keyResult: "", target: "", kpiCode: "" });
           return { dimension: d.key, objective: m.objective ?? "", keyResults: krs };
         })
       : f.objectives,
@@ -713,7 +772,7 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
       : f.initiatives,
     swotItems: Array.isArray(ea.swotItems) && ea.swotItems.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? ea.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "" }))
+      ? ea.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "", weight: s.weight ?? 3, intensity: s.intensity ?? 3, dimension: s.dimension ?? null }))
       : f.swotItems,
     assumptions: Array.isArray(ea.assumptions) && ea.assumptions.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -947,8 +1006,9 @@ function hydrate(plan: any): PlanForm {
     const krs: KeyResultDraft[] = (match.keyResults ?? []).map((k: any) => ({
       keyResult: k.keyResult ?? "",
       target: k.target ?? "",
+      kpiCode: k.kpiCode ?? "",
     }));
-    while (krs.length < 2) krs.push({ keyResult: "", target: "" });
+    while (krs.length < 2) krs.push({ keyResult: "", target: "", kpiCode: "" });
     return { dimension: d.key, objective: match.objective ?? "", keyResults: krs };
   });
   const initiatives: InitiativeDraft[] =
@@ -983,7 +1043,7 @@ function hydrate(plan: any): PlanForm {
   const swotItems: SwotItemDraft[] =
     (plan.swotItems ?? []).length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? plan.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "" }))
+      ? plan.swotItems.map((s: any) => ({ quadrant: s.quadrant ?? "strength", content: s.content ?? "", weight: s.weight ?? 3, intensity: s.intensity ?? 3, dimension: s.dimension ?? null }))
       : base.swotItems;
   const orgChartNodes: OrgChartNodeDraft[] =
     (plan.orgChartNodes ?? []).length > 0
@@ -1190,7 +1250,7 @@ function ObjectivesForm({
           />
           <div className="mt-2 space-y-1">
             {obj.keyResults.map((kr, kIdx) => (
-              <div key={kIdx} className="grid grid-cols-[1fr_140px_auto] items-center gap-2">
+              <div key={kIdx} className="grid grid-cols-[1fr_120px_110px_auto] items-center gap-2">
                 <input
                   type="text"
                   className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
@@ -1204,6 +1264,14 @@ function ObjectivesForm({
                   value={kr.target}
                   onChange={(e) => setKr(oIdx, kIdx, "target", e.target.value)}
                   placeholder="KPI 目标值"
+                />
+                <input
+                  type="text"
+                  className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
+                  value={kr.kpiCode}
+                  onChange={(e) => setKr(oIdx, kIdx, "kpiCode", e.target.value)}
+                  placeholder="编码(选填)"
+                  title="与集团健康 KPI 编码一致时，指挥舱可精确关联实际值"
                 />
                 <div className="flex w-10 justify-end">
                   {obj.keyResults.length > 1 && (
@@ -1337,25 +1405,53 @@ const SWOT_META = [
   { key: "threat" as const, label: "T · 威胁", color: "text-[var(--signal-yellow)]" },
 ];
 
+const SWOT_DIMENSIONS = [
+  { key: "", label: "维度" },
+  { key: "product", label: "产品" },
+  { key: "gtm", label: "渠道" },
+  { key: "brand", label: "品牌" },
+  { key: "strategy", label: "战略" },
+];
+const SWOT_SCALE = [1, 2, 3, 4, 5];
+
 function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  const rows = useRowsEditor<PlanForm, SwotItemDraft>(setForm, "swotItems", () => ({ quadrant: "strength", content: "" }));
+  const rows = useRowsEditor<PlanForm, SwotItemDraft>(setForm, "swotItems", () => ({ quadrant: "strength", content: "", weight: 3, intensity: 3, dimension: null }));
+  const miniSel = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-1 py-0.5 text-[11px]";
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {SWOT_META.map((m) => {
-        const items = form.swotItems.map((s, i) => ({ ...s, _idx: i })).filter((s) => s.quadrant === m.key);
-        return (
-          <div key={m.key} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
-            <div className={"text-sm font-semibold " + m.color}>{m.label}</div>
-            {items.map((s) => (
-              <div key={s._idx} className="flex gap-1">
-                <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" rows={2} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
-                <RemoveRowButton onClick={() => rows.remove(s._idx)} />
-              </div>
-            ))}
-            <button onClick={() => rows.add({ quadrant: m.key })} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-caption hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
-          </div>
-        );
-      })}
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        {SWOT_META.map((m) => {
+          const items = form.swotItems.map((s, i) => ({ ...s, _idx: i })).filter((s) => s.quadrant === m.key);
+          return (
+            <div key={m.key} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
+              <div className={"text-sm font-semibold " + m.color}>{m.label}</div>
+              {items.map((s) => (
+                <div key={s._idx} className="space-y-1 rounded border border-[var(--surface-border)]/60 p-1.5">
+                  <div className="flex gap-1">
+                    <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" rows={2} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
+                    <RemoveRowButton onClick={() => rows.remove(s._idx)} />
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
+                    <span>重要</span>
+                    <select className={miniSel} value={s.weight ?? 3} onChange={(e) => rows.update(s._idx, "weight", Number(e.target.value))}>
+                      {SWOT_SCALE.map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                    <span>强度</span>
+                    <select className={miniSel} value={s.intensity ?? 3} onChange={(e) => rows.update(s._idx, "intensity", Number(e.target.value))}>
+                      {SWOT_SCALE.map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                    <select className={miniSel} value={s.dimension ?? ""} onChange={(e) => rows.update(s._idx, "dimension", e.target.value || null)}>
+                      {SWOT_DIMENSIONS.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+              ))}
+              <button onClick={() => rows.add({ quadrant: m.key, weight: 3, intensity: 3, dimension: null })} className="w-full rounded border border-dashed border-[var(--surface-border)] py-1 text-caption hover:border-[var(--color-accent)] transition-colors">+ 新增</button>
+            </div>
+          );
+        })}
+      </div>
+      <SwotTowsPanel items={form.swotItems} />
     </div>
   );
 }

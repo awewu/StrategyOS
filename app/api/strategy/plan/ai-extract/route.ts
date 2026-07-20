@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireApiMinLevel } from "@/lib/auth/api-guard";
 import { llmConfigured } from "@/lib/stratos/llm-agent";
+import { clampSwotScale, normalizeSwotDimension } from "@/lib/strategy/swot-bridge";
 import { join, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -364,6 +365,15 @@ function objectText(value: unknown): string {
   return "";
 }
 
+function numericValue(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const n = Number(value.trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 function arrayValue(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
@@ -481,6 +491,9 @@ function normalizeExtracted(value: unknown): Record<string, unknown> {
       return {
         quadrant: normalizeSwotQuadrant(firstValue(s, ["quadrant", "type", "category", "象限", "类型"]) ?? text),
         content: stringValue(firstValue(s, ["content", "description", "内容", "描述", "point"])) || text,
+        weight: clampSwotScale(numericValue(firstValue(s, ["weight", "importance", "重要性", "重要度", "权重"]))),
+        intensity: clampSwotScale(numericValue(firstValue(s, ["intensity", "confidence", "强度", "置信", "置信度"]))),
+        dimension: normalizeSwotDimension(stringValue(firstValue(s, ["dimension", "dim", "维度"]))) ?? null,
       };
     }).filter((s) => s.content),
     assumptions: arrayValue(firstValue(root, ["assumptions", "关键假设", "hypotheses"])).map((item) => {
@@ -604,7 +617,7 @@ function heuristicExtract(text: string): Record<string, unknown> {
   const swotItems = uniqueBy(lines
     .filter((line) => /(优势|劣势|短板|不足|机会|机遇|威胁|风险|挑战|能力|壁垒|瓶颈)/.test(line))
     .slice(0, 8)
-    .map((line) => ({ quadrant: normalizeSwotQuadrant(line), content: line })), (item) => item.content);
+    .map((line) => ({ quadrant: normalizeSwotQuadrant(line), content: line, weight: 3, intensity: 3, dimension: null })), (item) => item.content);
 
   const assumptions = uniqueBy(lines
     .filter((line) => /(假设|前提|依赖|如果|预计|预期|判断|可能|风险)/.test(line))
@@ -748,7 +761,7 @@ Strict field mapping contract:
 - objectives tab is BSC/KPI management only: objectives[].dimension must be FINANCIAL, CUSTOMER, PROCESS, or LEARNING; objective is the BSC management objective; keyResults[].keyResult is a KPI metric name/definition; keyResults[].target is the KPI target value. Do not put OKR initiatives here.
 - initiatives tab is OKR/key initiative management: initiatives[].title is the Objective/key initiative; ownerName is owner; okrKeyResult is the Key Result; okrTarget is target value; okrBaseline is baseline; q1Milestone, q2Milestone, q3Milestone, q4Milestone are quarterly milestones.
 - market tab: marketInsights[].category must be TAM, SAM, SOM, TREND, CUSTOMER, TECH, or COMPETE; title is the conclusion; content is the supporting insight; dataPoint is a number, ratio, market size, growth rate, or other evidence; source is the source section/page/report from the uploaded file or "original document".
-- SWOT tab: swotItems[].quadrant must be strength, weakness, opportunity, or threat; content is one concrete fact or judgment for that quadrant.
+- SWOT tab: swotItems[].quadrant must be strength, weakness, opportunity, or threat; content is one concrete fact or judgment for that quadrant. Also give weight (1-5 importance), intensity (1-5 confidence/strength), and dimension (one of product/gtm/brand/strategy) for each item when inferable.
 - action tab: actionItems[].initiativeTitle, year, quarter, action, ownerName, acceptanceCriteria, checkDate, status map to the action plan table; year must be 2026-2028, quarter 1-4, status PLAN unless source says otherwise.
 - product tab: productQuarterly[].productName, unit, q1Qty, q1Revenue, q2Qty, q2Revenue, q3Qty, q3Revenue, q4Qty, q4Revenue, annualQty, annualRevenue, note map to the product quarterly table.
 - channel tab: channelPlans[].channelType, currentState, targetState, q1Action, q2Action, q3Action, q4Action, revenueTarget, partnerCount, note map to the channel plan table.
@@ -772,7 +785,7 @@ Only return values that can be extracted or reasonably inferred for these exact 
       "q1Milestone": "Q1里程碑", "q2Milestone": "Q2里程碑",
       "q3Milestone": "Q3里程碑", "q4Milestone": "Q4里程碑" }
   ],
-  "swotItems": [{ "quadrant": "strength|weakness|opportunity|threat", "content": "描述" }],
+  "swotItems": [{ "quadrant": "strength|weakness|opportunity|threat", "content": "描述", "weight": 3, "intensity": 3, "dimension": "product|gtm|brand|strategy" }],
   "assumptions": [{ "assumption": "假设描述", "critical": true }],
   "marketInsights": [
     { "category": "TAM|SAM|SOM|TREND|CUSTOMER|TECH|COMPETE",
@@ -812,7 +825,7 @@ ${summary}
 `;
 
 // ─── Route handler ────────────────────────────────────────────────────────────
-const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
+const MAX_BYTES = 100 * 1024 * 1024; // 100 MB
 
 export async function POST(req: Request) {
   const debugId = `strategy-ai-${Date.now().toString(36)}`;
@@ -852,7 +865,7 @@ export async function POST(req: Request) {
     }
     if (file.size > MAX_BYTES) {
       logExtractStage(debugId, "file-too-large", { filename: file.name, sizeBytes: file.size });
-      return NextResponse.json({ error: `文件不得超过 20 MB（debugId: ${debugId}）`, debugId }, { status: 400 });
+      return NextResponse.json({ error: `文件不得超过 100 MB（debugId: ${debugId}）`, debugId }, { status: 400 });
     }
 
     const buf = Buffer.from(await file.arrayBuffer());

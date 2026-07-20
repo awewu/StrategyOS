@@ -37,20 +37,26 @@ export default async function MonitorHealthPage() {
         hideTitle
       />
       <OpsHealthDashboard series={opsSeries} />
-      <details className="stratos-disclosure stratos-disclosure--secondary">
-        <summary>编辑 BSC 四灯与核心 KPI（落库 · 驱动指挥舱/一页纸同源信号）</summary>
-        <div className="stratos-disclosure__body">
-          <HealthSignalsEditor
-            initialLights={data.bscLights}
-            initialKpis={data.healthOverview.kpis.map((k) => ({
-              kpiName: k.name,
-              kpiValue: k.value,
-              kpiTarget: k.target,
-              signal: k.status,
-            }))}
-          />
-        </div>
-      </details>
+      <section className="stratos-card stratos-card--padded">
+        <header className="stratos-section-header">
+          <div>
+            <h2 className="stratos-section-title">录入本期实际值</h2>
+            <p className="stratos-section-desc">
+              BSC 四灯 + 核心 KPI（可填编码 / 关联维度）· 落库即驱动指挥舱目标对比与一页纸同源信号
+              {data.source === "demo" ? " · 当前为演示数据" : " · 当前为真实数据"}
+            </p>
+          </div>
+        </header>
+        <HealthSignalsEditor
+          initialLights={data.bscLights}
+          initialKpis={data.healthOverview.kpis.map((k) => ({
+            kpiName: k.name,
+            kpiValue: k.value,
+            kpiTarget: k.target,
+            signal: k.status,
+          }))}
+        />
+      </section>
       <section className="stratos-card stratos-card--padded">
         <header className="stratos-section-header">
           <div>

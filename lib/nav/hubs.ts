@@ -80,7 +80,7 @@ export const NAV_HUBS: NavHub[] = [
     defaultHref: "/decode",
     children: [
       { href: "/decode", label: "战略解码（BSC · X-Matrix · OKR）" },
-      { href: "/cockpit", label: "坚守驾驶舱" },
+      { href: "/cockpit", label: "坚守驾驶舱 · 承诺兑现" },
       { href: "/monitor/functions", label: "职能体系" },
       { href: "/monitor/bu", label: "事业部" },
       { href: "/monitor/health", label: "集团健康" },

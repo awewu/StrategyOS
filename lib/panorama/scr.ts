@@ -1,7 +1,9 @@
 import type { getCommandDeckBundle } from "@/lib/data/strategy-data";
 import { topDiffs } from "@/lib/stratos";
 
-type CommandDeck = Awaited<ReturnType<typeof getCommandDeckBundle>>;
+type FullCommandDeck = Awaited<ReturnType<typeof getCommandDeckBundle>>;
+// bscComparison 仅供指挥舱 UI 使用，panorama 构建器不消费它 → 设为可选，避免既有测试 mock 失效。
+type CommandDeck = Omit<FullCommandDeck, "bscComparison" | "bsc"> & Partial<Pick<FullCommandDeck, "bscComparison" | "bsc">>;
 
 export interface ScrSummary {
   situation: string;
@@ -145,6 +147,21 @@ export function buildImplications(deck: CommandDeck): string[] {
 
 export function buildDecisionItems(deck: CommandDeck): DecisionItem[] {
   const items: DecisionItem[] = [];
+
+  // 红线突破 → 自动生成决策项（补上"治理→动作"的执行出口，每维一项，最高优先）。
+  if (deck.bscComparison?.anyBreached) {
+    for (const d of deck.bscComparison.dims) {
+      const breach = d.thresholds.find((t) => t.breached);
+      if (!breach) continue;
+      items.push({
+        id: `dec-redline-${d.key}`,
+        title: `红线突破 · ${d.dim}：${breach.statement}（叫停 / 绩效处理）`,
+        owner: `${d.dim}负责人 · 战略会`,
+        deadline: "立即",
+        status: "open",
+      });
+    }
+  }
 
   if (deck.fpa.cashRunwayMonths < 3) {
     items.push({

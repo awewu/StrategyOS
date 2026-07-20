@@ -3,11 +3,13 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
 import { syncPlanAssumptionsToPremises } from "@/lib/data/plan-assumption-sync";
+import { buildSnapshotJson } from "@/lib/strategy/plan-snapshot";
+import { requireMutationGate } from "@/lib/auth/api-guard";
 
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
 
-type KeyResultInput = { keyResult?: string; target?: string };
+type KeyResultInput = { keyResult?: string; target?: string; kpiCode?: string };
 type ObjectiveInput = { dimension: string; objective?: string; keyResults?: KeyResultInput[] };
 type InitiativeInput = {
   title?: string;
@@ -22,7 +24,7 @@ type InitiativeInput = {
 };
 type ResourceInput = { resourceType: string; amount?: string; justification?: string };
 type AssumptionInput = { assumption?: string; critical?: boolean };
-type SwotItemInput = { quadrant: "strength" | "weakness" | "opportunity" | "threat"; content?: string };
+type SwotItemInput = { quadrant: "strength" | "weakness" | "opportunity" | "threat"; content?: string; weight?: number | null; intensity?: number | null; dimension?: string | null };
 type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; headcount?: number | string; headcountNew?: number | string; note?: string };
 type NumericInput = number | string;
 type ChannelPlanInput = { channelType?: string; currentState?: string; targetState?: string; q1Action?: string; q2Action?: string; q3Action?: string; q4Action?: string; revenueTarget?: NumericInput; partnerCount?: number | string; note?: string };
@@ -104,49 +106,9 @@ function hasMeaningfulPlanPayload(input: {
   return false;
 }
 
-function buildSubmissionSnapshot(input: {
-  orgUnitId: string;
-  horizonStart: number;
-  horizonEnd: number;
-  intent?: string;
-  northStar?: string;
-  objectives?: ObjectiveInput[];
-  initiatives?: InitiativeInput[];
-  resources?: ResourceInput[];
-  assumptions?: AssumptionInput[];
-  swotItems?: SwotItemInput[];
-  orgChartNodes?: OrgChartNodeInput[];
-  channelPlans?: ChannelPlanInput[];
-  customerPlans?: CustomerPlanInput[];
-  productQuarterly?: ProductQuarterlyInput[];
-  marketInsights?: MarketInsightInput[];
-  actionItems?: ActionItemInput[];
-  budgetItems?: BudgetItemInput[];
-  roadmapItems?: RoadmapItemInput[];
-}) {
-  return {
-    orgUnitId: input.orgUnitId,
-    horizonStart: input.horizonStart,
-    horizonEnd: input.horizonEnd,
-    intent: text(input.intent),
-    northStar: text(input.northStar),
-    objectives: input.objectives ?? [],
-    initiatives: input.initiatives ?? [],
-    resources: input.resources ?? [],
-    assumptions: input.assumptions ?? [],
-    swotItems: input.swotItems ?? [],
-    orgChartNodes: input.orgChartNodes ?? [],
-    channelPlans: input.channelPlans ?? [],
-    customerPlans: input.customerPlans ?? [],
-    productQuarterly: input.productQuarterly ?? [],
-    marketInsights: input.marketInsights ?? [],
-    actionItems: input.actionItems ?? [],
-    budgetItems: input.budgetItems ?? [],
-    roadmapItems: input.roadmapItems ?? [],
-  };
-}
-
 export async function POST(req: Request) {
+  const gate = await requireMutationGate();
+  if (gate) return gate;
   try {
     const session = await getSession();
     // 仅当 session 用户在库中真实存在时才记录提交人（避免 demo 会话破坏外键）
@@ -310,6 +272,7 @@ export async function POST(req: Request) {
               objectiveId: created.id,
               keyResult: text(k.keyResult),
               target: nullableText(k.target),
+              kpiCode: nullableText(k.kpiCode),
               sortOrder: kSort++,
             },
           });
@@ -338,11 +301,23 @@ export async function POST(req: Request) {
       }
 
       // SWOT
+      const clampScale = (v: number | null | undefined) =>
+        v == null || !Number.isFinite(Number(v)) ? null : Math.max(1, Math.min(5, Math.round(Number(v))));
+      const validDims = ["product", "gtm", "brand", "strategy"];
       let swSort = 0;
       for (const sw of swotItems) {
         if (!text(sw.content)) continue;
+        const dim = sw.dimension ? String(sw.dimension).toLowerCase() : null;
         await tx.planSwotItem.create({
-          data: { planId: plan.id, quadrant: sw.quadrant, content: text(sw.content), sortOrder: swSort++ },
+          data: {
+            planId: plan.id,
+            quadrant: sw.quadrant,
+            content: text(sw.content),
+            weight: clampScale(sw.weight),
+            intensity: clampScale(sw.intensity),
+            dimension: dim && validDims.includes(dim) ? dim : null,
+            sortOrder: swSort++,
+          },
         });
       }
 
@@ -549,7 +524,7 @@ export async function POST(req: Request) {
             AND "horizon_end" = ${horizonEnd}
         `;
         const version = Number(nextVersionRows[0]?.version ?? 1);
-        const snapshot = buildSubmissionSnapshot({
+        const snapshot = buildSnapshotJson({
           orgUnitId,
           horizonStart,
           horizonEnd,

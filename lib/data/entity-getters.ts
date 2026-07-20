@@ -5,6 +5,7 @@ import { dbAvailable, prisma, safeDbQuery } from "@/lib/db";
 import * as demo from "@/lib/stratos-demo-data";
 import { demoHealthOverview } from "@/lib/stratos-demo-data";
 import { getActivePeriod } from "@/lib/data/active-period";
+import { toBscDimKey } from "@/lib/decode/bsc-dimensions";
 import type {
   Assumption,
   BrandStrategyCard,
@@ -14,6 +15,7 @@ import type {
   KeyResult,
   ProductBet,
   Project,
+  Scenario,
   TrafficLight,
 } from "@/lib/types/stratos";
 
@@ -171,8 +173,9 @@ export async function getBscLights(): Promise<{
   if (rows.length === 0) return demo.bscLights;
   const map: Record<string, TrafficLight> = {};
   for (const r of rows) {
-    if (["financial", "customer", "process", "learning"].includes(r.dimension)) {
-      map[r.dimension] = r.signal as TrafficLight;
+    const key = toBscDimKey(r.dimension);
+    if (key) {
+      map[key] = r.signal as TrafficLight;
     }
   }
   return {
@@ -326,4 +329,19 @@ async function getCapStackInline() {
     cashPeakAmount: Number(row.cashPeakAmount ?? demo.capStack.cashPeakAmount),
     runwayAfterPeak: Number(row.runwayAfterPeak ?? demo.capStack.runwayAfterPeak),
   };
+}
+
+export async function getScenarios(): Promise<Scenario[]> {
+  if (!(await dbAvailable())) return demo.spbpScenarios;
+  const period = await getActivePeriod();
+  const rows = await prisma.spbpScenario.findMany({ where: { period } });
+  if (rows.length === 0) return demo.spbpScenarios;
+  return rows.map((r) => ({
+    id: r.code,
+    name: r.name,
+    probability: Number(r.probability),
+    drivers: [] as string[],
+    fpaImpact: { revenue: 0, profit: 0, runwayMonths: 0 },
+    linkedAssumptionCodes: [],
+  }));
 }

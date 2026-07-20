@@ -12,7 +12,7 @@ export type BetGateStatus =
   | "deferred";
 export type FpaToggle = "on" | "off" | "deferred";
 export type Horizon = "H1" | "H2" | "H3";
-export type BrandCode = "RUIMEI" | "HENGRE" | "RUUD" | "TECH_HOME";
+export type BrandCode = "RHEEM" | "EVERHOT" | "RUUD" | "AUQAHART";
 export type StrategyFormationType =
   | "deliberate"
   | "emergent"

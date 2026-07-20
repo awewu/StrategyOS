@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 export const runtime = "nodejs";
 
 const UPLOAD_DIR = join(process.cwd(), "public", "uploads", "plans");
-const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_BYTES = 100 * 1024 * 1024; // 100 MB
 
 const ALLOWED_MIME = new Set([
   "application/vnd.ms-powerpoint",
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "文件类型不支持" }, { status: 415 });
     }
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: "文件不能超过 50 MB" }, { status: 413 });
+      return NextResponse.json({ error: "文件不能超过 100 MB" }, { status: 413 });
     }
 
     // 确认 plan 存在

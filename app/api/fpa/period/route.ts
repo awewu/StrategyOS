@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireApiMinLevel } from "@/lib/auth/api-guard";
+import { requireApiMinLevel, requireMutationGate } from "@/lib/auth/api-guard";
 import { getFpaEditable, saveFpaEditable } from "@/lib/fpa/data-access";
 import { getActivePeriod } from "@/lib/data/active-period";
 
@@ -11,6 +11,8 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
+  const gate = await requireMutationGate();
+  if (gate) return gate;
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
   try {

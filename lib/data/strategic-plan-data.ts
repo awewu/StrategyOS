@@ -3,6 +3,7 @@
  */
 import { dbAvailable, prisma } from "@/lib/db";
 import { BSC_MAP, type BscDimensionRow } from "@/lib/decode/bsc-map";
+import { BSC_DIM_ENUMS, BSC_ENUM_LABEL, toBscDimEnum, type BscDimEnum } from "@/lib/decode/bsc-dimensions";
 import type { CompassMilestone, PremiseAudit } from "@/lib/compass/types";
 import type { TrafficLight } from "@/lib/types/stratos";
 
@@ -10,22 +11,10 @@ export const DEFAULT_GROUP_ORG_UNIT_ID = "org-group-rhautt";
 export const DEFAULT_HORIZON_START = 2026;
 export const DEFAULT_HORIZON_END = 2028;
 
-const DIMENSION_ORDER = ["FINANCIAL", "CUSTOMER", "PROCESS", "LEARNING"] as const;
-type PlanDimension = (typeof DIMENSION_ORDER)[number];
-
-const DIM_LABEL: Record<PlanDimension, string> = {
-  FINANCIAL: "财务",
-  CUSTOMER: "客户",
-  PROCESS: "流程",
-  LEARNING: "学习",
-};
-
-const LABEL_TO_DIM: Record<string, PlanDimension> = {
-  财务: "FINANCIAL",
-  客户: "CUSTOMER",
-  流程: "PROCESS",
-  学习: "LEARNING",
-};
+// 维度分类学统一自 @/lib/decode/bsc-dimensions（单一真相）。
+const DIMENSION_ORDER = BSC_DIM_ENUMS;
+type PlanDimension = BscDimEnum;
+const DIM_LABEL = BSC_ENUM_LABEL;
 
 export interface PlanKeyResultView {
   keyResult: string;
@@ -318,7 +307,7 @@ export function planObjectivesToBscRows(
 
 export function bscRowsToPlanObjectives(rows: BscDimensionRow[]): PlanObjectiveView[] {
   return rows.map((row) => {
-    const dimension = LABEL_TO_DIM[row.dim.trim()] ?? "FINANCIAL";
+    const dimension = toBscDimEnum(row.dim.trim()) ?? "FINANCIAL";
     const keyResults: PlanKeyResultView[] = [];
     if (row.mustWin.trim()) {
       keyResults.push({ keyResult: row.mustWin.trim(), target: null });

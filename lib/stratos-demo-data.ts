@@ -51,28 +51,28 @@ export const diagnosis: StrategicDiagnosis = {
 
 export const brandCards: BrandStrategyCard[] = [
   {
+    brandCode: "EVERHOT",
+    winningAspiration: "恒热：酒店·别墅大宅·工程配套领先",
+    whereToPlay: "酒店·别墅大宅·工程配套",
+    howToWin: "工程系统方案 + 项目配套交付",
+  },
+  {
+    brandCode: "RHEEM",
+    winningAspiration: "瑞美：暖通经销批发规模覆盖",
+    whereToPlay: "暖通经销批发渠道",
+    howToWin: "经销网络深度 + 批发走量",
+  },
+  {
     brandCode: "RUUD",
-    winningAspiration: "华东热泵高端份额前三",
-    whereToPlay: "酒店·家用·华东经销商",
-    howToWin: "V4 平台化 + 不停业改造方案",
+    winningAspiration: "瑞德：高端热泵空气解决方案",
+    whereToPlay: "高端热泵·零售门店",
+    howToWin: "高端热泵产品 + 门店体验",
   },
   {
-    brandCode: "HENGRE",
-    winningAspiration: "核心经销商深度覆盖",
-    whereToPlay: "区县组团·存量升级",
-    howToWin: "渠道升级 + 服务响应 48h",
-  },
-  {
-    brandCode: "RUIMEI",
-    winningAspiration: "工程渠道稳健增长",
-    whereToPlay: "商业工程·北方区域",
-    howToWin: "总包绑定 + 验收通过率",
-  },
-  {
-    brandCode: "TECH_HOME",
-    winningAspiration: "科技住宅标杆项目",
-    whereToPlay: "高端住宅·一线都市",
-    howToWin: "系统方案 + 样板房体验",
+    brandCode: "AUQAHART",
+    winningAspiration: "Auqahart：水力系统部件新品类",
+    whereToPlay: "水箱·水力中心·混水泵站",
+    howToWin: "系统部件产品线 + 暖通渠道预留",
   },
 ];
 
@@ -245,7 +245,7 @@ export const capStack: CapStackPeriod = {
   capexActual: 9000,
   capexForecast: 11000,
   byHorizon: { H1: 62, H2: 28, H3: 10 },
-  byBrand: { RUUD: 35, HENGRE: 30, RUIMEI: 25, TECH_HOME: 10 },
+  byBrand: { RUUD: 35, EVERHOT: 30, RHEEM: 25, AUQAHART: 10 },
   byType: { strategic: 20, capacity: 40, technology: 25, brand: 10, people: 5 },
   cashPeakMonth: "2026-09",
   cashPeakAmount: 3200,
@@ -429,7 +429,7 @@ export const maPipeline = [
     name: "北方商用渠道标的",
     direction: "channel" as const,
     stage: "watch" as const,
-    synergyThesis: "RUIMEI 工程渠道补强",
+    synergyThesis: "瑞美 RHEEM 经销批发渠道补强",
     valuationRange: "500–900 万",
     linkedAssumptionCodes: [],
   },

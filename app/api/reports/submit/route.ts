@@ -14,7 +14,7 @@ import { checkPulseDuplicate } from "@/lib/reports/pulse-dedup";
 export const runtime = "nodejs";
 
 const UPLOAD_DIR = join(process.cwd(), "public", "uploads", "reports");
-const MAX_BYTES = 80 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024;
 const ALLOWED_EXT = /\.(docx|xlsx|pdf|pptx|doc|xls|ppt)$/i;
 
 /** Best-effort text extraction from OOXML zip formats (docx/xlsx/pptx) — no extra deps */
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "不支持的文件类型" }, { status: 415 });
       }
       if (file.size > MAX_BYTES) {
-        return NextResponse.json({ error: "文件不能超过 80 MB" }, { status: 413 });
+        return NextResponse.json({ error: "文件不能超过 100 MB" }, { status: 413 });
       }
       const bytes = Buffer.from(await file.arrayBuffer());
       const savedName = randomUUID() + "." + ext;

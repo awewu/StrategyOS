@@ -6,6 +6,8 @@ import { Drawer } from "@/components/ui/Modal";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import type { TrafficLight } from "@/lib/types/stratos";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
+import type { BscComparison, BscDimKey, Pace } from "@/lib/command/bsc-comparison";
+import { BSC_DIMENSIONS } from "@/lib/decode/bsc-dimensions";
 
 type BscCardLike = {
   key: string;
@@ -15,27 +17,36 @@ type BscCardLike = {
   light: TrafficLight;
 };
 
-const DIMS = [
-  { key: "financial", dim: "财务", color: "var(--bsc-financial)" },
-  { key: "customer", dim: "客户", color: "var(--bsc-customer)" },
-  { key: "process", dim: "流程", color: "var(--bsc-process)" },
-  { key: "learning", dim: "学习", color: "var(--bsc-learning)" },
-] as const;
+// 维度分类学统一自 @/lib/decode/bsc-dimensions（单一真相）。
+const DIMS: { key: BscDimKey; dim: string; color: string }[] = BSC_DIMENSIONS.map((d) => ({
+  key: d.key,
+  dim: d.label,
+  color: d.color,
+}));
 
 const LIGHT_LABEL: Record<TrafficLight, string> = { green: "正常", yellow: "关注", red: "预警" };
 
 const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
+const PACE_META: Record<Pace, { label: string; color: string }> = {
+  ahead: { label: "超前", color: "var(--signal-green)" },
+  on_track: { label: "在轨", color: "var(--color-accent)" },
+  behind: { label: "滞后", color: "var(--signal-yellow)" },
+  unknown: { label: "待测", color: "var(--color-text-muted)" },
+};
+
 export function BscTargetsBoard({
   lights,
   cards,
   rows,
+  comparison,
   period,
   canEdit,
 }: {
-  lights: Record<(typeof DIMS)[number]["key"], TrafficLight>;
+  lights: Record<BscDimKey, TrafficLight>;
   cards: BscCardLike[];
   rows: BscDimensionRow[];
+  comparison?: BscComparison;
   period: string;
   canEdit: boolean;
 }) {
@@ -50,6 +61,7 @@ export function BscTargetsBoard({
   const card = cards.find((c) => c.key === openKey) ?? null;
   const row = meta ? rows.find((r) => r.dim === meta.dim) ?? null : null;
   const signal = meta ? lights[meta.key] : null;
+  const dimCmp = meta && comparison ? comparison.dims.find((d) => d.key === (meta.key as BscDimKey)) ?? null : null;
 
   function close() {
     setOpenKey(null);
@@ -168,6 +180,93 @@ export function BscTargetsBoard({
 
           {!editing && (
             <div className="mt-4 space-y-4">
+              {dimCmp && (
+                <div className="space-y-3 rounded-md border border-[var(--surface-border)] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-1">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-text-primary)]">
+                      目标 vs 实际
+                      {comparison?.dataSource && (
+                        <span
+                          className={
+                            "rounded px-1.5 py-0.5 text-[10px] font-normal " +
+                            (comparison.dataSource === "database"
+                              ? "bg-[var(--signal-green)]/12 text-[var(--signal-green)]"
+                              : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]")
+                          }
+                        >
+                          {comparison.dataSource === "database" ? "真实数据" : "演示数据"}
+                        </span>
+                      )}
+                    </span>
+                    {comparison?.hasBaseline && comparison?.baselineLabel ? (
+                      <span className="text-[11px] text-[var(--color-text-muted)]">目标基线：{comparison.baselineLabel}</span>
+                    ) : (
+                      <span className="text-[11px] text-[var(--signal-yellow)]">无已提交/锁定基线 — 战略编制提交后才纳入对比</span>
+                    )}
+                  </div>
+
+                  {dimCmp.thresholds.length > 0 && (
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-medium text-[var(--signal-red)]">红线 · KPI 经营底线（突破 → 预警 / 叫停 / 绩效）</div>
+                      {dimCmp.thresholds.map((t, i) => (
+                        <div
+                          key={i}
+                          className={"flex items-start gap-2 rounded px-2 py-1 text-xs " + (t.breached ? "bg-[var(--signal-red)]/10" : "bg-black/[0.03]")}
+                        >
+                          <TrafficLightDot signal={t.status} />
+                          <span className="flex-1 text-[var(--color-text-secondary)]">{t.statement}</span>
+                          {t.breached && <span className="font-semibold text-[var(--signal-red)]">突破·叫停</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <div className="text-[11px] font-medium text-[var(--color-accent)]">先导 · OKR 战略执行（推进进度，非红线告警）</div>
+                    {dimCmp.leading.length === 0 ? (
+                      <p className="text-[11px] text-[var(--color-text-muted)]">锁定基线中本维度暂无 KR。</p>
+                    ) : (
+                      dimCmp.leading.map((l, i) => (
+                        <div key={i} className="rounded bg-black/[0.03] px-2 py-1.5 text-xs">
+                          <div className="font-medium text-[var(--color-text-secondary)]">{l.keyResult}</div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-[var(--color-text-muted)]">
+                            <span>目标 {l.target}</span>
+                            <span>实际 {l.actual ?? "—"}</span>
+                            {l.attainmentPct != null && <span>达成 {l.attainmentPct}%</span>}
+                            <span style={{ color: PACE_META[l.pace].color }}>{PACE_META[l.pace].label}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {dimCmp.finance && (
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-medium text-[var(--bsc-financial)]">财务实际 · FPA（预算 vs 实际 · 单位 万）</div>
+                      <div className="grid grid-cols-3 gap-2 text-[11px]">
+                        <div className="rounded bg-black/[0.03] px-2 py-1.5">
+                          <div className="text-[var(--color-text-muted)]">营收</div>
+                          <div className="text-[var(--color-text-secondary)]">{dimCmp.finance.revenueActual} / {dimCmp.finance.revenueBudget}</div>
+                          {dimCmp.finance.revenueAttainmentPct != null && (
+                            <div className="text-[var(--color-text-muted)]">达成 {dimCmp.finance.revenueAttainmentPct}%</div>
+                          )}
+                        </div>
+                        <div className="rounded bg-black/[0.03] px-2 py-1.5">
+                          <div className="text-[var(--color-text-muted)]">经营利润</div>
+                          <div className="text-[var(--color-text-secondary)]">{dimCmp.finance.profitActual} / {dimCmp.finance.profitBudget}</div>
+                          {dimCmp.finance.profitAttainmentPct != null && (
+                            <div className="text-[var(--color-text-muted)]">达成 {dimCmp.finance.profitAttainmentPct}%</div>
+                          )}
+                        </div>
+                        <div className="rounded bg-black/[0.03] px-2 py-1.5">
+                          <div className="text-[var(--color-text-muted)]">现金 Runway</div>
+                          <div className="text-[var(--color-text-secondary)]">{dimCmp.finance.cashRunwayMonths} 月</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               {card?.target && (
                 <section>
                   <div className="text-xs font-medium text-[var(--color-text-primary)]">卡片目标</div>

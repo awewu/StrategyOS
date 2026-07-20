@@ -20,7 +20,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { brand } from "@/lib/brand/tokens";
 import { getCommandDeckBundle } from "@/lib/data/strategy-data";
 import { getActivePeriod } from "@/lib/data/active-period";
-import { getDecodeBsc } from "@/lib/decode/data-access";
 import {
   buildScrSummary,
   buildTopAlerts,
@@ -73,7 +72,7 @@ export default async function CommandPage({
     withTimeout(getInboxSummary(), 2500, { open: 0, critical: 0 }),
     getActivePeriod(),
   ]);
-  const bsc = await withTimeout(getDecodeBsc(activePeriod), 2500, { rows: [], source: "demo" as const });
+  const bsc = deck.bsc;
   const top3 = topDiffs(deck.stratDiffs, 3);
   const scr = buildScrSummary(deck);
   const alerts = buildTopAlerts(deck);
@@ -142,6 +141,30 @@ export default async function CommandPage({
       <ExecutiveSummary scr={scr} />
       <ImplicationsBar items={implications} />
 
+      {/* ①.5 BSC 红线突破 · 经营底线全局预警（KPI 阈值，非 OKR 先导） */}
+      {deck.bscComparison?.anyBreached && (
+        <section
+          className="stratos-card stratos-card--padded border-[var(--signal-red)]/40 bg-[color-mix(in_srgb,var(--signal-red)_7%,white)]"
+          aria-label="BSC 红线突破"
+        >
+          <div className="flex items-center gap-2">
+            <TrafficLightDot signal="red" />
+            <p className="text-label text-[var(--signal-red)]">BSC 红线突破 · 经营底线告警（需预警 / 叫停 / 绩效处理）</p>
+          </div>
+          <ul className="mt-2 space-y-1 text-caption">
+            {deck.bscComparison.dims.flatMap((d) =>
+              d.thresholds
+                .filter((t) => t.breached)
+                .map((t, i) => (
+                  <li key={`${d.key}-${i}`} className="text-[var(--color-text-secondary)]">
+                    <span className="font-medium text-[var(--color-text-primary)]">{d.dim}</span> · {t.statement}
+                  </li>
+                )),
+            )}
+          </ul>
+        </section>
+      )}
+
       {/* ② 风险与决策 */}
       {hardBlock ? (
         <section
@@ -178,6 +201,7 @@ export default async function CommandPage({
               lights={deck.bscLights}
               cards={deck.bscCards}
               rows={bsc.rows}
+              comparison={deck.bscComparison}
               period={activePeriod}
               canEdit={false}
             />

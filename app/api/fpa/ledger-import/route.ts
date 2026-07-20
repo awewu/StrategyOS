@@ -10,7 +10,7 @@ import {
   type LedgerSourceKind,
 } from "@/lib/finance/ledger-import-access";
 
-const MAX_BYTES = 20 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024;
 
 export async function GET() {
   return NextResponse.json({ sources: listLedgerSources() });
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "请上传 Excel 文件 (.xlsx)" }, { status: 400 });
     }
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: "文件超过 20MB" }, { status: 413 });
+      return NextResponse.json({ error: "文件超过 100MB" }, { status: 413 });
     }
     if (LEDGER_SOURCES[kind].needsPeriod && !/^\d{4}-\d{2}$/.test(period)) {
       return NextResponse.json({ error: "该来源需指定期间（格式 YYYY-MM）" }, { status: 400 });

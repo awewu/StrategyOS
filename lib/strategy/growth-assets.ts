@@ -5,7 +5,7 @@
 import { prisma } from "@/lib/db";
 import { getActivePeriod } from "@/lib/data/active-period";
 
-export const GROWTH_BRAND_CODES = ["RUIMEI", "HENGRE", "RUUD", "TECH_HOME"] as const;
+export const GROWTH_BRAND_CODES = ["RHEEM", "EVERHOT", "RUUD", "AUQAHART"] as const;
 export const ROADMAP_LANES = ["now", "next", "later"] as const;
 export const ROADMAP_STATUSES = ["planned", "in_progress", "shipped", "deferred"] as const;
 

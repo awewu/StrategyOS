@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireApiAdmin, requireApiMinLevel } from "@/lib/auth/api-guard";
+import { requireApiAdmin, requireApiMinLevel, requireMutationGate } from "@/lib/auth/api-guard";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import {
@@ -32,6 +32,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const gate = await requireMutationGate();
+  if (gate) return gate;
   const denied = await requireApiMinLevel(2);
   if (denied) return denied;
 

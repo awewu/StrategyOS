@@ -21,7 +21,7 @@ import { logUsageEvent } from "@/lib/audit/log-event";
 
 export const runtime = "nodejs";
 
-const MAX_BYTES = 20 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024;
 const PREVIEW_ROWS = 50;
 
 /** GET ?sheetType= — 规格清单 + 已存画像 */
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "请上传 Excel 文件 (.xlsx)" }, { status: 400 });
     }
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ error: "文件超过 20MB" }, { status: 413 });
+      return NextResponse.json({ error: "文件超过 100MB" }, { status: 413 });
     }
 
     const { headers, rows } = await readSheetRows(Buffer.from(await file.arrayBuffer()));

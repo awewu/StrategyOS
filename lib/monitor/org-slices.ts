@@ -12,7 +12,7 @@ export type OrgSlice = {
 export const FUNCTION_SLICES: OrgSlice[] = [
   { id: "org-exec-rd", label: "研发中心", keywords: ["研发", "R&D", "产品开发", "核心技术", "TRL", "V4", "热泵"] },
   { id: "org-exec-cmo", label: "CMO", keywords: ["CMO", "市场", "品牌", "渠道", "GTM", "营销"] },
-  { id: "org-exec-brand", label: "品牌事业部", keywords: ["品牌事业部", "Keller", "RUUD", "HENGRE", "RUIMEI"] },
+  { id: "org-exec-brand", label: "品牌事业部", keywords: ["品牌事业部", "Keller", "RUUD", "EVERHOT", "RHEEM", "AUQAHART"] },
   { id: "org-exec-hr", label: "HR", keywords: ["HR", "人力", "人才", "组织"] },
   { id: "org-exec-finance", label: "财务", keywords: ["财务", "FPA", "FP&A", "资本", "IC", "CAPEX", "陈静"] },
 ];
