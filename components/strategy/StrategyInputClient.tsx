@@ -9,8 +9,17 @@ type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 
 interface Props {
   orgUnits: OrgUnitWithChildren[];
+  users: OwnerOption[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialPlan?: any;
+}
+
+interface OwnerOption {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  orgUnitName: string | null;
 }
 
 type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions" | "market" | "action" | "budget" | "roadmap" | "onepager";
@@ -99,9 +108,7 @@ interface ObjectiveDraft {
   objective: string;
   keyResults: KeyResultDraft[];
 }
-interface InitiativeDraft {
-  title: string;
-  ownerName: string;
+interface InitiativeKeyResultDraft {
   okrKeyResult: string;
   okrTarget: string;
   okrBaseline: string;
@@ -109,6 +116,11 @@ interface InitiativeDraft {
   q2Milestone: string;
   q3Milestone: string;
   q4Milestone: string;
+}
+interface InitiativeDraft {
+  title: string;
+  ownerName: string;
+  keyResults: InitiativeKeyResultDraft[];
 }
 interface SwotItemDraft {
   quadrant: "strength" | "weakness" | "opportunity" | "threat";
@@ -238,8 +250,11 @@ interface PlanForm {
   roadmapItems: RoadmapItemDraft[];
 }
 
+function emptyInitiativeKeyResult(): InitiativeKeyResultDraft {
+  return { okrKeyResult: "", okrTarget: "", okrBaseline: "", q1Milestone: "", q2Milestone: "", q3Milestone: "", q4Milestone: "" };
+}
 function emptyInitiative(): InitiativeDraft {
-  return { title: "", ownerName: "", okrKeyResult: "", okrTarget: "", okrBaseline: "", q1Milestone: "", q2Milestone: "", q3Milestone: "", q4Milestone: "" };
+  return { title: "", ownerName: "", keyResults: [emptyInitiativeKeyResult()] };
 }
 function emptyChannel(): ChannelPlanDraft {
   return { channelType: "", currentState: "", targetState: "", q1Action: "", q2Action: "", q3Action: "", q4Action: "", revenueTarget: "", partnerCount: "", note: "" };
@@ -307,10 +322,90 @@ function emptyForm(): PlanForm {
   };
 }
 
+function initiativeKrHasText(kr: InitiativeKeyResultDraft): boolean {
+  return Boolean(
+    kr.okrKeyResult.trim() ||
+      kr.okrTarget.trim() ||
+      kr.okrBaseline.trim() ||
+      kr.q1Milestone.trim() ||
+      kr.q2Milestone.trim() ||
+      kr.q3Milestone.trim() ||
+      kr.q4Milestone.trim(),
+  );
+}
+
+function flattenInitiativesForSave(initiatives: InitiativeDraft[]) {
+  return initiatives.flatMap((initiative) => {
+    const title = initiative.title.trim();
+    const ownerName = initiative.ownerName.trim();
+    const meaningfulKrs = initiative.keyResults.filter(initiativeKrHasText);
+    const keyResults = meaningfulKrs.length > 0 ? meaningfulKrs : [emptyInitiativeKeyResult()];
+
+    return keyResults
+      .filter((kr) => title || ownerName || initiativeKrHasText(kr))
+      .map((kr) => ({
+        title,
+        ownerName,
+        okrKeyResult: kr.okrKeyResult,
+        okrTarget: kr.okrTarget,
+        okrBaseline: kr.okrBaseline,
+        q1Milestone: kr.q1Milestone,
+        q2Milestone: kr.q2Milestone,
+        q3Milestone: kr.q3Milestone,
+        q4Milestone: kr.q4Milestone,
+      }));
+  });
+}
+
+function initiativeGroupKey(row: {
+  title?: string | null;
+  ownerName?: string | null;
+}): string {
+  return `${row.title ?? ""}\u001f${row.ownerName ?? ""}`;
+}
+
+function hydrateInitiatives(rows: unknown[], fallback: InitiativeDraft[]): InitiativeDraft[] {
+  if (rows.length === 0) return fallback;
+
+  const groups: InitiativeDraft[] = [];
+  const indexByKey = new Map<string, number>();
+
+  for (const raw of rows) {
+    if (!raw || typeof raw !== "object") continue;
+    const row = raw as Partial<InitiativeDraft & InitiativeKeyResultDraft>;
+    const key = initiativeGroupKey(row);
+    let idx = indexByKey.get(key);
+    if (idx == null) {
+      idx = groups.length;
+      indexByKey.set(key, idx);
+      groups.push({
+        title: row.title ?? "",
+        ownerName: row.ownerName ?? "",
+        keyResults: [],
+      });
+    }
+    groups[idx].keyResults.push({
+      okrKeyResult: row.okrKeyResult ?? "",
+      okrTarget: row.okrTarget ?? "",
+      okrBaseline: row.okrBaseline ?? "",
+      q1Milestone: row.q1Milestone ?? "",
+      q2Milestone: row.q2Milestone ?? "",
+      q3Milestone: row.q3Milestone ?? "",
+      q4Milestone: row.q4Milestone ?? "",
+    });
+  }
+
+  if (groups.length === 0) return fallback;
+  return groups.map((group) => ({
+    ...group,
+    keyResults: group.keyResults.length > 0 ? group.keyResults : [emptyInitiativeKeyResult()],
+  }));
+}
+
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
 
-export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
+export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
   const editingExistingPlan = Boolean(initialPlan?.id);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(initialPlan?.orgUnitId ?? null);
 
@@ -395,7 +490,7 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
           intent: form.intent,
           northStar: form.northStar,
           objectives: form.objectives,
-          initiatives: form.initiatives,
+          initiatives: flattenInitiativesForSave(form.initiatives),
           resources: form.resources,
           assumptions: form.assumptions,
           swotItems: form.swotItems,
@@ -628,7 +723,7 @@ export function StrategyInputClient({ orgUnits, initialPlan }: Props) {
                 />
               )}
               {step === "objectives" && <ObjectivesForm form={form} setForm={setForm} />}
-              {step === "initiatives" && <InitiativesForm form={form} setForm={setForm} />}
+              {step === "initiatives" && <InitiativesForm form={form} setForm={setForm} users={users} />}
               {step === "swot" && <SwotForm form={form} setForm={setForm} />}
               {step === "product" && <ProductQuarterlyForm form={form} setForm={setForm} />}
               {step === "channel" && <ChannelForm form={form} setForm={setForm} />}
@@ -767,8 +862,7 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
         })
       : f.objectives,
     initiatives: Array.isArray(ea.initiatives) && ea.initiatives.length > 0
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? ea.initiatives.map((i: any) => ({ title: i.title ?? "", ownerName: i.ownerName ?? "", okrKeyResult: i.okrKeyResult ?? "", okrTarget: i.okrTarget ?? "", okrBaseline: i.okrBaseline ?? "", q1Milestone: i.q1Milestone ?? "", q2Milestone: i.q2Milestone ?? "", q3Milestone: i.q3Milestone ?? "", q4Milestone: i.q4Milestone ?? "" }))
+      ? hydrateInitiatives(ea.initiatives, f.initiatives)
       : f.initiatives,
     swotItems: Array.isArray(ea.swotItems) && ea.swotItems.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1013,18 +1107,7 @@ function hydrate(plan: any): PlanForm {
   });
   const initiatives: InitiativeDraft[] =
     (plan.initiatives ?? []).length > 0
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? plan.initiatives.map((i: any) => ({
-          title: i.title ?? "",
-          ownerName: i.ownerName ?? "",
-          okrKeyResult: i.okrKeyResult ?? "",
-          okrTarget: i.okrTarget ?? "",
-          okrBaseline: i.okrBaseline ?? "",
-          q1Milestone: i.q1Milestone ?? "",
-          q2Milestone: i.q2Milestone ?? "",
-          q3Milestone: i.q3Milestone ?? "",
-          q4Milestone: i.q4Milestone ?? "",
-        }))
+      ? hydrateInitiatives(plan.initiatives, base.initiatives)
       : base.initiatives;
   const resources: ResourceDraft[] = ["Capex", "Opex", "Headcount"].map((t) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1288,15 +1371,159 @@ function ObjectivesForm({
   );
 }
 
+function OwnerPicker({
+  users,
+  value,
+  onChange,
+}: {
+  users: OwnerOption[];
+  value: string;
+  onChange: (ownerName: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const selectedOwner = users.find((user) => user.name === value);
+  const normalizedQuery = query.trim().toLowerCase();
+  const candidates = users
+    .filter((user) => {
+      if (!normalizedQuery) return true;
+      return `${user.name} ${user.email} ${user.role} ${user.orgUnitName ?? ""}`
+        .toLowerCase()
+        .includes(normalizedQuery);
+    })
+    .sort((a, b) =>
+      Number(b.name === value) - Number(a.name === value) ||
+      a.name.localeCompare(b.name, "zh-CN"));
+
+  return (
+    <div className="relative">
+      <input
+        type="search"
+        className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none"
+        value={open ? query : selectedOwner?.name ?? value}
+        onFocus={() => {
+          setQuery("");
+          setOpen(true);
+        }}
+        onBlur={() => setOpen(false)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setOpen(true);
+        }}
+        placeholder="搜索负责人"
+        autoComplete="off"
+      />
+      {open && (
+        <div className="absolute left-0 right-0 z-30 mt-1 max-h-56 min-w-72 overflow-y-auto rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-1 shadow-lg">
+          <div className="px-3 py-1.5 text-[11px] text-[var(--color-text-muted)]">
+            共 {candidates.length} 人
+          </div>
+          {value && (
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onChange("");
+                setQuery("");
+                setOpen(false);
+              }}
+              className="w-full rounded-md px-3 py-2 text-left text-caption hover:bg-black/[0.04]"
+            >
+              清除负责人
+            </button>
+          )}
+          {candidates.length === 0 ? (
+            <div className="px-3 py-2 text-caption">没有匹配人员</div>
+          ) : (
+            candidates.map((user) => (
+              <button
+                key={user.id}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onChange(user.name);
+                  setQuery("");
+                  setOpen(false);
+                }}
+                className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-xs hover:bg-black/[0.04]"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-[var(--color-text-primary)]">{user.name}</span>
+                  <span className="block truncate text-[var(--color-text-muted)]">{user.orgUnitName ?? user.email}</span>
+                </span>
+                <span className="shrink-0 rounded bg-black/[0.04] px-1.5 py-0.5 text-[10px] uppercase text-[var(--color-text-muted)]">
+                  {user.role}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function InitiativesForm({
   form,
   setForm,
+  users,
 }: {
   form: PlanForm;
   setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
+  users: OwnerOption[];
 }) {
-  const rows = useRowsEditor<PlanForm, InitiativeDraft>(setForm, "initiatives", emptyInitiative);
-  const set = rows.update;
+  function patchInitiative(idx: number, patch: Partial<Omit<InitiativeDraft, "keyResults">>) {
+    setForm((f) => {
+      const initiatives = [...f.initiatives];
+      initiatives[idx] = { ...initiatives[idx], ...patch };
+      return { ...f, initiatives };
+    });
+  }
+
+  function patchKr(idx: number, krIdx: number, patch: Partial<InitiativeKeyResultDraft>) {
+    setForm((f) => {
+      const initiatives = [...f.initiatives];
+      const keyResults = [...initiatives[idx].keyResults];
+      keyResults[krIdx] = { ...keyResults[krIdx], ...patch };
+      initiatives[idx] = { ...initiatives[idx], keyResults };
+      return { ...f, initiatives };
+    });
+  }
+
+  function addKr(idx: number) {
+    setForm((f) => {
+      const initiatives = [...f.initiatives];
+      initiatives[idx] = {
+        ...initiatives[idx],
+        keyResults: [...initiatives[idx].keyResults, emptyInitiativeKeyResult()],
+      };
+      return { ...f, initiatives };
+    });
+  }
+
+  function removeKr(idx: number, krIdx: number) {
+    setForm((f) => {
+      const initiatives = [...f.initiatives];
+      const keyResults = initiatives[idx].keyResults.filter((_, i) => i !== krIdx);
+      initiatives[idx] = {
+        ...initiatives[idx],
+        keyResults: keyResults.length > 0 ? keyResults : [emptyInitiativeKeyResult()],
+      };
+      return { ...f, initiatives };
+    });
+  }
+
+  function addInitiative() {
+    setForm((f) => ({ ...f, initiatives: [...f.initiatives, emptyInitiative()] }));
+  }
+
+  function removeInitiative(idx: number) {
+    setForm((f) => {
+      const initiatives = f.initiatives.filter((_, i) => i !== idx);
+      return { ...f, initiatives: initiatives.length > 0 ? initiatives : [emptyInitiative()] };
+    });
+  }
+
   return (
     <div className="space-y-3">
       <p className="text-caption">OKR 管理：每项关键举措作为一个 Objective，填写负责人、关键结果、基线、目标值与季度里程碑</p>
@@ -1308,34 +1535,48 @@ function InitiativesForm({
                 type="text"
                 className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm font-medium"
                 value={ini.title}
-                onChange={(e) => set(idx, "title", e.target.value)}
+                onChange={(e) => patchInitiative(idx, { title: e.target.value })}
                 placeholder={"Objective / 关键举措 " + (idx + 1)}
               />
               <div className="grid grid-cols-2 gap-2">
-                <input type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" value={ini.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="负责人" />
+                <OwnerPicker
+                  users={users}
+                  value={ini.ownerName}
+                  onChange={(ownerName) => patchInitiative(idx, { ownerName })}
+                />
                 <div />
               </div>
-              <div className="rounded bg-[var(--color-accent)]/[0.04] p-2 space-y-1">
-                <div className="text-xs font-medium text-[var(--color-accent)]">OKR · Key Result</div>
-                <input type="text" className="w-full rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrKeyResult} onChange={(e) => set(idx, "okrKeyResult", e.target.value)} placeholder="关键成果描述（可衡量）" />
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrBaseline} onChange={(e) => set(idx, "okrBaseline", e.target.value)} placeholder="基线值（现状）" />
-                  <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={ini.okrTarget} onChange={(e) => set(idx, "okrTarget", e.target.value)} placeholder="目标值" />
-                </div>
-              </div>
-              <div className="grid grid-cols-4 gap-1.5">
-                {(["q1Milestone", "q2Milestone", "q3Milestone", "q4Milestone"] as const).map((q, qi) => (
-                  <input key={q} type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" value={ini[q]} onChange={(e) => set(idx, q, e.target.value)} placeholder={"Q" + (qi + 1) + " 里程碑"} />
+              <div className="space-y-2">
+                {ini.keyResults.map((kr, krIdx) => (
+                  <div key={krIdx} className="rounded bg-[var(--color-accent)]/[0.04] p-2 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-medium text-[var(--color-accent)]">OKR · Key Result {krIdx + 1}</div>
+                      {ini.keyResults.length > 1 && (
+                        <RemoveRowButton onClick={() => removeKr(idx, krIdx)} label="删除 KR" />
+                      )}
+                    </div>
+                    <input type="text" className="w-full rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr.okrKeyResult} onChange={(e) => patchKr(idx, krIdx, { okrKeyResult: e.target.value })} placeholder="关键成果描述（可衡量）" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr.okrBaseline} onChange={(e) => patchKr(idx, krIdx, { okrBaseline: e.target.value })} placeholder="基线值（现状）" />
+                      <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr.okrTarget} onChange={(e) => patchKr(idx, krIdx, { okrTarget: e.target.value })} placeholder="目标值" />
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {(["q1Milestone", "q2Milestone", "q3Milestone", "q4Milestone"] as const).map((q, qi) => (
+                        <input key={q} type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr[q]} onChange={(e) => patchKr(idx, krIdx, { [q]: e.target.value })} placeholder={"Q" + (qi + 1) + " 里程碑"} />
+                      ))}
+                    </div>
+                  </div>
                 ))}
+                <AddRowButton label="新增 KR" onClick={() => addKr(idx)} />
               </div>
             </div>
             {form.initiatives.length > 1 && (
-              <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
+              <RemoveRowButton onClick={() => removeInitiative(idx)} label="删除" />
             )}
           </div>
         </div>
       ))}
-      <AddRowButton label="新增举措" onClick={() => rows.add()} />
+      <AddRowButton label="新增举措" onClick={addInitiative} />
     </div>
   );
 }
@@ -1428,7 +1669,7 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
               {items.map((s) => (
                 <div key={s._idx} className="space-y-1 rounded border border-[var(--surface-border)]/60 p-1.5">
                   <div className="flex gap-1">
-                    <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs" rows={2} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
+                    <textarea className="min-h-28 flex-1 resize-y rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs leading-relaxed" rows={5} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
                     <RemoveRowButton onClick={() => rows.remove(s._idx)} />
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
@@ -1901,6 +2142,19 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
 }
 
 // ─── 一页纸摘要 ───────────────────────────────────────────────────────────────
+function PreviewTooltipText({ text }: { text: string }) {
+  return (
+    <div className="group relative focus:outline-none" tabIndex={0} title={text}>
+      <div className="line-clamp-2 whitespace-pre-line break-words leading-relaxed">{text}</div>
+      <div className="absolute bottom-full left-0 z-50 hidden w-72 max-w-[min(22rem,70vw)] pb-1 group-hover:block group-focus:block">
+        <div className="max-h-44 overflow-auto rounded-md border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-2.5 text-xs leading-relaxed text-[var(--color-text-primary)] shadow-xl whitespace-pre-line break-words">
+          {text}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgUnit | undefined }) {
   const topObjectives = form.objectives.filter((o) => o.objective.trim()).slice(0, 4);
   const topInitiatives = form.initiatives.filter((i) => i.title.trim()).slice(0, 5);
@@ -1962,7 +2216,11 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
               <div>
                 <span className="font-medium">{ini.title}</span>
                 {ini.ownerName && <span className="text-[var(--color-text-muted)] ml-1">· {ini.ownerName}</span>}
-                {ini.okrKeyResult && <p className="text-[var(--color-text-muted)] mt-0.5">KR：{ini.okrKeyResult} {ini.okrTarget && `→ ${ini.okrTarget}`}</p>}
+                {ini.keyResults.filter(initiativeKrHasText).slice(0, 2).map((kr, krIdx) => (
+                  <p key={krIdx} className="text-[var(--color-text-muted)] mt-0.5">
+                    KR{krIdx + 1}：{kr.okrKeyResult || "—"} {kr.okrTarget && `→ ${kr.okrTarget}`}
+                  </p>
+                ))}
               </div>
             </div>
           )) : <p className="text-caption">尚未填写举措</p>}
@@ -1977,7 +2235,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
             {[["strength", "优势"], ["weakness", "劣势"], ["opportunity", "机会"], ["threat", "威胁"]].map(([q, label]) => (
               <div key={q} className="space-y-0.5">
                 <div className="font-medium text-caption">{label}</div>
-                {swotByQ(q).slice(0, 2).map((c, i) => <div key={i} className="line-clamp-1">{c}</div>)}
+                {swotByQ(q).slice(0, 2).map((c, i) => <PreviewTooltipText key={i} text={c} />)}
                 {swotByQ(q).length === 0 && <div className="text-[var(--color-text-muted)]">—</div>}
               </div>
             ))}

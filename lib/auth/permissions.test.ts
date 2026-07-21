@@ -65,3 +65,10 @@ describe("permissions · CFO role", () => {
     assert.equal(roleHomePath("cfo"), "/finance");
   });
 });
+
+describe("permissions · staff role", () => {
+  it("can access strategy versions and see the nav link", () => {
+    assert.equal(canAccessRoute("staff", "/versions"), true);
+    assert.equal(filterNavHref("staff", "/versions"), true);
+  });
+});

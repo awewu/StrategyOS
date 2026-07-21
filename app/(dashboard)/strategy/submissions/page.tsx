@@ -54,6 +54,13 @@ function Empty() {
   return <p className="text-sm text-[var(--color-text-muted)]">暂无内容</p>;
 }
 
+function TableCellContent({ cell }: { cell: React.ReactNode }) {
+  if (typeof cell === "string") {
+    return <span className="block whitespace-pre-line break-words leading-relaxed">{cell}</span>;
+  }
+  return cell;
+}
+
 function SimpleTable({
   columns,
   rows,
@@ -76,7 +83,9 @@ function SimpleTable({
           {rows.map((row, i) => (
             <tr key={i}>
               {row.map((cell, j) => (
-                <td key={j}>{cell}</td>
+                <td key={j}>
+                  <TableCellContent cell={cell} />
+                </td>
               ))}
             </tr>
           ))}
@@ -237,11 +246,13 @@ export default async function StrategySubmissionsPage({
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
                   <p className="text-label text-[var(--color-text-muted)]">战略意图</p>
-                  <p className="mt-1 text-sm">{value(plan.intent)}</p>
+                  <p className="mt-1 whitespace-pre-line break-words text-sm leading-relaxed">{value(plan.intent)}</p>
                 </div>
                 <div>
                   <p className="text-label text-[var(--color-text-muted)]">北极星指标</p>
-                  <p className="mt-1 text-sm">{value(plan.northStar)}</p>
+                  <p className="mt-1 whitespace-pre-line break-words text-sm leading-relaxed">
+                    {value(plan.northStar)}
+                  </p>
                 </div>
               </div>
             </Section>

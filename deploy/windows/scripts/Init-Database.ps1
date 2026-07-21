@@ -18,12 +18,41 @@ function Run-Checked {
   }
 }
 
+function Invoke-CompatibilityMigration {
+  param(
+    [string]$Name,
+    [string]$RelativePath
+  )
+
+  $migrationPath = Join-Path $AppRoot $RelativePath
+  if (-not (Test-Path $migrationPath)) {
+    Write-Host "Skipping compatibility migration $Name (not found)."
+    return
+  }
+
+  Write-Host "Applying compatibility migration: $Name"
+  Run-Checked "npx.cmd" @(
+    "prisma",
+    "db",
+    "execute",
+    "--file",
+    $migrationPath,
+    "--schema",
+    (Join-Path $AppRoot "prisma\schema.prisma")
+  )
+}
+
 if (-not $env:DATABASE_URL) {
   throw "DATABASE_URL is empty in .env.production"
 }
 
 Write-Host "Generating Prisma Client..."
 Run-Checked "npx.cmd" @("prisma", "generate")
+
+Write-Host "Applying idempotent compatibility migrations before prisma db push..."
+Invoke-CompatibilityMigration "rename brand codes" "prisma\migrations\20260720000000_rename_brand_codes\migration.sql"
+Invoke-CompatibilityMigration "SWOT positioning fields" "prisma\migrations\20260720010000_swot_positioning_fields\migration.sql"
+Invoke-CompatibilityMigration "KPI stable link fields" "prisma\migrations\20260720020000_kpi_stable_link\migration.sql"
 
 Write-Host "Synchronizing PostgreSQL schema with prisma db push..."
 Run-Checked "npx.cmd" @("prisma", "db", "push")

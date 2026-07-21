@@ -15,8 +15,18 @@ export default async function StrategyInputPage({
 }) {
   await requireRouteAccess("/strategy/input");
   const { planId } = await searchParams;
-  const [orgUnits, { stratDiffs }, plan] = await Promise.all([
+  const [orgUnits, users, { stratDiffs }, plan] = await Promise.all([
     getOrgUnitsWithChildren(),
+    prisma.user.findMany({
+      orderBy: [{ name: "asc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        orgUnit: { select: { name: true } },
+      },
+    }),
     getVersionsBundle(),
     planId
       ? prisma.strategicPlan.findUnique({
@@ -42,6 +52,13 @@ export default async function StrategyInputPage({
   ]);
   const top3 = topDiffs(stratDiffs, 3);
   const initialPlan = plan ? JSON.parse(JSON.stringify(plan)) : null;
+  const ownerOptions = users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: String(user.role),
+    orgUnitName: user.orgUnit?.name ?? null,
+  }));
 
   return (
     <div className="stratos-page">
@@ -86,7 +103,12 @@ export default async function StrategyInputPage({
         </Link>
       </section>
 
-      <StrategyInputClient key={initialPlan?.id ?? "new"} orgUnits={orgUnits} initialPlan={initialPlan} />
+      <StrategyInputClient
+        key={initialPlan?.id ?? "new"}
+        orgUnits={orgUnits}
+        users={ownerOptions}
+        initialPlan={initialPlan}
+      />
     </div>
   );
 }

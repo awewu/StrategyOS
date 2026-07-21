@@ -4,8 +4,8 @@
  * Access levels (higher includes lower):
  * L0 observer — published one-pager, own-unit monitor (read-only)
  * L1 pm       — + execution, commitments, own project Vx
- * L2 vp/system_head/staff — + own slice monitor, own org OPS, draft strategy input
- * L3 ceo/cfo  — command deck, inbox, FPA, compass, market, version diff (full company)
+ * L2 vp/system_head/staff — + own slice monitor, own org OPS, draft strategy input, version diff
+ * L3 ceo/cfo  — command deck, inbox, FPA, compass, market (full company)
  * L4 admin    — access management, org master, system config (ceo + cfo)
  */
 
@@ -44,7 +44,7 @@ export const ROUTE_PERMISSIONS: RoutePermissionRule[] = [
   { prefix: "/inbox", minLevel: 3 },
   { prefix: "/compass", minLevel: 3 },
   { prefix: "/outlook", minLevel: 3 },
-  { prefix: "/versions", minLevel: 3 },
+  { prefix: "/versions", minLevel: 2 },
   { prefix: "/cockpit", minLevel: 2 },
   { prefix: "/mandates", minLevel: 2 },
   { prefix: "/finance", minLevel: 3 },
