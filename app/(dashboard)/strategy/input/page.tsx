@@ -8,6 +8,9 @@ import { getVersionsBundle } from "@/lib/data/versions-data";
 import { prisma } from "@/lib/db";
 import { topDiffs } from "@/lib/stratos";
 
+const HORIZON_START = 2026;
+const HORIZON_END = 2028;
+
 export default async function StrategyInputPage({
   searchParams,
 }: {
@@ -15,7 +18,7 @@ export default async function StrategyInputPage({
 }) {
   await requireRouteAccess("/strategy/input");
   const { planId } = await searchParams;
-  const [orgUnits, users, { stratDiffs }, plan] = await Promise.all([
+  const [orgUnits, users, { stratDiffs }, historySnapshots, plan] = await Promise.all([
     getOrgUnitsWithChildren(),
     prisma.user.findMany({
       orderBy: [{ name: "asc" }, { createdAt: "asc" }],
@@ -28,6 +31,19 @@ export default async function StrategyInputPage({
       },
     }),
     getVersionsBundle(),
+    prisma.planSubmissionSnapshot.findMany({
+      where: { horizonStart: HORIZON_START, horizonEnd: HORIZON_END },
+      orderBy: [{ orgUnitId: "asc" }, { version: "desc" }],
+      select: {
+        id: true,
+        orgUnitId: true,
+        version: true,
+        status: true,
+        submittedAt: true,
+        snapshotJson: true,
+        orgUnit: { select: { name: true } },
+      },
+    }),
     planId
       ? prisma.strategicPlan.findUnique({
           where: { id: planId },
@@ -58,6 +74,17 @@ export default async function StrategyInputPage({
     email: user.email,
     role: String(user.role),
     orgUnitName: user.orgUnit?.name ?? null,
+  }));
+  const statusLabel = (status: string) => status === "LOCKED" ? "已锁定" : status === "SUBMITTED" ? "已提交" : status;
+  const historyVersions = historySnapshots.map((snapshot) => ({
+    id: snapshot.id,
+    orgUnitId: snapshot.orgUnitId,
+    version: snapshot.version,
+    status: snapshot.status,
+    submittedAt: snapshot.submittedAt.toISOString(),
+    label: `V${snapshot.version} · ${snapshot.submittedAt.toISOString().slice(0, 10)} · ${statusLabel(snapshot.status)}`,
+    orgUnitName: snapshot.orgUnit.name,
+    snapshotJson: snapshot.snapshotJson,
   }));
 
   return (
@@ -107,6 +134,7 @@ export default async function StrategyInputPage({
         key={initialPlan?.id ?? "new"}
         orgUnits={orgUnits}
         users={ownerOptions}
+        historyVersions={historyVersions}
         initialPlan={initialPlan}
       />
     </div>

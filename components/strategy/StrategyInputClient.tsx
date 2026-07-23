@@ -10,6 +10,7 @@ type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 interface Props {
   orgUnits: OrgUnitWithChildren[];
   users: OwnerOption[];
+  historyVersions: HistoryVersionOption[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialPlan?: any;
 }
@@ -20,6 +21,17 @@ interface OwnerOption {
   email: string;
   role: string;
   orgUnitName: string | null;
+}
+
+interface HistoryVersionOption {
+  id: string;
+  orgUnitId: string;
+  version: number;
+  status: string;
+  submittedAt: string;
+  label: string;
+  orgUnitName: string;
+  snapshotJson: unknown;
 }
 
 type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions" | "market" | "action" | "budget" | "roadmap" | "onepager";
@@ -405,9 +417,15 @@ function hydrateInitiatives(rows: unknown[], fallback: InitiativeDraft[]): Initi
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
 
-export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
+function isLockedHistoryVersion(version: HistoryVersionOption): boolean {
+  return version.status.toUpperCase() === "LOCKED";
+}
+
+export function StrategyInputClient({ orgUnits, users, historyVersions, initialPlan }: Props) {
   const editingExistingPlan = Boolean(initialPlan?.id);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(initialPlan?.orgUnitId ?? null);
+  const [selectedHistoryId, setSelectedHistoryId] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // 客户端挂载后恢复上次选中的组织单位（避免SSR hydration mismatch）
   useEffect(() => {
@@ -452,6 +470,10 @@ export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
   const operatingUnits = allUnitsFlat.filter((u) => u.level === "OPERATING_UNIT");
   const selectedOrg = allUnitsFlat.find((u) => u.id === selectedOrgId);
   const isBuUnit = selectedOrg ? selectedOrg.level === "OPERATING_UNIT" || selectedOrg.level === "EXECUTIVE" : false;
+  const orgHistoryVersions = useMemo(
+    () => historyVersions.filter((version) => version.orgUnitId === selectedOrgId),
+    [historyVersions, selectedOrgId],
+  );
 
   const flash = useCallback((kind: "ok" | "err", msg: string) => {
     setToast({ kind, msg });
@@ -467,6 +489,27 @@ export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
     setAttachments([]);
     setStatus(null);
     setLoading(false);
+    setSelectedHistoryId("");
+    setHistoryOpen(false);
+  }
+
+  function selectHistoryVersion(snapshotId: string) {
+    setSelectedHistoryId(snapshotId);
+    if (!snapshotId) return;
+    const version = historyVersions.find((item) => item.id === snapshotId);
+    if (!version) return;
+    if (isLockedHistoryVersion(version)) {
+      flash("err", "已锁定版本不可修改");
+      return;
+    }
+    setSelectedOrgId(version.orgUnitId);
+    if (version.orgUnitId) sessionStorage.setItem("strategy_input_orgId", version.orgUnitId);
+    setForm(hydrate(version.snapshotJson));
+    setAttachments([]);
+    setStatus("DRAFT");
+    setStep("intent");
+    setHistoryOpen(false);
+    flash("ok", `已载入 ${version.orgUnitName} ${version.label}，可继续修改`);
   }
 
   const validation = useMemo(() => validate(form), [form]);
@@ -518,22 +561,35 @@ export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !selectedOrgId) return;
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0 || !selectedOrgId) return;
     // 确保已有 plan（先存草稿拿到 planId）
     const planId = await persist(false);
     if (!planId) return;
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("planId", planId);
+    const uploaded: AttachmentInfo[] = [];
+    const failed: string[] = [];
     try {
-      const res = await fetch("/api/strategy/plan/attachment", { method: "POST", body: fd });
-      if (!res.ok) throw new Error();
-      const a = await res.json();
-      setAttachments((prev) => [...prev, a]);
-      flash("ok", "附件已上传：" + file.name);
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("planId", planId);
+        const res = await fetch("/api/strategy/plan/attachment", { method: "POST", body: fd });
+        if (!res.ok) {
+          failed.push(file.name);
+          continue;
+        }
+        uploaded.push(await res.json());
+      }
+      if (uploaded.length > 0) {
+        setAttachments((prev) => [...prev, ...uploaded]);
+      }
+      if (failed.length > 0) {
+        flash("err", `已上传 ${uploaded.length} 个，失败 ${failed.length} 个：${failed.slice(0, 2).join("、")}`);
+      } else {
+        flash("ok", `已上传 ${uploaded.length} 个附件`);
+      }
     } catch {
-      flash("err", "附件上传失败");
+      flash("err", "附件上传失败，已填内容未被修改");
     } finally {
       if (fileRef.current) fileRef.current.value = "";
     }
@@ -552,61 +608,62 @@ export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
   return (
     <div className="space-y-4">
       {/* 顶部：下拉选择组织单位 */}
-      <div className="flex items-center gap-3 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-4 py-3">
-        <label className="text-sm font-medium whitespace-nowrap">编制单位</label>
-        <select
-          value={selectedOrgId ?? ""}
-          onChange={(e) => {
-            const v = e.target.value || null;
-            selectOrg(v);
-          }}
-          disabled={editingExistingPlan}
-          autoComplete="off"
-          className="flex-1 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-sm focus:border-[var(--color-accent)] focus:outline-none"
-        >
-          <option value="">— 请选择组织单位 —</option>
-          {groupUnits.length > 0 && (
-            <optgroup label="集团">
-              {groupUnits.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-            </optgroup>
+      <div className="grid gap-3 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-4 py-3 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">
+        <div className="flex min-w-0 items-center gap-3">
+          <label className="text-sm font-medium whitespace-nowrap">编制单位</label>
+          <select
+            value={selectedOrgId ?? ""}
+            onChange={(e) => {
+              const v = e.target.value || null;
+              selectOrg(v);
+            }}
+            disabled={editingExistingPlan}
+            autoComplete="off"
+            className="min-w-0 flex-1 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-sm focus:border-[var(--color-accent)] focus:outline-none"
+          >
+            <option value="">— 请选择组织单位 —</option>
+            {groupUnits.length > 0 && (
+              <optgroup label="集团">
+                {groupUnits.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </optgroup>
+            )}
+            {executiveUnits.length > 0 && (
+              <optgroup label="事业部 / 职能">
+                {executiveUnits.map((ex) => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
+              </optgroup>
+            )}
+            {operatingUnits.length > 0 && (
+              <optgroup label="二级部门">
+                {operatingUnits.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+              </optgroup>
+            )}
+            {groupUnits.length === 0 && executiveUnits.length === 0 && operatingUnits.length === 0 &&
+              orgUnits.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)
+            }
+          </select>
+          {selectedOrg && (
+            <span className="text-caption whitespace-nowrap">
+              {selectedOrg.level === "GROUP" && "集团"}
+              {selectedOrg.level === "EXECUTIVE" && "事业部/体系"}
+              {selectedOrg.level === "OPERATING_UNIT" && "二级部门"}
+            </span>
           )}
-          {executiveUnits.length > 0 && (
-            <optgroup label="事业部 / 职能">
-              {executiveUnits.map((ex) => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
-            </optgroup>
-          )}
-          {operatingUnits.length > 0 && (
-            <optgroup label="二级部门">
-              {operatingUnits.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-            </optgroup>
-          )}
-          {groupUnits.length === 0 && executiveUnits.length === 0 && operatingUnits.length === 0 &&
-            orgUnits.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)
-          }
-        </select>
-        {selectedOrg && (
-          <span className="text-caption whitespace-nowrap">
-            {selectedOrg.level === "GROUP" && "集团"}
-            {selectedOrg.level === "EXECUTIVE" && "事业部/体系"}
-            {selectedOrg.level === "OPERATING_UNIT" && "二级部门"}
-          </span>
-        )}
+        </div>
+        <div className="flex min-w-0 items-center gap-3">
+          <label className="text-sm font-medium whitespace-nowrap">历史版本</label>
+          <HistoryVersionPicker
+            open={historyOpen}
+            selectedId={selectedHistoryId}
+            selectedOrgId={selectedOrgId}
+            versions={orgHistoryVersions}
+            onOpenChange={setHistoryOpen}
+            onSelect={selectHistoryVersion}
+          />
+        </div>
       </div>
 
       {/* 表单主体 */}
       <div className="relative rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-6">
-        {toast && (
-          <div
-            className={'absolute right-4 top-4 z-10 rounded-md px-3 py-2 text-sm shadow-lg ' + (
-              toast.kind === "ok"
-                ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
-                : "bg-[var(--signal-red)]/10 text-[var(--signal-red)]"
-            )}
-          >
-            {toast.msg}
-          </div>
-        )}
-
         {!selectedOrg ? (
           <div className="flex h-96 items-center justify-center text-sm text-[var(--color-text-muted)]">
             ← 请先选择组织单位
@@ -644,6 +701,20 @@ export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
               </div>
             </div>
 
+            {toast && (
+              <div className="flex justify-end">
+                <div
+                  className={'max-w-full break-words rounded-md px-3 py-2 text-sm shadow-sm ' + (
+                    toast.kind === "ok"
+                      ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
+                      : "bg-[var(--signal-red)]/10 text-[var(--signal-red)]"
+                  )}
+                >
+                  {toast.msg}
+                </div>
+              </div>
+            )}
+
             {/* AI 一键提取 */}
             <AiExtractBar
               setForm={setForm}
@@ -660,7 +731,6 @@ export function StrategyInputClient({ orgUnits, users, initialPlan }: Props) {
                   <button
                     key={s.id}
                     onClick={() => setStep(s.id)}
-                    style={{ borderTopColor: LAYER_META[STEP_LAYER[s.id]].color, borderTopWidth: 2 }}
                     className={'relative flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors ' + (
                       step === s.id
                         ? "border-[var(--color-accent)] text-[var(--color-text-primary)]"
@@ -1089,6 +1159,97 @@ function AiExtractBar({
   );
 }
 
+function HistoryVersionPicker({
+  open,
+  selectedId,
+  selectedOrgId,
+  versions,
+  onOpenChange,
+  onSelect,
+}: {
+  open: boolean;
+  selectedId: string;
+  selectedOrgId: string | null;
+  versions: HistoryVersionOption[];
+  onOpenChange: (open: boolean) => void;
+  onSelect: (snapshotId: string) => void;
+}) {
+  const selected = versions.find((version) => version.id === selectedId);
+  const placeholder = !selectedOrgId
+    ? "请先选择编制单位"
+    : versions.length === 0
+      ? "暂无历史提交版本"
+      : "选择历史版本并填充";
+  const disabled = !selectedOrgId || versions.length === 0;
+
+  return (
+    <div
+      className="relative min-w-0 flex-1"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) onOpenChange(false);
+      }}
+    >
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => onOpenChange(!open)}
+        className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-left text-sm focus:border-[var(--color-accent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <span className="min-w-0 truncate">{selected?.label ?? placeholder}</span>
+        <span className="shrink-0 text-[10px] text-[var(--color-text-muted)]">▼</span>
+      </button>
+
+      {open && !disabled && (
+        <div className="absolute left-0 right-0 z-40 mt-1 max-h-72 overflow-y-auto rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-1 shadow-lg">
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              onSelect("");
+              onOpenChange(false);
+            }}
+            className="w-full rounded-md px-3 py-2 text-left text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]"
+          >
+            选择历史版本并填充
+          </button>
+          {versions.map((version) => {
+            const locked = isLockedHistoryVersion(version);
+            return (
+              <div key={version.id} className="group/history-option relative" title={locked ? "已锁定不可修改" : undefined}>
+                <button
+                  type="button"
+                  aria-disabled={locked}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    if (!locked) onSelect(version.id);
+                  }}
+                  className={'flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors ' + (
+                    locked
+                      ? "cursor-not-allowed text-[var(--color-text-muted)] opacity-65"
+                      : "hover:bg-black/[0.04]"
+                  )}
+                >
+                  <span className="min-w-0 truncate">{version.label}</span>
+                  {locked ? (
+                    <span className="shrink-0 rounded bg-black/[0.04] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
+                      已锁定
+                    </span>
+                  ) : null}
+                </button>
+                {locked ? (
+                  <div className="pointer-events-none absolute right-3 top-1/2 z-50 hidden -translate-y-1/2 rounded-md border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-2 py-1 text-xs text-[var(--color-text-primary)] shadow-lg group-hover/history-option:block">
+                    已锁定不可修改
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function hydrate(plan: any): PlanForm {
   const base = emptyForm();
@@ -1109,9 +1270,10 @@ function hydrate(plan: any): PlanForm {
     (plan.initiatives ?? []).length > 0
       ? hydrateInitiatives(plan.initiatives, base.initiatives)
       : base.initiatives;
+  const planResources = plan.resourceReqs ?? plan.resources ?? [];
   const resources: ResourceDraft[] = ["Capex", "Opex", "Headcount"].map((t) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const match = (plan.resourceReqs ?? []).find((r: any) => r.resourceType === t);
+    const match = planResources.find((r: any) => r.resourceType === t);
     return {
       resourceType: t,
       amount: match?.amount != null ? String(match.amount) : "",
@@ -1231,15 +1393,16 @@ function IntentForm({
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm font-medium">战略 PPT / 附件</div>
-            <div className="text-caption">支持上传已有战略报告（PPT/PDF/Word），作为录入参考存档</div>
+            <div className="text-caption">支持多选上传 PPT / PDF / Word / 图片，仅作为附件存档，不覆盖已填写内容</div>
           </div>
           <label className="cursor-pointer rounded-lg border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.04]">
             上传文件
             <input
               ref={fileRef}
               type="file"
+              multiple
               className="hidden"
-              accept=".ppt,.pptx,.pdf,.doc,.docx,.key"
+              accept=".ppt,.pptx,.pdf,.doc,.docx,.key,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff,image/png,image/jpeg,image/webp,image/gif,image/bmp,image/tiff"
               onChange={onUpload}
             />
           </label>
@@ -1917,8 +2080,12 @@ function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.D
 function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
   const rows = useRowsEditor<PlanForm, ActionItemDraft>(setForm, "actionItems", emptyActionItem);
   const set = rows.update;
-  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
-  const sel = inp;
+  const cell = "px-1.5 py-1.5 align-middle";
+  const inp = "h-8 w-full rounded-md border border-[var(--surface-border)] bg-black/[0.04] px-2.5 text-xs leading-8 focus:border-[var(--color-accent)] focus:outline-none";
+  const selectBase = "h-8 appearance-none rounded-md border border-[var(--surface-border)] bg-black/[0.04] pl-2.5 pr-5 text-left text-xs focus:border-[var(--color-accent)] focus:outline-none";
+  const yearSel = selectBase + " w-[5.25rem]";
+  const quarterSel = selectBase + " w-[4.25rem]";
+  const statusSel = "h-8 w-24 appearance-none rounded-full border border-[var(--surface-border)] bg-[var(--color-bg-surface)] pl-3 pr-5 text-left text-xs font-medium text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none";
   const STATUS_OPTS = [
     { value: "PLAN", label: "计划中" },
     { value: "ON_TRACK", label: "进行中" },
@@ -1930,42 +2097,51 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
       <p className="text-caption">年度作战计划 — 关键举措拆解到年度 / 季度具体行动，填写验收标准</p>
       <RowTable
         columns={[
-          { label: "关联举措", className: "w-28" },
-          { label: "年份", align: "center", className: "w-14" },
-          { label: "季度", align: "center", className: "w-10" },
-          { label: "具体行动" },
-          { label: "负责人", className: "w-20" },
-          { label: "验收标准" },
-          { label: "检查日期", align: "center", className: "w-20" },
-          { label: "状态", align: "center", className: "w-16" },
-          { label: "", className: "w-6" },
+          { label: "关联举措", className: "min-w-[9rem] w-36" },
+          { label: "年份", align: "center", className: "min-w-[6rem] w-24" },
+          { label: "季度", align: "center", className: "min-w-[5rem] w-20" },
+          { label: "具体行动", className: "min-w-[28rem]" },
+          { label: "负责人", className: "min-w-[7rem] w-28" },
+          { label: "验收标准", className: "min-w-[30rem]" },
+          { label: "检查日期", align: "center", className: "min-w-[6.25rem] w-[6.25rem]" },
+          { label: "状态", align: "center", className: "min-w-[7rem] w-28" },
+          { label: "", className: "min-w-[2rem] w-8" },
         ]}
       >
         {form.actionItems.map((ai, idx) => (
-              <tr key={idx} className="border-b border-[var(--surface-border)]/50">
-                <td className="px-1 py-1"><input type="text" className={inp} value={ai.initiativeTitle} onChange={(e) => set(idx, "initiativeTitle", e.target.value)} placeholder="举措标题" /></td>
-                <td className="px-1 py-1">
-                  <select className={sel} value={ai.year} onChange={(e) => set(idx, "year", e.target.value)}>
-                    {[2026, 2027, 2028].map((y) => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </td>
-                <td className="px-1 py-1">
-                  <select className={sel} value={ai.quarter} onChange={(e) => set(idx, "quarter", e.target.value)}>
-                    {[1, 2, 3, 4].map((q) => <option key={q} value={q}>Q{q}</option>)}
-                  </select>
-                </td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={ai.action} onChange={(e) => set(idx, "action", e.target.value)} placeholder="具体行动描述" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={ai.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="姓名" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={ai.acceptanceCriteria} onChange={(e) => set(idx, "acceptanceCriteria", e.target.value)} placeholder="完成标准/交付物" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={ai.checkDate} onChange={(e) => set(idx, "checkDate", e.target.value)} placeholder="MM-DD" /></td>
-                <td className="px-1 py-1">
-                  <select className={sel} value={ai.status} onChange={(e) => set(idx, "status", e.target.value)}>
-                    {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </td>
-                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
-              </tr>
-            ))}
+          <tr key={idx} className="border-b border-[var(--surface-border)]/50 hover:bg-black/[0.015]">
+            <td className={cell}><input type="text" className={inp} value={ai.initiativeTitle} onChange={(e) => set(idx, "initiativeTitle", e.target.value)} placeholder="举措标题" /></td>
+            <td className={cell + " text-center"}>
+              <div className="relative inline-block">
+                <select className={yearSel} value={ai.year} onChange={(e) => set(idx, "year", e.target.value)}>
+                  {[2026, 2027, 2028].map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-muted)]">▼</span>
+              </div>
+            </td>
+            <td className={cell + " text-center"}>
+              <div className="relative inline-block">
+                <select className={quarterSel} value={ai.quarter} onChange={(e) => set(idx, "quarter", e.target.value)}>
+                  {[1, 2, 3, 4].map((q) => <option key={q} value={q}>Q{q}</option>)}
+                </select>
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-muted)]">▼</span>
+              </div>
+            </td>
+            <td className={cell}><input type="text" className={inp} value={ai.action} onChange={(e) => set(idx, "action", e.target.value)} placeholder="具体行动描述" /></td>
+            <td className={cell}><input type="text" className={inp} value={ai.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="姓名" /></td>
+            <td className={cell}><input type="text" className={inp} value={ai.acceptanceCriteria} onChange={(e) => set(idx, "acceptanceCriteria", e.target.value)} placeholder="完成标准/交付物" /></td>
+            <td className={cell}><input type="text" className={inp + " text-center"} value={ai.checkDate} onChange={(e) => set(idx, "checkDate", e.target.value)} placeholder="MM-DD" /></td>
+            <td className={cell + " text-center"}>
+              <div className="relative inline-block">
+                <select className={statusSel} value={ai.status} onChange={(e) => set(idx, "status", e.target.value)}>
+                  {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-muted)]">▼</span>
+              </div>
+            </td>
+            <td className="px-1 text-center"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
+          </tr>
+        ))}
       </RowTable>
       <AddRowButton label="新增行动项" onClick={() => rows.add()} />
     </div>

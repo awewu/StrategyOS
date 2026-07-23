@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { PlanReviewActions } from "@/components/strategy/PlanReviewActions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
@@ -21,6 +23,22 @@ function money(v: unknown): string {
   if (v === null || v === undefined || v === "") return "-";
   const n = Number(v);
   return Number.isFinite(n) ? n.toLocaleString("zh-CN") : String(v);
+}
+
+function safeAttachmentPath(storagePath: string): string | null {
+  if (!storagePath.startsWith("/uploads/plans/")) return null;
+  if (storagePath.includes("..")) return null;
+  return join(process.cwd(), "public", storagePath);
+}
+
+function attachmentFileExists(storagePath: string): boolean {
+  const physPath = safeAttachmentPath(storagePath);
+  return Boolean(physPath && existsSync(physPath));
+}
+
+function canPreviewAttachment(filename: string, mimeType: string): boolean {
+  const lower = filename.toLowerCase();
+  return mimeType === "application/pdf" || lower.endsWith(".pdf") || lower.endsWith(".ppt") || lower.endsWith(".pptx");
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -432,29 +450,51 @@ export default async function StrategySubmissionsPage({
             <Section id="attachments" title="附件">
               <SimpleTable
                 columns={["文件名", "类型", "大小", "上传时间", "操作"]}
-                rows={plan.attachments.map((a) => [
-                  <a
-                    key={a.id}
-                    href={a.storagePath}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[var(--color-accent)] hover:underline"
-                  >
-                    {a.filename}
-                  </a>,
-                  a.mimeType,
-                  `${Math.round(a.sizeBytes / 1024)} KB`,
-                  value(a.uploadedAt),
-                  <a
-                    key={`${a.id}-open`}
-                    href={`/api/strategy/plan/attachment/preview?id=${a.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="stratos-btn stratos-btn--ghost px-2 py-1 text-xs"
-                  >
-                    预览
-                  </a>,
-                ])}
+                rows={plan.attachments.map((a) => {
+                  const fileExists = attachmentFileExists(a.storagePath);
+                  const href = canPreviewAttachment(a.filename, a.mimeType)
+                    ? `/api/strategy/plan/attachment/preview?id=${a.id}`
+                    : `/api/strategy/plan/attachment?id=${a.id}`;
+                  return [
+                    fileExists ? (
+                      <a
+                        key={a.id}
+                        href={`/api/strategy/plan/attachment?id=${a.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[var(--color-accent)] hover:underline"
+                      >
+                        {a.filename}
+                      </a>
+                    ) : (
+                      <span key={a.id} title="本地附件文件不存在，请同步 uploads/plans 目录或重新上传附件" className="text-[var(--color-text-muted)]">
+                        {a.filename}
+                      </span>
+                    ),
+                    a.mimeType,
+                    `${Math.round(a.sizeBytes / 1024)} KB`,
+                    value(a.uploadedAt),
+                    fileExists ? (
+                      <a
+                        key={`${a.id}-open`}
+                        href={href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="stratos-btn stratos-btn--ghost px-2 py-1 text-xs"
+                      >
+                        查看
+                      </a>
+                    ) : (
+                      <span
+                        key={`${a.id}-missing`}
+                        title="本地附件文件不存在，请同步 uploads/plans 目录或重新上传附件"
+                        className="inline-flex rounded-lg border border-[var(--surface-border)] px-2 py-1 text-xs text-[var(--color-text-muted)]"
+                      >
+                        文件缺失
+                      </span>
+                    ),
+                  ];
+                })}
               />
             </Section>
           </main>
