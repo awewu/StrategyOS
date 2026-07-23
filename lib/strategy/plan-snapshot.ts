@@ -29,6 +29,7 @@ export interface SnapshotInput {
   actionItems?: unknown[];
   budgetItems?: unknown[];
   roadmapItems?: unknown[];
+  attachments?: unknown[];
 }
 
 function txt(v: Nullable): string {
@@ -56,6 +57,7 @@ export function buildSnapshotJson(input: SnapshotInput) {
     actionItems: input.actionItems ?? [],
     budgetItems: input.budgetItems ?? [],
     roadmapItems: input.roadmapItems ?? [],
+    attachments: input.attachments ?? [],
   };
 }
 
@@ -79,6 +81,7 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       actionItems: { orderBy: { sortOrder: "asc" } },
       budgetItems: { orderBy: { sortOrder: "asc" } },
       roadmapItems: { orderBy: { sortOrder: "asc" } },
+      attachments: { orderBy: { uploadedAt: "asc" } },
     },
   });
   if (!plan) return null;
@@ -206,6 +209,14 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       endQ: r.endQ,
       milestone: r.milestone,
       color: r.color,
+    })),
+    attachments: plan.attachments.map((a) => ({
+      id: a.id,
+      filename: a.filename,
+      sizeBytes: a.sizeBytes,
+      mimeType: a.mimeType,
+      storagePath: a.storagePath,
+      uploadedAt: a.uploadedAt.toISOString(),
     })),
   };
 }

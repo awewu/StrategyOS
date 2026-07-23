@@ -524,6 +524,18 @@ export async function POST(req: Request) {
             AND "horizon_end" = ${horizonEnd}
         `;
         const version = Number(nextVersionRows[0]?.version ?? 1);
+        const attachments = await tx.planAttachment.findMany({
+          where: { planId: plan.id },
+          orderBy: { uploadedAt: "asc" },
+          select: {
+            id: true,
+            filename: true,
+            sizeBytes: true,
+            mimeType: true,
+            storagePath: true,
+            uploadedAt: true,
+          },
+        });
         const snapshot = buildSnapshotJson({
           orgUnitId,
           horizonStart,
@@ -543,6 +555,10 @@ export async function POST(req: Request) {
           actionItems,
           budgetItems,
           roadmapItems,
+          attachments: attachments.map((a) => ({
+            ...a,
+            uploadedAt: a.uploadedAt.toISOString(),
+          })),
         });
         await tx.$executeRaw`
           INSERT INTO "plan_submission_snapshots" (

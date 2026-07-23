@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { OrgUnit } from "@prisma/client";
 import { useRowsEditor, RowTable, AddRowButton, RemoveRowButton } from "@/components/ui/RowsEditor";
 import { SwotTowsPanel } from "@/components/strategy/SwotTowsPanel";
+import { SelfScoreEditor } from "@/components/market/SwotPanel";
+import type { IntelDimension } from "@/lib/market-intel/types";
 
 type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 
@@ -32,6 +34,7 @@ interface HistoryVersionOption {
   label: string;
   orgUnitName: string;
   snapshotJson: unknown;
+  attachments: AttachmentInfo[];
 }
 
 type Step = "intent" | "objectives" | "initiatives" | "swot" | "product" | "channel" | "customer" | "org" | "resources" | "assumptions" | "market" | "action" | "budget" | "roadmap" | "onepager";
@@ -244,6 +247,24 @@ interface AttachmentInfo {
   mimeType: string;
 }
 
+function normalizeAttachmentInfo(raw: unknown): AttachmentInfo | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const item = raw as Partial<AttachmentInfo>;
+  if (!item.id || !item.filename) return null;
+  const sizeBytes = Number(item.sizeBytes ?? 0);
+  return {
+    id: String(item.id),
+    filename: String(item.filename),
+    sizeBytes: Number.isFinite(sizeBytes) ? sizeBytes : 0,
+    mimeType: String(item.mimeType ?? "application/octet-stream"),
+  };
+}
+
+function normalizeAttachmentInfos(raw: unknown): AttachmentInfo[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeAttachmentInfo).filter((item): item is AttachmentInfo => item !== null);
+}
+
 interface PlanForm {
   intent: string;
   northStar: string;
@@ -436,14 +457,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
   }, [initialPlan]);
   const [step, setStep] = useState<Step>("intent");
   const [form, setForm] = useState<PlanForm>(() => initialPlan ? hydrate(initialPlan) : emptyForm());
-  const [attachments, setAttachments] = useState<AttachmentInfo[]>(() =>
-    (initialPlan?.attachments ?? []).map((a: AttachmentInfo) => ({
-      id: a.id,
-      filename: a.filename,
-      sizeBytes: a.sizeBytes,
-      mimeType: a.mimeType,
-    })),
-  );
+  const [attachments, setAttachments] = useState<AttachmentInfo[]>(() => normalizeAttachmentInfos(initialPlan?.attachments));
   const [status, setStatus] = useState<"DRAFT" | "SUBMITTED" | "LOCKED" | null>(() => {
     const value = initialPlan?.status;
     return value === "DRAFT" || value === "SUBMITTED" || value === "LOCKED" ? value : null;
@@ -505,7 +519,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
     setSelectedOrgId(version.orgUnitId);
     if (version.orgUnitId) sessionStorage.setItem("strategy_input_orgId", version.orgUnitId);
     setForm(hydrate(version.snapshotJson));
-    setAttachments([]);
+    setAttachments([...version.attachments]);
     setStatus("DRAFT");
     setStep("intent");
     setHistoryOpen(false);
@@ -1823,6 +1837,7 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
   const miniSel = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-1 py-0.5 text-[11px]";
   return (
     <div className="space-y-4">
+      <StrategySwotSelfScoreEditor />
       <div className="grid grid-cols-2 gap-4">
         {SWOT_META.map((m) => {
           const items = form.swotItems.map((s, i) => ({ ...s, _idx: i })).filter((s) => s.quadrant === m.key);
@@ -1857,6 +1872,85 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
       </div>
       <SwotTowsPanel items={form.swotItems} />
     </div>
+  );
+}
+
+function StrategySwotSelfScoreEditor() {
+  const [scores, setScores] = useState<Partial<Record<IntelDimension, number>>>({});
+  const [source, setSource] = useState<"database" | "demo" | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveNote, setSaveNote] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadScores() {
+      setLoading(true);
+      setSaveNote("");
+      try {
+        const res = await fetch("/api/market/self-scores");
+        const data = (await res.json()) as {
+          scores?: Partial<Record<IntelDimension, number>>;
+          source?: "database" | "demo";
+          error?: string;
+        };
+        if (cancelled) return;
+        if (!res.ok) {
+          setSaveNote(data.error ?? "自评分加载失败");
+          return;
+        }
+        setScores(data.scores ?? {});
+        setSource(data.source);
+      } catch {
+        if (!cancelled) setSaveNote("自评分加载失败");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void loadScores();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function saveScores() {
+    setSaving(true);
+    setSaveNote("");
+    try {
+      const res = await fetch("/api/market/self-scores", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scores }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        scores?: Partial<Record<IntelDimension, number>>;
+        source?: "database" | "demo";
+        error?: string;
+      };
+      if (!res.ok || !data.ok) {
+        setSaveNote(data.error ?? "保存失败");
+        return;
+      }
+      setScores(data.scores ?? scores);
+      setSource(data.source);
+      setSaveNote("已保存");
+    } catch {
+      setSaveNote("保存失败");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SelfScoreEditor
+      scores={scores}
+      onChange={setScores}
+      onSave={saveScores}
+      saving={saving || loading}
+      saveNote={loading ? "正在加载自评分…" : saveNote}
+      source={source}
+    />
   );
 }
 

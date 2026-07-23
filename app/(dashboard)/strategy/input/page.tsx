@@ -11,6 +11,35 @@ import { topDiffs } from "@/lib/stratos";
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
 
+type AttachmentOption = {
+  id: string;
+  filename: string;
+  sizeBytes: number;
+  mimeType: string;
+};
+
+function normalizeAttachment(raw: unknown): AttachmentOption | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const item = raw as Partial<AttachmentOption>;
+  if (!item.id || !item.filename) return null;
+  return {
+    id: String(item.id),
+    filename: String(item.filename),
+    sizeBytes: Number(item.sizeBytes ?? 0),
+    mimeType: String(item.mimeType ?? "application/octet-stream"),
+  };
+}
+
+function normalizeAttachments(raw: unknown): AttachmentOption[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeAttachment).filter((item): item is AttachmentOption => item !== null);
+}
+
+function snapshotAttachments(snapshotJson: unknown): AttachmentOption[] {
+  if (!snapshotJson || typeof snapshotJson !== "object" || Array.isArray(snapshotJson)) return [];
+  return normalizeAttachments((snapshotJson as { attachments?: unknown }).attachments);
+}
+
 export default async function StrategyInputPage({
   searchParams,
 }: {
@@ -42,6 +71,14 @@ export default async function StrategyInputPage({
         submittedAt: true,
         snapshotJson: true,
         orgUnit: { select: { name: true } },
+        plan: {
+          select: {
+            attachments: {
+              orderBy: { uploadedAt: "asc" },
+              select: { id: true, filename: true, sizeBytes: true, mimeType: true },
+            },
+          },
+        },
       },
     }),
     planId
@@ -76,16 +113,20 @@ export default async function StrategyInputPage({
     orgUnitName: user.orgUnit?.name ?? null,
   }));
   const statusLabel = (status: string) => status === "LOCKED" ? "已锁定" : status === "SUBMITTED" ? "已提交" : status;
-  const historyVersions = historySnapshots.map((snapshot) => ({
-    id: snapshot.id,
-    orgUnitId: snapshot.orgUnitId,
-    version: snapshot.version,
-    status: snapshot.status,
-    submittedAt: snapshot.submittedAt.toISOString(),
-    label: `V${snapshot.version} · ${snapshot.submittedAt.toISOString().slice(0, 10)} · ${statusLabel(snapshot.status)}`,
-    orgUnitName: snapshot.orgUnit.name,
-    snapshotJson: snapshot.snapshotJson,
-  }));
+  const historyVersions = historySnapshots.map((snapshot) => {
+    const attachments = snapshotAttachments(snapshot.snapshotJson);
+    return {
+      id: snapshot.id,
+      orgUnitId: snapshot.orgUnitId,
+      version: snapshot.version,
+      status: snapshot.status,
+      submittedAt: snapshot.submittedAt.toISOString(),
+      label: `V${snapshot.version} · ${snapshot.submittedAt.toISOString().slice(0, 10)} · ${statusLabel(snapshot.status)}`,
+      orgUnitName: snapshot.orgUnit.name,
+      snapshotJson: snapshot.snapshotJson,
+      attachments: attachments.length > 0 ? attachments : normalizeAttachments(snapshot.plan.attachments),
+    };
+  });
 
   return (
     <div className="stratos-page">

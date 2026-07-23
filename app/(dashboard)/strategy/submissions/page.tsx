@@ -41,6 +41,44 @@ function canPreviewAttachment(filename: string, mimeType: string): boolean {
   return mimeType === "application/pdf" || lower.endsWith(".pdf") || lower.endsWith(".ppt") || lower.endsWith(".pptx");
 }
 
+const SWOT_META = {
+  strength: { label: "优势 Strength", shortLabel: "S", tint: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]" },
+  weakness: { label: "劣势 Weakness", shortLabel: "W", tint: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]" },
+  opportunity: { label: "机会 Opportunity", shortLabel: "O", tint: "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" },
+  threat: { label: "威胁 Threat", shortLabel: "T", tint: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]" },
+} as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: "草稿",
+  SUBMITTED: "已提交",
+  LOCKED: "已锁定",
+};
+
+const BSC_DIMENSION_LABELS: Record<string, string> = {
+  FINANCIAL: "财务",
+  CUSTOMER: "客户",
+  PROCESS: "流程",
+  LEARNING: "学习",
+};
+
+const ACTION_STATUS_LABELS: Record<string, string> = {
+  PLAN: "计划中",
+  IN_PROGRESS: "推进中",
+  DONE: "已完成",
+  RISK: "有风险",
+};
+
+type SwotQuadrant = keyof typeof SWOT_META;
+
+function swotQuadrant(raw: string): SwotQuadrant {
+  return raw === "weakness" || raw === "opportunity" || raw === "threat" ? raw : "strength";
+}
+
+function actionStatusLabel(status: string | null): string {
+  if (!status) return "-";
+  return ACTION_STATUS_LABELS[status] ?? status;
+}
+
 function StatusPill({ status }: { status: string }) {
   const cls =
     status === "SUBMITTED"
@@ -48,7 +86,7 @@ function StatusPill({ status }: { status: string }) {
       : status === "LOCKED"
         ? "bg-black/[0.06] text-[var(--color-text-secondary)]"
         : "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]";
-  return <span className={`rounded-full px-2 py-0.5 text-xs ${cls}`}>{status}</span>;
+  return <span className={`rounded-full px-2 py-0.5 text-xs ${cls}`}>{STATUS_LABELS[status] ?? status}</span>;
 }
 
 function Section({
@@ -61,7 +99,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="stratos-card stratos-card--padded space-y-4">
+    <section id={id} className="stratos-card stratos-card--padded min-w-0 space-y-4">
       <h2 className="text-subsection text-[var(--color-text-primary)]">{title}</h2>
       {children}
     </section>
@@ -74,6 +112,9 @@ function Empty() {
 
 function TableCellContent({ cell }: { cell: React.ReactNode }) {
   if (typeof cell === "string") {
+    if (!cell.includes("\n") && cell.length <= 12) {
+      return <span className="block whitespace-nowrap">{cell}</span>;
+    }
     return <span className="block whitespace-pre-line break-words leading-relaxed">{cell}</span>;
   }
   return cell;
@@ -87,9 +128,10 @@ function SimpleTable({
   rows: Array<Array<React.ReactNode>>;
 }) {
   if (rows.length === 0) return <Empty />;
+  const minWidth = Math.max(640, columns.length * 150);
   return (
-    <div className="stratos-table-wrap">
-      <table className="stratos-table">
+    <div className="stratos-table-wrap max-w-full min-w-0">
+      <table className="stratos-table" style={{ minWidth }}>
         <thead>
           <tr>
             {columns.map((c) => (
@@ -109,6 +151,51 @@ function SimpleTable({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function SwotQuadrantView({
+  items,
+}: {
+  items: Array<{ quadrant: string; content: string }>;
+}) {
+  const grouped: Record<SwotQuadrant, string[]> = {
+    strength: [],
+    weakness: [],
+    opportunity: [],
+    threat: [],
+  };
+  for (const item of items) {
+    grouped[swotQuadrant(item.quadrant)].push(item.content);
+  }
+
+  return (
+    <div className="grid min-w-0 gap-3 md:grid-cols-2">
+      {(Object.keys(SWOT_META) as SwotQuadrant[]).map((key) => {
+        const meta = SWOT_META[key];
+        return (
+          <div key={key} className="min-w-0 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3">
+            <div className="mb-2 flex items-center gap-2">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${meta.tint}`}>
+                {meta.shortLabel}
+              </span>
+              <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">{meta.label}</h3>
+            </div>
+            {grouped[key].length === 0 ? (
+              <p className="text-caption">暂无内容</p>
+            ) : (
+              <ul className="space-y-2">
+                {grouped[key].map((content, index) => (
+                  <li key={`${key}-${index}`} className="whitespace-pre-line break-words rounded-md bg-white px-3 py-2 text-sm leading-relaxed">
+                    {content}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -172,8 +259,8 @@ export default async function StrategySubmissionsPage({
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="stratos-card stratos-card--padded h-fit space-y-3">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <aside className="stratos-card stratos-card--padded h-fit min-w-0 space-y-3">
           <div>
             <h2 className="text-subsection">提交记录</h2>
             <p className="text-caption">共 {plans.length} 份</p>
@@ -191,7 +278,9 @@ export default async function StrategySubmissionsPage({
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-[var(--color-text-primary)]">{p.orgUnit.name}</span>
+                  <span className="line-clamp-2 min-w-0 flex-1 font-medium text-[var(--color-text-primary)]" title={p.orgUnit.name}>
+                    {p.orgUnit.name}
+                  </span>
                   <StatusPill status={p.status} />
                 </div>
                 <div className="mt-1 text-caption">
@@ -207,8 +296,8 @@ export default async function StrategySubmissionsPage({
             <Empty />
           </section>
         ) : (
-          <main className="space-y-4">
-            <section className="stratos-card stratos-card--padded space-y-3">
+          <main className="min-w-0 space-y-4">
+            <section className="stratos-card stratos-card--padded min-w-0 space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="text-title text-[var(--color-text-primary)]">{plan.orgUnit.name}</h2>
@@ -289,17 +378,14 @@ export default async function StrategySubmissionsPage({
             </Section>
 
             <Section id="swot" title="SWOT 分析">
-              <SimpleTable
-                columns={["象限", "内容"]}
-                rows={plan.swotItems.map((s) => [s.quadrant, s.content])}
-              />
+              <SwotQuadrantView items={plan.swotItems} />
             </Section>
 
             <Section id="objectives" title="BSC 目标 / KPI">
               <SimpleTable
                 columns={["维度", "BSC 管理目标", "KPI 指标 / 目标值"]}
                 rows={plan.objectives.map((o) => [
-                  o.dimension,
+                  BSC_DIMENSION_LABELS[o.dimension] ?? o.dimension,
                   o.objective,
                   o.keyResults.length > 0
                     ? o.keyResults.map((k) => `${k.keyResult}${k.target ? ` (${k.target})` : ""}`).join("；")
@@ -334,7 +420,7 @@ export default async function StrategySubmissionsPage({
                   value(a.initiativeTitle),
                   value(a.ownerName),
                   value(a.acceptanceCriteria),
-                  value(a.status),
+                  actionStatusLabel(a.status),
                 ])}
               />
             </Section>

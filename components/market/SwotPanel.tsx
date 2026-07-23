@@ -35,7 +35,7 @@ function centeredTick(value: number | string, center: number) {
   return `${offset}`;
 }
 
-function SelfScoreEditor({
+export function SelfScoreEditor({
   scores,
   onChange,
   onSave,
