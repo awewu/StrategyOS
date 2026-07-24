@@ -22,6 +22,7 @@ import {
   resolveScoreboardView,
 } from "@/lib/execution/scoreboard-access";
 import { getStratDiffs } from "@/lib/data/versions-data";
+import type { ProjectionAttachment } from "@/lib/rehearsal/projection";
 import {
   demoTensions, demoMaturityPoints, demoCommitments,
   type TensionItem, type ExecutionMaturityPoint, type CommitmentRecord,
@@ -810,6 +811,12 @@ type StrategyDeckPayload = {
   channelPlans?: Array<{ channelType?: string | null; targetState?: string | null; revenueTarget?: unknown }>;
   customerPlans?: Array<{ customerSegment?: string | null; targetCount?: number | string | null; acquisitionStrategy?: string | null }>;
   productQuarterly?: Array<{ productName?: string | null; annualRevenue?: unknown; note?: string | null }>;
+  attachments?: Array<{
+    id?: string | null;
+    filename?: string | null;
+    mimeType?: string | null;
+    sizeBytes?: number | string | null;
+  }>;
 };
 
 function jsonToDeckPayload(value: unknown): StrategyDeckPayload | null {
@@ -931,8 +938,9 @@ async function getRehearsalStrategyOptions(): Promise<RehearsalStrategyOrgOption
 export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckSelection = {}): Promise<{
   meta: RehearsalStrategyDeckMeta | null;
   slides: RehearsalStrategySlide[];
+  attachments: ProjectionAttachment[];
 }> {
-  if (!(await dbAvailable())) return { meta: null, slides: [] };
+  if (!(await dbAvailable())) return { meta: null, slides: [], attachments: [] };
 
   let payload: StrategyDeckPayload | null = null;
   let orgUnit: { id: string; name: string; nameEn: string | null } | null = null;
@@ -1017,9 +1025,10 @@ export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckS
         channelPlans: { orderBy: { sortOrder: "asc" } },
         customerPlans: { orderBy: { sortOrder: "asc" } },
         productQuarterly: { orderBy: { sortOrder: "asc" } },
+        attachments: { orderBy: { uploadedAt: "asc" } },
       },
     });
-    if (!plan) return { meta: null, slides: [] };
+    if (!plan) return { meta: null, slides: [], attachments: [] };
     orgUnit = plan.orgUnit;
     payload = plan;
     const orgUnitName = orgUnit.nameEn ? `${orgUnit.name} / ${orgUnit.nameEn}` : orgUnit.name;
@@ -1038,7 +1047,22 @@ export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckS
     };
   }
 
-  if (!payload || !meta) return { meta: null, slides: [] };
+  if (!payload || !meta) return { meta: null, slides: [], attachments: [] };
+
+  const attachments = (payload.attachments ?? []).flatMap((attachment) => {
+    const id = trimText(attachment.id);
+    const filename = trimText(attachment.filename);
+    if (!id || !filename) return [];
+    const params = new URLSearchParams({ id });
+    if (meta.sourceType === "snapshot" && selection.snapshotId) params.set("snapshotId", selection.snapshotId);
+    return [{
+      id,
+      filename,
+      mimeType: trimText(attachment.mimeType) || "application/octet-stream",
+      sizeBytes: Number(attachment.sizeBytes) || 0,
+      manifestUrl: `/api/strategy/plan/attachment/presentation?${params.toString()}`,
+    }];
+  });
 
   const targetMetrics = [
     payload.targetYear ? { label: "目标年", value: String(payload.targetYear) } : null,
@@ -1253,7 +1277,7 @@ export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckS
     });
   }
 
-  return { meta, slides };
+  return { meta, slides, attachments };
 }
 
 /** Q3 rehearsal live context */
@@ -1281,6 +1305,7 @@ export async function getRehearsalBundle(selection: RehearsalStrategyDeckSelecti
       : null,
     strategyDeckMeta: strategyDeck.meta,
     strategySlides: strategyDeck.slides,
+    strategyAttachments: strategyDeck.attachments,
     strategyOptions,
   };
 }

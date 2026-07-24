@@ -35,7 +35,7 @@ const SUBTITLE: Record<CouncilTab, string> = {
 export default async function CouncilPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; orgUnitId?: string; snapshotId?: string }>;
+  searchParams: Promise<{ tab?: string; orgUnitId?: string; snapshotId?: string; setup?: string }>;
 }) {
   const params = await searchParams;
   const tab = parseTab(params.tab);
@@ -53,6 +53,7 @@ export default async function CouncilPage({
       {tab === "rehearsal" ? (
         <RehearsalWalkthrough
           live={await getRehearsalBundle({ orgUnitId: params.orgUnitId, snapshotId: params.snapshotId })}
+          autoOpenSetup={params.setup === "1"}
         />
       ) : null}
       {tab === "gates" ? <GatesTab /> : null}

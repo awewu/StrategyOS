@@ -1,8 +1,12 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import Image from "next/image";
 import type { OrgUnit } from "@prisma/client";
+import { Pencil, Upload, X, ZoomIn } from "lucide-react";
 import { useRowsEditor, RowTable, AddRowButton, RemoveRowButton } from "@/components/ui/RowsEditor";
+import { Modal } from "@/components/ui/Modal";
 import { SwotTowsPanel } from "@/components/strategy/SwotTowsPanel";
 import { SelfScoreEditor } from "@/components/market/SwotPanel";
 import type { IntelDimension } from "@/lib/market-intel/types";
@@ -221,7 +225,13 @@ interface BudgetItemDraft {
   roiEstimate: string;
   justification: string;
 }
+interface RoadmapTabDraft {
+  id: string;
+  name: string;
+}
 interface RoadmapItemDraft {
+  roadmapTabId: string;
+  roadmapTabName: string;
   track: string;
   title: string;
   startYear: string;
@@ -230,6 +240,8 @@ interface RoadmapItemDraft {
   endQ: string;
   milestone: string;
   color: string;
+  imageAttachmentId: string;
+  imageFilename: string;
 }
 interface ResourceDraft {
   resourceType: string;
@@ -245,6 +257,7 @@ interface AttachmentInfo {
   filename: string;
   sizeBytes: number;
   mimeType: string;
+  storagePath?: string;
 }
 
 function normalizeAttachmentInfo(raw: unknown): AttachmentInfo | null {
@@ -257,6 +270,7 @@ function normalizeAttachmentInfo(raw: unknown): AttachmentInfo | null {
     filename: String(item.filename),
     sizeBytes: Number.isFinite(sizeBytes) ? sizeBytes : 0,
     mimeType: String(item.mimeType ?? "application/octet-stream"),
+    storagePath: item.storagePath ? String(item.storagePath) : undefined,
   };
 }
 
@@ -280,6 +294,7 @@ interface PlanForm {
   marketInsights: MarketInsightDraft[];
   actionItems: ActionItemDraft[];
   budgetItems: BudgetItemDraft[];
+  roadmapTabs: RoadmapTabDraft[];
   roadmapItems: RoadmapItemDraft[];
 }
 
@@ -307,8 +322,34 @@ function emptyActionItem(): ActionItemDraft {
 function emptyBudgetItem(category = "OPEX"): BudgetItemDraft {
   return { category, initiativeTitle: "", department: "", description: "", year1Amount: "", year2Amount: "", year3Amount: "", totalAmount: "", roiEstimate: "", justification: "" };
 }
-function emptyRoadmapItem(): RoadmapItemDraft {
-  return { track: "举措", title: "", startYear: "2026", startQ: "1", endYear: "2026", endQ: "4", milestone: "", color: "" };
+const DEFAULT_ROADMAP_TAB_ID = "roadmap-default";
+const DEFAULT_ROADMAP_TAB_NAME = "路线图 1";
+
+function emptyRoadmapTab(index = 0): RoadmapTabDraft {
+  return { id: index === 0 ? DEFAULT_ROADMAP_TAB_ID : createRoadmapTabId(), name: `路线图 ${index + 1}` };
+}
+
+function createRoadmapTabId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `roadmap-tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function emptyRoadmapItem(tab: RoadmapTabDraft = emptyRoadmapTab()): RoadmapItemDraft {
+  return {
+    roadmapTabId: tab.id,
+    roadmapTabName: tab.name,
+    track: "举措",
+    title: "",
+    startYear: "2026",
+    startQ: "1",
+    endYear: "2026",
+    endQ: "4",
+    milestone: "",
+    color: "",
+    imageAttachmentId: "",
+    imageFilename: "",
+  };
 }
 function emptyKeyResult(): KeyResultDraft {
   return { keyResult: "", target: "", kpiCode: "" };
@@ -351,6 +392,7 @@ function emptyForm(): PlanForm {
     ],
     actionItems: [emptyActionItem(), emptyActionItem(), emptyActionItem()],
     budgetItems: [emptyBudgetItem("CAPEX"), emptyBudgetItem("OPEX"), emptyBudgetItem("HC")],
+    roadmapTabs: [emptyRoadmapTab()],
     roadmapItems: [emptyRoadmapItem(), emptyRoadmapItem()],
   };
 }
@@ -528,11 +570,13 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
 
   const validation = useMemo(() => validate(form), [form]);
 
-  async function persist(submit: boolean) {
+  async function persist(submit: boolean, formOverride?: PlanForm) {
     if (!selectedOrgId) return;
-    if (submit && !validation.ok) {
-      setStep(validation.step);
-      flash("err", validation.message);
+    const currentForm = formOverride ?? form;
+    const currentValidation = formOverride ? validate(formOverride) : validation;
+    if (submit && !currentValidation.ok) {
+      setStep(currentValidation.step);
+      flash("err", currentValidation.message);
       return;
     }
     setSaving(true);
@@ -544,21 +588,22 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
           orgUnitId: selectedOrgId,
           horizonStart: HORIZON_START,
           horizonEnd: HORIZON_END,
-          intent: form.intent,
-          northStar: form.northStar,
-          objectives: form.objectives,
-          initiatives: flattenInitiativesForSave(form.initiatives),
-          resources: form.resources,
-          assumptions: form.assumptions,
-          swotItems: form.swotItems,
-          orgChartNodes: form.orgChartNodes,
-          channelPlans: form.channelPlans,
-          customerPlans: form.customerPlans,
-          productQuarterly: form.productQuarterly,
-          marketInsights: form.marketInsights,
-          actionItems: form.actionItems.map((a) => ({ ...a, year: Number(a.year) || 2026, quarter: Number(a.quarter) || 1 })),
-          budgetItems: form.budgetItems,
-          roadmapItems: form.roadmapItems.map((r) => ({ ...r, startYear: Number(r.startYear) || 2026, startQ: Number(r.startQ) || 1, endYear: Number(r.endYear) || 2026, endQ: Number(r.endQ) || 4 })),
+          intent: currentForm.intent,
+          northStar: currentForm.northStar,
+          objectives: currentForm.objectives,
+          initiatives: flattenInitiativesForSave(currentForm.initiatives),
+          resources: currentForm.resources,
+          assumptions: currentForm.assumptions,
+          swotItems: currentForm.swotItems,
+          orgChartNodes: currentForm.orgChartNodes,
+          channelPlans: currentForm.channelPlans,
+          customerPlans: currentForm.customerPlans,
+          productQuarterly: currentForm.productQuarterly,
+          marketInsights: currentForm.marketInsights,
+          actionItems: currentForm.actionItems.map((a) => ({ ...a, year: Number(a.year) || 2026, quarter: Number(a.quarter) || 1 })),
+          budgetItems: currentForm.budgetItems,
+          roadmapTabs: currentForm.roadmapTabs.map((tab) => ({ id: tab.id, name: tab.name })),
+          roadmapItems: currentForm.roadmapItems.map((r) => ({ ...r, startYear: Number(r.startYear) || 2026, startQ: Number(r.startQ) || 1, endYear: Number(r.endYear) || 2026, endQ: Number(r.endQ) || 4 })),
           submit,
         }),
       });
@@ -818,7 +863,15 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
               {step === "market" && <MarketInsightForm form={form} setForm={setForm} />}
               {step === "action" && <ActionPlanForm form={form} setForm={setForm} />}
               {step === "budget" && <BudgetForm form={form} setForm={setForm} />}
-              {step === "roadmap" && <RoadmapForm form={form} setForm={setForm} />}
+              {step === "roadmap" && (
+                <RoadmapForm
+                  form={form}
+                  setForm={setForm}
+                  persistDraft={(formOverride) => persist(false, formOverride)}
+                  flash={flash}
+                  onAttachmentSaved={(attachment) => setAttachments((prev) => [...prev, attachment])}
+                />
+              )}
               {step === "onepager" && <OnePagerView form={form} selectedOrg={selectedOrg} />}
             </div>
 
@@ -984,9 +1037,13 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? ea.budgetItems.map((b: any) => ({ category: b.category ?? "OPEX", initiativeTitle: b.initiativeTitle ?? "", department: b.department ?? "", description: b.description ?? "", year1Amount: b.year1Amount ?? "", year2Amount: b.year2Amount ?? "", year3Amount: b.year3Amount ?? "", totalAmount: b.totalAmount ?? "", roiEstimate: b.roiEstimate ?? "", justification: b.justification ?? "" }))
       : f.budgetItems,
+    roadmapTabs: f.roadmapTabs.length > 0 ? f.roadmapTabs : [emptyRoadmapTab()],
     roadmapItems: Array.isArray(ea.roadmapItems) && ea.roadmapItems.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? ea.roadmapItems.map((r: any) => ({ track: cleanFormString(r.track) || "举措", title: cleanFormString(r.title), startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: cleanFormString(r.milestone), color: cleanFormString(r.color) }))
+      ? ea.roadmapItems.map((r: any) => {
+        const tab = f.roadmapTabs[0] ?? emptyRoadmapTab();
+        return { roadmapTabId: tab.id, roadmapTabName: tab.name, track: cleanFormString(r.track) || "举措", title: cleanFormString(r.title), startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: cleanFormString(r.milestone), color: cleanFormString(r.color), imageAttachmentId: "", imageFilename: "" };
+      })
       : f.roadmapItems.map((r) => ({ ...r, track: cleanFormString(r.track) || "举措", title: cleanFormString(r.title), milestone: cleanFormString(r.milestone), color: cleanFormString(r.color) })),
   };
 }
@@ -1264,6 +1321,28 @@ function HistoryVersionPicker({
   );
 }
 
+function normalizeRoadmapTabs(rawTabs: unknown, rawItems: Array<Record<string, unknown>>): RoadmapTabDraft[] {
+  const tabs = Array.isArray(rawTabs)
+    ? rawTabs
+        .map((rawTab, index) => {
+          const tab = rawTab && typeof rawTab === "object" && !Array.isArray(rawTab) ? rawTab as Record<string, unknown> : {};
+          return {
+            id: cleanFormString(tab.id) || (index === 0 ? DEFAULT_ROADMAP_TAB_ID : `roadmap-tab-${index + 1}`),
+            name: cleanFormString(tab.name) || `路线图 ${index + 1}`,
+          };
+        })
+        .filter((tab, index, list) => tab.id && list.findIndex((item) => item.id === tab.id) === index)
+    : [];
+  if (tabs.length === 0) tabs.push(emptyRoadmapTab());
+  for (const item of rawItems) {
+    const tabId = cleanFormString(item.roadmapTabId);
+    if (tabId && !tabs.some((tab) => tab.id === tabId)) {
+      tabs.push({ id: tabId, name: cleanFormString(item.roadmapTabName) || `路线图 ${tabs.length + 1}` });
+    }
+  }
+  return tabs;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function hydrate(plan: any): PlanForm {
   const base = emptyForm();
@@ -1336,10 +1415,15 @@ function hydrate(plan: any): PlanForm {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? plan.budgetItems.map((b: any) => ({ category: b.category ?? "OPEX", initiativeTitle: b.initiativeTitle ?? "", department: b.department ?? "", description: b.description ?? "", year1Amount: b.year1Amount ?? "", year2Amount: b.year2Amount ?? "", year3Amount: b.year3Amount ?? "", totalAmount: b.totalAmount ?? "", roiEstimate: b.roiEstimate ?? "", justification: b.justification ?? "" }))
     : base.budgetItems;
+  const roadmapTabs = normalizeRoadmapTabs(plan.roadmapTabs, plan.roadmapItems ?? []);
   const roadmapItems: RoadmapItemDraft[] = (plan.roadmapItems ?? []).length > 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ? plan.roadmapItems.map((r: any) => ({ track: r.track ?? "举措", title: r.title ?? "", startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: r.milestone ?? "", color: r.color ?? "" }))
-    : base.roadmapItems;
+    ? plan.roadmapItems.map((r: any) => {
+      const tabId = cleanFormString(r.roadmapTabId) || roadmapTabs[0].id;
+      const tabName = roadmapTabs.find((tab) => tab.id === tabId)?.name || cleanFormString(r.roadmapTabName) || DEFAULT_ROADMAP_TAB_NAME;
+      return { roadmapTabId: tabId, roadmapTabName: tabName, track: r.track ?? "举措", title: r.title ?? "", startYear: String(r.startYear ?? 2026), startQ: String(r.startQ ?? 1), endYear: String(r.endYear ?? 2026), endQ: String(r.endQ ?? 4), milestone: r.milestone ?? "", color: r.color ?? "", imageAttachmentId: r.imageAttachmentId ?? "", imageFilename: r.imageFilename ?? "" };
+    })
+    : base.roadmapItems.map((item) => ({ ...item, roadmapTabId: roadmapTabs[0].id, roadmapTabName: roadmapTabs[0].name }));
   return {
     intent: plan.intent ?? "",
     northStar: plan.northStar ?? "",
@@ -1355,6 +1439,7 @@ function hydrate(plan: any): PlanForm {
     marketInsights,
     actionItems,
     budgetItems,
+    roadmapTabs,
     roadmapItems,
   };
 }
@@ -2306,53 +2391,268 @@ const COLORS: { value: string; label: string; cls: string }[] = [
   { value: "red", label: "红", cls: "bg-[var(--signal-red)]/20" },
 ];
 
-function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  const rows = useRowsEditor<PlanForm, RoadmapItemDraft>(setForm, "roadmapItems", emptyRoadmapItem);
-  const set = rows.update;
+function OverflowTooltipText({ text }: { text: string }) {
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<{ left: number; top: number } | null>(null);
+
+  const measureOverflow = useCallback(() => {
+    const element = textRef.current;
+    const overflow = Boolean(element && element.scrollWidth > element.clientWidth + 1);
+    setIsOverflowing(overflow);
+    return overflow;
+  }, []);
+
+  useEffect(() => {
+    const element = textRef.current;
+    if (!element) return;
+
+    measureOverflow();
+    const observer = new ResizeObserver(measureOverflow);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [measureOverflow, text]);
+
+  function showTooltip() {
+    const element = textRef.current;
+    if (!element || !measureOverflow()) return;
+
+    const rect = element.getBoundingClientRect();
+    const tooltipWidth = Math.min(360, window.innerWidth - 24);
+    setTooltipPosition({
+      left: Math.min(Math.max(12, rect.left), window.innerWidth - tooltipWidth - 12),
+      top: rect.bottom + 6,
+    });
+  }
+
+  return (
+    <>
+      <span
+        ref={textRef}
+        className="block truncate"
+        tabIndex={isOverflowing ? 0 : -1}
+        onMouseEnter={showTooltip}
+        onMouseLeave={() => setTooltipPosition(null)}
+        onFocus={showTooltip}
+        onBlur={() => setTooltipPosition(null)}
+      >
+        {text}
+      </span>
+      {tooltipPosition && isOverflowing
+        ? createPortal(
+            <div
+              role="tooltip"
+              className="pointer-events-none fixed z-[100] w-[min(360px,calc(100vw-24px))] rounded-md border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-xs leading-relaxed text-[var(--color-text-primary)] shadow-xl whitespace-normal break-words"
+              style={tooltipPosition}
+            >
+              {text}
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
+  );
+}
+
+function roadmapImageSrc(attachmentId: string) {
+  return `/api/strategy/plan/attachment?id=${encodeURIComponent(attachmentId)}`;
+}
+
+function RoadmapForm({
+  form,
+  setForm,
+  persistDraft,
+  flash,
+  onAttachmentSaved,
+}: {
+  form: PlanForm;
+  setForm: React.Dispatch<React.SetStateAction<PlanForm>>;
+  persistDraft: (formOverride?: PlanForm) => Promise<string | undefined>;
+  flash: (kind: "ok" | "err", msg: string) => void;
+  onAttachmentSaved: (attachment: AttachmentInfo) => void;
+}) {
+  const [activeTabId, setActiveTabId] = useState(form.roadmapTabs[0]?.id ?? DEFAULT_ROADMAP_TAB_ID);
+  const [previewImage, setPreviewImage] = useState<{ src: string; name: string } | null>(null);
+  const imageInputRefs = useRef(new Map<number, HTMLInputElement>());
   const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
   const YEARS = [2026, 2027, 2028];
   const QS = [1, 2, 3, 4];
+  const roadmapTabs = useMemo(() => (form.roadmapTabs.length > 0 ? form.roadmapTabs : [emptyRoadmapTab()]), [form.roadmapTabs]);
+  const resolvedActiveTabId = roadmapTabs.some((tab) => tab.id === activeTabId) ? activeTabId : roadmapTabs[0].id;
+  const activeTab = roadmapTabs.find((tab) => tab.id === resolvedActiveTabId) ?? roadmapTabs[0];
+  const activeRows = form.roadmapItems
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => (item.roadmapTabId || DEFAULT_ROADMAP_TAB_ID) === activeTab.id);
 
   // 可视化甘特区域
   const quarters = YEARS.flatMap((y) => QS.map((q) => ({ y, q, label: `${y} Q${q}` })));
+  const ganttGridColumns = `190px repeat(${quarters.length}, 1fr)`;
 
   function qIndex(year: number, q: number) { return (year - 2026) * 4 + (q - 1); }
+  function setRow<K extends keyof RoadmapItemDraft>(idx: number, field: K, value: RoadmapItemDraft[K]) {
+    setForm((f) => {
+      const roadmapItems = [...f.roadmapItems];
+      roadmapItems[idx] = { ...roadmapItems[idx], [field]: value };
+      return { ...f, roadmapItems };
+    });
+  }
+  function addTab() {
+    const tab: RoadmapTabDraft = { id: createRoadmapTabId(), name: `路线图 ${roadmapTabs.length + 1}` };
+    setForm((f) => ({ ...f, roadmapTabs: [...f.roadmapTabs, tab] }));
+    setActiveTabId(tab.id);
+  }
+  function renameTab(tabId: string, name: string) {
+    setForm((f) => {
+      const roadmapTabs = f.roadmapTabs.map((tab) => (tab.id === tabId ? { ...tab, name } : tab));
+      const roadmapItems = f.roadmapItems.map((item) => (item.roadmapTabId === tabId ? { ...item, roadmapTabName: name } : item));
+      return { ...f, roadmapTabs, roadmapItems };
+    });
+  }
+  function removeTab(tabId: string, index: number) {
+    if (index === 0) return;
+    setForm((f) => ({
+      ...f,
+      roadmapTabs: f.roadmapTabs.filter((tab) => tab.id !== tabId),
+      roadmapItems: f.roadmapItems.filter((item) => item.roadmapTabId !== tabId),
+    }));
+    if (activeTabId === tabId) setActiveTabId(roadmapTabs[0]?.id ?? DEFAULT_ROADMAP_TAB_ID);
+  }
+  function addNode() {
+    setForm((f) => ({ ...f, roadmapItems: [...f.roadmapItems, emptyRoadmapItem(activeTab)] }));
+  }
+  function removeNode(idx: number) {
+    setForm((f) => ({ ...f, roadmapItems: f.roadmapItems.filter((_, index) => index !== idx) }));
+  }
+  async function uploadNodeImage(idx: number, file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      flash("err", "节点图片仅支持图片文件");
+      return;
+    }
+    const planId = await persistDraft();
+    if (!planId) return;
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("planId", planId);
+      const res = await fetch("/api/strategy/plan/attachment", { method: "POST", body: fd });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) throw new Error(data?.error ?? "图片上传失败");
+      const attachment = data as AttachmentInfo;
+      onAttachmentSaved(attachment);
+      const nextForm: PlanForm = {
+        ...form,
+        roadmapItems: form.roadmapItems.map((item, index) => (
+          index === idx
+            ? { ...item, imageAttachmentId: attachment.id, imageFilename: attachment.filename }
+            : item
+        )),
+      };
+      setForm(nextForm);
+      await persistDraft(nextForm);
+      flash("ok", "节点图片已上传");
+    } catch {
+      flash("err", "节点图片上传失败");
+    }
+  }
 
   return (
     <div className="space-y-4">
       <p className="text-caption">战略路线图 — 三年时间轴，按轨道展示关键节点</p>
 
+      <div className="flex items-center border-b border-[var(--surface-border)]">
+        <div className="flex min-w-0 flex-1 overflow-x-auto">
+          {roadmapTabs.map((tab, index) => {
+            const active = tab.id === activeTab.id;
+            return (
+              <div
+                key={tab.id}
+                className={'flex min-w-[132px] max-w-[220px] items-center gap-1 border border-b-0 px-2 py-1.5 ' + (
+                  active
+                    ? "border-[var(--surface-border)] bg-[var(--color-bg-surface)]"
+                    : "border-transparent bg-black/[0.02] text-[var(--color-text-muted)] hover:bg-black/[0.04]"
+                )}
+              >
+                <div className="min-w-0 flex-1 text-left" onClick={() => setActiveTabId(tab.id)}>
+                  <input
+                    value={tab.name}
+                    onChange={(event) => renameTab(tab.id, event.target.value)}
+                    onFocus={() => setActiveTabId(tab.id)}
+                    className="w-full truncate bg-transparent text-sm outline-none"
+                    placeholder={`路线图 ${index + 1}`}
+                  />
+                </div>
+                {index > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => removeTab(tab.id, index)}
+                    className="shrink-0 rounded px-1 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.05] hover:text-[var(--signal-red)]"
+                    title="删除该路线图"
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={addTab}
+          className="ml-2 h-7 w-7 rounded border border-[var(--surface-border)] text-sm text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+          title="新增路线图"
+        >
+          +
+        </button>
+      </div>
+
       {/* 甘特可视化 */}
-      {form.roadmapItems.some((r) => r.title.trim()) && (
-        <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)] p-3">
-          <div className="text-xs font-medium mb-2">预览</div>
-          <div className="relative" style={{ minWidth: 700 }}>
-            <div className="grid text-caption mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
+      <div className="overflow-x-auto rounded-lg border border-[var(--surface-border)] p-3">
+        <div className="text-xs font-medium mb-2">预览 · {activeTab.name || DEFAULT_ROADMAP_TAB_NAME}</div>
+        <div className="relative min-h-[72px]" style={{ minWidth: 770 }}>
+            <div className="grid text-caption mb-1" style={{ gridTemplateColumns: ganttGridColumns }}>
               <div />
               {quarters.map((q) => (
                 <div key={q.label} className={"text-center border-l border-[var(--surface-border)] " + (q.q === 1 ? "font-semibold" : "")}>{q.label}</div>
               ))}
             </div>
-            {form.roadmapItems.filter((r) => r.title.trim()).map((r, idx) => {
+            {activeRows.filter(({ item }) => item.title.trim()).map(({ item: r, index }) => {
               const si = qIndex(Number(r.startYear) || 2026, Number(r.startQ) || 1);
               const ei = qIndex(Number(r.endYear) || 2026, Number(r.endQ) || 4);
               const span = Math.max(1, ei - si + 1);
               const colorCls = COLORS.find((c) => c.value === r.color)?.cls ?? COLORS[0].cls;
               return (
-                <div key={idx} className="grid items-center mb-1" style={{ gridTemplateColumns: `120px repeat(${quarters.length}, 1fr)` }}>
-                  <div className="text-[11px] truncate pr-2 text-[var(--color-text-secondary)]">{r.track} · {r.title}</div>
+                <div key={index} className="grid items-center mb-1" style={{ gridTemplateColumns: ganttGridColumns }}>
+                  <div className="min-w-0 pr-3 text-[11px] text-[var(--color-text-secondary)]">
+                    <OverflowTooltipText text={`${r.track} · ${r.title}`} />
+                  </div>
                   {Array.from({ length: quarters.length }).map((_, ci) => (
                     ci === si
-                      ? <div key={ci} className={"rounded text-[11px] px-1 py-0.5 truncate " + colorCls} style={{ gridColumn: `span ${span}` }}>{r.milestone || r.title}</div>
+                      ? (
+                        <div key={ci} className={"flex min-h-8 items-center gap-1 rounded px-1 py-0.5 text-[11px] " + colorCls} style={{ gridColumn: `span ${span}` }}>
+                          <span className="min-w-0 flex-1 truncate">{r.milestone || r.title}</span>
+                          {r.imageAttachmentId ? (
+                            <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-white/80">
+                              <Image
+                                src={roadmapImageSrc(r.imageAttachmentId)}
+                                alt={r.imageFilename || r.title}
+                                fill
+                                sizes="32px"
+                                unoptimized
+                                className="object-contain p-0.5"
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                      )
                       : ci > si && ci <= ei ? null
                       : <div key={ci} />
                   ))}
                 </div>
               );
             })}
-          </div>
         </div>
-      )}
+      </div>
 
       {/* 输入表格 */}
       <RowTable
@@ -2365,48 +2665,139 @@ function RoadmapForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
           { label: "Q", align: "center" },
           { label: "关键里程碑" },
           { label: "颜色", align: "center" },
+          { label: "图片", align: "center", className: "w-20" },
           { label: "", className: "w-6" },
         ]}
       >
-        {form.roadmapItems.map((r, idx) => (
+        {activeRows.map(({ item: r, index: idx }) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
                 <td className="px-1 py-1">
-                  <select className={inp} value={r.track} onChange={(e) => set(idx, "track", e.target.value)}>
+                  <select className={inp} value={r.track} onChange={(e) => setRow(idx, "track", e.target.value)}>
                     {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={r.title} onChange={(e) => set(idx, "title", e.target.value)} placeholder="举措/产品/项目名称" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={r.title} onChange={(e) => setRow(idx, "title", e.target.value)} placeholder="举措/产品/项目名称" /></td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.startYear} onChange={(e) => set(idx, "startYear", e.target.value)}>
+                  <select className={inp + " text-center"} value={r.startYear} onChange={(e) => setRow(idx, "startYear", e.target.value)}>
                     {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.startQ} onChange={(e) => set(idx, "startQ", e.target.value)}>
+                  <select className={inp + " text-center"} value={r.startQ} onChange={(e) => setRow(idx, "startQ", e.target.value)}>
                     {QS.map((q) => <option key={q} value={q}>Q{q}</option>)}
                   </select>
                 </td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.endYear} onChange={(e) => set(idx, "endYear", e.target.value)}>
+                  <select className={inp + " text-center"} value={r.endYear} onChange={(e) => setRow(idx, "endYear", e.target.value)}>
                     {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.endQ} onChange={(e) => set(idx, "endQ", e.target.value)}>
+                  <select className={inp + " text-center"} value={r.endQ} onChange={(e) => setRow(idx, "endQ", e.target.value)}>
                     {QS.map((q) => <option key={q} value={q}>Q{q}</option>)}
                   </select>
                 </td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={r.milestone} onChange={(e) => set(idx, "milestone", e.target.value)} placeholder="里程碑描述" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp} value={r.milestone} onChange={(e) => setRow(idx, "milestone", e.target.value)} placeholder="里程碑描述" /></td>
                 <td className="px-1 py-1">
-                  <select className={inp} value={r.color} onChange={(e) => set(idx, "color", e.target.value)}>
+                  <select className={inp} value={r.color} onChange={(e) => setRow(idx, "color", e.target.value)}>
                     {COLORS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </td>
-                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
+                <td className="px-1 py-1">
+                  <div className="flex items-center justify-center">
+                    <input
+                      ref={(input) => {
+                        if (input) imageInputRefs.current.set(idx, input);
+                        else imageInputRefs.current.delete(idx);
+                      }}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = "";
+                        void uploadNodeImage(idx, file);
+                      }}
+                    />
+                    {r.imageAttachmentId ? (
+                      <div className="group relative h-14 w-14 overflow-hidden rounded border border-[var(--surface-border)] bg-white">
+                        <Image
+                          src={roadmapImageSrc(r.imageAttachmentId)}
+                          alt={r.imageFilename || "节点图片"}
+                          fill
+                          sizes="56px"
+                          unoptimized
+                          className="object-contain p-1"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({
+                              src: roadmapImageSrc(r.imageAttachmentId),
+                              name: r.imageFilename || "节点图片",
+                            })}
+                            className="flex h-7 w-7 items-center justify-center rounded bg-white/90 text-[var(--color-text-primary)] hover:bg-white"
+                            aria-label="查看大图"
+                            title="查看大图"
+                          >
+                            <ZoomIn size={15} aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => imageInputRefs.current.get(idx)?.click()}
+                            className="flex h-7 w-7 items-center justify-center rounded bg-white/90 text-[var(--color-text-primary)] hover:bg-white"
+                            aria-label="修改图片"
+                            title="修改图片"
+                          >
+                            <Pencil size={15} aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => imageInputRefs.current.get(idx)?.click()}
+                        className="flex h-10 w-10 items-center justify-center rounded border border-dashed border-[var(--surface-border)] text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                        aria-label="上传图片"
+                        title="上传图片"
+                      >
+                        <Upload size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className="px-1"><RemoveRowButton onClick={() => removeNode(idx)} /></td>
               </tr>
             ))}
       </RowTable>
-      <AddRowButton label="新增节点" onClick={() => rows.add()} />
+      <AddRowButton label="新增节点" onClick={addNode} />
+
+      {previewImage ? (
+        <Modal onClose={() => setPreviewImage(null)} size="2xl">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <p className="min-w-0 truncate text-sm font-medium text-[var(--color-text-primary)]">{previewImage.name}</p>
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-[var(--color-text-muted)] hover:bg-black/[0.05] hover:text-[var(--color-text-primary)]"
+              aria-label="关闭大图"
+              title="关闭"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="relative h-[65vh] min-h-64 w-full overflow-hidden rounded border border-[var(--surface-border)] bg-black/[0.03]">
+            <Image
+              src={previewImage.src}
+              alt={previewImage.name}
+              fill
+              sizes="(max-width: 768px) 90vw, 720px"
+              unoptimized
+              className="object-contain p-2"
+            />
+          </div>
+        </Modal>
+      ) : null}
     </div>
   );
 }

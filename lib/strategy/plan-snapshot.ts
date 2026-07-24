@@ -28,6 +28,7 @@ export interface SnapshotInput {
   marketInsights?: unknown[];
   actionItems?: unknown[];
   budgetItems?: unknown[];
+  roadmapTabs?: unknown[];
   roadmapItems?: unknown[];
   attachments?: unknown[];
 }
@@ -56,6 +57,7 @@ export function buildSnapshotJson(input: SnapshotInput) {
     marketInsights: input.marketInsights ?? [],
     actionItems: input.actionItems ?? [],
     budgetItems: input.budgetItems ?? [],
+    roadmapTabs: input.roadmapTabs ?? [],
     roadmapItems: input.roadmapItems ?? [],
     attachments: input.attachments ?? [],
   };
@@ -200,7 +202,10 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       roiEstimate: b.roiEstimate,
       justification: b.justification,
     })),
+    roadmapTabs: Array.isArray(plan.roadmapTabs) ? plan.roadmapTabs : [],
     roadmapItems: plan.roadmapItems.map((r) => ({
+      roadmapTabId: r.roadmapTabId,
+      roadmapTabName: r.roadmapTabName,
       track: r.track,
       title: r.title,
       startYear: r.startYear,
@@ -209,6 +214,8 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       endQ: r.endQ,
       milestone: r.milestone,
       color: r.color,
+      imageAttachmentId: r.imageAttachmentId,
+      imageFilename: r.imageFilename,
     })),
     attachments: plan.attachments.map((a) => ({
       id: a.id,

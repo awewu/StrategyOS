@@ -4,6 +4,7 @@ import { writeFile, unlink, mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { safePlanAttachmentPath, snapshotReferencesAttachment } from "@/lib/strategy/attachment-presentation";
 
 export const runtime = "nodejs";
 
@@ -127,16 +128,24 @@ export async function DELETE(req: Request) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
-    const att = await prisma.planAttachment.findUnique({ where: { id }, select: { storagePath: true } });
+    const att = await prisma.planAttachment.findUnique({ where: { id }, select: { planId: true, storagePath: true } });
     if (!att) return NextResponse.json({ error: "不存在" }, { status: 404 });
+
+    const snapshots = await prisma.planSubmissionSnapshot.findMany({
+      where: { planId: att.planId },
+      select: { snapshotJson: true },
+    });
+    const retainedByHistory = snapshots.some((snapshot) => snapshotReferencesAttachment(snapshot.snapshotJson, id));
 
     await prisma.planAttachment.delete({ where: { id } });
 
-    // 尝试删除文件，失败不阻断响应（文件可能已不在）
-    const physPath = join(process.cwd(), "public", att.storagePath);
-    await unlink(physPath).catch(() => {});
+    // 历史提交版引用的是不可变附件；当前版解除关联时必须保留其物理文件。
+    if (!retainedByHistory) {
+      const physPath = safePlanAttachmentPath(att.storagePath);
+      if (physPath) await unlink(physPath).catch(() => {});
+    }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, retainedByHistory });
   } catch (error: unknown) {
     console.error("Attachment delete error:", error);
     return NextResponse.json({ error: "删除失败" }, { status: 500 });

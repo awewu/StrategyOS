@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { RehearsalPresentMode } from "@/components/rehearsal/RehearsalPresentMode";
+import { PresentationSetupModal } from "@/components/rehearsal/PresentationSetupModal";
 import { typography } from "@/lib/brand/typography";
 import { Q3_REHEARSAL_AGENDA, REHEARSAL_TOTAL_MIN } from "@/lib/rehearsal/q3-agenda";
 import type { RehearsalLiveContext } from "@/lib/rehearsal/live-context";
+import {
+  resolveProjectionLaunch,
+  type ProjectionSelection,
+} from "@/lib/rehearsal/projection";
+
+type StrategyDeckOption = NonNullable<RehearsalLiveContext["strategyOptions"]>[number]["options"][number];
 
 function LiveBanner({ live }: { live: RehearsalLiveContext }) {
   return (
@@ -46,9 +53,11 @@ function strategyPrintHref(option: { key: string; orgUnitId: string } | undefine
 function StrategyDeckPicker({
   live,
   onPrintHrefChange,
+  onSelectionChange,
 }: {
   live: RehearsalLiveContext;
   onPrintHrefChange: (href: string) => void;
+  onSelectionChange: (option: StrategyDeckOption | undefined) => void;
 }) {
   const orgs = useMemo(() => live.strategyOptions ?? [], [live.strategyOptions]);
   const initialOrgId = live.strategyDeckMeta?.orgUnitId ?? orgs[0]?.id ?? "";
@@ -64,14 +73,20 @@ function StrategyDeckPicker({
   const selectedVersion = versions.find((option) => option.key === selectionKey) ?? versions[0];
   const isCurrentSelection = selectionKey === live.strategyDeckMeta?.selectionKey;
 
-  useEffect(() => {
-    onPrintHrefChange(strategyPrintHref(selectedVersion));
-  }, [onPrintHrefChange, selectedVersion]);
-
   function changeOrg(nextOrgUnitId: string) {
     const nextOrg = orgs.find((org) => org.id === nextOrgUnitId);
+    const nextVersion = nextOrg?.options[0];
     setOrgUnitId(nextOrgUnitId);
-    setSelectionKey(nextOrg?.options[0]?.key ?? "");
+    setSelectionKey(nextVersion?.key ?? "");
+    onSelectionChange(nextVersion);
+    onPrintHrefChange(strategyPrintHref(nextVersion));
+  }
+
+  function changeVersion(nextSelectionKey: string) {
+    const nextVersion = versions.find((option) => option.key === nextSelectionKey);
+    setSelectionKey(nextSelectionKey);
+    onSelectionChange(nextVersion);
+    onPrintHrefChange(strategyPrintHref(nextVersion));
   }
 
   function applySelection() {
@@ -114,7 +129,7 @@ function StrategyDeckPicker({
           战略版本
           <select
             value={selectedVersion?.key ?? ""}
-            onChange={(e) => setSelectionKey(e.target.value)}
+            onChange={(e) => changeVersion(e.target.value)}
             className="stratos-input mt-1 text-sm"
           >
             {versions.map((option) => (
@@ -137,20 +152,47 @@ function StrategyDeckPicker({
   );
 }
 
-export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
+export function RehearsalWalkthrough({
+  live,
+  autoOpenSetup = false,
+}: {
+  live: RehearsalLiveContext;
+  autoOpenSetup?: boolean;
+}) {
   const [active, setActive] = useState(0);
   const [present, setPresent] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(autoOpenSetup);
+  const [projectionSelection, setProjectionSelection] = useState<ProjectionSelection | null>(null);
   const currentOption = live.strategyOptions
     ?.flatMap((org) => org.options)
     .find((option) => option.key === live.strategyDeckMeta?.selectionKey);
   const [printHref, setPrintHref] = useState(() => strategyPrintHref(currentOption));
+  const [selectedProjectionOption, setSelectedProjectionOption] = useState<StrategyDeckOption | undefined>(currentOption);
   const updatePrintHref = useCallback((href: string) => setPrintHref(href), []);
   const step = Q3_REHEARSAL_AGENDA[active];
   const progress = Math.round(((active + 1) / Q3_REHEARSAL_AGENDA.length) * 100);
+  const launchAction = resolveProjectionLaunch(
+    live.strategyDeckMeta?.selectionKey,
+    selectedProjectionOption,
+  );
+  const currentDeckHasContent = (live.strategySlides?.length ?? 0) > 0 || (live.strategyAttachments?.length ?? 0) > 0;
 
-  if (present) {
+  function openProjectionSetup() {
+    if (launchAction.kind === "navigate") {
+      window.location.href = launchAction.href;
+      return;
+    }
+    setSetupOpen(true);
+  }
+
+  if (present && projectionSelection) {
     return (
-      <RehearsalPresentMode initialStep={active} live={live} onExit={() => setPresent(false)} />
+      <RehearsalPresentMode
+        initialStep={active}
+        live={live}
+        projectionSelection={projectionSelection}
+        onExit={() => setPresent(false)}
+      />
     );
   }
 
@@ -167,8 +209,8 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setPresent(true)}
-            disabled={!live.strategyDeckMeta}
+            onClick={openProjectionSetup}
+            disabled={!live.strategyDeckMeta || !selectedProjectionOption || (launchAction.kind === "open" && !currentDeckHasContent)}
             className="rounded bg-[var(--color-accent)]/20 px-4 py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)]/30 disabled:opacity-40"
           >
             进入投屏模式 →
@@ -188,7 +230,11 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
         </div>
       </div>
 
-      <StrategyDeckPicker live={live} onPrintHrefChange={updatePrintHref} />
+      <StrategyDeckPicker
+        live={live}
+        onPrintHrefChange={updatePrintHref}
+        onSelectionChange={setSelectedProjectionOption}
+      />
 
       <LiveBanner live={live} />
 
@@ -288,6 +334,18 @@ export function RehearsalWalkthrough({ live }: { live: RehearsalLiveContext }) {
           </button>
         </div>
       </article>
+      {setupOpen ? (
+        <PresentationSetupModal
+          generatedSlideCount={live.strategySlides?.length ?? 0}
+          attachments={live.strategyAttachments ?? []}
+          onClose={() => setSetupOpen(false)}
+          onStart={(selection) => {
+            setProjectionSelection(selection);
+            setSetupOpen(false);
+            setPresent(true);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

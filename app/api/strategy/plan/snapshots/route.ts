@@ -17,7 +17,7 @@ type PlanSnapshotPayload = {
   marketInsights?: Array<{ category?: string; title?: string; content?: string; dataPoint?: string; source?: string }>;
   actionItems?: Array<{ initiativeTitle?: string; action?: string; ownerName?: string; acceptanceCriteria?: string }>;
   budgetItems?: Array<{ category?: string; initiativeTitle?: string; department?: string; description?: string; totalAmount?: string; justification?: string }>;
-  roadmapItems?: Array<{ track?: string; title?: string; milestone?: string; startYear?: string | number; startQ?: string | number; endYear?: string | number; endQ?: string | number }>;
+  roadmapItems?: Array<{ roadmapTabName?: string; track?: string; title?: string; milestone?: string; startYear?: string | number; startQ?: string | number; endYear?: string | number; endQ?: string | number; imageFilename?: string }>;
 };
 
 type PlanDiff = {
@@ -144,8 +144,8 @@ function comparePlanSnapshots(from: PlanSnapshotPayload, to: PlanSnapshotPayload
     diffs,
     "ROADMAP",
     "路线图",
-    normalizeList(from.roadmapItems, (r) => `${text(r.track)} ${text(r.title)} ${text(r.milestone)} ${text(r.startYear)}Q${text(r.startQ)}-${text(r.endYear)}Q${text(r.endQ)}`),
-    normalizeList(to.roadmapItems, (r) => `${text(r.track)} ${text(r.title)} ${text(r.milestone)} ${text(r.startYear)}Q${text(r.startQ)}-${text(r.endYear)}Q${text(r.endQ)}`),
+    normalizeList(from.roadmapItems, (r) => `${text(r.roadmapTabName)} ${text(r.track)} ${text(r.title)} ${text(r.milestone)} ${text(r.startYear)}Q${text(r.startQ)}-${text(r.endYear)}Q${text(r.endQ)} ${text(r.imageFilename)}`),
+    normalizeList(to.roadmapItems, (r) => `${text(r.roadmapTabName)} ${text(r.track)} ${text(r.title)} ${text(r.milestone)} ${text(r.startYear)}Q${text(r.startQ)}-${text(r.endYear)}Q${text(r.endQ)} ${text(r.imageFilename)}`),
     "high",
   );
   return diffs;

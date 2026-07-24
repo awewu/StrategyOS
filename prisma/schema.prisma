@@ -971,6 +971,7 @@ model StrategicPlan {
   marketInsights      PlanMarketInsight[]
   actionItems         PlanActionItem[]
   budgetItems         PlanBudgetItem[]
+  roadmapTabs         Json?                    @map("roadmap_tabs")
   roadmapItems        PlanRoadmapItem[]
   submissionSnapshots PlanSubmissionSnapshot[]
   meetings            StrategyMeeting[]
@@ -2638,21 +2639,26 @@ model PlanBudgetItem {
 
 // 战略路线图
 model PlanRoadmapItem {
-  id        String        @id @default(uuid())
-  planId    String        @map("plan_id")
-  track     String        @db.VarChar(50) // 轨道：举措/产品/组织/技术
-  title     String
-  startYear Int           @map("start_year")
-  startQ    Int           @map("start_q") // 1-4
-  endYear   Int           @map("end_year")
-  endQ      Int           @map("end_q")
-  milestone String?
-  color     String?       @db.VarChar(20) // accent/green/yellow/red
-  sortOrder Int           @default(999) @map("sort_order")
-  createdAt DateTime      @default(now()) @map("created_at")
-  plan      StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  id                String        @id @default(uuid())
+  planId            String        @map("plan_id")
+  roadmapTabId      String?       @map("roadmap_tab_id") @db.VarChar(80)
+  roadmapTabName    String?       @map("roadmap_tab_name") @db.VarChar(120)
+  track             String        @db.VarChar(50) // 轨道：举措/产品/组织/技术
+  title             String
+  startYear         Int           @map("start_year")
+  startQ            Int           @map("start_q") // 1-4
+  endYear           Int           @map("end_year")
+  endQ              Int           @map("end_q")
+  milestone         String?
+  color             String?       @db.VarChar(20) // accent/green/yellow/red
+  imageAttachmentId String?       @map("image_attachment_id") @db.VarChar(100)
+  imageFilename     String?       @map("image_filename") @db.VarChar(255)
+  sortOrder         Int           @default(999) @map("sort_order")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  plan              StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId, track])
+  @@index([planId, roadmapTabId])
   @@map("plan_roadmap_items")
 }
 

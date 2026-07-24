@@ -33,9 +33,25 @@ type ProductQuarterlyInput = { productName?: string; unit?: string; q1Qty?: Nume
 type MarketInsightInput = { category?: string; title?: string; content?: string; dataPoint?: string; source?: string };
 type ActionItemInput = { initiativeTitle?: string; year?: number | string; quarter?: number | string; action?: string; ownerName?: string; acceptanceCriteria?: string; checkDate?: string; status?: string };
 type BudgetItemInput = { category?: string; initiativeTitle?: string; department?: string; description?: string; year1Amount?: string; year2Amount?: string; year3Amount?: string; totalAmount?: string; roiEstimate?: string; justification?: string };
-type RoadmapItemInput = { track?: string; title?: string; startYear?: number | string; startQ?: number | string; endYear?: number | string; endQ?: number | string; milestone?: string; color?: string };
+type RoadmapTabInput = { id?: string; name?: string };
+type RoadmapItemInput = {
+  roadmapTabId?: string;
+  roadmapTabName?: string;
+  track?: string;
+  title?: string;
+  startYear?: number | string;
+  startQ?: number | string;
+  endYear?: number | string;
+  endQ?: number | string;
+  milestone?: string;
+  color?: string;
+  imageAttachmentId?: string;
+  imageFilename?: string;
+};
 
 const VALID_DIMENSIONS = ["FINANCIAL", "CUSTOMER", "PROCESS", "LEARNING"];
+const DEFAULT_ROADMAP_TAB_ID = "roadmap-default";
+const DEFAULT_ROADMAP_TAB_NAME = "路线图 1";
 
 function parseAmount(raw: unknown): number | null {
   if (raw === null || raw === undefined || raw === "") return null;
@@ -72,6 +88,17 @@ function anyText(...values: unknown[]): boolean {
   return values.some((value) => text(value));
 }
 
+function normalizeRoadmapTabs(rawTabs: RoadmapTabInput[] | undefined): Array<{ id: string; name: string }> {
+  const tabs = (rawTabs ?? [])
+    .map((tab, index) => {
+      const id = text(tab.id) || (index === 0 ? DEFAULT_ROADMAP_TAB_ID : `roadmap-tab-${index + 1}`);
+      return { id, name: text(tab.name) || `路线图 ${index + 1}` };
+    })
+    .filter((tab, index, list) => tab.id && list.findIndex((item) => item.id === tab.id) === index);
+  if (tabs.length === 0) return [{ id: DEFAULT_ROADMAP_TAB_ID, name: DEFAULT_ROADMAP_TAB_NAME }];
+  return tabs;
+}
+
 function hasMeaningfulPlanPayload(input: {
   intent?: string;
   northStar?: string;
@@ -87,6 +114,7 @@ function hasMeaningfulPlanPayload(input: {
   marketInsights?: MarketInsightInput[];
   actionItems?: ActionItemInput[];
   budgetItems?: BudgetItemInput[];
+  roadmapTabs?: RoadmapTabInput[];
   roadmapItems?: RoadmapItemInput[];
 }): boolean {
   if (anyText(input.intent, input.northStar)) return true;
@@ -103,6 +131,7 @@ function hasMeaningfulPlanPayload(input: {
   if ((input.actionItems ?? []).some((ai) => anyText(ai.initiativeTitle, ai.action, ai.ownerName, ai.acceptanceCriteria, ai.checkDate))) return true;
   if ((input.budgetItems ?? []).some((bi) => anyText(bi.initiativeTitle, bi.department, bi.description, bi.year1Amount, bi.year2Amount, bi.year3Amount, bi.totalAmount, bi.roiEstimate, bi.justification))) return true;
   if ((input.roadmapItems ?? []).some((rm) => anyText(rm.title, rm.milestone))) return true;
+  if ((input.roadmapTabs ?? []).length > 1 || (input.roadmapTabs ?? []).some((tab, index) => index === 0 && text(tab.name) && text(tab.name) !== DEFAULT_ROADMAP_TAB_NAME)) return true;
   return false;
 }
 
@@ -136,6 +165,7 @@ export async function POST(req: Request) {
       marketInsights = [],
       actionItems = [],
       budgetItems = [],
+      roadmapTabs = [],
       roadmapItems = [],
       submit,
     } = body as {
@@ -156,6 +186,7 @@ export async function POST(req: Request) {
       marketInsights?: MarketInsightInput[];
       actionItems?: ActionItemInput[];
       budgetItems?: BudgetItemInput[];
+      roadmapTabs?: RoadmapTabInput[];
       roadmapItems?: RoadmapItemInput[];
       submit?: boolean;
     };
@@ -189,8 +220,10 @@ export async function POST(req: Request) {
       marketInsights,
       actionItems,
       budgetItems,
+      roadmapTabs,
       roadmapItems,
     });
+    const normalizedRoadmapTabs = normalizeRoadmapTabs(roadmapTabs);
 
     const submittedAt = submit ? new Date() : null;
     const planId = await prisma.$transaction(async (tx) => {
@@ -200,13 +233,20 @@ export async function POST(req: Request) {
       });
 
       if (!submit && !hasMeaningfulPayload) {
-        if (existing) return existing.id;
+        if (existing) {
+          await tx.strategicPlan.update({
+            where: { id: existing.id },
+            data: { roadmapTabs: normalizedRoadmapTabs },
+          });
+          return existing.id;
+        }
         const shell = await tx.strategicPlan.create({
           data: {
             orgUnitId,
             horizonStart,
             horizonEnd,
             status: "DRAFT",
+            roadmapTabs: normalizedRoadmapTabs,
           },
         });
         return shell.id;
@@ -218,6 +258,7 @@ export async function POST(req: Request) {
             data: {
               intent: nullableText(intent),
               northStar: nullableText(northStar),
+              roadmapTabs: normalizedRoadmapTabs,
               ...(submit
                 ? { status: "SUBMITTED", submittedAt, submittedById: submitterId }
                 : { status: "DRAFT", submittedAt: null, submittedById: null }),
@@ -230,6 +271,7 @@ export async function POST(req: Request) {
               horizonEnd,
               intent: nullableText(intent),
               northStar: nullableText(northStar),
+              roadmapTabs: normalizedRoadmapTabs,
               status: submit ? "SUBMITTED" : "DRAFT",
               submittedAt,
               submittedById: submit ? submitterId : null,
@@ -471,11 +513,15 @@ export async function POST(req: Request) {
 
       // 路线图
       let rmSort = 0;
+      const roadmapTabNameById = new Map(normalizedRoadmapTabs.map((tab) => [tab.id, tab.name]));
       for (const rm of roadmapItems) {
         if (!text(rm.title)) continue;
+        const tabId = text(rm.roadmapTabId) || DEFAULT_ROADMAP_TAB_ID;
         await tx.planRoadmapItem.create({
           data: {
             planId: plan.id,
+            roadmapTabId: tabId,
+            roadmapTabName: roadmapTabNameById.get(tabId) ?? nullableText(rm.roadmapTabName) ?? DEFAULT_ROADMAP_TAB_NAME,
             track: text(rm.track) || "举措",
             title: text(rm.title),
             startYear: parseInteger(rm.startYear) ?? 2026,
@@ -484,6 +530,8 @@ export async function POST(req: Request) {
             endQ: parseInteger(rm.endQ) ?? 4,
             milestone: nullableText(rm.milestone),
             color: nullableText(rm.color),
+            imageAttachmentId: nullableText(rm.imageAttachmentId),
+            imageFilename: nullableText(rm.imageFilename),
             sortOrder: rmSort++,
           },
         });
@@ -555,6 +603,7 @@ export async function POST(req: Request) {
           actionItems,
           budgetItems,
           roadmapItems,
+          roadmapTabs: normalizedRoadmapTabs,
           attachments: attachments.map((a) => ({
             ...a,
             uploadedAt: a.uploadedAt.toISOString(),

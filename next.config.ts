@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  serverExternalPackages: ["@napi-rs/canvas"],
+  serverExternalPackages: ["@napi-rs/canvas", "pdf-parse"],
   // Dashboard pages are force-dynamic; allow slower static routes (print/login) if needed.
   staticPageGenerationTimeout: 120,
   allowedDevOrigins: ["127.0.0.1", "localhost"],

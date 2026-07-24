@@ -2,6 +2,7 @@ import Link from "next/link";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { PlanReviewActions } from "@/components/strategy/PlanReviewActions";
+import { ReadonlyRoadmapGantt } from "@/components/strategy/ReadonlyRoadmapGantt";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
 import { prisma } from "@/lib/db";
@@ -23,6 +24,43 @@ function money(v: unknown): string {
   if (v === null || v === undefined || v === "") return "-";
   const n = Number(v);
   return Number.isFinite(n) ? n.toLocaleString("zh-CN") : String(v);
+}
+
+function productMetric(v: unknown): string {
+  return v === null || v === undefined || v === "" ? "0" : money(v);
+}
+
+function productQuarterlyDisplay(p: {
+  unit: string | null;
+  q1Qty: unknown;
+  q2Qty: unknown;
+  q3Qty: unknown;
+  q4Qty: unknown;
+  annualQty: unknown;
+}): { unit: string; annualQty: string } {
+  const rawUnit = p.unit?.trim() ?? "";
+  const misplacedAnnualQty = Number(rawUnit.replaceAll(",", ""));
+  const quarterlyQty = [p.q1Qty, p.q2Qty, p.q3Qty, p.q4Qty].map(Number);
+  const quarterlyTotal = quarterlyQty.reduce((sum, qty) => sum + qty, 0);
+  const hasQuarterlyQty = [p.q1Qty, p.q2Qty, p.q3Qty, p.q4Qty].some(
+    (qty) => qty !== null && qty !== undefined && qty !== "",
+  );
+  const hasLegacyMisplacement =
+    p.annualQty === null &&
+    rawUnit !== "" &&
+    Number.isFinite(misplacedAnnualQty) &&
+    quarterlyQty.every(Number.isFinite) &&
+    Math.abs(misplacedAnnualQty - quarterlyTotal) < 0.001;
+
+  const annualQty = hasLegacyMisplacement
+    ? money(misplacedAnnualQty)
+    : p.annualQty !== null && p.annualQty !== undefined && p.annualQty !== ""
+      ? money(p.annualQty)
+      : hasQuarterlyQty
+        ? money(quarterlyTotal)
+        : "0";
+
+  return { unit: rawUnit && !hasLegacyMisplacement ? rawUnit : "台/套", annualQty };
 }
 
 function safeAttachmentPath(storagePath: string): string | null {
@@ -123,15 +161,22 @@ function TableCellContent({ cell }: { cell: React.ReactNode }) {
 function SimpleTable({
   columns,
   rows,
+  minWidth,
+  compact = false,
 }: {
   columns: string[];
   rows: Array<Array<React.ReactNode>>;
+  minWidth?: number;
+  compact?: boolean;
 }) {
   if (rows.length === 0) return <Empty />;
-  const minWidth = Math.max(640, columns.length * 150);
+  const tableMinWidth = minWidth ?? Math.max(640, columns.length * 150);
   return (
     <div className="stratos-table-wrap max-w-full min-w-0">
-      <table className="stratos-table" style={{ minWidth }}>
+      <table
+        className={`stratos-table ${compact ? "table-fixed text-[11px] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal [&_th:first-child]:w-24" : ""}`}
+        style={{ minWidth: tableMinWidth }}
+      >
         <thead>
           <tr>
             {columns.map((c) => (
@@ -242,7 +287,7 @@ export default async function StrategySubmissionsPage({
     : null;
 
   return (
-    <div className="stratos-page">
+    <div className="stratos-page lg:relative lg:left-1/2 lg:w-[min(calc(100vw_-_var(--sidebar-w)_-_var(--page-gutter)_-_var(--page-gutter)),100rem)] lg:-translate-x-1/2">
       <PageHeader
         eyebrow="战略制定 · 提交回看"
         title="已提交战略"
@@ -427,21 +472,27 @@ export default async function StrategySubmissionsPage({
 
             <Section id="product" title="产品季度">
               <SimpleTable
-                columns={["产品", "单位", "Q1量", "Q1收入", "Q2量", "Q2收入", "Q3量", "Q3收入", "Q4量", "Q4收入", "年度收入", "备注"]}
-                rows={plan.productQuarterly.map((p) => [
-                  p.productName,
-                  value(p.unit),
-                  money(p.q1Qty),
-                  money(p.q1Revenue),
-                  money(p.q2Qty),
-                  money(p.q2Revenue),
-                  money(p.q3Qty),
-                  money(p.q3Revenue),
-                  money(p.q4Qty),
-                  money(p.q4Revenue),
-                  money(p.annualRevenue),
-                  value(p.note),
-                ])}
+                compact
+                minWidth={720}
+                columns={["产品", "单位", "Q1量", "Q1收入", "Q2量", "Q2收入", "Q3量", "Q3收入", "Q4量", "Q4收入", "年度数量", "年度收入", "备注"]}
+                rows={plan.productQuarterly.map((p) => {
+                  const display = productQuarterlyDisplay(p);
+                  return [
+                    p.productName,
+                    display.unit,
+                    productMetric(p.q1Qty),
+                    productMetric(p.q1Revenue),
+                    productMetric(p.q2Qty),
+                    productMetric(p.q2Revenue),
+                    productMetric(p.q3Qty),
+                    productMetric(p.q3Revenue),
+                    productMetric(p.q4Qty),
+                    productMetric(p.q4Revenue),
+                    display.annualQty,
+                    productMetric(p.annualRevenue),
+                    value(p.note),
+                  ];
+                })}
               />
             </Section>
 
@@ -521,15 +572,11 @@ export default async function StrategySubmissionsPage({
             </Section>
 
             <Section id="roadmap" title="路线图">
-              <SimpleTable
-                columns={["轨道", "标题", "开始", "结束", "里程碑"]}
-                rows={plan.roadmapItems.map((r) => [
-                  r.track,
-                  r.title,
-                  `${r.startYear} Q${r.startQ}`,
-                  `${r.endYear} Q${r.endQ}`,
-                  value(r.milestone),
-                ])}
+              <ReadonlyRoadmapGantt
+                roadmapTabs={plan.roadmapTabs}
+                items={plan.roadmapItems}
+                horizonStart={plan.horizonStart}
+                horizonEnd={plan.horizonEnd}
               />
             </Section>
 

@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Q3_REHEARSAL_AGENDA, REHEARSAL_TOTAL_MIN } from "@/lib/rehearsal/q3-agenda";
 import {
   REHEARSAL_CHECKLIST_STORAGE_KEY,
   type RehearsalLiveContext,
 } from "@/lib/rehearsal/live-context";
+import {
+  buildProjectionPages,
+  type ProjectionPage,
+  type ProjectionSelection,
+} from "@/lib/rehearsal/projection";
 
 type PresentView = "slides" | "agenda";
 
@@ -105,13 +111,37 @@ function StrategySlide({
   );
 }
 
+function AttachmentSlide({ page, globalIndex, totalPages }: { page: Extract<ProjectionPage, { kind: "attachment" }>; globalIndex: number; totalPages: number }) {
+  return (
+    <section className="flex min-h-[58vh] min-w-0 flex-1 flex-col rounded-lg border border-white/10 bg-black/20 shadow-2xl">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-t-lg bg-black/35">
+        <Image
+          src={page.imageUrl}
+          alt={`${page.filename} 第 ${page.pageNumber} 页`}
+          fill
+          sizes="100vw"
+          unoptimized
+          priority
+          className="object-contain"
+        />
+      </div>
+      <footer className="flex items-center justify-between gap-4 border-t border-white/10 px-5 py-3 text-sm text-[var(--color-text-muted)]">
+        <span className="min-w-0 truncate" title={page.filename}>{page.filename}</span>
+        <span className="shrink-0">文件 {page.pageNumber}/{page.pageCount} · 全部 {globalIndex + 1}/{totalPages}</span>
+      </footer>
+    </section>
+  );
+}
+
 export function RehearsalPresentMode({
   initialStep = 0,
   live,
+  projectionSelection,
   onExit,
 }: {
   initialStep?: number;
   live: RehearsalLiveContext;
+  projectionSelection: ProjectionSelection;
   onExit: () => void;
 }) {
   const [active, setActive] = useState(initialStep);
@@ -120,14 +150,21 @@ export function RehearsalPresentMode({
   const [meetingElapsed, setMeetingElapsed] = useState(0);
   const [checked, setChecked] = useState<Record<string, boolean>>(loadChecked);
   const [view, setView] = useState<PresentView>("slides");
-  const [slideIndex, setSlideIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useState(0);
 
   const step = Q3_REHEARSAL_AGENDA[active];
   const segmentBudgetSec = step.durationMin * 60;
   const segmentRemaining = Math.max(0, segmentBudgetSec - segmentElapsed);
   const overtime = segmentElapsed > segmentBudgetSec;
   const meetingBudgetSec = REHEARSAL_TOTAL_MIN * 60;
-  const slideCount = live.strategySlides?.length ?? 0;
+  const projectionPages = useMemo(() => buildProjectionPages({
+    sources: projectionSelection.sources,
+    generatedSlideCount: live.strategySlides?.length ?? 0,
+    attachments: live.strategyAttachments ?? [],
+    manifests: projectionSelection.manifests,
+  }), [live.strategyAttachments, live.strategySlides, projectionSelection]);
+  const pageCount = projectionPages.length;
+  const projectionPage = projectionPages[pageIndex];
   const deckMeta = live.strategyDeckMeta;
 
   const persistCheck = useCallback(
@@ -153,21 +190,28 @@ export function RehearsalPresentMode({
 
   const goNext = useCallback(() => {
     if (view === "slides") {
-      setSlideIndex((i) => Math.min(i + 1, Math.max(0, slideCount - 1)));
+      setPageIndex((i) => Math.min(i + 1, Math.max(0, pageCount - 1)));
       return;
     }
     setActive((a) => Math.min(a + 1, Q3_REHEARSAL_AGENDA.length - 1));
     setSegmentElapsed(0);
-  }, [slideCount, view]);
+  }, [pageCount, view]);
 
   const goPrev = useCallback(() => {
     if (view === "slides") {
-      setSlideIndex((i) => Math.max(i - 1, 0));
+      setPageIndex((i) => Math.max(i - 1, 0));
       return;
     }
     setActive((a) => Math.max(a - 1, 0));
     setSegmentElapsed(0);
   }, [view]);
+
+  useEffect(() => {
+    const nextPage = projectionPages[pageIndex + 1];
+    if (nextPage?.kind !== "attachment") return;
+    const image = new window.Image();
+    image.src = nextPage.imageUrl;
+  }, [pageIndex, projectionPages]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -215,7 +259,9 @@ export function RehearsalPresentMode({
             {live.source === "database" ? "DB" : "Demo"}
           </p>
           <h1 className="text-2xl font-semibold text-[var(--color-accent)]">
-            {view === "slides" ? "战略幻灯" : `${step.segment} — ${step.title}`}
+            {view === "slides"
+              ? projectionPage?.kind === "attachment" ? "附件投屏" : "战略幻灯"
+              : `${step.segment} — ${step.title}`}
           </h1>
           {view === "slides" && deckMeta ? (
             <div className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -237,6 +283,11 @@ export function RehearsalPresentMode({
               <span className="rounded border border-white/10 bg-black/10 px-2 py-1 text-[var(--color-text-muted)]">
                 更新 {deckMeta.updatedAt}
               </span>
+              {projectionPage?.kind === "attachment" ? (
+                <span className="max-w-md truncate rounded border border-white/10 bg-black/10 px-2 py-1 text-[var(--color-text-muted)]" title={projectionPage.filename}>
+                  {projectionPage.filename} · {projectionPage.pageNumber}/{projectionPage.pageCount}
+                </span>
+              ) : null}
             </div>
           ) : (
             <p className="mt-1 text-sm text-[var(--color-text-muted)]">
@@ -256,7 +307,7 @@ export function RehearsalPresentMode({
                   : "text-[var(--color-text-muted)]"
               }`}
             >
-              战略幻灯 {slideCount > 0 ? slideCount : ""}
+              投屏内容 {pageCount > 0 ? pageCount : ""}
             </button>
             <button
               type="button"
@@ -307,7 +358,11 @@ export function RehearsalPresentMode({
 
       <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-8 py-6 lg:flex-row">
         {view === "slides" ? (
-          <StrategySlide live={live} slideIndex={slideIndex} />
+          projectionPage?.kind === "attachment" ? (
+            <AttachmentSlide page={projectionPage} globalIndex={pageIndex} totalPages={pageCount} />
+          ) : (
+            <StrategySlide live={live} slideIndex={projectionPage?.kind === "generated" ? projectionPage.slideIndex : -1} />
+          )
         ) : (
           <>
             <section className="flex-1 space-y-4">
@@ -377,7 +432,7 @@ export function RehearsalPresentMode({
       <footer className="flex justify-between border-t border-[var(--surface-border)] px-8 py-4">
         <button
           type="button"
-          disabled={view === "slides" ? slideIndex === 0 : active === 0}
+          disabled={view === "slides" ? pageIndex === 0 : active === 0}
           onClick={goPrev}
           className="text-lg text-[var(--color-text-muted)] disabled:opacity-30"
         >
@@ -387,7 +442,7 @@ export function RehearsalPresentMode({
           type="button"
           disabled={
             view === "slides"
-              ? slideIndex >= Math.max(0, slideCount - 1)
+              ? pageIndex >= Math.max(0, pageCount - 1)
               : active === Q3_REHEARSAL_AGENDA.length - 1
           }
           onClick={goNext}
