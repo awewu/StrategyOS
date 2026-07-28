@@ -94,7 +94,7 @@ export default async function StrategyInputPage({
             orgChartNodes: { orderBy: { sortOrder: "asc" } },
             channelPlans: { orderBy: { sortOrder: "asc" } },
             customerPlans: { orderBy: { sortOrder: "asc" } },
-            productQuarterly: { orderBy: { sortOrder: "asc" } },
+            productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
             marketInsights: { orderBy: { sortOrder: "asc" } },
             actionItems: { orderBy: { sortOrder: "asc" } },
             budgetItems: { orderBy: { sortOrder: "asc" } },

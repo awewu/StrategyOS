@@ -4,6 +4,10 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
 import { syncPlanAssumptionsToPremises } from "@/lib/data/plan-assumption-sync";
 import { buildSnapshotJson } from "@/lib/strategy/plan-snapshot";
+import {
+  normalizeProductQuarterlyYears,
+  productQuarterlyYearOrLegacy,
+} from "@/lib/strategy/product-quarterly";
 import { requireMutationGate } from "@/lib/auth/api-guard";
 
 const HORIZON_START = 2026;
@@ -25,11 +29,11 @@ type InitiativeInput = {
 type ResourceInput = { resourceType: string; amount?: string; justification?: string };
 type AssumptionInput = { assumption?: string; critical?: boolean };
 type SwotItemInput = { quadrant: "strength" | "weakness" | "opportunity" | "threat"; content?: string; weight?: number | null; intensity?: number | null; dimension?: string | null };
-type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; headcount?: number | string; headcountNew?: number | string; note?: string };
+type OrgChartNodeInput = { parentId?: string; name?: string; role?: string; headcount?: number | string; headcount2026?: number | string; headcount2027?: number | string; headcount2028?: number | string; headcountNew?: number | string; note?: string };
 type NumericInput = number | string;
 type ChannelPlanInput = { channelType?: string; currentState?: string; targetState?: string; q1Action?: string; q2Action?: string; q3Action?: string; q4Action?: string; revenueTarget?: NumericInput; partnerCount?: number | string; note?: string };
 type CustomerPlanInput = { customerSegment?: string; isNew?: boolean; currentCount?: number | string; targetCount?: number | string; q1Count?: number | string; q2Count?: number | string; q3Count?: number | string; q4Count?: number | string; revenuePerCustomer?: NumericInput; acquisitionStrategy?: string; retentionStrategy?: string; note?: string };
-type ProductQuarterlyInput = { productName?: string; unit?: string; q1Qty?: NumericInput; q1Revenue?: NumericInput; q2Qty?: NumericInput; q2Revenue?: NumericInput; q3Qty?: NumericInput; q3Revenue?: NumericInput; q4Qty?: NumericInput; q4Revenue?: NumericInput; annualQty?: NumericInput; annualRevenue?: NumericInput; note?: string };
+type ProductQuarterlyInput = { year?: number | string; productName?: string; unit?: string; q1Qty?: NumericInput; q1Revenue?: NumericInput; q2Qty?: NumericInput; q2Revenue?: NumericInput; q3Qty?: NumericInput; q3Revenue?: NumericInput; q4Qty?: NumericInput; q4Revenue?: NumericInput; annualQty?: NumericInput; annualRevenue?: NumericInput; note?: string };
 type MarketInsightInput = { category?: string; title?: string; content?: string; dataPoint?: string; source?: string };
 type ActionItemInput = { initiativeTitle?: string; year?: number | string; quarter?: number | string; action?: string; ownerName?: string; acceptanceCriteria?: string; checkDate?: string; status?: string };
 type BudgetItemInput = { category?: string; initiativeTitle?: string; department?: string; description?: string; year1Amount?: string; year2Amount?: string; year3Amount?: string; totalAmount?: string; roiEstimate?: string; justification?: string };
@@ -110,6 +114,7 @@ function hasMeaningfulPlanPayload(input: {
   orgChartNodes?: OrgChartNodeInput[];
   channelPlans?: ChannelPlanInput[];
   customerPlans?: CustomerPlanInput[];
+  productQuarterlyYears?: number[];
   productQuarterly?: ProductQuarterlyInput[];
   marketInsights?: MarketInsightInput[];
   actionItems?: ActionItemInput[];
@@ -123,7 +128,7 @@ function hasMeaningfulPlanPayload(input: {
   if ((input.resources ?? []).some((r) => anyText(r.amount, r.justification))) return true;
   if ((input.assumptions ?? []).some((a) => anyText(a.assumption))) return true;
   if ((input.swotItems ?? []).some((sw) => anyText(sw.content))) return true;
-  if ((input.orgChartNodes ?? []).some((node) => anyText(node.name, node.role, node.headcount, node.headcountNew, node.note))) return true;
+  if ((input.orgChartNodes ?? []).some((node) => anyText(node.name, node.role, node.headcount, node.headcount2026, node.headcount2027, node.headcount2028, node.headcountNew, node.note))) return true;
   if ((input.channelPlans ?? []).some((ch) => anyText(ch.channelType, ch.currentState, ch.targetState, ch.q1Action, ch.q2Action, ch.q3Action, ch.q4Action, ch.revenueTarget, ch.partnerCount, ch.note))) return true;
   if ((input.customerPlans ?? []).some((cu) => anyText(cu.customerSegment, cu.currentCount, cu.targetCount, cu.q1Count, cu.q2Count, cu.q3Count, cu.q4Count, cu.revenuePerCustomer, cu.acquisitionStrategy, cu.retentionStrategy, cu.note))) return true;
   if ((input.productQuarterly ?? []).some((pq) => anyText(pq.productName, pq.unit, pq.q1Qty, pq.q1Revenue, pq.q2Qty, pq.q2Revenue, pq.q3Qty, pq.q3Revenue, pq.q4Qty, pq.q4Revenue, pq.annualQty, pq.annualRevenue, pq.note))) return true;
@@ -161,6 +166,7 @@ export async function POST(req: Request) {
       orgChartNodes = [],
       channelPlans = [],
       customerPlans = [],
+      productQuarterlyYears = [],
       productQuarterly = [],
       marketInsights = [],
       actionItems = [],
@@ -182,6 +188,7 @@ export async function POST(req: Request) {
       orgChartNodes?: OrgChartNodeInput[];
       channelPlans?: ChannelPlanInput[];
       customerPlans?: CustomerPlanInput[];
+      productQuarterlyYears?: number[];
       productQuarterly?: ProductQuarterlyInput[];
       marketInsights?: MarketInsightInput[];
       actionItems?: ActionItemInput[];
@@ -216,6 +223,7 @@ export async function POST(req: Request) {
       orgChartNodes,
       channelPlans,
       customerPlans,
+      productQuarterlyYears,
       productQuarterly,
       marketInsights,
       actionItems,
@@ -224,6 +232,7 @@ export async function POST(req: Request) {
       roadmapItems,
     });
     const normalizedRoadmapTabs = normalizeRoadmapTabs(roadmapTabs);
+    const normalizedProductQuarterlyYears = normalizeProductQuarterlyYears(productQuarterlyYears, productQuarterly);
 
     const submittedAt = submit ? new Date() : null;
     const planId = await prisma.$transaction(async (tx) => {
@@ -236,7 +245,10 @@ export async function POST(req: Request) {
         if (existing) {
           await tx.strategicPlan.update({
             where: { id: existing.id },
-            data: { roadmapTabs: normalizedRoadmapTabs },
+            data: {
+              roadmapTabs: normalizedRoadmapTabs,
+              productQuarterlyYears: normalizedProductQuarterlyYears,
+            },
           });
           return existing.id;
         }
@@ -247,6 +259,7 @@ export async function POST(req: Request) {
             horizonEnd,
             status: "DRAFT",
             roadmapTabs: normalizedRoadmapTabs,
+            productQuarterlyYears: normalizedProductQuarterlyYears,
           },
         });
         return shell.id;
@@ -259,6 +272,7 @@ export async function POST(req: Request) {
               intent: nullableText(intent),
               northStar: nullableText(northStar),
               roadmapTabs: normalizedRoadmapTabs,
+              productQuarterlyYears: normalizedProductQuarterlyYears,
               ...(submit
                 ? { status: "SUBMITTED", submittedAt, submittedById: submitterId }
                 : { status: "DRAFT", submittedAt: null, submittedById: null }),
@@ -272,6 +286,7 @@ export async function POST(req: Request) {
               intent: nullableText(intent),
               northStar: nullableText(northStar),
               roadmapTabs: normalizedRoadmapTabs,
+              productQuarterlyYears: normalizedProductQuarterlyYears,
               status: submit ? "SUBMITTED" : "DRAFT",
               submittedAt,
               submittedById: submit ? submitterId : null,
@@ -374,7 +389,9 @@ export async function POST(req: Request) {
             name: text(node.name),
             role: nullableText(node.role),
             headcount: parseInteger(node.headcount),
-            headcountNew: parseInteger(node.headcountNew),
+            headcount2026: parseInteger(node.headcount2026),
+            headcount2027: parseInteger(node.headcount2027 ?? node.headcountNew),
+            headcount2028: parseInteger(node.headcount2028),
             note: nullableText(node.note),
             sortOrder: orgSort++,
           },
@@ -434,6 +451,7 @@ export async function POST(req: Request) {
         await tx.planProductQuarterly.create({
           data: {
             planId: plan.id,
+            year: productQuarterlyYearOrLegacy(pq.year),
             productName: text(pq.productName),
             unit: nullableText(pq.unit),
             q1Qty: parseAmount(pq.q1Qty),
@@ -598,6 +616,7 @@ export async function POST(req: Request) {
           orgChartNodes,
           channelPlans,
           customerPlans,
+          productQuarterlyYears: normalizedProductQuarterlyYears,
           productQuarterly,
           marketInsights,
           actionItems,
@@ -673,7 +692,7 @@ export async function GET(req: Request) {
         orgChartNodes: { orderBy: { sortOrder: "asc" } },
         channelPlans: { orderBy: { sortOrder: "asc" } },
         customerPlans: { orderBy: { sortOrder: "asc" } },
-        productQuarterly: { orderBy: { sortOrder: "asc" } },
+        productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
         marketInsights: { orderBy: { sortOrder: "asc" } },
         actionItems: { orderBy: { sortOrder: "asc" } },
         budgetItems: { orderBy: { sortOrder: "asc" } },

@@ -24,6 +24,7 @@ export interface SnapshotInput {
   orgChartNodes?: unknown[];
   channelPlans?: unknown[];
   customerPlans?: unknown[];
+  productQuarterlyYears?: unknown[];
   productQuarterly?: unknown[];
   marketInsights?: unknown[];
   actionItems?: unknown[];
@@ -53,6 +54,7 @@ export function buildSnapshotJson(input: SnapshotInput) {
     orgChartNodes: input.orgChartNodes ?? [],
     channelPlans: input.channelPlans ?? [],
     customerPlans: input.customerPlans ?? [],
+    productQuarterlyYears: input.productQuarterlyYears ?? [],
     productQuarterly: input.productQuarterly ?? [],
     marketInsights: input.marketInsights ?? [],
     actionItems: input.actionItems ?? [],
@@ -78,7 +80,7 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       orgChartNodes: { orderBy: { sortOrder: "asc" } },
       channelPlans: { orderBy: { sortOrder: "asc" } },
       customerPlans: { orderBy: { sortOrder: "asc" } },
-      productQuarterly: { orderBy: { sortOrder: "asc" } },
+      productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
       marketInsights: { orderBy: { sortOrder: "asc" } },
       actionItems: { orderBy: { sortOrder: "asc" } },
       budgetItems: { orderBy: { sortOrder: "asc" } },
@@ -129,7 +131,9 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       name: n.name,
       role: n.role,
       headcount: n.headcount,
-      headcountNew: n.headcountNew,
+      headcount2026: n.headcount2026,
+      headcount2027: n.headcount2027,
+      headcount2028: n.headcount2028,
       note: n.note,
     })),
     channelPlans: plan.channelPlans.map((c) => ({
@@ -159,6 +163,7 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       note: c.note,
     })),
     productQuarterly: plan.productQuarterly.map((p) => ({
+      year: p.year,
       productName: p.productName,
       unit: p.unit,
       q1Qty: dec(p.q1Qty),
@@ -173,6 +178,7 @@ export async function readPlanSnapshotInput(planId: string): Promise<SnapshotInp
       annualRevenue: dec(p.annualRevenue),
       note: p.note,
     })),
+    productQuarterlyYears: Array.isArray(plan.productQuarterlyYears) ? plan.productQuarterlyYears : [],
     marketInsights: plan.marketInsights.map((m) => ({
       category: m.category,
       title: m.title,

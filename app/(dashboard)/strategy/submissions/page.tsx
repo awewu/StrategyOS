@@ -2,6 +2,8 @@ import Link from "next/link";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { PlanReviewActions } from "@/components/strategy/PlanReviewActions";
+import { ReadonlyOrgPlanningTable } from "@/components/strategy/ReadonlyOrgPlanningTable";
+import { ReadonlyProductQuarterlyTabs } from "@/components/strategy/ReadonlyProductQuarterlyTabs";
 import { ReadonlyRoadmapGantt } from "@/components/strategy/ReadonlyRoadmapGantt";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
@@ -277,7 +279,7 @@ export default async function StrategySubmissionsPage({
           orgChartNodes: { orderBy: { sortOrder: "asc" } },
           channelPlans: { orderBy: { sortOrder: "asc" } },
           customerPlans: { orderBy: { sortOrder: "asc" } },
-          productQuarterly: { orderBy: { sortOrder: "asc" } },
+          productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
           marketInsights: { orderBy: { sortOrder: "asc" } },
           actionItems: { orderBy: { sortOrder: "asc" } },
           budgetItems: { orderBy: { sortOrder: "asc" } },
@@ -471,27 +473,26 @@ export default async function StrategySubmissionsPage({
             </Section>
 
             <Section id="product" title="产品季度">
-              <SimpleTable
-                compact
-                minWidth={720}
-                columns={["产品", "单位", "Q1量", "Q1收入", "Q2量", "Q2收入", "Q3量", "Q3收入", "Q4量", "Q4收入", "年度数量", "年度收入", "备注"]}
+              <ReadonlyProductQuarterlyTabs
+                years={plan.productQuarterlyYears}
                 rows={plan.productQuarterly.map((p) => {
                   const display = productQuarterlyDisplay(p);
-                  return [
-                    p.productName,
-                    display.unit,
-                    productMetric(p.q1Qty),
-                    productMetric(p.q1Revenue),
-                    productMetric(p.q2Qty),
-                    productMetric(p.q2Revenue),
-                    productMetric(p.q3Qty),
-                    productMetric(p.q3Revenue),
-                    productMetric(p.q4Qty),
-                    productMetric(p.q4Revenue),
-                    display.annualQty,
-                    productMetric(p.annualRevenue),
-                    value(p.note),
-                  ];
+                  return {
+                    year: p.year,
+                    productName: p.productName,
+                    unit: display.unit,
+                    q1Qty: productMetric(p.q1Qty),
+                    q1Revenue: productMetric(p.q1Revenue),
+                    q2Qty: productMetric(p.q2Qty),
+                    q2Revenue: productMetric(p.q2Revenue),
+                    q3Qty: productMetric(p.q3Qty),
+                    q3Revenue: productMetric(p.q3Revenue),
+                    q4Qty: productMetric(p.q4Qty),
+                    q4Revenue: productMetric(p.q4Revenue),
+                    annualQty: display.annualQty,
+                    annualRevenue: productMetric(p.annualRevenue),
+                    note: value(p.note),
+                  };
                 })}
               />
             </Section>
@@ -534,15 +535,16 @@ export default async function StrategySubmissionsPage({
             </Section>
 
             <Section id="org" title="组织规划">
-              <SimpleTable
-                columns={["部门/岗位", "职能", "现有编制", "新增编制", "备注"]}
-                rows={plan.orgChartNodes.map((n) => [
-                  n.name,
-                  value(n.role),
-                  value(n.headcount),
-                  value(n.headcountNew),
-                  value(n.note),
-                ])}
+              <ReadonlyOrgPlanningTable
+                rows={plan.orgChartNodes.map((n) => ({
+                  name: n.name,
+                  role: value(n.role),
+                  headcount: value(n.headcount),
+                  headcount2026: value(n.headcount2026),
+                  headcount2027: value(n.headcount2027),
+                  headcount2028: value(n.headcount2028),
+                  note: value(n.note),
+                }))}
               />
             </Section>
 

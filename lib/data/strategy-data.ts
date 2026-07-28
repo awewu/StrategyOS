@@ -810,7 +810,7 @@ type StrategyDeckPayload = {
   roadmapItems?: Array<{ track?: string | null; title?: string | null; startYear?: number | string; startQ?: number | string; endYear?: number | string; endQ?: number | string; milestone?: string | null }>;
   channelPlans?: Array<{ channelType?: string | null; targetState?: string | null; revenueTarget?: unknown }>;
   customerPlans?: Array<{ customerSegment?: string | null; targetCount?: number | string | null; acquisitionStrategy?: string | null }>;
-  productQuarterly?: Array<{ productName?: string | null; annualRevenue?: unknown; note?: string | null }>;
+  productQuarterly?: Array<{ year?: number | string | null; productName?: string | null; annualRevenue?: unknown; note?: string | null }>;
   attachments?: Array<{
     id?: string | null;
     filename?: string | null;
@@ -1024,7 +1024,7 @@ export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckS
         roadmapItems: { orderBy: { sortOrder: "asc" } },
         channelPlans: { orderBy: { sortOrder: "asc" } },
         customerPlans: { orderBy: { sortOrder: "asc" } },
-        productQuarterly: { orderBy: { sortOrder: "asc" } },
+        productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
         attachments: { orderBy: { uploadedAt: "asc" } },
       },
     });
@@ -1234,6 +1234,7 @@ export async function getRehearsalStrategyDeck(selection: RehearsalStrategyDeckS
   const productBullets = compact(
     (payload.productQuarterly ?? []).map((p) =>
       [
+        p.year ? `${p.year}年` : "2027年",
         trimText(p.productName),
         p.annualRevenue ? `年收入 ${formatPlanAmount(p.annualRevenue)}` : null,
         p.note,

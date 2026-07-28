@@ -4,12 +4,22 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import type { OrgUnit } from "@prisma/client";
-import { Pencil, Upload, X, ZoomIn } from "lucide-react";
+import { Pencil, Plus, Upload, X, ZoomIn } from "lucide-react";
 import { useRowsEditor, RowTable, AddRowButton, RemoveRowButton } from "@/components/ui/RowsEditor";
 import { Modal } from "@/components/ui/Modal";
 import { SwotTowsPanel } from "@/components/strategy/SwotTowsPanel";
+import { ReadonlyOrgPlanningTable } from "@/components/strategy/ReadonlyOrgPlanningTable";
+import { ReadonlyProductQuarterlyTabs } from "@/components/strategy/ReadonlyProductQuarterlyTabs";
+import { ReadonlyRoadmapGantt } from "@/components/strategy/ReadonlyRoadmapGantt";
 import { SelfScoreEditor } from "@/components/market/SwotPanel";
 import type { IntelDimension } from "@/lib/market-intel/types";
+import {
+  DEFAULT_PRODUCT_QUARTERLY_YEARS,
+  isDefaultProductQuarterlyYear,
+  normalizeProductQuarterlyYears,
+  parseProductQuarterlyYear,
+  productQuarterlyYearOrLegacy,
+} from "@/lib/strategy/product-quarterly";
 
 type OrgUnitWithChildren = OrgUnit & { children: OrgUnit[] };
 
@@ -152,7 +162,9 @@ interface OrgChartNodeDraft {
   name: string;
   role: string;
   headcount: string;
-  headcountNew: string;
+  headcount2026: string;
+  headcount2027: string;
+  headcount2028: string;
   note: string;
 }
 interface ChannelPlanDraft {
@@ -182,6 +194,7 @@ interface CustomerPlanDraft {
   note: string;
 }
 interface ProductQuarterlyDraft {
+  year: number;
   productName: string;
   unit: string;
   q1Qty: string;
@@ -290,6 +303,7 @@ interface PlanForm {
   orgChartNodes: OrgChartNodeDraft[];
   channelPlans: ChannelPlanDraft[];
   customerPlans: CustomerPlanDraft[];
+  productQuarterlyYears: number[];
   productQuarterly: ProductQuarterlyDraft[];
   marketInsights: MarketInsightDraft[];
   actionItems: ActionItemDraft[];
@@ -310,11 +324,11 @@ function emptyChannel(): ChannelPlanDraft {
 function emptyCustomer(isNew: boolean): CustomerPlanDraft {
   return { customerSegment: "", isNew, currentCount: "", targetCount: "", q1Count: "", q2Count: "", q3Count: "", q4Count: "", revenuePerCustomer: "", acquisitionStrategy: "", retentionStrategy: "", note: "" };
 }
-function emptyProduct(): ProductQuarterlyDraft {
-  return { productName: "", unit: "", q1Qty: "", q1Revenue: "", q2Qty: "", q2Revenue: "", q3Qty: "", q3Revenue: "", q4Qty: "", q4Revenue: "", annualQty: "", annualRevenue: "", note: "" };
+function emptyProduct(year = 2027): ProductQuarterlyDraft {
+  return { year, productName: "", unit: "", q1Qty: "", q1Revenue: "", q2Qty: "", q2Revenue: "", q3Qty: "", q3Revenue: "", q4Qty: "", q4Revenue: "", annualQty: "", annualRevenue: "", note: "" };
 }
 function emptyOrg(): OrgChartNodeDraft {
-  return { name: "", role: "", headcount: "", headcountNew: "", note: "" };
+  return { name: "", role: "", headcount: "", headcount2026: "", headcount2027: "", headcount2028: "", note: "" };
 }
 function emptyActionItem(): ActionItemDraft {
   return { initiativeTitle: "", year: "2026", quarter: "1", action: "", ownerName: "", acceptanceCriteria: "", checkDate: "", status: "PLAN" };
@@ -383,6 +397,7 @@ function emptyForm(): PlanForm {
     orgChartNodes: [emptyOrg()],
     channelPlans: [emptyChannel(), emptyChannel()],
     customerPlans: [emptyCustomer(false), emptyCustomer(false), emptyCustomer(true), emptyCustomer(true)],
+    productQuarterlyYears: [...DEFAULT_PRODUCT_QUARTERLY_YEARS],
     productQuarterly: [emptyProduct(), emptyProduct()],
     marketInsights: [
       { category: "TAM", title: "", content: "", dataPoint: "", source: "" },
@@ -598,6 +613,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
           orgChartNodes: currentForm.orgChartNodes,
           channelPlans: currentForm.channelPlans,
           customerPlans: currentForm.customerPlans,
+          productQuarterlyYears: currentForm.productQuarterlyYears,
           productQuarterly: currentForm.productQuarterly,
           marketInsights: currentForm.marketInsights,
           actionItems: currentForm.actionItems.map((a) => ({ ...a, year: Number(a.year) || 2026, quarter: Number(a.quarter) || 1 })),
@@ -1009,9 +1025,10 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? ea.assumptions.map((a: any) => ({ assumption: a.assumption ?? "", critical: !!a.critical }))
       : f.assumptions,
+    productQuarterlyYears: normalizeProductQuarterlyYears(f.productQuarterlyYears, ea.productQuarterly),
     productQuarterly: Array.isArray(ea.productQuarterly) && ea.productQuarterly.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? ea.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty ?? "", q1Revenue: p.q1Revenue ?? "", q2Qty: p.q2Qty ?? "", q2Revenue: p.q2Revenue ?? "", q3Qty: p.q3Qty ?? "", q3Revenue: p.q3Revenue ?? "", q4Qty: p.q4Qty ?? "", q4Revenue: p.q4Revenue ?? "", annualQty: p.annualQty ?? "", annualRevenue: p.annualRevenue ?? "", note: p.note ?? "" }))
+      ? ea.productQuarterly.map((p: any) => ({ year: productQuarterlyYearOrLegacy(p.year), productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty ?? "", q1Revenue: p.q1Revenue ?? "", q2Qty: p.q2Qty ?? "", q2Revenue: p.q2Revenue ?? "", q3Qty: p.q3Qty ?? "", q3Revenue: p.q3Revenue ?? "", q4Qty: p.q4Qty ?? "", q4Revenue: p.q4Revenue ?? "", annualQty: p.annualQty ?? "", annualRevenue: p.annualRevenue ?? "", note: p.note ?? "" }))
       : f.productQuarterly,
     channelPlans: Array.isArray(ea.channelPlans) && ea.channelPlans.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1023,7 +1040,7 @@ function applyExtracted(f: PlanForm, e: Record<string, unknown>): PlanForm {
       : f.customerPlans,
     orgChartNodes: Array.isArray(ea.orgChartNodes) && ea.orgChartNodes.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? ea.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: String(n.headcount ?? ""), headcountNew: String(n.headcountNew ?? ""), note: n.note ?? "" }))
+      ? ea.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: String(n.headcount ?? ""), headcount2026: String(n.headcount2026 ?? ""), headcount2027: String(n.headcount2027 ?? n.headcountNew ?? ""), headcount2028: String(n.headcount2028 ?? ""), note: n.note ?? "" }))
       : f.orgChartNodes,
     marketInsights: Array.isArray(ea.marketInsights) && ea.marketInsights.length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1386,7 +1403,7 @@ function hydrate(plan: any): PlanForm {
   const orgChartNodes: OrgChartNodeDraft[] =
     (plan.orgChartNodes ?? []).length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? plan.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: n.headcount?.toString() ?? "", headcountNew: n.headcountNew?.toString() ?? "", note: n.note ?? "" }))
+      ? plan.orgChartNodes.map((n: any) => ({ name: n.name ?? "", role: n.role ?? "", headcount: n.headcount?.toString() ?? "", headcount2026: n.headcount2026?.toString() ?? "", headcount2027: n.headcount2027?.toString() ?? n.headcountNew?.toString() ?? "", headcount2028: n.headcount2028?.toString() ?? "", note: n.note ?? "" }))
       : base.orgChartNodes;
   const channelPlans: ChannelPlanDraft[] =
     (plan.channelPlans ?? []).length > 0
@@ -1398,10 +1415,11 @@ function hydrate(plan: any): PlanForm {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? plan.customerPlans.map((c: any) => ({ customerSegment: c.customerSegment ?? "", isNew: !!c.isNew, currentCount: c.currentCount?.toString() ?? "", targetCount: c.targetCount?.toString() ?? "", q1Count: c.q1Count?.toString() ?? "", q2Count: c.q2Count?.toString() ?? "", q3Count: c.q3Count?.toString() ?? "", q4Count: c.q4Count?.toString() ?? "", revenuePerCustomer: c.revenuePerCustomer?.toString() ?? "", acquisitionStrategy: c.acquisitionStrategy ?? "", retentionStrategy: c.retentionStrategy ?? "", note: c.note ?? "" }))
       : base.customerPlans;
+  const productQuarterlyYears = normalizeProductQuarterlyYears(plan.productQuarterlyYears, plan.productQuarterly);
   const productQuarterly: ProductQuarterlyDraft[] =
     (plan.productQuarterly ?? []).length > 0
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? plan.productQuarterly.map((p: any) => ({ productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty?.toString() ?? "", q1Revenue: p.q1Revenue?.toString() ?? "", q2Qty: p.q2Qty?.toString() ?? "", q2Revenue: p.q2Revenue?.toString() ?? "", q3Qty: p.q3Qty?.toString() ?? "", q3Revenue: p.q3Revenue?.toString() ?? "", q4Qty: p.q4Qty?.toString() ?? "", q4Revenue: p.q4Revenue?.toString() ?? "", annualQty: p.annualQty?.toString() ?? "", annualRevenue: p.annualRevenue?.toString() ?? "", note: p.note ?? "" }))
+      ? plan.productQuarterly.map((p: any) => ({ year: productQuarterlyYearOrLegacy(p.year), productName: p.productName ?? "", unit: p.unit ?? "", q1Qty: p.q1Qty?.toString() ?? "", q1Revenue: p.q1Revenue?.toString() ?? "", q2Qty: p.q2Qty?.toString() ?? "", q2Revenue: p.q2Revenue?.toString() ?? "", q3Qty: p.q3Qty?.toString() ?? "", q3Revenue: p.q3Revenue?.toString() ?? "", q4Qty: p.q4Qty?.toString() ?? "", q4Revenue: p.q4Revenue?.toString() ?? "", annualQty: p.annualQty?.toString() ?? "", annualRevenue: p.annualRevenue?.toString() ?? "", note: p.note ?? "" }))
       : base.productQuarterly;
   const marketInsights: MarketInsightDraft[] = (plan.marketInsights ?? []).length > 0
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1435,6 +1453,7 @@ function hydrate(plan: any): PlanForm {
     orgChartNodes,
     channelPlans,
     customerPlans,
+    productQuarterlyYears,
     productQuarterly,
     marketInsights,
     actionItems,
@@ -2041,12 +2060,157 @@ function StrategySwotSelfScoreEditor() {
 
 // ─── 产品季度推进表 ────────────────────────────────────────────────────────────
 function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  const rows = useRowsEditor<PlanForm, ProductQuarterlyDraft>(setForm, "productQuarterly", emptyProduct);
-  const set = rows.update;
+  const [activeYear, setActiveYear] = useState(2027);
+  const [addingYear, setAddingYear] = useState(false);
+  const [newYear, setNewYear] = useState("");
+  const [yearError, setYearError] = useState("");
+  const years = useMemo(
+    () => normalizeProductQuarterlyYears(form.productQuarterlyYears, form.productQuarterly),
+    [form.productQuarterly, form.productQuarterlyYears],
+  );
+  const resolvedActiveYear = years.includes(activeYear) ? activeYear : 2027;
+  const activeRows = form.productQuarterly
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => productQuarterlyYearOrLegacy(item.year) === resolvedActiveYear);
   const cellCls = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs text-right";
+
+  function setRow<K extends keyof ProductQuarterlyDraft>(idx: number, field: K, value: ProductQuarterlyDraft[K]) {
+    setForm((current) => {
+      const productQuarterly = [...current.productQuarterly];
+      productQuarterly[idx] = { ...productQuarterly[idx], [field]: value };
+      return { ...current, productQuarterly };
+    });
+  }
+
+  function addRow() {
+    setForm((current) => ({
+      ...current,
+      productQuarterly: [...current.productQuarterly, emptyProduct(resolvedActiveYear)],
+    }));
+  }
+
+  function removeRow(idx: number) {
+    setForm((current) => ({
+      ...current,
+      productQuarterly: current.productQuarterly.filter((_, index) => index !== idx),
+    }));
+  }
+
+  function beginAddYear() {
+    setNewYear(String(Math.max(...years) + 1));
+    setYearError("");
+    setAddingYear(true);
+  }
+
+  function addYear() {
+    const year = parseProductQuarterlyYear(newYear);
+    if (year === null || year <= 2028) {
+      setYearError("请输入 2029 及以后的年份");
+      return;
+    }
+    if (years.includes(year)) {
+      setYearError("该年份已存在");
+      return;
+    }
+    setForm((current) => ({
+      ...current,
+      productQuarterlyYears: [...current.productQuarterlyYears, year].sort((a, b) => a - b),
+    }));
+    setActiveYear(year);
+    setAddingYear(false);
+    setYearError("");
+  }
+
+  function removeYear(year: number) {
+    if (isDefaultProductQuarterlyYear(year)) return;
+    const hasRows = form.productQuarterly.some((item) => productQuarterlyYearOrLegacy(item.year) === year);
+    if (hasRows && !window.confirm(`删除 ${year} 年选项卡将同时删除该年度的产品数据，是否继续？`)) return;
+    setForm((current) => ({
+      ...current,
+      productQuarterlyYears: current.productQuarterlyYears.filter((item) => item !== year),
+      productQuarterly: current.productQuarterly.filter((item) => productQuarterlyYearOrLegacy(item.year) !== year),
+    }));
+    if (resolvedActiveYear === year) setActiveYear(2027);
+  }
+
   return (
-    <div className="space-y-3">
-      <p className="text-caption">产品数量与金额季度推进计划（万元）</p>
+    <div className="space-y-4">
+      <div className="flex items-end border-b border-[var(--surface-border)]">
+        <div className="flex min-w-0 flex-1 overflow-x-auto">
+          {years.map((year) => {
+            const active = year === resolvedActiveYear;
+            return (
+              <div
+                key={year}
+                className={'flex min-w-[112px] items-center border border-b-0 ' + (
+                  active
+                    ? "border-[var(--surface-border)] bg-[var(--color-bg-surface)]"
+                    : "border-transparent bg-black/[0.02] text-[var(--color-text-muted)] hover:bg-black/[0.04]"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveYear(year)}
+                  className="min-w-0 flex-1 px-4 py-2 text-center text-sm font-medium"
+                >
+                  {year}
+                </button>
+                {!isDefaultProductQuarterlyYear(year) && (
+                  <button
+                    type="button"
+                    onClick={() => removeYear(year)}
+                    className="mr-1 grid h-7 w-7 shrink-0 place-items-center text-[var(--color-text-muted)] hover:text-[var(--signal-red)]"
+                    title={`删除 ${year} 年`}
+                    aria-label={`删除 ${year} 年`}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={beginAddYear}
+          className="mb-1 ml-2 grid h-8 w-8 shrink-0 place-items-center rounded border border-dashed border-[var(--surface-border)] text-[var(--color-text-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+          title="新增年度"
+          aria-label="新增年度"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+
+      {addingYear && (
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="number"
+            min={2029}
+            max={2100}
+            value={newYear}
+            onChange={(event) => {
+              setNewYear(event.target.value);
+              setYearError("");
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") addYear();
+              if (event.key === "Escape") setAddingYear(false);
+            }}
+            className="h-9 w-28 rounded border border-[var(--surface-border)] bg-black/[0.04] px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+            aria-label="新增产品季度年份"
+            autoFocus
+          />
+          <button type="button" onClick={addYear} className="h-9 rounded bg-[var(--color-accent)] px-3 text-sm text-white hover:opacity-90">
+            添加
+          </button>
+          <button type="button" onClick={() => setAddingYear(false)} className="h-9 px-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+            取消
+          </button>
+          {yearError && <span className="text-xs text-[var(--signal-red)]">{yearError}</span>}
+        </div>
+      )}
+
+      <p className="text-caption">{resolvedActiveYear} 年产品数量与金额季度推进计划（收入单位：万元）</p>
       <RowTable
         columns={[
           { label: "产品" },
@@ -2070,25 +2234,32 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
           </tr>
         }
       >
-        {form.productQuarterly.map((p, idx) => (
+        {activeRows.length === 0 && (
+          <tr>
+            <td colSpan={13} className="px-3 py-8 text-center text-xs text-[var(--color-text-muted)]">
+              当前年度暂无产品数据
+            </td>
+          </tr>
+        )}
+        {activeRows.map(({ item: p, index: idx }) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
-                <td className="px-1 py-1"><input type="text" className={cellCls + " text-left w-24"} value={p.productName} onChange={(e) => set(idx, "productName", e.target.value)} placeholder="产品名" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-12"} value={p.unit} onChange={(e) => set(idx, "unit", e.target.value)} placeholder="台/套" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q1Qty} onChange={(e) => set(idx, "q1Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q1Revenue} onChange={(e) => set(idx, "q1Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q2Qty} onChange={(e) => set(idx, "q2Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q2Revenue} onChange={(e) => set(idx, "q2Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q3Qty} onChange={(e) => set(idx, "q3Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q3Revenue} onChange={(e) => set(idx, "q3Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q4Qty} onChange={(e) => set(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q4Revenue} onChange={(e) => set(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.annualQty} onChange={(e) => set(idx, "annualQty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.annualRevenue} onChange={(e) => set(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " text-left w-24"} value={p.productName} onChange={(e) => setRow(idx, "productName", e.target.value)} placeholder="产品名" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-12"} value={p.unit} onChange={(e) => setRow(idx, "unit", e.target.value)} placeholder="台/套" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q1Qty} onChange={(e) => setRow(idx, "q1Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q1Revenue} onChange={(e) => setRow(idx, "q1Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q2Qty} onChange={(e) => setRow(idx, "q2Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q2Revenue} onChange={(e) => setRow(idx, "q2Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q3Qty} onChange={(e) => setRow(idx, "q3Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q3Revenue} onChange={(e) => setRow(idx, "q3Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q4Qty} onChange={(e) => setRow(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q4Revenue} onChange={(e) => setRow(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.annualQty} onChange={(e) => setRow(idx, "annualQty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.annualRevenue} onChange={(e) => setRow(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1"><RemoveRowButton onClick={() => removeRow(idx)} /></td>
               </tr>
             ))}
       </RowTable>
-      <AddRowButton label="新增产品行" onClick={() => rows.add()} />
+      <AddRowButton label={`新增 ${resolvedActiveYear} 年产品行`} onClick={addRow} />
     </div>
   );
 }
@@ -2822,6 +2993,58 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
   const swotByQ = (q: string) => form.swotItems.filter((s) => s.quadrant === q && s.content.trim()).map((s) => s.content);
   const criticalAssumptions = form.assumptions.filter((a) => a.critical && a.assumption.trim());
   const topMarket = form.marketInsights.find((m) => m.title.trim() || m.content.trim());
+  const displayMetric = (raw: string) => {
+    const value = raw.trim();
+    if (!value) return "0";
+    const number = Number(value.replaceAll(",", ""));
+    return Number.isFinite(number) ? number.toLocaleString("zh-CN") : value;
+  };
+  const productRows = form.productQuarterly
+    .filter((product) => product.productName.trim())
+    .map((product) => ({
+      year: productQuarterlyYearOrLegacy(product.year),
+      productName: product.productName,
+      unit: product.unit.trim() || "台/套",
+      q1Qty: displayMetric(product.q1Qty),
+      q1Revenue: displayMetric(product.q1Revenue),
+      q2Qty: displayMetric(product.q2Qty),
+      q2Revenue: displayMetric(product.q2Revenue),
+      q3Qty: displayMetric(product.q3Qty),
+      q3Revenue: displayMetric(product.q3Revenue),
+      q4Qty: displayMetric(product.q4Qty),
+      q4Revenue: displayMetric(product.q4Revenue),
+      annualQty: displayMetric(product.annualQty),
+      annualRevenue: displayMetric(product.annualRevenue),
+      note: product.note.trim() || "-",
+    }));
+  const orgPlanningRows = form.orgChartNodes
+    .filter((node) => node.name.trim())
+    .map((node) => ({
+      name: node.name,
+      role: node.role.trim() || "-",
+      headcount: displayMetric(node.headcount),
+      headcount2026: displayMetric(node.headcount2026),
+      headcount2027: displayMetric(node.headcount2027),
+      headcount2028: displayMetric(node.headcount2028),
+      note: node.note.trim() || "-",
+    }));
+  const roadmapItems = form.roadmapItems
+    .filter((item) => item.title.trim())
+    .map((item, index) => ({
+      id: `onepager-roadmap-${index}`,
+      roadmapTabId: item.roadmapTabId || null,
+      roadmapTabName: item.roadmapTabName || null,
+      track: item.track,
+      title: item.title,
+      startYear: Number(item.startYear) || 2026,
+      startQ: Number(item.startQ) || 1,
+      endYear: Number(item.endYear) || 2026,
+      endQ: Number(item.endQ) || 4,
+      milestone: item.milestone || null,
+      color: item.color || null,
+      imageAttachmentId: item.imageAttachmentId || null,
+      imageFilename: item.imageFilename || null,
+    }));
 
   return (
     <div className="space-y-4 print:text-xs">
@@ -2920,6 +3143,26 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
         </div>
       </div>
 
+      <div className="rounded-lg border border-[var(--surface-border)] p-3">
+        <div className="mb-3 text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">产品季度</div>
+        <ReadonlyProductQuarterlyTabs years={form.productQuarterlyYears} rows={productRows} />
+      </div>
+
+      <div className="rounded-lg border border-[var(--surface-border)] p-3">
+        <div className="mb-3 text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">组织规划</div>
+        <ReadonlyOrgPlanningTable rows={orgPlanningRows} />
+      </div>
+
+      <div className="rounded-lg border border-[var(--surface-border)] p-3">
+        <div className="mb-3 text-xs font-semibold tracking-wide text-[var(--color-text-muted)]">战略路线图</div>
+        <ReadonlyRoadmapGantt
+          roadmapTabs={form.roadmapTabs}
+          items={roadmapItems}
+          horizonStart={2026}
+          horizonEnd={2028}
+        />
+      </div>
+
       <div className="text-center text-caption border-t border-[var(--surface-border)] pt-2">
         本文件由 StratOS 战略编制系统生成 · 草稿版本 · 内部保密
       </div>
@@ -2937,12 +3180,14 @@ function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
       <p className="text-caption">组织架构规划 — 填写规划期末的目标组织设计</p>
       <RowTable
         columns={[
-          { label: "部门/岗位" },
-          { label: "职能描述" },
-          { label: "现有编制", align: "center" },
-          { label: "新增编制", align: "center" },
-          { label: "备注" },
-          { label: "" },
+          { label: "部门/岗位", className: "w-[15%] min-w-36" },
+          { label: "职能描述", className: "w-[25%] min-w-48" },
+          { label: "现有编制", align: "center", className: "w-[9%] min-w-24" },
+          { label: "2026", align: "center", className: "w-[9%] min-w-24" },
+          { label: "2027", align: "center", className: "w-[9%] min-w-24" },
+          { label: "2028", align: "center", className: "w-[9%] min-w-24" },
+          { label: "备注", className: "w-[20%] min-w-48" },
+          { label: "", className: "w-[4%] min-w-8" },
         ]}
       >
         {form.orgChartNodes.map((node, idx) => (
@@ -2950,7 +3195,9 @@ function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
                 <td className="px-1 py-1"><input type="text" className={inp} value={node.name} onChange={(e) => set(idx, "name", e.target.value)} placeholder="部门/岗位名称" /></td>
                 <td className="px-1 py-1"><input type="text" className={inp} value={node.role} onChange={(e) => set(idx, "role", e.target.value)} placeholder="主要职能" /></td>
                 <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount} onChange={(e) => set(idx, "headcount", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcountNew} onChange={(e) => set(idx, "headcountNew", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount2026} onChange={(e) => set(idx, "headcount2026", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2026 编制`} /></td>
+                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount2027} onChange={(e) => set(idx, "headcount2027", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2027 编制`} /></td>
+                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount2028} onChange={(e) => set(idx, "headcount2028", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2028 编制`} /></td>
                 <td className="px-1 py-1"><input type="text" className={inp} value={node.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></td>
                 <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>

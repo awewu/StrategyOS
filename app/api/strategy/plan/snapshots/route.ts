@@ -10,9 +10,10 @@ type PlanSnapshotPayload = {
   resources?: Array<{ resourceType?: string; amount?: string; justification?: string }>;
   assumptions?: Array<{ assumption?: string; critical?: boolean }>;
   swotItems?: Array<{ quadrant?: string; content?: string }>;
-  orgChartNodes?: Array<{ name?: string; role?: string; headcount?: string | number; headcountNew?: string | number; note?: string }>;
+  orgChartNodes?: Array<{ name?: string; role?: string; headcount?: string | number; headcount2026?: string | number; headcount2027?: string | number; headcount2028?: string | number; headcountNew?: string | number; note?: string }>;
   channelPlans?: Array<Record<string, unknown>>;
   customerPlans?: Array<Record<string, unknown>>;
+  productQuarterlyYears?: number[];
   productQuarterly?: Array<Record<string, unknown>>;
   marketInsights?: Array<{ category?: string; title?: string; content?: string; dataPoint?: string; source?: string }>;
   actionItems?: Array<{ initiativeTitle?: string; action?: string; ownerName?: string; acceptanceCriteria?: string }>;
@@ -117,8 +118,8 @@ function comparePlanSnapshots(from: PlanSnapshotPayload, to: PlanSnapshotPayload
     diffs,
     "ORGANIZATION",
     "组织规划",
-    normalizeList(from.orgChartNodes, (n) => `${text(n.name)} ${text(n.role)} ${text(n.headcount)} ${text(n.headcountNew)} ${text(n.note)}`),
-    normalizeList(to.orgChartNodes, (n) => `${text(n.name)} ${text(n.role)} ${text(n.headcount)} ${text(n.headcountNew)} ${text(n.note)}`),
+    normalizeList(from.orgChartNodes, (n) => `${text(n.name)} ${text(n.role)} ${text(n.headcount)} ${text(n.headcount2026)} ${text(n.headcount2027 ?? n.headcountNew)} ${text(n.headcount2028)} ${text(n.note)}`),
+    normalizeList(to.orgChartNodes, (n) => `${text(n.name)} ${text(n.role)} ${text(n.headcount)} ${text(n.headcount2026)} ${text(n.headcount2027 ?? n.headcountNew)} ${text(n.headcount2028)} ${text(n.note)}`),
   );
   addListDiff(
     diffs,

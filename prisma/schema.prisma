@@ -968,6 +968,7 @@ model StrategicPlan {
   channelPlans        PlanChannelPlan[]
   customerPlans       PlanCustomerPlan[]
   productQuarterly    PlanProductQuarterly[]
+  productQuarterlyYears Json                  @default("[2026,2027,2028]") @map("product_quarterly_years")
   marketInsights      PlanMarketInsight[]
   actionItems         PlanActionItem[]
   budgetItems         PlanBudgetItem[]
@@ -1164,7 +1165,9 @@ model PlanOrgChartNode {
   name         String
   role         String?
   headcount    Int?
-  headcountNew Int?          @map("headcount_new")
+  headcount2026 Int?         @map("headcount_2026")
+  headcount2027 Int?         @map("headcount_new")
+  headcount2028 Int?         @map("headcount_2028")
   note         String?
   sortOrder    Int           @default(0) @map("sort_order")
   createdAt    DateTime      @default(now()) @map("created_at")
@@ -1224,6 +1227,7 @@ model PlanCustomerPlan {
 model PlanProductQuarterly {
   id            String        @id @default(uuid())
   planId        String        @map("plan_id")
+  year          Int           @default(2027)
   productName   String        @map("product_name")
   unit          String?       @db.VarChar(20)
   q1Qty         Decimal?      @map("q1_qty") @db.Decimal(14, 2)
@@ -1242,6 +1246,7 @@ model PlanProductQuarterly {
   plan          StrategicPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@index([planId])
+  @@index([planId, year])
   @@map("plan_product_quarterly")
 }
 

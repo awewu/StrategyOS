@@ -529,7 +529,9 @@ function normalizeExtracted(value: unknown): Record<string, unknown> {
           name: stringValue(firstValue(n, ["name", "title", "department", "roleName", "部门", "岗位", "名称"])) || text.slice(0, 40),
           role: stringValue(firstValue(n, ["role", "description", "职责", "职能", "内容"])) || text,
           headcount: stringValue(firstValue(n, ["headcount", "hc", "HC", "编制", "人数"])),
-          headcountNew: stringValue(firstValue(n, ["headcountNew", "newHeadcount", "新增编制", "新增人数"])),
+          headcount2026: stringValue(firstValue(n, ["headcount2026", "2026", "2026编制", "2026年编制"])),
+          headcount2027: stringValue(firstValue(n, ["headcount2027", "2027", "2027编制", "2027年编制", "headcountNew", "newHeadcount", "新增编制", "新增人数"])),
+          headcount2028: stringValue(firstValue(n, ["headcount2028", "2028", "2028编制", "2028年编制"])),
           note: stringValue(firstValue(n, ["note", "备注"])),
         };
       }).filter((n) => n.name || n.role),
@@ -645,7 +647,9 @@ function heuristicExtract(text: string): Record<string, unknown> {
     name: line.match(/(人才体系|激励机制|文化基座|集团化运营|双总部架构|组织能力|组织战略|人力资源|HR)/i)?.[0] ?? line.slice(0, 30),
     role: line,
     headcount: dataPointFromLine(line).includes("人") ? dataPointFromLine(line) : "",
-    headcountNew: "",
+    headcount2026: "",
+    headcount2027: "",
+    headcount2028: "",
     note: "",
   }));
 
@@ -763,10 +767,10 @@ Strict field mapping contract:
 - market tab: marketInsights[].category must be TAM, SAM, SOM, TREND, CUSTOMER, TECH, or COMPETE; title is the conclusion; content is the supporting insight; dataPoint is a number, ratio, market size, growth rate, or other evidence; source is the source section/page/report from the uploaded file or "original document".
 - SWOT tab: swotItems[].quadrant must be strength, weakness, opportunity, or threat; content is one concrete fact or judgment for that quadrant. Also give weight (1-5 importance), intensity (1-5 confidence/strength), and dimension (one of product/gtm/brand/strategy) for each item when inferable.
 - action tab: actionItems[].initiativeTitle, year, quarter, action, ownerName, acceptanceCriteria, checkDate, status map to the action plan table; year must be 2026-2028, quarter 1-4, status PLAN unless source says otherwise.
-- product tab: productQuarterly[].productName, unit, q1Qty, q1Revenue, q2Qty, q2Revenue, q3Qty, q3Revenue, q4Qty, q4Revenue, annualQty, annualRevenue, note map to the product quarterly table.
+- product tab: productQuarterly[].year, productName, unit, q1Qty, q1Revenue, q2Qty, q2Revenue, q3Qty, q3Revenue, q4Qty, q4Revenue, annualQty, annualRevenue, note map to the product quarterly table. Use year 2027 when the source does not identify a year.
 - channel tab: channelPlans[].channelType, currentState, targetState, q1Action, q2Action, q3Action, q4Action, revenueTarget, partnerCount, note map to the channel plan table.
 - customer tab: customerPlans[].customerSegment, isNew, currentCount, targetCount, q1Count, q2Count, q3Count, q4Count, revenuePerCustomer, acquisitionStrategy, retentionStrategy, note map to the customer plan table.
-- org tab: orgChartNodes[].name, role, headcount, headcountNew, note map to the organization plan table.
+- org tab: orgChartNodes[].name, role, headcount, headcount2026, headcount2027, headcount2028, note map to the organization plan table. headcount is the current staffing level; the three annual fields are the planned staffing additions for 2026, 2027, and 2028. Treat a legacy "新增编制" value as headcount2027.
 - budget tab: budgetItems[].category must be CAPEX, OPEX, or HC; initiativeTitle, department, description, year1Amount, year2Amount, year3Amount, totalAmount, roiEstimate, justification map to the budget table.
 - roadmap tab: roadmapItems[].track, title, startYear, startQ, endYear, endQ, milestone, color map to the roadmap table.
 - assumptions tab: assumptions[].assumption and critical map to key assumptions.
@@ -805,9 +809,9 @@ Only return values that can be extracted or reasonably inferred for these exact 
       "startYear": 2026, "startQ": 1, "endYear": 2026, "endQ": 4, "milestone": "关键里程碑", "color": "" }
   ],
   "productQuarterly": [
-    { "productName": "产品名", "unit": "单位",
+    { "year": 2027, "productName": "产品名", "unit": "单位",
       "q1Qty": "", "q1Revenue": "", "q2Qty": "", "q2Revenue": "",
-      "q3Qty": "", "q3Revenue": "", "q4Qty": "", "q4Revenue": "", "annualRevenue": "" }
+      "q3Qty": "", "q3Revenue": "", "q4Qty": "", "q4Revenue": "", "annualQty": "", "annualRevenue": "" }
   ],
   "channelPlans": [
     { "channelType": "渠道类型", "currentState": "现状", "targetState": "目标",
@@ -817,7 +821,7 @@ Only return values that can be extracted or reasonably inferred for these exact 
     { "customerSegment": "客户类型", "isNew": false, "currentCount": "", "targetCount": "",
       "acquisitionStrategy": "", "retentionStrategy": "" }
   ],
-  "orgChartNodes": [{ "name": "部门/岗位名", "role": "职能描述", "headcount": "", "headcountNew": "" }]
+  "orgChartNodes": [{ "name": "部门/岗位名", "role": "职能描述", "headcount": "", "headcount2026": "", "headcount2027": "", "headcount2028": "", "note": "" }]
 }
 
 战略信号摘要：
