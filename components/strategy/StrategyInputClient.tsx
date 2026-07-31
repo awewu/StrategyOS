@@ -29,6 +29,7 @@ interface Props {
   historyVersions: HistoryVersionOption[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialPlan?: any;
+  currentUserKey: string;
 }
 
 interface OwnerOption {
@@ -494,24 +495,124 @@ function hydrateInitiatives(rows: unknown[], fallback: InitiativeDraft[]): Initi
 
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
+const LOCAL_DRAFT_PREFIX = "strategy-input-local-draft:v1";
+const LOCAL_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface LocalStrategyDraft {
+  version: 1;
+  mode: "create";
+  userKey: string;
+  orgUnitId: string;
+  orgUnitName: string;
+  horizonStart: number;
+  horizonEnd: number;
+  returnPath: string;
+  step: Step;
+  form: PlanForm;
+  attachments: AttachmentInfo[];
+  status: "DRAFT" | "SUBMITTED" | "LOCKED" | null;
+  updatedAt: number;
+}
 
 function isLockedHistoryVersion(version: HistoryVersionOption): boolean {
   return version.status.toUpperCase() === "LOCKED";
 }
 
-export function StrategyInputClient({ orgUnits, users, historyVersions, initialPlan }: Props) {
+function localDraftKey(userKey: string, orgUnitId: string, planId?: string): string {
+  const planPart = planId ? `plan:${planId}` : "new";
+  return `${LOCAL_DRAFT_PREFIX}:${userKey}:${HORIZON_START}-${HORIZON_END}:${planPart}:${orgUnitId}`;
+}
+
+function isLocalStrategyDraft(value: unknown, userKey: string): value is LocalStrategyDraft {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const draft = value as Partial<LocalStrategyDraft>;
+  return (
+    draft.version === 1 &&
+    draft.mode === "create" &&
+    draft.userKey === userKey &&
+    typeof draft.orgUnitId === "string" &&
+    draft.horizonStart === HORIZON_START &&
+    draft.horizonEnd === HORIZON_END &&
+    typeof draft.updatedAt === "number" &&
+    Date.now() - draft.updatedAt <= LOCAL_DRAFT_TTL_MS &&
+    Boolean(draft.form)
+  );
+}
+
+function readLocalDraft(key: string, userKey: string): LocalStrategyDraft | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (isLocalStrategyDraft(parsed, userKey)) return parsed;
+    localStorage.removeItem(key);
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function readLatestLocalDraft(userKey: string, planId?: string): LocalStrategyDraft | null {
+  const planPart = planId ? `plan:${planId}` : "new";
+  const keyStart = `${LOCAL_DRAFT_PREFIX}:${userKey}:${HORIZON_START}-${HORIZON_END}:${planPart}:`;
+  let latest: LocalStrategyDraft | null = null;
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!key?.startsWith(keyStart)) continue;
+      const draft = readLocalDraft(key, userKey);
+      if (draft && (!latest || draft.updatedAt > latest.updatedAt)) latest = draft;
+    }
+  } catch {
+    return null;
+  }
+  return latest;
+}
+
+function writeLocalDraft(key: string, draft: LocalStrategyDraft): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(draft));
+  } catch {
+    // Ignore quota/private-mode failures; server save remains authoritative.
+  }
+}
+
+function removeLocalDraft(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Best effort only.
+  }
+}
+
+function formHasLocalDraftContent(form: PlanForm, attachments: AttachmentInfo[]): boolean {
+  return (
+    attachments.length > 0 ||
+    form.intent.trim().length > 0 ||
+    form.northStar.trim().length > 0 ||
+    form.objectives.some((o) => o.objective.trim() || o.keyResults.some((kr) => kr.keyResult.trim() || kr.target.trim() || kr.kpiCode.trim())) ||
+    form.initiatives.some((i) => i.title.trim() || i.ownerName.trim() || i.keyResults.some(initiativeKrHasText)) ||
+    form.resources.some((r) => r.amount.trim() || r.justification.trim()) ||
+    form.assumptions.some((a) => a.assumption.trim()) ||
+    form.swotItems.some((s) => s.content.trim()) ||
+    form.orgChartNodes.some((n) => n.name.trim() || n.role.trim() || n.headcount.trim() || n.headcount2026.trim() || n.headcount2027.trim() || n.headcount2028.trim() || n.note.trim()) ||
+    form.channelPlans.some((c) => Object.values(c).some((value) => value.trim())) ||
+    form.customerPlans.some((c) => c.customerSegment.trim() || c.currentCount.trim() || c.targetCount.trim() || c.q1Count.trim() || c.q2Count.trim() || c.q3Count.trim() || c.q4Count.trim() || c.revenuePerCustomer.trim() || c.acquisitionStrategy.trim() || c.retentionStrategy.trim() || c.note.trim()) ||
+    form.productQuarterly.some((p) => p.productName.trim() || p.unit.trim() || p.q1Qty.trim() || p.q1Revenue.trim() || p.q2Qty.trim() || p.q2Revenue.trim() || p.q3Qty.trim() || p.q3Revenue.trim() || p.q4Qty.trim() || p.q4Revenue.trim() || p.annualQty.trim() || p.annualRevenue.trim() || p.note.trim()) ||
+    form.marketInsights.some((m) => m.title.trim() || m.content.trim() || m.dataPoint.trim() || m.source.trim()) ||
+    form.actionItems.some((a) => a.initiativeTitle.trim() || a.action.trim() || a.ownerName.trim() || a.acceptanceCriteria.trim() || a.checkDate.trim()) ||
+    form.budgetItems.some((b) => b.initiativeTitle.trim() || b.department.trim() || b.description.trim() || b.year1Amount.trim() || b.year2Amount.trim() || b.year3Amount.trim() || b.totalAmount.trim() || b.roiEstimate.trim() || b.justification.trim()) ||
+    form.roadmapItems.some((r) => r.track.trim() || r.title.trim() || r.milestone.trim() || r.imageAttachmentId.trim())
+  );
+}
+
+export function StrategyInputClient({ orgUnits, users, historyVersions, initialPlan, currentUserKey }: Props) {
   const editingExistingPlan = Boolean(initialPlan?.id);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(initialPlan?.orgUnitId ?? null);
   const [selectedHistoryId, setSelectedHistoryId] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const restoredDraftOnceRef = useRef(false);
 
-  // 客户端挂载后恢复上次选中的组织单位（避免SSR hydration mismatch）
-  useEffect(() => {
-    if (initialPlan) return;
-    const saved = sessionStorage.getItem("strategy_input_orgId");
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR 安全：仅在客户端挂载后恢复 sessionStorage，避免 hydration mismatch
-    if (saved) setSelectedOrgId(saved);
-  }, [initialPlan]);
   const [step, setStep] = useState<Step>("intent");
   const [form, setForm] = useState<PlanForm>(() => initialPlan ? hydrate(initialPlan) : emptyForm());
   const [attachments, setAttachments] = useState<AttachmentInfo[]>(() => normalizeAttachmentInfos(initialPlan?.attachments));
@@ -523,6 +624,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const lastSyncedDraftSignatureRef = useRef<string | null>(null);
 
   // flat list including any children nested in the tree (DB may return nested structure)
   const allUnitsFlat = useMemo(() => {
@@ -545,24 +647,111 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
     () => historyVersions.filter((version) => version.orgUnitId === selectedOrgId),
     [historyVersions, selectedOrgId],
   );
+  const draftSignature = useMemo(() => JSON.stringify({ form, attachments }), [attachments, form]);
 
   const flash = useCallback((kind: "ok" | "err", msg: string) => {
     setToast({ kind, msg });
     setTimeout(() => setToast(null), 3200);
   }, []);
 
+  const applyLocalDraft = useCallback((draft: LocalStrategyDraft, showToast = false) => {
+    if (!allUnitsFlat.some((unit) => unit.id === draft.orgUnitId)) return;
+    try {
+      sessionStorage.setItem("strategy_input_orgId", draft.orgUnitId);
+    } catch {
+      // Session storage is a convenience, not required for draft recovery.
+    }
+    setSelectedOrgId(draft.orgUnitId);
+    setForm(draft.form);
+    setAttachments(normalizeAttachmentInfos(draft.attachments));
+    lastSyncedDraftSignatureRef.current = null;
+    setStatus(draft.status);
+    setStep(draft.step);
+    setLoading(false);
+    setSelectedHistoryId("");
+    setHistoryOpen(false);
+    if (showToast) flash("ok", "已恢复本机未保存内容");
+  }, [allUnitsFlat, flash]);
+
+  const getCurrentDraftKey = useCallback((orgUnitId: string) => (
+    localDraftKey(currentUserKey, orgUnitId, initialPlan?.id)
+  ), [currentUserKey, initialPlan?.id]);
+
   function selectOrg(orgUnitId: string | null) {
-    if (orgUnitId) sessionStorage.setItem("strategy_input_orgId", orgUnitId);
-    else sessionStorage.removeItem("strategy_input_orgId");
+    if (orgUnitId) {
+      sessionStorage.setItem("strategy_input_orgId", orgUnitId);
+      const draft = readLocalDraft(getCurrentDraftKey(orgUnitId), currentUserKey);
+      if (draft) {
+        applyLocalDraft(draft, true);
+        return;
+      }
+    } else {
+      sessionStorage.removeItem("strategy_input_orgId");
+    }
     setSelectedOrgId(orgUnitId);
     setStep("intent");
     setForm(emptyForm());
     setAttachments([]);
+    lastSyncedDraftSignatureRef.current = null;
     setStatus(null);
     setLoading(false);
     setSelectedHistoryId("");
     setHistoryOpen(false);
   }
+
+  useEffect(() => {
+    if (restoredDraftOnceRef.current || allUnitsFlat.length === 0) return;
+    restoredDraftOnceRef.current = true;
+
+    const planId = initialPlan?.id;
+    const exactDraft = selectedOrgId ? readLocalDraft(localDraftKey(currentUserKey, selectedOrgId, planId), currentUserKey) : null;
+    const latestDraft = exactDraft ?? (!initialPlan ? readLatestLocalDraft(currentUserKey, planId) : null);
+    if (latestDraft) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 客户端挂载后从 localStorage 静默恢复填写现场
+      applyLocalDraft(latestDraft);
+      return;
+    }
+
+    if (initialPlan) return;
+    try {
+      const saved = sessionStorage.getItem("strategy_input_orgId");
+      if (saved) setSelectedOrgId(saved);
+    } catch {
+      // Ignore storage access failures.
+    }
+  }, [allUnitsFlat.length, applyLocalDraft, currentUserKey, initialPlan, selectedOrgId]);
+
+  const saveLocalDraftNow = useCallback((formSnapshot = form, attachmentsSnapshot = attachments) => {
+    if (!selectedOrgId || !selectedOrg) return;
+    if (!formHasLocalDraftContent(formSnapshot, attachmentsSnapshot)) return;
+
+    writeLocalDraft(getCurrentDraftKey(selectedOrgId), {
+      version: 1,
+      mode: "create",
+      userKey: currentUserKey,
+      orgUnitId: selectedOrgId,
+      orgUnitName: selectedOrg.name,
+      horizonStart: HORIZON_START,
+      horizonEnd: HORIZON_END,
+      returnPath: typeof window === "undefined" ? "/strategy/input" : `${window.location.pathname}${window.location.search}`,
+      step,
+      form: formSnapshot,
+      attachments: attachmentsSnapshot,
+      status,
+      updatedAt: Date.now(),
+    });
+  }, [attachments, currentUserKey, form, getCurrentDraftKey, selectedOrg, selectedOrgId, status, step]);
+
+  useEffect(() => {
+    if (!selectedOrgId || !selectedOrg) return;
+    if (!formHasLocalDraftContent(form, attachments)) return;
+    if (lastSyncedDraftSignatureRef.current === draftSignature) return;
+
+    const timer = window.setTimeout(() => {
+      saveLocalDraftNow();
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [attachments, draftSignature, form, saveLocalDraftNow, selectedOrg, selectedOrgId]);
 
   function selectHistoryVersion(snapshotId: string) {
     setSelectedHistoryId(snapshotId);
@@ -577,6 +766,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
     if (version.orgUnitId) sessionStorage.setItem("strategy_input_orgId", version.orgUnitId);
     setForm(hydrate(version.snapshotJson));
     setAttachments([...version.attachments]);
+    lastSyncedDraftSignatureRef.current = null;
     setStatus("DRAFT");
     setStep("intent");
     setHistoryOpen(false);
@@ -623,9 +813,17 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
           submit,
         }),
       });
+      if (res.status === 401 || res.status === 403) {
+        saveLocalDraftNow(currentForm, attachments);
+        const next = typeof window === "undefined" ? "/strategy/input" : `${window.location.pathname}${window.location.search}`;
+        window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+        return;
+      }
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setStatus(submit ? "SUBMITTED" : "DRAFT");
+      lastSyncedDraftSignatureRef.current = JSON.stringify({ form: currentForm, attachments });
+      removeLocalDraft(getCurrentDraftKey(selectedOrgId));
       flash("ok", submit ? "已提交审核" : "草稿已保存");
       return data.planId as string;
     } catch {

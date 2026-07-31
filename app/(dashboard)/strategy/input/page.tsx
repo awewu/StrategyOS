@@ -2,7 +2,7 @@ import Link from "next/link";
 import { StrategyInputClient } from "@/components/strategy/StrategyInputClient";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
-import { requireRouteAccess } from "@/lib/auth/guard";
+import { getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
 import { getOrgUnitsWithChildren } from "@/lib/data/org-units-access";
 import { getVersionsBundle } from "@/lib/data/versions-data";
 import { prisma } from "@/lib/db";
@@ -47,7 +47,8 @@ export default async function StrategyInputPage({
 }) {
   await requireRouteAccess("/strategy/input");
   const { planId } = await searchParams;
-  const [orgUnits, users, { stratDiffs }, historySnapshots, plan] = await Promise.all([
+  const [session, orgUnits, users, { stratDiffs }, historySnapshots, plan] = await Promise.all([
+    getEffectiveSession(),
     getOrgUnitsWithChildren(),
     prisma.user.findMany({
       orderBy: [{ name: "asc" }, { createdAt: "asc" }],
@@ -177,6 +178,7 @@ export default async function StrategyInputPage({
         users={ownerOptions}
         historyVersions={historyVersions}
         initialPlan={initialPlan}
+        currentUserKey={session?.userId ?? session?.email ?? "anonymous"}
       />
     </div>
   );
