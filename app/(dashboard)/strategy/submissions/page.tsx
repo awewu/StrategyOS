@@ -165,14 +165,40 @@ function SimpleTable({
   rows,
   minWidth,
   compact = false,
+  stickyColumns = 0,
+  stickyColumnWidths,
+  nowrapHeaderColumns = [],
 }: {
   columns: string[];
   rows: Array<Array<React.ReactNode>>;
   minWidth?: number;
   compact?: boolean;
+  stickyColumns?: 0 | 1 | 2;
+  stickyColumnWidths?: readonly number[];
+  nowrapHeaderColumns?: number[];
 }) {
   if (rows.length === 0) return <Empty />;
   const tableMinWidth = minWidth ?? Math.max(640, columns.length * 150);
+  const resolvedStickyColumnWidths = stickyColumns === 2
+    ? stickyColumnWidths ?? [112, 256]
+    : stickyColumnWidths;
+
+  function stickyColumnClass(index: number, header: boolean): string | undefined {
+    if (index >= stickyColumns) return undefined;
+    const layer = header ? "z-20" : "z-10";
+    const hover = header ? "" : "group-hover:bg-[var(--surface-raised)]";
+    return `sticky ${layer} bg-[var(--color-bg-surface)] shadow-[1px_0_0_var(--surface-border)] ${hover}`;
+  }
+
+  function stickyColumnStyle(index: number): React.CSSProperties | undefined {
+    if (index >= stickyColumns) return undefined;
+    const width = resolvedStickyColumnWidths?.[index];
+    const left = resolvedStickyColumnWidths
+      ?.slice(0, index)
+      .reduce((sum, columnWidth) => sum + columnWidth, 0) ?? 0;
+    return width ? { left, width, minWidth: width, maxWidth: width } : { left };
+  }
+
   return (
     <div className="stratos-table-wrap max-w-full min-w-0">
       <table
@@ -181,16 +207,29 @@ function SimpleTable({
       >
         <thead>
           <tr>
-            {columns.map((c) => (
-              <th key={c}>{c}</th>
+            {columns.map((c, index) => (
+              <th
+                key={c}
+                className={[
+                  stickyColumnClass(index, true),
+                  nowrapHeaderColumns.includes(index) ? "whitespace-nowrap" : undefined,
+                ].filter(Boolean).join(" ") || undefined}
+                style={stickyColumnStyle(index)}
+              >
+                {c}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i}>
+            <tr key={i} className={stickyColumns > 0 ? "group" : undefined}>
               {row.map((cell, j) => (
-                <td key={j}>
+                <td
+                  key={j}
+                  className={stickyColumnClass(j, false)}
+                  style={stickyColumnStyle(j)}
+                >
                   <TableCellContent cell={cell} />
                 </td>
               ))}
@@ -413,6 +452,8 @@ export default async function StrategySubmissionsPage({
 
             <Section id="market" title="市场洞察">
               <SimpleTable
+                stickyColumns={2}
+                nowrapHeaderColumns={[4]}
                 columns={["类别", "标题", "内容", "数据点", "来源"]}
                 rows={plan.marketInsights.map((m) => [
                   m.category,
@@ -443,6 +484,9 @@ export default async function StrategySubmissionsPage({
 
             <Section id="initiatives" title="OKR / 关键举措">
               <SimpleTable
+                stickyColumns={2}
+                stickyColumnWidths={[360, 96]}
+                nowrapHeaderColumns={[0, 1]}
                 columns={["Objective / 关键举措", "负责人", "Key Result", "目标值", "Q1", "Q2", "Q3", "Q4"]}
                 rows={plan.initiatives.map((i) => [
                   i.title,
@@ -459,6 +503,9 @@ export default async function StrategySubmissionsPage({
 
             <Section id="action" title="作战计划">
               <SimpleTable
+                stickyColumns={2}
+                stickyColumnWidths={[80, 72]}
+                nowrapHeaderColumns={[0, 1]}
                 columns={["年份", "季度", "行动", "关联举措", "负责人", "验收标准", "状态"]}
                 rows={plan.actionItems.map((a) => [
                   a.year,
@@ -499,6 +546,7 @@ export default async function StrategySubmissionsPage({
 
             <Section id="channel" title="渠道发展">
               <SimpleTable
+                stickyColumns={2}
                 columns={["渠道", "现状", "目标", "Q1", "Q2", "Q3", "Q4", "收入目标", "伙伴数", "备注"]}
                 rows={plan.channelPlans.map((c) => [
                   c.channelType,
@@ -517,6 +565,8 @@ export default async function StrategySubmissionsPage({
 
             <Section id="customer" title="客户发展">
               <SimpleTable
+                stickyColumns={1}
+                stickyColumnWidths={[220]}
                 columns={["客户类型", "新客户", "现有数", "目标数", "Q1", "Q2", "Q3", "Q4", "客均收入", "获客策略", "留存策略"]}
                 rows={plan.customerPlans.map((c) => [
                   c.customerSegment,
@@ -550,6 +600,7 @@ export default async function StrategySubmissionsPage({
 
             <Section id="budget" title="资源预算">
               <SimpleTable
+                stickyColumns={2}
                 columns={["类别", "关联举措", "部门", "说明", "Year1", "Year2", "Year3", "合计", "ROI", "理由"]}
                 rows={plan.budgetItems.map((b) => [
                   b.category,

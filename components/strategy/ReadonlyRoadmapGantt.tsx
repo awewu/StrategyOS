@@ -126,14 +126,14 @@ export function ReadonlyRoadmapGantt({
         })}
       </div>
 
-      <div className="max-w-full overflow-x-auto rounded border border-[var(--surface-border)] p-3">
+      <div className="max-w-full overflow-x-auto rounded border border-[var(--surface-border)] py-3">
         <div style={{ minWidth }}>
-          <div className="grid items-center pb-2 text-xs text-[var(--color-text-muted)]" style={{ gridTemplateColumns }}>
-            <div className="pr-3 font-medium text-[var(--color-text-secondary)]">轨道 · 节点</div>
+          <div className="grid min-h-10 items-stretch text-xs text-[var(--color-text-muted)]" style={{ gridTemplateColumns }}>
+            <div className="sticky left-0 z-20 flex items-center overflow-hidden bg-[var(--color-bg-surface)] px-3 font-medium text-[var(--color-text-secondary)] shadow-[1px_0_0_var(--surface-border)]">轨道 · 节点</div>
             {quarters.map(({ year, quarter }) => (
               <div
                 key={`${year}-${quarter}`}
-                className={`border-l border-[var(--surface-border)] text-center ${quarter === 1 ? "font-semibold text-[var(--color-text-secondary)]" : ""}`}
+                className={`flex items-center justify-center border-l border-[var(--surface-border)] text-center ${quarter === 1 ? "font-semibold text-[var(--color-text-secondary)]" : ""}`}
               >
                 {year} Q{quarter}
               </div>
@@ -148,7 +148,7 @@ export function ReadonlyRoadmapGantt({
               const barColor = BAR_COLORS[text(item.color)] ?? "border-[var(--color-accent)]/25 bg-[var(--color-accent)]/15";
               return (
                 <div key={item.id} className="grid min-h-12 items-center" style={{ gridTemplateColumns }}>
-                  <div className="min-w-0 pr-3 text-xs text-[var(--color-text-secondary)]" title={`${item.track} · ${item.title}`}>
+                  <div className="sticky left-0 z-10 flex min-w-0 self-stretch items-center overflow-hidden bg-[var(--color-bg-surface)] px-3 text-xs text-[var(--color-text-secondary)] shadow-[1px_0_0_var(--surface-border)]" title={`${item.track} · ${item.title}`}>
                     <span className="block truncate">{item.track} · {item.title}</span>
                   </div>
                   {quarters.map((quarter, index) => (

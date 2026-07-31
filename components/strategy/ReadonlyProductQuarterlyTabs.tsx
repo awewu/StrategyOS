@@ -84,18 +84,29 @@ export function ReadonlyProductQuarterlyTabs({
       ) : (
         <div className="stratos-table-wrap max-w-full min-w-0">
           <table
-            className="stratos-table table-fixed text-[11px] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal [&_th:first-child]:w-24"
+            className="stratos-table table-fixed text-[11px] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal"
             style={{ minWidth: 900 }}
           >
             <thead>
               <tr>
-                {COLUMNS.map((column) => <th key={column}>{column}</th>)}
+                {COLUMNS.map((column, index) => (
+                  <th
+                    key={column}
+                    className={index === 0
+                      ? "sticky left-0 z-20 w-24 bg-[var(--color-bg-surface)] shadow-[1px_0_0_var(--surface-border)]"
+                      : undefined}
+                  >
+                    {column}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {activeRows.map((row, index) => (
-                <tr key={`${row.year}-${row.productName}-${index}`}>
-                  <td><span className="block break-words leading-relaxed">{row.productName}</span></td>
+                <tr key={`${row.year}-${row.productName}-${index}`} className="group">
+                  <td className="sticky left-0 z-10 w-24 bg-[var(--color-bg-surface)] shadow-[1px_0_0_var(--surface-border)] group-hover:bg-[var(--surface-raised)]">
+                    <span className="block break-words leading-relaxed">{row.productName}</span>
+                  </td>
                   <td><span className="block whitespace-nowrap">{row.unit}</span></td>
                   <td>{row.q1Qty}</td>
                   <td>{row.q1Revenue}</td>

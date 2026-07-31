@@ -18,7 +18,7 @@ export function ReadonlyOrgPlanningTable({ rows }: { rows: ReadonlyOrgPlanningRo
       <table className="stratos-table table-fixed text-xs" style={{ minWidth: 920 }}>
         <thead>
           <tr>
-            <th className="w-32">部门/岗位</th>
+            <th className="sticky left-0 z-20 w-32 bg-[var(--color-bg-surface)] shadow-[1px_0_0_var(--surface-border)]">部门/岗位</th>
             <th>职能</th>
             <th className="w-24 text-center">现有编制</th>
             <th className="w-24 text-center">2026</th>
@@ -29,8 +29,10 @@ export function ReadonlyOrgPlanningTable({ rows }: { rows: ReadonlyOrgPlanningRo
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={`${row.name}-${index}`}>
-              <td><span className="block whitespace-pre-line break-words leading-relaxed">{row.name}</span></td>
+            <tr key={`${row.name}-${index}`} className="group">
+              <td className="sticky left-0 z-10 bg-[var(--color-bg-surface)] shadow-[1px_0_0_var(--surface-border)] group-hover:bg-[var(--surface-raised)]">
+                <span className="block whitespace-pre-line break-words leading-relaxed">{row.name}</span>
+              </td>
               <td><span className="block whitespace-pre-line break-words leading-relaxed">{row.role}</span></td>
               <td className="text-center">{row.headcount}</td>
               <td className="text-center">{row.headcount2026}</td>
