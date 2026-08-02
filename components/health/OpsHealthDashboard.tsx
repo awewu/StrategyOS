@@ -13,6 +13,7 @@ import {
   type DomainDef, type MetricDef, type MonthPoint, type MetricSeries,
 } from "@/lib/health/ops-metrics";
 import { colors } from "@/lib/brand/tokens";
+import { Input, Select } from "@/components/ui/primitives";
 
 function signalFromSeries(series: MetricSeries | undefined, metric: MetricDef): "green" | "yellow" | "red" {
   const v = latestActualOf(series);
@@ -260,8 +261,6 @@ export function OpsHealthDashboard({ series }: { series: MetricSeries[] }) {
 }
 
 // ─── Monthly actual input modal ───────────────────────────────────────────────
-const opsInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
-
 function OpsMetricInputModal({ metric, series, onClose, onSaved }: {
   metric: MetricDef; series: MetricSeries | undefined; onClose: () => void; onSaved: () => void;
 }) {
@@ -305,18 +304,18 @@ function OpsMetricInputModal({ metric, series, onClose, onSaved }: {
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">月份</label>
-            <select value={month} onChange={(e) => onMonthChange(e.target.value)} className={opsInputCls}>
+            <Select fullWidth selectSize="sm" value={month} onChange={(e) => onMonthChange(e.target.value)}>
               {ALL_MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">实际值</label>
-              <input type="number" step="any" value={actual} onChange={(e) => setActual(e.target.value)} className={opsInputCls} placeholder="留空=规划月" />
+              <Input type="number" step="any" fullWidth inputSize="sm" value={actual} onChange={(e) => setActual(e.target.value)} placeholder="留空=规划月" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">目标值</label>
-              <input type="number" step="any" value={planned} onChange={(e) => setPlanned(e.target.value)} className={opsInputCls} />
+              <Input type="number" step="any" fullWidth inputSize="sm" value={planned} onChange={(e) => setPlanned(e.target.value)} />
             </div>
           </div>
         </div>

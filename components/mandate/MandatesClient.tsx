@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { Modal as BaseModal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 import { useRouter } from "next/navigation";
 import type { Holding, Mandate, MandateBundle, Meeting } from "@/lib/mandate/types";
 import {
   MANDATE_STATUS_LABEL, MEETING_TYPE_LABEL, MEETING_STATUS_LABEL, HOLDING_STATUS_LABEL,
   type MandateStatus, type HoldingStatus,
 } from "@/lib/mandate/types";
-
-const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 const MANDATE_STATUS_COLOR: Record<MandateStatus, string> = {
   ACTIVE: "var(--signal-green)", AT_RISK: "var(--signal-red)",
@@ -242,16 +241,16 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
       {editMandate && (
         <Modal title={editMandate.id ? "编辑战略职责" : "新建战略职责"} onClose={() => setEditMandate(null)}>
           <div className="space-y-3">
-            {!editMandate.id && <input className={inp} placeholder="编号 如 M-V4" value={editMandate.code ?? ""} onChange={e => setEditMandate({ ...editMandate, code: e.target.value })} />}
-            <input className={inp} placeholder="职责标题" value={editMandate.title ?? ""} onChange={e => setEditMandate({ ...editMandate, title: e.target.value })} />
-            <input className={inp} placeholder="所属战略主题 (可选)" value={editMandate.theme ?? ""} onChange={e => setEditMandate({ ...editMandate, theme: e.target.value })} />
-            <textarea rows={2} className={inp} placeholder="职责说明 (可选)" value={editMandate.description ?? ""} onChange={e => setEditMandate({ ...editMandate, description: e.target.value })} />
+            {!editMandate.id && <Input fullWidth inputSize="sm" placeholder="编号 如 M-V4" value={editMandate.code ?? ""} onChange={e => setEditMandate({ ...editMandate, code: e.target.value })} />}
+            <Input fullWidth inputSize="sm" placeholder="职责标题" value={editMandate.title ?? ""} onChange={e => setEditMandate({ ...editMandate, title: e.target.value })} />
+            <Input fullWidth inputSize="sm" placeholder="所属战略主题 (可选)" value={editMandate.theme ?? ""} onChange={e => setEditMandate({ ...editMandate, theme: e.target.value })} />
+            <Textarea fullWidth rows={2} placeholder="职责说明 (可选)" value={editMandate.description ?? ""} onChange={e => setEditMandate({ ...editMandate, description: e.target.value })} />
             <div className="grid grid-cols-3 gap-2">
-              <select className={inp} value={editMandate.status ?? "ACTIVE"} onChange={e => setEditMandate({ ...editMandate, status: e.target.value as MandateStatus })}>
+              <Select fullWidth selectSize="sm" value={editMandate.status ?? "ACTIVE"} onChange={e => setEditMandate({ ...editMandate, status: e.target.value as MandateStatus })}>
                 {Object.entries(MANDATE_STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-              <input className={inp} placeholder="项目码" value={editMandate.linkedProjectCode ?? ""} onChange={e => setEditMandate({ ...editMandate, linkedProjectCode: e.target.value })} />
-              <input className={inp} placeholder="假设码" value={editMandate.linkedAssumptionCode ?? ""} onChange={e => setEditMandate({ ...editMandate, linkedAssumptionCode: e.target.value })} />
+              </Select>
+              <Input fullWidth inputSize="sm" placeholder="项目码" value={editMandate.linkedProjectCode ?? ""} onChange={e => setEditMandate({ ...editMandate, linkedProjectCode: e.target.value })} />
+              <Input fullWidth inputSize="sm" placeholder="假设码" value={editMandate.linkedAssumptionCode ?? ""} onChange={e => setEditMandate({ ...editMandate, linkedAssumptionCode: e.target.value })} />
             </div>
           </div>
           <ModalActions saving={saving} onCancel={() => setEditMandate(null)} onSave={async () => { if (await post("/api/mandate", editMandate, "已保存")) setEditMandate(null); }} />
@@ -262,28 +261,28 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
       {editMeeting && (
         <Modal title={editMeeting.id ? "编辑会议" : "新建会议"} onClose={closeMeetingEditor} wide>
           <div className="space-y-3">
-            <input className={inp} placeholder="会议标题" value={editMeeting.title ?? ""} onChange={e => setEditMeeting({ ...editMeeting, title: e.target.value })} />
+            <Input fullWidth inputSize="sm" placeholder="会议标题" value={editMeeting.title ?? ""} onChange={e => setEditMeeting({ ...editMeeting, title: e.target.value })} />
             <div>
               <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">关联战略 <span className="text-[var(--signal-red)]">*</span></label>
-              <select className={inp} value={editMeeting.planId ?? ""} onChange={e => setEditMeeting({ ...editMeeting, planId: e.target.value || null })}>
+              <Select fullWidth selectSize="sm" value={editMeeting.planId ?? ""} onChange={e => setEditMeeting({ ...editMeeting, planId: e.target.value || null })}>
                 <option value="">— 选择战略 —</option>
                 {bundle.plans.map(plan => <option key={plan.id} value={plan.id}>{plan.label} · {plan.status}</option>)}
-              </select>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <select className={inp} value={editMeeting.meetingType ?? "TOPIC"} onChange={e => setEditMeeting({ ...editMeeting, meetingType: e.target.value as Meeting["meetingType"] })}>
+              <Select fullWidth selectSize="sm" value={editMeeting.meetingType ?? "TOPIC"} onChange={e => setEditMeeting({ ...editMeeting, meetingType: e.target.value as Meeting["meetingType"] })}>
                 {Object.entries(MEETING_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-              <input className={inp} placeholder="period 如 2026-FY" value={editMeeting.period ?? ""} onChange={e => setEditMeeting({ ...editMeeting, period: e.target.value })} />
+              </Select>
+              <Input fullWidth inputSize="sm" placeholder="period 如 2026-FY" value={editMeeting.period ?? ""} onChange={e => setEditMeeting({ ...editMeeting, period: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <input type="date" className={inp} value={editMeeting.meetingDate ?? ""} onChange={e => setEditMeeting({ ...editMeeting, meetingDate: e.target.value })} />
-              <select className={inp} value={editMeeting.status ?? "INVITING"} onChange={e => setEditMeeting({ ...editMeeting, status: e.target.value as Meeting["status"] })}>
+              <Input type="date" fullWidth inputSize="sm" value={editMeeting.meetingDate ?? ""} onChange={e => setEditMeeting({ ...editMeeting, meetingDate: e.target.value })} />
+              <Select fullWidth selectSize="sm" value={editMeeting.status ?? "INVITING"} onChange={e => setEditMeeting({ ...editMeeting, status: e.target.value as Meeting["status"] })}>
                 {Object.entries(MEETING_STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
+              </Select>
             </div>
-            <textarea rows={2} className={inp} placeholder="议程/主题" value={editMeeting.agenda ?? ""} onChange={e => setEditMeeting({ ...editMeeting, agenda: e.target.value })} />
-            <textarea rows={2} className={inp} placeholder="纪要 (可选)" value={editMeeting.notes ?? ""} onChange={e => setEditMeeting({ ...editMeeting, notes: e.target.value })} />
+            <Textarea fullWidth rows={2} placeholder="议程/主题" value={editMeeting.agenda ?? ""} onChange={e => setEditMeeting({ ...editMeeting, agenda: e.target.value })} />
+            <Textarea fullWidth rows={2} placeholder="纪要 (可选)" value={editMeeting.notes ?? ""} onChange={e => setEditMeeting({ ...editMeeting, notes: e.target.value })} />
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -301,8 +300,9 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                 </div>
               )}
               <div className="relative">
-                <input
-                  className={inp}
+                <Input
+                  fullWidth
+                  inputSize="sm"
                   placeholder="搜索姓名、角色或组织"
                   value={participantSearch}
                   onFocus={() => setParticipantPickerOpen(true)}
@@ -347,7 +347,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                     <div className="flex items-start gap-2">
                       <input type="checkbox" className="mt-2" checked={todo.completed} onChange={e => updateTodo(index, { completed: e.target.checked })} title="标记完成" />
                       <div className="grid flex-1 gap-2 sm:grid-cols-[minmax(0,1fr)_160px_140px]">
-                        <input className={inp} placeholder="待办事项" value={todo.title} onChange={e => updateTodo(index, { title: e.target.value })} />
+                        <Input fullWidth inputSize="sm" placeholder="待办事项" value={todo.title} onChange={e => updateTodo(index, { title: e.target.value })} />
                         <TodoOwnerPicker
                           key={`${todo.id ?? `new-${index}`}-${todo.ownerUserId ?? "unassigned"}`}
                           users={bundle.users}
@@ -359,7 +359,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                             ownerName: owner?.name ?? null,
                           })}
                         />
-                        <input type="date" className={inp} value={todo.dueDate ?? ""} onChange={e => updateTodo(index, { dueDate: e.target.value || null })} />
+                        <Input type="date" fullWidth inputSize="sm" value={todo.dueDate ?? ""} onChange={e => updateTodo(index, { dueDate: e.target.value || null })} />
                       </div>
                       <button type="button" onClick={() => removeTodo(index)} className="mt-1 rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删除</button>
                     </div>
@@ -377,24 +377,24 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
         <Modal title={editHolding.id ? "更新认领记录" : "新增认领记录"} onClose={() => setEditHolding(null)}>
           <div className="space-y-3">
             {!editHolding.id && (
-              <select className={inp} value={editHolding.meetingId ?? ""} onChange={e => setEditHolding({ ...editHolding, meetingId: e.target.value })}>
+              <Select fullWidth selectSize="sm" value={editHolding.meetingId ?? ""} onChange={e => setEditHolding({ ...editHolding, meetingId: e.target.value })}>
                 <option value="">— 选择会议 —</option>
                 {bundle.meetings.map(mt => <option key={mt.id} value={mt.id}>{mt.title}</option>)}
-              </select>
+              </Select>
             )}
             <div className="grid grid-cols-2 gap-2">
-              <input className={inp} placeholder="当期责任人姓名" value={editHolding.holderName ?? ""} onChange={e => setEditHolding({ ...editHolding, holderName: e.target.value })} />
-              <input className={inp} placeholder="当期参会角色" value={editHolding.holderRole ?? ""} onChange={e => setEditHolding({ ...editHolding, holderRole: e.target.value })} />
+              <Input fullWidth inputSize="sm" placeholder="当期责任人姓名" value={editHolding.holderName ?? ""} onChange={e => setEditHolding({ ...editHolding, holderName: e.target.value })} />
+              <Input fullWidth inputSize="sm" placeholder="当期参会角色" value={editHolding.holderRole ?? ""} onChange={e => setEditHolding({ ...editHolding, holderRole: e.target.value })} />
             </div>
-            <select className={inp} value={editHolding.status ?? "CLAIMED"} onChange={e => setEditHolding({ ...editHolding, status: e.target.value as HoldingStatus })}>
+            <Select fullWidth selectSize="sm" value={editHolding.status ?? "CLAIMED"} onChange={e => setEditHolding({ ...editHolding, status: e.target.value as HoldingStatus })}>
               {Object.entries(HOLDING_STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-            <textarea rows={2} className={inp} placeholder="本期承诺内容" value={editHolding.commitment ?? ""} onChange={e => setEditHolding({ ...editHolding, commitment: e.target.value })} />
-            <input type="date" className={inp} value={editHolding.deadline ?? ""} onChange={e => setEditHolding({ ...editHolding, deadline: e.target.value })} />
-            <textarea rows={2} className={inp} placeholder="交账说明 (如已交账)" value={editHolding.deliveryNote ?? ""} onChange={e => setEditHolding({ ...editHolding, deliveryNote: e.target.value })} />
+            </Select>
+            <Textarea fullWidth rows={2} placeholder="本期承诺内容" value={editHolding.commitment ?? ""} onChange={e => setEditHolding({ ...editHolding, commitment: e.target.value })} />
+            <Input type="date" fullWidth inputSize="sm" value={editHolding.deadline ?? ""} onChange={e => setEditHolding({ ...editHolding, deadline: e.target.value })} />
+            <Textarea fullWidth rows={2} placeholder="交账说明 (如已交账)" value={editHolding.deliveryNote ?? ""} onChange={e => setEditHolding({ ...editHolding, deliveryNote: e.target.value })} />
             <div className="grid grid-cols-2 gap-2">
-              <input className={inp} placeholder="移交说明 (如换人)" value={editHolding.handoverNote ?? ""} onChange={e => setEditHolding({ ...editHolding, handoverNote: e.target.value })} />
-              <input className={inp} placeholder="移交给谁" value={editHolding.handoverToName ?? ""} onChange={e => setEditHolding({ ...editHolding, handoverToName: e.target.value })} />
+              <Input fullWidth inputSize="sm" placeholder="移交说明 (如换人)" value={editHolding.handoverNote ?? ""} onChange={e => setEditHolding({ ...editHolding, handoverNote: e.target.value })} />
+              <Input fullWidth inputSize="sm" placeholder="移交给谁" value={editHolding.handoverToName ?? ""} onChange={e => setEditHolding({ ...editHolding, handoverToName: e.target.value })} />
             </div>
           </div>
           <ModalActions saving={saving} onCancel={() => setEditHolding(null)} onSave={async () => { if (await post("/api/mandate/holding", editHolding, "已保存")) setEditHolding(null); }} />
@@ -431,8 +431,9 @@ function TodoOwnerPicker({
 
   return (
     <div className="relative">
-      <input
-        className={inp}
+      <Input
+        fullWidth
+        inputSize="sm"
         placeholder="搜索责任人"
         value={open ? query : selectedOwner?.name ?? ownerName ?? ""}
         onFocus={() => { setQuery(""); setOpen(true); }}

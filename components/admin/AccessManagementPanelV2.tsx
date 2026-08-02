@@ -9,6 +9,7 @@ import type { AccessUser } from "@/lib/data/access-data";
 import { PROJECT_CODES, ROLES, type RoleKey } from "@/lib/constants";
 import { roleLabel } from "@/lib/context/role-context";
 import type { PermissionConfig } from "@/lib/auth/permission-config";
+import { Select } from "@/components/ui/primitives";
 
 type OrgUnitOption = { id: string; name: string; level: string };
 type UserDraft = { role: RoleKey; orgScopeIds: string[]; projectCode: string };
@@ -62,8 +63,9 @@ function Pagination({
       <div className="flex items-center gap-2">
         <label className="inline-flex items-center gap-1">
           每页
-          <select
-            className="rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-xs"
+          <Select
+            selectSize="sm"
+            className="text-xs"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
@@ -72,7 +74,7 @@ function Pagination({
                 {option}
               </option>
             ))}
-          </select>
+          </Select>
           条
         </label>
         <button
@@ -325,9 +327,9 @@ export function AccessManagementPanelV2({
                     <td className="py-2 pr-4 font-mono text-xs">{u.email}</td>
                     <td className="py-2 pr-4">
                       {isEditing ? (
-                        <select className="rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-xs" value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value as RoleKey })}>
+                        <Select selectSize="sm" className="text-xs" value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value as RoleKey })}>
                           {Object.entries(ROLES).map(([role, meta]) => <option key={role} value={role}>{meta.label}</option>)}
-                        </select>
+                        </Select>
                       ) : ROLES[u.role]?.label ?? u.role}
                     </td>
                     <td className="py-2 pr-4">
@@ -360,10 +362,10 @@ export function AccessManagementPanelV2({
                     </td>
                     <td className="py-2 pr-4">
                       {isEditing ? (
-                        <select className="rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-xs" value={draft.projectCode} onChange={(e) => setDraft({ ...draft, projectCode: e.target.value })}>
+                        <Select selectSize="sm" className="text-xs" value={draft.projectCode} onChange={(e) => setDraft({ ...draft, projectCode: e.target.value })}>
                           <option value="">不限制</option>
                           {PROJECT_CODES.map((code) => <option key={code} value={code}>{code}</option>)}
-                        </select>
+                        </Select>
                       ) : u.projectCode ?? "不限制"}
                     </td>
                     <td className="py-2 pr-4">

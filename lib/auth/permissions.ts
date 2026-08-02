@@ -154,7 +154,7 @@ export function minRoleForPath(pathname: string): RoleKey | null {
 }
 
 /** 董事角色硬白名单：干净的治理视界，只看董事会包 */
-const BOARD_ALLOWED_PREFIXES = ["/board", "/login", "/api/auth", "/api/notifications", "/api/board"];
+const BOARD_ALLOWED_PREFIXES = ["/board", "/login", "/api/auth", "/api/notifications", "/api/board", "/api/gems"];
 
 export function canAccessRoute(role: RoleKey, pathname: string, config = getPermissionConfig()): boolean {
   if (role === "board") {

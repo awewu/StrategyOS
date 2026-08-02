@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PrintButton } from "@/components/brand/PrintButton";
 import { ChinaStrategyOnePager } from "@/components/strategy/ChinaStrategyOnePager";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { dbAvailable, prisma } from "@/lib/db";
@@ -77,6 +78,8 @@ export default async function BoardPackPage() {
           </>
         }
       />
+
+      <GemPanel />
 
       {lock ? (
         <p className="text-caption">

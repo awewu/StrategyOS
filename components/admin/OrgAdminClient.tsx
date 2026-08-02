@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
+import { Input, Select } from "@/components/ui/primitives";
 
 type Level = "GROUP" | "EXECUTIVE" | "OPERATING_UNIT";
 
@@ -20,8 +21,6 @@ const LEVEL_LABEL: Record<Level, string> = {
   EXECUTIVE: "事业部 / 体系",
   OPERATING_UNIT: "二级部门",
 };
-
-const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 interface EditTarget {
   id?: string;
@@ -172,13 +171,13 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">名称</label>
-                <input className={inp} value={edit.name} autoFocus
+                <Input fullWidth inputSize="sm" value={edit.name} autoFocus
                   onChange={(e) => setEdit({ ...edit, name: e.target.value })}
                   placeholder="例：空调事业部" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">英文名（可选）</label>
-                <input className={inp} value={edit.nameEn}
+                <Input fullWidth inputSize="sm" value={edit.nameEn}
                   onChange={(e) => setEdit({ ...edit, nameEn: e.target.value })}
                   placeholder="e.g. AC Division" />
               </div>
@@ -191,20 +190,20 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">排序</label>
-                  <input type="number" className={inp} value={edit.sortOrder}
+                  <Input type="number" fullWidth inputSize="sm" value={edit.sortOrder}
                     onChange={(e) => setEdit({ ...edit, sortOrder: Number(e.target.value) })} />
                 </div>
               </div>
               {edit.level !== "GROUP" && (
                 <div>
                   <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">上级</label>
-                  <select className={inp} value={edit.parentId ?? ""}
+                  <Select fullWidth selectSize="sm" value={edit.parentId ?? ""}
                     onChange={(e) => setEdit({ ...edit, parentId: e.target.value || null })}>
                     <option value="">— 选择上级 —</option>
                     {(edit.level === "EXECUTIVE" ? groups : execs).map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               )}
             </div>

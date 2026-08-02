@@ -7,6 +7,7 @@ import type { OrgUnit } from "@prisma/client";
 import { Pencil, Plus, Upload, X, ZoomIn } from "lucide-react";
 import { useRowsEditor, RowTable, AddRowButton, RemoveRowButton } from "@/components/ui/RowsEditor";
 import { Modal } from "@/components/ui/Modal";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 import { SwotTowsPanel } from "@/components/strategy/SwotTowsPanel";
 import { ReadonlyOrgPlanningTable } from "@/components/strategy/ReadonlyOrgPlanningTable";
 import { ReadonlyProductQuarterlyTabs } from "@/components/strategy/ReadonlyProductQuarterlyTabs";
@@ -1421,8 +1422,9 @@ function AiExtractBar({
             </div>
           ) : (
             <div className="space-y-2">
-              <textarea
-                className="w-full rounded-lg border border-[var(--surface-border)] bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none"
+              <Textarea
+                fullWidth
+                tone="subtle"
                 rows={6}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -1663,9 +1665,6 @@ function hydrate(plan: any): PlanForm {
 
 // ─── 子表单（受控） ────────────────────────────────────────────────────────────
 
-const inputCls =
-  "w-full rounded-lg border border-[var(--surface-border)] bg-black/[0.04] px-3 py-2 text-sm focus:border-[var(--color-accent)] focus:outline-none";
-
 function IntentForm({
   form,
   setForm,
@@ -1685,8 +1684,9 @@ function IntentForm({
     <div className="space-y-4">
       <div>
         <label className="mb-1 block text-sm font-medium">战略意图</label>
-        <textarea
-          className={inputCls}
+        <Textarea
+          fullWidth
+          tone="subtle"
           rows={3}
           value={form.intent}
           onChange={(e) => setForm((f) => ({ ...f, intent: e.target.value }))}
@@ -1695,9 +1695,10 @@ function IntentForm({
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium">北极星指标</label>
-        <input
+        <Input
           type="text"
-          className={inputCls}
+          fullWidth
+          tone="subtle"
           value={form.northStar}
           onChange={(e) => setForm((f) => ({ ...f, northStar: e.target.value }))}
           placeholder="例: 营收 CAGR 25%"
@@ -1803,8 +1804,10 @@ function ObjectivesForm({
           <div className="mb-2 text-sm font-medium text-[var(--color-accent)]">
             {DIMENSIONS.find((d) => d.key === obj.dimension)?.label}
           </div>
-          <textarea
-            className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
+          <Textarea
+            fullWidth
+            tone="subtle"
+            textareaSize="sm"
             rows={2}
             value={obj.objective}
             onChange={(e) => setObjective(oIdx, e.target.value)}
@@ -1813,23 +1816,29 @@ function ObjectivesForm({
           <div className="mt-2 space-y-1">
             {obj.keyResults.map((kr, kIdx) => (
               <div key={kIdx} className="grid grid-cols-[1fr_120px_110px_auto] items-center gap-2">
-                <input
+                <Input
                   type="text"
-                  className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
+                  fullWidth
+                  inputSize="xs"
+                  tone="subtle"
                   value={kr.keyResult}
                   onChange={(e) => setKr(oIdx, kIdx, "keyResult", e.target.value)}
                   placeholder={"KPI 指标 " + (kIdx + 1)}
                 />
-                <input
+                <Input
                   type="text"
-                  className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
+                  fullWidth
+                  inputSize="xs"
+                  tone="subtle"
                   value={kr.target}
                   onChange={(e) => setKr(oIdx, kIdx, "target", e.target.value)}
                   placeholder="KPI 目标值"
                 />
-                <input
+                <Input
                   type="text"
-                  className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs"
+                  fullWidth
+                  inputSize="xs"
+                  tone="subtle"
                   value={kr.kpiCode}
                   onChange={(e) => setKr(oIdx, kIdx, "kpiCode", e.target.value)}
                   placeholder="编码(选填)"
@@ -1876,9 +1885,11 @@ function OwnerPicker({
 
   return (
     <div className="relative">
-      <input
+      <Input
         type="search"
-        className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none"
+        fullWidth
+        inputSize="xs"
+        tone="subtle"
         value={open ? query : selectedOwner?.name ?? value}
         onFocus={() => {
           setQuery("");
@@ -2010,9 +2021,12 @@ function InitiativesForm({
         <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
           <div className="flex items-start gap-2">
             <div className="flex-1 space-y-2">
-              <input
+              <Input
                 type="text"
-                className="w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm font-medium"
+                fullWidth
+                inputSize="sm"
+                tone="subtle"
+                className="font-medium"
                 value={ini.title}
                 onChange={(e) => patchInitiative(idx, { title: e.target.value })}
                 placeholder={"Objective / 关键举措 " + (idx + 1)}
@@ -2034,14 +2048,14 @@ function InitiativesForm({
                         <RemoveRowButton onClick={() => removeKr(idx, krIdx)} label="删除 KR" />
                       )}
                     </div>
-                    <input type="text" className="w-full rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr.okrKeyResult} onChange={(e) => patchKr(idx, krIdx, { okrKeyResult: e.target.value })} placeholder="关键成果描述（可衡量）" />
+                    <Input type="text" fullWidth inputSize="xs" tone="subtle" value={kr.okrKeyResult} onChange={(e) => patchKr(idx, krIdx, { okrKeyResult: e.target.value })} placeholder="关键成果描述（可衡量）" />
                     <div className="grid grid-cols-2 gap-2">
-                      <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr.okrBaseline} onChange={(e) => patchKr(idx, krIdx, { okrBaseline: e.target.value })} placeholder="基线值（现状）" />
-                      <input type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr.okrTarget} onChange={(e) => patchKr(idx, krIdx, { okrTarget: e.target.value })} placeholder="目标值" />
+                      <Input type="text" inputSize="xs" tone="subtle" value={kr.okrBaseline} onChange={(e) => patchKr(idx, krIdx, { okrBaseline: e.target.value })} placeholder="基线值（现状）" />
+                      <Input type="text" inputSize="xs" tone="subtle" value={kr.okrTarget} onChange={(e) => patchKr(idx, krIdx, { okrTarget: e.target.value })} placeholder="目标值" />
                     </div>
                     <div className="grid grid-cols-4 gap-1.5">
                       {(["q1Milestone", "q2Milestone", "q3Milestone", "q4Milestone"] as const).map((q, qi) => (
-                        <input key={q} type="text" className="rounded border border-[var(--surface-border)] bg-white/50 px-2 py-1 text-xs" value={kr[q]} onChange={(e) => patchKr(idx, krIdx, { [q]: e.target.value })} placeholder={"Q" + (qi + 1) + " 里程碑"} />
+                        <Input key={q} type="text" inputSize="xs" tone="subtle" value={kr[q]} onChange={(e) => patchKr(idx, krIdx, { [q]: e.target.value })} placeholder={"Q" + (qi + 1) + " 里程碑"} />
                       ))}
                     </div>
                   </div>
@@ -2074,16 +2088,20 @@ function ResourcesForm({
       {form.resources.map((r, idx) => (
         <div key={r.resourceType} className="flex items-center gap-3">
           <div className="w-24 text-sm">{r.resourceType}</div>
-          <input
+          <Input
             type="text"
-            className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
+            inputSize="sm"
+            tone="subtle"
+            className="flex-1"
             value={r.amount}
             onChange={(e) => set(idx, "amount", e.target.value)}
             placeholder="金额/人数"
           />
-          <input
+          <Input
             type="text"
-            className="flex-[2] rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm"
+            inputSize="sm"
+            tone="subtle"
+            className="flex-[2]"
             value={r.justification}
             onChange={(e) => set(idx, "justification", e.target.value)}
             placeholder="理由"
@@ -2109,7 +2127,7 @@ function AssumptionsForm({
       {form.assumptions.map((a, idx) => (
         <div key={idx} className="flex gap-2">
           <input type="checkbox" className="mt-1" title="标记为关键假设" checked={a.critical} onChange={(e) => set(idx, "critical", e.target.checked)} />
-          <textarea className="flex-1 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm" rows={2} value={a.assumption} onChange={(e) => set(idx, "assumption", e.target.value)} placeholder={"假设 " + (idx + 1)} />
+          <Textarea textareaSize="sm" tone="subtle" className="flex-1" rows={2} value={a.assumption} onChange={(e) => set(idx, "assumption", e.target.value)} placeholder={"假设 " + (idx + 1)} />
         </div>
       ))}
       <AddRowButton label="新增假设" onClick={() => rows.add()} />
@@ -2136,7 +2154,6 @@ const SWOT_SCALE = [1, 2, 3, 4, 5];
 
 function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
   const rows = useRowsEditor<PlanForm, SwotItemDraft>(setForm, "swotItems", () => ({ quadrant: "strength", content: "", weight: 3, intensity: 3, dimension: null }));
-  const miniSel = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-1 py-0.5 text-[11px]";
   return (
     <div className="space-y-4">
       <StrategySwotSelfScoreEditor />
@@ -2149,21 +2166,21 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
               {items.map((s) => (
                 <div key={s._idx} className="space-y-1 rounded border border-[var(--surface-border)]/60 p-1.5">
                   <div className="flex gap-1">
-                    <textarea className="min-h-28 flex-1 resize-y rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs leading-relaxed" rows={5} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
+                    <Textarea textareaSize="xs" tone="subtle" className="min-h-28 flex-1 leading-relaxed" rows={5} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
                     <RemoveRowButton onClick={() => rows.remove(s._idx)} />
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
                     <span>重要</span>
-                    <select className={miniSel} value={s.weight ?? 3} onChange={(e) => rows.update(s._idx, "weight", Number(e.target.value))}>
+                    <Select selectSize="xs" tone="subtle" value={s.weight ?? 3} onChange={(e) => rows.update(s._idx, "weight", Number(e.target.value))}>
                       {SWOT_SCALE.map((n) => <option key={n} value={n}>{n}</option>)}
-                    </select>
+                    </Select>
                     <span>强度</span>
-                    <select className={miniSel} value={s.intensity ?? 3} onChange={(e) => rows.update(s._idx, "intensity", Number(e.target.value))}>
+                    <Select selectSize="xs" tone="subtle" value={s.intensity ?? 3} onChange={(e) => rows.update(s._idx, "intensity", Number(e.target.value))}>
                       {SWOT_SCALE.map((n) => <option key={n} value={n}>{n}</option>)}
-                    </select>
-                    <select className={miniSel} value={s.dimension ?? ""} onChange={(e) => rows.update(s._idx, "dimension", e.target.value || null)}>
+                    </Select>
+                    <Select selectSize="xs" tone="subtle" value={s.dimension ?? ""} onChange={(e) => rows.update(s._idx, "dimension", e.target.value || null)}>
                       {SWOT_DIMENSIONS.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
-                    </select>
+                    </Select>
                   </div>
                 </div>
               ))}
@@ -2270,7 +2287,6 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
   const activeRows = form.productQuarterly
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => productQuarterlyYearOrLegacy(item.year) === resolvedActiveYear);
-  const cellCls = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs text-right";
 
   function setRow<K extends keyof ProductQuarterlyDraft>(idx: number, field: K, value: ProductQuarterlyDraft[K]) {
     setForm((current) => {
@@ -2381,8 +2397,10 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
 
       {addingYear && (
         <div className="flex flex-wrap items-center gap-2">
-          <input
+          <Input
             type="number"
+            inputSize="sm"
+            tone="subtle"
             min={2029}
             max={2100}
             value={newYear}
@@ -2394,7 +2412,7 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
               if (event.key === "Enter") addYear();
               if (event.key === "Escape") setAddingYear(false);
             }}
-            className="h-9 w-28 rounded border border-[var(--surface-border)] bg-black/[0.04] px-3 text-sm outline-none focus:border-[var(--color-accent)]"
+            className="w-28"
             aria-label="新增产品季度年份"
             autoFocus
           />
@@ -2441,18 +2459,18 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
         )}
         {activeRows.map(({ item: p, index: idx }) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
-                <td className="px-1 py-1"><input type="text" className={cellCls + " text-left w-24"} value={p.productName} onChange={(e) => setRow(idx, "productName", e.target.value)} placeholder="产品名" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-12"} value={p.unit} onChange={(e) => setRow(idx, "unit", e.target.value)} placeholder="台/套" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q1Qty} onChange={(e) => setRow(idx, "q1Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q1Revenue} onChange={(e) => setRow(idx, "q1Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q2Qty} onChange={(e) => setRow(idx, "q2Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q2Revenue} onChange={(e) => setRow(idx, "q2Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q3Qty} onChange={(e) => setRow(idx, "q3Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q3Revenue} onChange={(e) => setRow(idx, "q3Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.q4Qty} onChange={(e) => setRow(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.q4Revenue} onChange={(e) => setRow(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><input type="text" className={cellCls + " w-16"} value={p.annualQty} onChange={(e) => setRow(idx, "annualQty", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={cellCls + " w-16"} value={p.annualRevenue} onChange={(e) => setRow(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-24 text-left" value={p.productName} onChange={(e) => setRow(idx, "productName", e.target.value)} placeholder="产品名" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-12 text-right" value={p.unit} onChange={(e) => setRow(idx, "unit", e.target.value)} placeholder="台/套" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q1Qty} onChange={(e) => setRow(idx, "q1Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q1Revenue} onChange={(e) => setRow(idx, "q1Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q2Qty} onChange={(e) => setRow(idx, "q2Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q2Revenue} onChange={(e) => setRow(idx, "q2Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q3Qty} onChange={(e) => setRow(idx, "q3Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q3Revenue} onChange={(e) => setRow(idx, "q3Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q4Qty} onChange={(e) => setRow(idx, "q4Qty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.q4Revenue} onChange={(e) => setRow(idx, "q4Revenue", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1 border-l border-[var(--surface-border)]"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.annualQty} onChange={(e) => setRow(idx, "annualQty", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" inputSize="xs" tone="subtle" className="w-16 text-right" value={p.annualRevenue} onChange={(e) => setRow(idx, "annualRevenue", e.target.value)} placeholder="0" /></td>
                 <td className="px-1"><RemoveRowButton onClick={() => removeRow(idx)} /></td>
               </tr>
             ))}
@@ -2468,7 +2486,6 @@ const CHANNEL_TYPES = ["直销", "经销/代理", "电商", "OEM/ODM", "政府/�
 function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
   const rows = useRowsEditor<PlanForm, ChannelPlanDraft>(setForm, "channelPlans", emptyChannel);
   const set = rows.update;
-  const ta = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 flex-wrap">
@@ -2480,25 +2497,25 @@ function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
       {form.channelPlans.map((ch, idx) => (
         <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <input type="text" className="rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-sm font-medium" value={ch.channelType} onChange={(e) => set(idx, "channelType", e.target.value)} placeholder="渠道类型" />
+            <Input type="text" inputSize="sm" tone="subtle" className="font-medium" value={ch.channelType} onChange={(e) => set(idx, "channelType", e.target.value)} placeholder="渠道类型" />
             <div className="flex items-center gap-3 text-xs">
               <span className="text-[var(--color-text-muted)]">年度目标收入(万)</span>
-              <input type="text" className="w-24 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1" value={ch.revenueTarget} onChange={(e) => set(idx, "revenueTarget", e.target.value)} placeholder="0" />
+              <Input type="text" inputSize="xs" tone="subtle" className="w-24" value={ch.revenueTarget} onChange={(e) => set(idx, "revenueTarget", e.target.value)} placeholder="0" />
               <span className="text-[var(--color-text-muted)]">伙伴数量</span>
-              <input type="text" className="w-16 rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1" value={ch.partnerCount} onChange={(e) => set(idx, "partnerCount", e.target.value)} placeholder="0" />
+              <Input type="text" inputSize="xs" tone="subtle" className="w-16" value={ch.partnerCount} onChange={(e) => set(idx, "partnerCount", e.target.value)} placeholder="0" />
               <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div><div className="text-caption mb-1">现状</div><textarea className={ta} rows={2} value={ch.currentState} onChange={(e) => set(idx, "currentState", e.target.value)} placeholder="当前渠道状况" /></div>
-            <div><div className="text-caption mb-1">三年目标</div><textarea className={ta} rows={2} value={ch.targetState} onChange={(e) => set(idx, "targetState", e.target.value)} placeholder="期望达到的渠道状态" /></div>
+            <div><div className="text-caption mb-1">现状</div><Textarea textareaSize="xs" tone="subtle" fullWidth rows={2} value={ch.currentState} onChange={(e) => set(idx, "currentState", e.target.value)} placeholder="当前渠道状况" /></div>
+            <div><div className="text-caption mb-1">三年目标</div><Textarea textareaSize="xs" tone="subtle" fullWidth rows={2} value={ch.targetState} onChange={(e) => set(idx, "targetState", e.target.value)} placeholder="期望达到的渠道状态" /></div>
           </div>
           <div className="grid grid-cols-4 gap-2">
             {(["q1Action","q2Action","q3Action","q4Action"] as const).map((f, qi) => (
-              <div key={f}><div className="text-caption mb-1">Q{qi+1}行动</div><textarea className={ta} rows={2} value={ch[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder={"Q"+(qi+1)+"关键行动"} /></div>
+              <div key={f}><div className="text-caption mb-1">Q{qi+1}行动</div><Textarea textareaSize="xs" tone="subtle" fullWidth rows={2} value={ch[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder={"Q"+(qi+1)+"关键行动"} /></div>
             ))}
           </div>
-          <input type="text" className={ta} value={ch.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="备注" />
+          <Input type="text" fullWidth inputSize="xs" tone="subtle" value={ch.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="备注" />
         </div>
       ))}
       {form.channelPlans.length === 0 && <div className="text-center py-8 text-sm text-[var(--color-text-muted)]">点击上方按钮添加渠道类型</div>}
@@ -2510,8 +2527,6 @@ function ChannelForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatc
 function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
   const rows = useRowsEditor<PlanForm, CustomerPlanDraft>(setForm, "customerPlans", () => emptyCustomer(false));
   const set = rows.update;
-  const inp = "rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
-  const ta = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   const existing = form.customerPlans.filter((c) => !c.isNew);
   const newCustomers = form.customerPlans.filter((c) => c.isNew);
   function renderGroup(group: typeof existing, label: string, isNew: boolean) {
@@ -2528,23 +2543,23 @@ function CustomerForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
           return (
             <div key={idx} className="rounded border border-[var(--surface-border)] p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <input type="text" className={inp + " flex-1"} value={cu.customerSegment} onChange={(e) => set(idx, "customerSegment", e.target.value)} placeholder="客户类型/名称" />
+                <Input type="text" inputSize="xs" tone="subtle" className="flex-1" value={cu.customerSegment} onChange={(e) => set(idx, "customerSegment", e.target.value)} placeholder="客户类型/名称" />
                 <span className="text-caption">现有</span>
-                <input type="text" className={inp + " w-16"} value={cu.currentCount} onChange={(e) => set(idx, "currentCount", e.target.value)} placeholder="家数" />
+                <Input type="text" inputSize="xs" tone="subtle" className="w-16" value={cu.currentCount} onChange={(e) => set(idx, "currentCount", e.target.value)} placeholder="家数" />
                 <span className="text-caption">年度目标</span>
-                <input type="text" className={inp + " w-16"} value={cu.targetCount} onChange={(e) => set(idx, "targetCount", e.target.value)} placeholder="家数" />
+                <Input type="text" inputSize="xs" tone="subtle" className="w-16" value={cu.targetCount} onChange={(e) => set(idx, "targetCount", e.target.value)} placeholder="家数" />
                 <span className="text-caption">客单值(万)</span>
-                <input type="text" className={inp + " w-20"} value={cu.revenuePerCustomer} onChange={(e) => set(idx, "revenuePerCustomer", e.target.value)} placeholder="0" />
+                <Input type="text" inputSize="xs" tone="subtle" className="w-20" value={cu.revenuePerCustomer} onChange={(e) => set(idx, "revenuePerCustomer", e.target.value)} placeholder="0" />
                 <RemoveRowButton onClick={() => rows.remove(idx)} label="删除" />
               </div>
               <div className="grid grid-cols-4 gap-1.5">
                 {(["q1Count","q2Count","q3Count","q4Count"] as const).map((f, qi) => (
-                  <div key={f}><div className="text-caption mb-0.5">Q{qi+1}家数</div><input type="text" className={inp + " w-full"} value={cu[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder="0" /></div>
+                  <div key={f}><div className="text-caption mb-0.5">Q{qi+1}家数</div><Input type="text" fullWidth inputSize="xs" tone="subtle" value={cu[f]} onChange={(e) => set(idx, f, e.target.value)} placeholder="0" /></div>
                 ))}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div><div className="text-caption mb-1">{isNew ? "获客策略" : "留存策略"}</div><textarea className={ta} rows={2} value={isNew ? cu.acquisitionStrategy : cu.retentionStrategy} onChange={(e) => set(idx, isNew ? "acquisitionStrategy" : "retentionStrategy", e.target.value)} placeholder={isNew ? "如何获取新客户" : "如何维系老客户"} /></div>
-                <div><div className="text-caption mb-1">备注</div><textarea className={ta} rows={2} value={cu.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></div>
+                <div><div className="text-caption mb-1">{isNew ? "获客策略" : "留存策略"}</div><Textarea textareaSize="xs" tone="subtle" fullWidth rows={2} value={isNew ? cu.acquisitionStrategy : cu.retentionStrategy} onChange={(e) => set(idx, isNew ? "acquisitionStrategy" : "retentionStrategy", e.target.value)} placeholder={isNew ? "如何获取新客户" : "如何维系老客户"} /></div>
+                <div><div className="text-caption mb-1">备注</div><Textarea textareaSize="xs" tone="subtle" fullWidth rows={2} value={cu.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></div>
               </div>
             </div>
           );
@@ -2572,8 +2587,6 @@ const MARKET_CATS: { key: string; label: string; placeholder: string }[] = [
 ];
 
 function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
-  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
-
   function getOrCreate(cat: string): MarketInsightDraft {
     return form.marketInsights.find((m) => m.category === cat) ?? { category: cat, title: "", content: "", dataPoint: "", source: "" };
   }
@@ -2602,20 +2615,20 @@ function MarketInsightForm({ form, setForm }: { form: PlanForm; setForm: React.D
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <div className="text-caption mb-1">标题 / 结论</div>
-                <input type="text" className={inp} value={item.title} onChange={(e) => update(cat.key, "title", e.target.value)} placeholder="一句话结论" />
+                <Input type="text" fullWidth inputSize="xs" tone="subtle" value={item.title} onChange={(e) => update(cat.key, "title", e.target.value)} placeholder="一句话结论" />
               </div>
               <div>
                 <div className="text-caption mb-1">关键数据点</div>
-                <input type="text" className={inp} value={item.dataPoint} onChange={(e) => update(cat.key, "dataPoint", e.target.value)} placeholder="如：市场规模 500 亿，增速 12%" />
+                <Input type="text" fullWidth inputSize="xs" tone="subtle" value={item.dataPoint} onChange={(e) => update(cat.key, "dataPoint", e.target.value)} placeholder="如：市场规模 500 亿，增速 12%" />
               </div>
             </div>
             <div>
               <div className="text-caption mb-1">详细描述</div>
-              <textarea className={inp} rows={3} value={item.content} onChange={(e) => update(cat.key, "content", e.target.value)} placeholder={cat.placeholder} />
+              <Textarea textareaSize="xs" tone="subtle" fullWidth rows={3} value={item.content} onChange={(e) => update(cat.key, "content", e.target.value)} placeholder={cat.placeholder} />
             </div>
             <div>
               <div className="text-caption mb-1">数据来源</div>
-              <input type="text" className={inp} value={item.source} onChange={(e) => update(cat.key, "source", e.target.value)} placeholder="如：IDC 2025 报告、内部调研" />
+              <Input type="text" fullWidth inputSize="xs" tone="subtle" value={item.source} onChange={(e) => update(cat.key, "source", e.target.value)} placeholder="如：IDC 2025 报告、内部调研" />
             </div>
           </div>
         );
@@ -2629,11 +2642,6 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
   const rows = useRowsEditor<PlanForm, ActionItemDraft>(setForm, "actionItems", emptyActionItem);
   const set = rows.update;
   const cell = "px-1.5 py-1.5 align-middle";
-  const inp = "h-8 w-full rounded-md border border-[var(--surface-border)] bg-black/[0.04] px-2.5 text-xs leading-8 focus:border-[var(--color-accent)] focus:outline-none";
-  const selectBase = "h-8 appearance-none rounded-md border border-[var(--surface-border)] bg-black/[0.04] pl-2.5 pr-5 text-left text-xs focus:border-[var(--color-accent)] focus:outline-none";
-  const yearSel = selectBase + " w-[5.25rem]";
-  const quarterSel = selectBase + " w-[4.25rem]";
-  const statusSel = "h-8 w-24 appearance-none rounded-full border border-[var(--surface-border)] bg-[var(--color-bg-surface)] pl-3 pr-5 text-left text-xs font-medium text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none";
   const STATUS_OPTS = [
     { value: "PLAN", label: "计划中" },
     { value: "ON_TRACK", label: "进行中" },
@@ -2658,34 +2666,25 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
       >
         {form.actionItems.map((ai, idx) => (
           <tr key={idx} className="border-b border-[var(--surface-border)]/50 hover:bg-black/[0.015]">
-            <td className={cell}><input type="text" className={inp} value={ai.initiativeTitle} onChange={(e) => set(idx, "initiativeTitle", e.target.value)} placeholder="举措标题" /></td>
+            <td className={cell}><Input type="text" fullWidth inputSize="xs" tone="subtle" value={ai.initiativeTitle} onChange={(e) => set(idx, "initiativeTitle", e.target.value)} placeholder="举措标题" /></td>
             <td className={cell + " text-center"}>
-              <div className="relative inline-block">
-                <select className={yearSel} value={ai.year} onChange={(e) => set(idx, "year", e.target.value)}>
-                  {[2026, 2027, 2028].map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-muted)]">▼</span>
-              </div>
+              <Select selectSize="xs" tone="subtle" wrapperClassName="w-[5.25rem]" value={ai.year} onChange={(e) => set(idx, "year", e.target.value)}>
+                {[2026, 2027, 2028].map((y) => <option key={y} value={y}>{y}</option>)}
+              </Select>
             </td>
             <td className={cell + " text-center"}>
-              <div className="relative inline-block">
-                <select className={quarterSel} value={ai.quarter} onChange={(e) => set(idx, "quarter", e.target.value)}>
-                  {[1, 2, 3, 4].map((q) => <option key={q} value={q}>Q{q}</option>)}
-                </select>
-                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-muted)]">▼</span>
-              </div>
+              <Select selectSize="xs" tone="subtle" wrapperClassName="w-[4.25rem]" value={ai.quarter} onChange={(e) => set(idx, "quarter", e.target.value)}>
+                {[1, 2, 3, 4].map((q) => <option key={q} value={q}>Q{q}</option>)}
+              </Select>
             </td>
-            <td className={cell}><input type="text" className={inp} value={ai.action} onChange={(e) => set(idx, "action", e.target.value)} placeholder="具体行动描述" /></td>
-            <td className={cell}><input type="text" className={inp} value={ai.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="姓名" /></td>
-            <td className={cell}><input type="text" className={inp} value={ai.acceptanceCriteria} onChange={(e) => set(idx, "acceptanceCriteria", e.target.value)} placeholder="完成标准/交付物" /></td>
-            <td className={cell}><input type="text" className={inp + " text-center"} value={ai.checkDate} onChange={(e) => set(idx, "checkDate", e.target.value)} placeholder="MM-DD" /></td>
+            <td className={cell}><Input type="text" fullWidth inputSize="xs" tone="subtle" value={ai.action} onChange={(e) => set(idx, "action", e.target.value)} placeholder="具体行动描述" /></td>
+            <td className={cell}><Input type="text" fullWidth inputSize="xs" tone="subtle" value={ai.ownerName} onChange={(e) => set(idx, "ownerName", e.target.value)} placeholder="姓名" /></td>
+            <td className={cell}><Input type="text" fullWidth inputSize="xs" tone="subtle" value={ai.acceptanceCriteria} onChange={(e) => set(idx, "acceptanceCriteria", e.target.value)} placeholder="完成标准/交付物" /></td>
+            <td className={cell}><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-center" value={ai.checkDate} onChange={(e) => set(idx, "checkDate", e.target.value)} placeholder="MM-DD" /></td>
             <td className={cell + " text-center"}>
-              <div className="relative inline-block">
-                <select className={statusSel} value={ai.status} onChange={(e) => set(idx, "status", e.target.value)}>
-                  {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                </select>
-                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-muted)]">▼</span>
-              </div>
+              <Select selectSize="xs" tone="surface" shape="pill" wrapperClassName="w-24" className="font-medium" value={ai.status} onChange={(e) => set(idx, "status", e.target.value)}>
+                {STATUS_OPTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </Select>
             </td>
             <td className="px-1 text-center"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
           </tr>
@@ -2700,7 +2699,6 @@ function ActionPlanForm({ form, setForm }: { form: PlanForm; setForm: React.Disp
 function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
   const rowsEditor = useRowsEditor<PlanForm, BudgetItemDraft>(setForm, "budgetItems", emptyBudgetItem);
   const set = rowsEditor.update;
-  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
   const CATS = ["CAPEX", "OPEX", "HC"] as const;
   const catLabel: Record<string, string> = { CAPEX: "资本性支出（Capex）", OPEX: "运营费用（Opex）", HC: "人员编制（HC）" };
   return (
@@ -2729,14 +2727,14 @@ function BudgetForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch
             >
                   {rows.map(({ b, i }) => (
                     <tr key={i} className="border-b border-[var(--surface-border)]/50">
-                      <td className="px-1 py-1"><input type="text" className={inp} value={b.description} onChange={(e) => set(i, "description", e.target.value)} placeholder="项目描述" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp} value={b.initiativeTitle} onChange={(e) => set(i, "initiativeTitle", e.target.value)} placeholder="举措名" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp} value={b.department} onChange={(e) => set(i, "department", e.target.value)} placeholder="部门" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year1Amount} onChange={(e) => set(i, "year1Amount", e.target.value)} placeholder="万元" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year2Amount} onChange={(e) => set(i, "year2Amount", e.target.value)} placeholder="万元" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.year3Amount} onChange={(e) => set(i, "year3Amount", e.target.value)} placeholder="万元" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp + " text-right"} value={b.totalAmount} onChange={(e) => set(i, "totalAmount", e.target.value)} placeholder="万元" /></td>
-                      <td className="px-1 py-1"><input type="text" className={inp} value={b.roiEstimate} onChange={(e) => set(i, "roiEstimate", e.target.value)} placeholder="如：18个月回本" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={b.description} onChange={(e) => set(i, "description", e.target.value)} placeholder="项目描述" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={b.initiativeTitle} onChange={(e) => set(i, "initiativeTitle", e.target.value)} placeholder="举措名" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={b.department} onChange={(e) => set(i, "department", e.target.value)} placeholder="部门" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-right" value={b.year1Amount} onChange={(e) => set(i, "year1Amount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-right" value={b.year2Amount} onChange={(e) => set(i, "year2Amount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-right" value={b.year3Amount} onChange={(e) => set(i, "year3Amount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-right" value={b.totalAmount} onChange={(e) => set(i, "totalAmount", e.target.value)} placeholder="万元" /></td>
+                      <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={b.roiEstimate} onChange={(e) => set(i, "roiEstimate", e.target.value)} placeholder="如：18个月回本" /></td>
                       <td className="px-1"><RemoveRowButton onClick={() => rowsEditor.remove(i)} /></td>
                     </tr>
                   ))}
@@ -2843,7 +2841,6 @@ function RoadmapForm({
   const [activeTabId, setActiveTabId] = useState(form.roadmapTabs[0]?.id ?? DEFAULT_ROADMAP_TAB_ID);
   const [previewImage, setPreviewImage] = useState<{ src: string; name: string } | null>(null);
   const imageInputRefs = useRef(new Map<number, HTMLInputElement>());
-  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs focus:border-[var(--color-accent)] focus:outline-none";
   const YEARS = [2026, 2027, 2028];
   const QS = [1, 2, 3, 4];
   const roadmapTabs = useMemo(() => (form.roadmapTabs.length > 0 ? form.roadmapTabs : [emptyRoadmapTab()]), [form.roadmapTabs]);
@@ -3041,36 +3038,36 @@ function RoadmapForm({
         {activeRows.map(({ item: r, index: idx }) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
                 <td className="px-1 py-1">
-                  <select className={inp} value={r.track} onChange={(e) => setRow(idx, "track", e.target.value)}>
+                  <Select fullWidth selectSize="xs" tone="subtle" value={r.track} onChange={(e) => setRow(idx, "track", e.target.value)}>
                     {TRACKS.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  </Select>
                 </td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={r.title} onChange={(e) => setRow(idx, "title", e.target.value)} placeholder="举措/产品/项目名称" /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={r.title} onChange={(e) => setRow(idx, "title", e.target.value)} placeholder="举措/产品/项目名称" /></td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.startYear} onChange={(e) => setRow(idx, "startYear", e.target.value)}>
+                  <Select fullWidth selectSize="xs" tone="subtle" className="text-center" value={r.startYear} onChange={(e) => setRow(idx, "startYear", e.target.value)}>
                     {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-                  </select>
+                  </Select>
                 </td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.startQ} onChange={(e) => setRow(idx, "startQ", e.target.value)}>
+                  <Select fullWidth selectSize="xs" tone="subtle" className="text-center" value={r.startQ} onChange={(e) => setRow(idx, "startQ", e.target.value)}>
                     {QS.map((q) => <option key={q} value={q}>Q{q}</option>)}
-                  </select>
+                  </Select>
                 </td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.endYear} onChange={(e) => setRow(idx, "endYear", e.target.value)}>
+                  <Select fullWidth selectSize="xs" tone="subtle" className="text-center" value={r.endYear} onChange={(e) => setRow(idx, "endYear", e.target.value)}>
                     {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-                  </select>
+                  </Select>
                 </td>
                 <td className="px-1 py-1">
-                  <select className={inp + " text-center"} value={r.endQ} onChange={(e) => setRow(idx, "endQ", e.target.value)}>
+                  <Select fullWidth selectSize="xs" tone="subtle" className="text-center" value={r.endQ} onChange={(e) => setRow(idx, "endQ", e.target.value)}>
                     {QS.map((q) => <option key={q} value={q}>Q{q}</option>)}
-                  </select>
+                  </Select>
                 </td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={r.milestone} onChange={(e) => setRow(idx, "milestone", e.target.value)} placeholder="里程碑描述" /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={r.milestone} onChange={(e) => setRow(idx, "milestone", e.target.value)} placeholder="里程碑描述" /></td>
                 <td className="px-1 py-1">
-                  <select className={inp} value={r.color} onChange={(e) => setRow(idx, "color", e.target.value)}>
+                  <Select fullWidth selectSize="xs" tone="subtle" value={r.color} onChange={(e) => setRow(idx, "color", e.target.value)}>
                     {COLORS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-                  </select>
+                  </Select>
                 </td>
                 <td className="px-1 py-1">
                   <div className="flex items-center justify-center">
@@ -3372,7 +3369,6 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
 function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<React.SetStateAction<PlanForm>> }) {
   const rows = useRowsEditor<PlanForm, OrgChartNodeDraft>(setForm, "orgChartNodes", emptyOrg);
   const set = rows.update;
-  const inp = "w-full rounded border border-[var(--surface-border)] bg-black/[0.04] px-2 py-1 text-xs";
   return (
     <div className="space-y-3">
       <p className="text-caption">组织架构规划 — 填写规划期末的目标组织设计</p>
@@ -3390,13 +3386,13 @@ function OrgChartForm({ form, setForm }: { form: PlanForm; setForm: React.Dispat
       >
         {form.orgChartNodes.map((node, idx) => (
               <tr key={idx} className="border-b border-[var(--surface-border)]/50">
-                <td className="px-1 py-1"><input type="text" className={inp} value={node.name} onChange={(e) => set(idx, "name", e.target.value)} placeholder="部门/岗位名称" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={node.role} onChange={(e) => set(idx, "role", e.target.value)} placeholder="主要职能" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount} onChange={(e) => set(idx, "headcount", e.target.value)} placeholder="0" /></td>
-                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount2026} onChange={(e) => set(idx, "headcount2026", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2026 编制`} /></td>
-                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount2027} onChange={(e) => set(idx, "headcount2027", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2027 编制`} /></td>
-                <td className="px-1 py-1"><input type="text" className={inp + " text-center"} value={node.headcount2028} onChange={(e) => set(idx, "headcount2028", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2028 编制`} /></td>
-                <td className="px-1 py-1"><input type="text" className={inp} value={node.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={node.name} onChange={(e) => set(idx, "name", e.target.value)} placeholder="部门/岗位名称" /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={node.role} onChange={(e) => set(idx, "role", e.target.value)} placeholder="主要职能" /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-center" value={node.headcount} onChange={(e) => set(idx, "headcount", e.target.value)} placeholder="0" /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-center" value={node.headcount2026} onChange={(e) => set(idx, "headcount2026", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2026 编制`} /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-center" value={node.headcount2027} onChange={(e) => set(idx, "headcount2027", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2027 编制`} /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" className="text-center" value={node.headcount2028} onChange={(e) => set(idx, "headcount2028", e.target.value)} placeholder="0" aria-label={`${node.name || `第 ${idx + 1} 行`} 2028 编制`} /></td>
+                <td className="px-1 py-1"><Input type="text" fullWidth inputSize="xs" tone="subtle" value={node.note} onChange={(e) => set(idx, "note", e.target.value)} placeholder="" /></td>
                 <td className="px-1"><RemoveRowButton onClick={() => rows.remove(idx)} /></td>
               </tr>
             ))}

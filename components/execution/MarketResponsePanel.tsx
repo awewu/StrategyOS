@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import type { MarketEvidence, CompetitivePosition } from "@/lib/execution/market-response";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 
 const VERDICT_META = {
   effective:        { label: "执行有效",   color: "var(--signal-green)", bg: "bg-[var(--signal-green)]/10",  border: "border-[var(--signal-green)]/25"  },
@@ -10,8 +11,6 @@ const VERDICT_META = {
   inconclusive:     { label: "证据不足",   color: "var(--signal-yellow)", bg: "bg-[var(--signal-yellow)]/10", border: "border-[var(--signal-yellow)]/30" },
   empty:            { label: "待录入",     color: "var(--color-text-secondary)", bg: "bg-black/[0.03]",  border: "border-[var(--surface-border)] border-dashed" },
 } as const;
-
-const inputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: MarketEvidence) => void }) {
   const meta = VERDICT_META[item.verdict];
@@ -93,35 +92,35 @@ function EvidenceModal({ item, onClose, onSaved }: {
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">市场证据</label>
-            <textarea value={form.evidenceText ?? ""} onChange={(e) => setForm({ ...form, evidenceText: e.target.value || null })} rows={3}
-              placeholder="如：Q2 华东新签 62 家，同期史密斯约 300 家，渗透率 3.1%" className={inputCls + " resize-none"} />
+            <Textarea fullWidth value={form.evidenceText ?? ""} onChange={(e) => setForm({ ...form, evidenceText: e.target.value || null })} rows={3}
+              placeholder="如：Q2 华东新签 62 家，同期史密斯约 300 家，渗透率 3.1%" className="resize-none" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">执行判定</label>
-            <select value={form.verdict} onChange={(e) => setForm({ ...form, verdict: e.target.value as MarketEvidence["verdict"] })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.verdict} onChange={(e) => setForm({ ...form, verdict: e.target.value as MarketEvidence["verdict"] })}>
               <option value="empty">待录入</option>
               <option value="effective">执行有效</option>
               <option value="assumption_failed">假设失效</option>
               <option value="inconclusive">证据不足</option>
-            </select>
+            </Select>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">判定说明</label>
-            <input value={form.verdictNote ?? ""} onChange={(e) => setForm({ ...form, verdictNote: e.target.value || null })} className={inputCls} placeholder="如：假设 H5 按当前速度无法兑现" />
+            <Input fullWidth inputSize="sm" value={form.verdictNote ?? ""} onChange={(e) => setForm({ ...form, verdictNote: e.target.value || null })} placeholder="如：假设 H5 按当前速度无法兑现" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">来源</label>
-              <input value={form.evidenceSource ?? ""} onChange={(e) => setForm({ ...form, evidenceSource: e.target.value || null })} className={inputCls} placeholder="销售周报 2026-06" />
+              <Input fullWidth inputSize="sm" value={form.evidenceSource ?? ""} onChange={(e) => setForm({ ...form, evidenceSource: e.target.value || null })} placeholder="销售周报 2026-06" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">录入人</label>
-              <input value={form.recordedBy ?? ""} onChange={(e) => setForm({ ...form, recordedBy: e.target.value || null })} className={inputCls} />
+              <Input fullWidth inputSize="sm" value={form.recordedBy ?? ""} onChange={(e) => setForm({ ...form, recordedBy: e.target.value || null })} />
             </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">采集日期</label>
-            <input type="date" value={form.recordedAt ?? ""} onChange={(e) => setForm({ ...form, recordedAt: e.target.value || null })} className={inputCls} />
+            <Input type="date" inputSize="sm" value={form.recordedAt ?? ""} onChange={(e) => setForm({ ...form, recordedAt: e.target.value || null })} />
           </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">
@@ -162,25 +161,25 @@ function PositionModal({ item, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">我方值</label>
-              <input value={form.ourValue ?? ""} onChange={(e) => setForm({ ...form, ourValue: e.target.value || null })} className={inputCls} placeholder="62 家" />
+              <Input fullWidth inputSize="sm" value={form.ourValue ?? ""} onChange={(e) => setForm({ ...form, ourValue: e.target.value || null })} placeholder="62 家" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">竞品值</label>
-              <input value={form.theirValue ?? ""} onChange={(e) => setForm({ ...form, theirValue: e.target.value || null })} className={inputCls} placeholder="约 300 家" />
+              <Input fullWidth inputSize="sm" value={form.theirValue ?? ""} onChange={(e) => setForm({ ...form, theirValue: e.target.value || null })} placeholder="约 300 家" />
             </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">差距</label>
-            <input value={form.delta ?? ""} onChange={(e) => setForm({ ...form, delta: e.target.value || null })} className={inputCls} placeholder="落后 238 家 (-79%)" />
+            <Input fullWidth inputSize="sm" value={form.delta ?? ""} onChange={(e) => setForm({ ...form, delta: e.target.value || null })} placeholder="落后 238 家 (-79%)" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">来源</label>
-              <input value={form.evidenceSource ?? ""} onChange={(e) => setForm({ ...form, evidenceSource: e.target.value || null })} className={inputCls} />
+              <Input fullWidth inputSize="sm" value={form.evidenceSource ?? ""} onChange={(e) => setForm({ ...form, evidenceSource: e.target.value || null })} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">录入人</label>
-              <input value={form.recordedBy ?? ""} onChange={(e) => setForm({ ...form, recordedBy: e.target.value || null })} className={inputCls} />
+              <Input fullWidth inputSize="sm" value={form.recordedBy ?? ""} onChange={(e) => setForm({ ...form, recordedBy: e.target.value || null })} />
             </div>
           </div>
         </div>

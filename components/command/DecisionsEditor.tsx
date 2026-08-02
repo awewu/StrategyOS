@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DecisionsPanel } from "@/components/ui/DecisionsPanel";
 import type { DecisionItem } from "@/lib/panorama/scr";
+import { Input, Select } from "@/components/ui/primitives";
 
 const STATUS_OPTS: DecisionItem["status"][] = ["open", "pending", "closed"];
 
@@ -106,14 +107,14 @@ export function DecisionsEditor({
         <div className="stratos-card space-y-3 p-4">
           {decisions.map((d, i) => (
             <div key={d.id} className="grid gap-2 rounded-lg border border-[var(--surface-border)] p-3 sm:grid-cols-2 lg:grid-cols-4">
-              <input className="rounded border px-2 py-1 text-xs sm:col-span-2" value={d.title} onChange={(e) => patch(i, "title", e.target.value)} placeholder="标题" />
-              <input className="rounded border px-2 py-1 text-xs" value={d.owner ?? ""} onChange={(e) => patch(i, "owner", e.target.value)} placeholder="负责人" />
-              <input className="rounded border px-2 py-1 text-xs" value={d.deadline ?? ""} onChange={(e) => patch(i, "deadline", e.target.value)} placeholder="期限" />
-              <select className="rounded border px-2 py-1 text-xs" value={d.status} onChange={(e) => patch(i, "status", e.target.value)}>
+              <Input fullWidth inputSize="sm" className="text-xs sm:col-span-2" value={d.title} onChange={(e) => patch(i, "title", e.target.value)} placeholder="标题" />
+              <Input fullWidth inputSize="sm" className="text-xs" value={d.owner ?? ""} onChange={(e) => patch(i, "owner", e.target.value)} placeholder="负责人" />
+              <Input fullWidth inputSize="sm" className="text-xs" value={d.deadline ?? ""} onChange={(e) => patch(i, "deadline", e.target.value)} placeholder="期限" />
+              <Select fullWidth selectSize="sm" className="text-xs" value={d.status} onChange={(e) => patch(i, "status", e.target.value)}>
                 {STATUS_OPTS.map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
-              </select>
+              </Select>
             </div>
           ))}
         </div>

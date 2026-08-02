@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Input, Select } from "@/components/ui/primitives";
 
 type FieldSpec = {
   key: string;
@@ -162,7 +163,6 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
     }
   }
 
-  const inputCls = "w-full rounded border border-[var(--surface-border)] bg-transparent px-1.5 py-1 text-caption";
   const changedCount = rows.length;
 
   return (
@@ -178,28 +178,31 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1">
             <span className="text-caption text-[var(--color-text-muted)]">数据表</span>
-            <select
+            <Select
+              selectSize="sm"
+              wrapperClassName="w-40"
+              className="text-caption"
               value={target}
               onChange={(e) => {
                 const t = e.target.value as Target;
                 setTarget(t);
                 void load(t, period);
               }}
-              className={`${inputCls} w-40`}
             >
               {TARGETS.map((t) => (
                 <option key={t.kind} value={t.kind}>{t.label}</option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-caption text-[var(--color-text-muted)]">期间筛选（可空=全部）</span>
-            <input
+            <Input
+              inputSize="sm"
+              className="w-28 font-data text-caption"
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               onBlur={() => void load(target, period)}
               placeholder="2025-01"
-              className={`${inputCls} w-28 font-data`}
             />
           </label>
           <button type="button" disabled={busy} onClick={() => void load()} className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-caption">加载</button>
@@ -231,18 +234,20 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
                     {fields.map((f) => (
                       <td key={f.key}>
                         {f.type === "select" ? (
-                          <select value={String(r[f.key] ?? "")} onChange={(e) => setCell(r.id, f.key, e.target.value)} className={inputCls}>
+                          <Select fullWidth selectSize="sm" className="text-caption" value={String(r[f.key] ?? "")} onChange={(e) => setCell(r.id, f.key, e.target.value)}>
                             <option value="">—</option>
                             {(f.options ?? []).map((o) => (
                               <option key={o} value={o}>{o}</option>
                             ))}
-                          </select>
+                          </Select>
                         ) : (
-                          <input
+                          <Input
+                            fullWidth
+                            inputSize="sm"
                             value={String(r[f.key] ?? "")}
                             inputMode={f.type === "number" ? "decimal" : undefined}
                             onChange={(e) => setCell(r.id, f.key, e.target.value)}
-                            className={`${inputCls} ${f.type === "number" ? "text-right font-data" : ""}`}
+                            className={`text-caption ${f.type === "number" ? "text-right font-data" : ""}`}
                           />
                         )}
                       </td>
@@ -261,7 +266,7 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="变更标题（如：Q1 人头补录）" className={`${inputCls} w-64`} />
+          <Input inputSize="sm" className="w-64 text-caption" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="变更标题（如：Q1 人头补录）" />
           <span className="text-caption text-[var(--color-text-muted)]">当前 {changedCount} 行；提交时按最新生效数据比对生成变更集</span>
           <div className="ml-auto flex gap-2">
             <button type="button" disabled={busy} onClick={() => void createDraft(false)} className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-caption">存草稿</button>

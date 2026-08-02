@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { IntelSourcesEditor } from "@/components/market/IntelSourcesEditor";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 import type { SourceKind } from "@/lib/market-intel/types";
 
 type Region = { id: string; name: string; code: string; parentId: string | null; active: boolean; sortOrder: number };
@@ -168,17 +169,17 @@ function RegionsEditor({ regions, setRegions, saving, post, del }: {
 
       {editing && (
         <FormModal title={editing === "new" ? "新增区域" : "编辑区域"} onCancel={cancel} onSave={save} saving={saving}>
-          <Field label="名称 *"><input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></Field>
-          <Field label="代码 * (英文/下划线)"><input value={form.code ?? ""} onChange={(e) => setForm({ ...form, code: e.target.value })} className={inputCls} /></Field>
+          <Field label="名称 *"><Input fullWidth inputSize="sm" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="代码 * (英文/下划线)"><Input fullWidth inputSize="sm" value={form.code ?? ""} onChange={(e) => setForm({ ...form, code: e.target.value })} /></Field>
           <Field label="上级区域">
-            <select value={form.parentId ?? ""} onChange={(e) => setForm({ ...form, parentId: e.target.value || null })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.parentId ?? ""} onChange={(e) => setForm({ ...form, parentId: e.target.value || null })}>
               <option value="">— 顶级（不推荐，通常选全国或大区）</option>
               {regions.filter((r) => r.id !== editing).map((r) => (
                 <option key={r.id} value={r.id}>{r.name}</option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="排序"><input type="number" value={form.sortOrder ?? 999} onChange={(e) => setForm({ ...form, sortOrder: +e.target.value })} className={inputCls} /></Field>
+          <Field label="排序"><Input fullWidth inputSize="sm" type="number" value={form.sortOrder ?? 999} onChange={(e) => setForm({ ...form, sortOrder: +e.target.value })} /></Field>
           <Field label="状态">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.active ?? true} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
@@ -260,18 +261,18 @@ function ProductLinesEditor({ lines, setLines, saving, post, del }: {
 
       {editing && (
         <FormModal title={editing === "new" ? "新增品类" : "编辑品类"} onCancel={cancel} onSave={save} saving={saving}>
-          <Field label="名称 *"><input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></Field>
-          <Field label="代码 * (英文/下划线)"><input value={form.code ?? ""} onChange={(e) => setForm({ ...form, code: e.target.value })} className={inputCls} /></Field>
-          <Field label="描述"><input value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value || null })} className={inputCls} /></Field>
+          <Field label="名称 *"><Input fullWidth inputSize="sm" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="代码 * (英文/下划线)"><Input fullWidth inputSize="sm" value={form.code ?? ""} onChange={(e) => setForm({ ...form, code: e.target.value })} /></Field>
+          <Field label="描述"><Input fullWidth inputSize="sm" value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value || null })} /></Field>
           <Field label="父级产品线（留空 = 顶层）">
-            <select value={form.parentId ?? ""} onChange={(e) => setForm({ ...form, parentId: e.target.value || null })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.parentId ?? ""} onChange={(e) => setForm({ ...form, parentId: e.target.value || null })}>
               <option value="">— 顶层产品线</option>
               {lines.filter((l) => l.id !== editing && l.parentId === null).map((l) => (
                 <option key={l.id} value={l.id}>{l.name}</option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="排序"><input type="number" value={form.sortOrder ?? 999} onChange={(e) => setForm({ ...form, sortOrder: +e.target.value })} className={inputCls} /></Field>
+          <Field label="排序"><Input fullWidth inputSize="sm" type="number" value={form.sortOrder ?? 999} onChange={(e) => setForm({ ...form, sortOrder: +e.target.value })} /></Field>
           <Field label="状态">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.active ?? true} onChange={(e) => setForm({ ...form, active: e.target.checked })} />启用</label>
           </Field>
@@ -364,33 +365,33 @@ function BrandsEditor({ brands, setBrands, saving, post, del }: {
 
       {editing && (
         <FormModal title={editing === "new" ? "新增竞品" : "编辑竞品"} onCancel={cancel} onSave={save} saving={saving}>
-          <Field label="品牌名称 *"><input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></Field>
+          <Field label="品牌名称 *"><Input fullWidth inputSize="sm" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="英文名">
-            <input value={form.nameEn ?? ""} onChange={(e) => setForm({ ...form, nameEn: e.target.value || null })} className={inputCls} />
+            <Input fullWidth inputSize="sm" value={form.nameEn ?? ""} onChange={(e) => setForm({ ...form, nameEn: e.target.value || null })} />
           </Field>
           <Field label="层级">
-            <select value={form.tier ?? "watch"} onChange={(e) => setForm({ ...form, tier: e.target.value })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.tier ?? "watch"} onChange={(e) => setForm({ ...form, tier: e.target.value })}>
               <option value="core">核心竞品</option>
               <option value="watch">观察</option>
               <option value="peripheral">边缘</option>
-            </select>
+            </Select>
           </Field>
           <Field label="威胁等级">
-            <select value={form.threatLevel ?? "medium"} onChange={(e) => setForm({ ...form, threatLevel: e.target.value })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.threatLevel ?? "medium"} onChange={(e) => setForm({ ...form, threatLevel: e.target.value })}>
               <option value="critical">极高</option>
               <option value="high">高</option>
               <option value="medium">中</option>
               <option value="low">低</option>
-            </select>
+            </Select>
           </Field>
           <Field label="类型">
-            <select value={form.competitorType ?? "existing"} onChange={(e) => setForm({ ...form, competitorType: e.target.value })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.competitorType ?? "existing"} onChange={(e) => setForm({ ...form, competitorType: e.target.value })}>
               <option value="existing">现有竞品</option>
               <option value="new_entrant">新进入者</option>
               <option value="substitute">替代品</option>
-            </select>
+            </Select>
           </Field>
-          <Field label="定位摘要"><input value={form.positioning ?? ""} onChange={(e) => setForm({ ...form, positioning: e.target.value || null })} className={inputCls} /></Field>
+          <Field label="定位摘要"><Input fullWidth inputSize="sm" value={form.positioning ?? ""} onChange={(e) => setForm({ ...form, positioning: e.target.value || null })} /></Field>
           <Field label="状态">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.active ?? true} onChange={(e) => setForm({ ...form, active: e.target.checked })} />启用</label>
           </Field>
@@ -507,42 +508,42 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
 
       {editing && (
         <FormModal title={editing === "new" ? "新增重点产品" : "编辑重点产品"} onCancel={cancel} onSave={save} saving={saving}>
-          <Field label="产品名称 *"><input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></Field>
-          <Field label="型号"><input value={form.modelCode ?? ""} onChange={(e) => setForm({ ...form, modelCode: e.target.value || null })} className={inputCls} /></Field>
+          <Field label="产品名称 *"><Input fullWidth inputSize="sm" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="型号"><Input fullWidth inputSize="sm" value={form.modelCode ?? ""} onChange={(e) => setForm({ ...form, modelCode: e.target.value || null })} /></Field>
           <Field label="品牌">
-            <select value={form.brandId ?? ""} onChange={(e) => setForm({ ...form, brandId: e.target.value || null })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.brandId ?? ""} onChange={(e) => setForm({ ...form, brandId: e.target.value || null })}>
               <option value="">— 选择品牌</option>
               {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
+            </Select>
           </Field>
           <Field label="所属品类">
-            <select value={form.productLineId ?? ""} onChange={(e) => setForm({ ...form, productLineId: e.target.value || null })} className={inputCls}>
+            <Select fullWidth selectSize="sm" value={form.productLineId ?? ""} onChange={(e) => setForm({ ...form, productLineId: e.target.value || null })}>
               <option value="">— 选择品类</option>
               {productLines.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-            </select>
+            </Select>
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="价格下限(万)"><input type="number" value={form.priceMin ?? ""} onChange={(e) => setForm({ ...form, priceMin: e.target.value ? +e.target.value : null })} className={inputCls} /></Field>
-            <Field label="价格上限(万)"><input type="number" value={form.priceMax ?? ""} onChange={(e) => setForm({ ...form, priceMax: e.target.value ? +e.target.value : null })} className={inputCls} /></Field>
+            <Field label="价格下限(万)"><Input fullWidth inputSize="sm" type="number" value={form.priceMin ?? ""} onChange={(e) => setForm({ ...form, priceMin: e.target.value ? +e.target.value : null })} /></Field>
+            <Field label="价格上限(万)"><Input fullWidth inputSize="sm" type="number" value={form.priceMax ?? ""} onChange={(e) => setForm({ ...form, priceMax: e.target.value ? +e.target.value : null })} /></Field>
           </div>
-          <Field label="定位"><input value={form.positioning ?? ""} onChange={(e) => setForm({ ...form, positioning: e.target.value || null })} className={inputCls} /></Field>
+          <Field label="定位"><Input fullWidth inputSize="sm" value={form.positioning ?? ""} onChange={(e) => setForm({ ...form, positioning: e.target.value || null })} /></Field>
           <div className="my-1 border-t border-dashed border-[var(--surface-border)] pt-2 text-xs font-semibold text-[var(--signal-yellow)]">🔥 爆款信号（留空 hotRank = 非爆款）</div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="爆款排名 (1=最热)"><input type="number" value={form.hotRank ?? ""} onChange={(e) => setForm({ ...form, hotRank: e.target.value ? +e.target.value : null })} className={inputCls} /></Field>
+            <Field label="爆款排名 (1=最热)"><Input fullWidth inputSize="sm" type="number" value={form.hotRank ?? ""} onChange={(e) => setForm({ ...form, hotRank: e.target.value ? +e.target.value : null })} /></Field>
             <Field label="动销趋势">
-              <select value={form.salesVelocity ?? ""} onChange={(e) => setForm({ ...form, salesVelocity: e.target.value || null })} className={inputCls}>
+              <Select fullWidth selectSize="sm" value={form.salesVelocity ?? ""} onChange={(e) => setForm({ ...form, salesVelocity: e.target.value || null })}>
                 <option value="">—</option>
                 <option value="rising">上升</option>
                 <option value="stable">稳定</option>
                 <option value="declining">下滑</option>
-              </select>
+              </Select>
             </Field>
           </div>
-          <Field label="信号采集日期"><input type="date" value={form.hotSignalAt ?? ""} onChange={(e) => setForm({ ...form, hotSignalAt: e.target.value || null })} className={inputCls} /></Field>
+          <Field label="信号采集日期"><Input fullWidth inputSize="sm" type="date" value={form.hotSignalAt ?? ""} onChange={(e) => setForm({ ...form, hotSignalAt: e.target.value || null })} /></Field>
           <Field label="爆款信号说明">
-            <textarea value={form.hotSignalNote ?? ""} onChange={(e) => setForm({ ...form, hotSignalNote: e.target.value || null })} rows={3}
+            <Textarea fullWidth value={form.hotSignalNote ?? ""} onChange={(e) => setForm({ ...form, hotSignalNote: e.target.value || null })} rows={3}
               placeholder="如：京东燃热20L品类连续6个月TOP2，零冷水功能差异化显著，月销4000+台"
-              className={inputCls + " resize-none"} />
+              className="resize-none" />
           </Field>
           <Field label="持续追踪">
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.tracked ?? true} onChange={(e) => setForm({ ...form, tracked: e.target.checked })} />纳入追踪</label>
@@ -554,8 +555,6 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
 }
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
-
-const inputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

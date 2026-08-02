@@ -6,6 +6,7 @@ import { HoshinEditor } from "@/components/decode/HoshinEditor";
 import { OkrEditor } from "@/components/decode/OkrEditor";
 import type { OkrBundle } from "@/lib/decode/okr-access";
 import { StratosTabButtons } from "@/components/ui/StratosTabNav";
+import { Select } from "@/components/ui/primitives";
 import type { BscDimensionRow } from "@/lib/decode/bsc-map";
 import type { HoshinRowPayload } from "@/lib/decode/data-access";
 
@@ -199,8 +200,8 @@ export function DecodeWorkspace({
           >
             下载模板
           </a>
-          <select
-            className="stratos-input w-auto px-2 py-1.5 text-xs"
+          <Select
+            selectSize="sm"
             value={importKind}
             onChange={(e) => setImportKind(e.target.value as typeof importKind)}
             aria-label="导入范围"
@@ -208,7 +209,7 @@ export function DecodeWorkspace({
             <option value="combined">导入：BSC + X-Matrix</option>
             <option value="bsc">仅 BSC</option>
             <option value="hoshin">仅 X-Matrix</option>
-          </select>
+          </Select>
           <button
             type="button"
             disabled={busy}

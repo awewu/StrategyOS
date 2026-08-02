@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 
 const STATUS_META = {
   completed:   { label: "已完成", color: "var(--signal-green)", bg: "bg-[var(--signal-green)]/10",  border: "border-[var(--signal-green)]/25"  },
@@ -10,8 +11,6 @@ const STATUS_META = {
   in_progress: { label: "进行中", color: "var(--color-accent)", bg: "bg-[var(--color-accent)]/10",   border: "border-[var(--color-accent)]/25"   },
   pending:     { label: "待启动", color: "var(--signal-neutral)", bg: "bg-black/[0.04]",       border: "border-[var(--surface-border)]"      },
 } as const;
-const cInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
-
 function CommitmentModal({ item, onClose, onSaved }: {
   item: Partial<CommitmentRecord>; onClose: () => void; onSaved: () => void;
 }) {
@@ -50,40 +49,40 @@ function CommitmentModal({ item, onClose, onSaved }: {
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">承诺内容 *</label>
-            <textarea value={form.content ?? ""} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={2} className={cInputCls + " resize-none"} placeholder="V4 样机完成 EMC 测试" />
+            <Textarea fullWidth value={form.content ?? ""} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={2} className="resize-none" placeholder="V4 样机完成 EMC 测试" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">负责人 *</label>
-              <input value={form.ownerName ?? ""} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} className={cInputCls} placeholder="张健" />
+              <Input fullWidth inputSize="sm" value={form.ownerName ?? ""} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} placeholder="张健" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">部门</label>
-              <input value={form.department ?? ""} onChange={(e) => setForm({ ...form, department: e.target.value })} className={cInputCls} placeholder="研发中心" />
+              <Input fullWidth inputSize="sm" value={form.department ?? ""} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="研发中心" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">截止日期 *</label>
-              <input type="date" value={form.deadline ?? ""} onChange={(e) => setForm({ ...form, deadline: e.target.value })} className={cInputCls} />
+              <Input type="date" fullWidth inputSize="sm" value={form.deadline ?? ""} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">状态</label>
-              <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as CommitmentRecord["status"] })} className={cInputCls}>
+              <Select fullWidth selectSize="sm" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as CommitmentRecord["status"] })}>
                 <option value="pending">待启动</option>
                 <option value="in_progress">进行中</option>
                 <option value="completed">已完成</option>
-              </select>
+              </Select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">关联项目</label>
-              <input value={form.linkedProjectCode ?? ""} onChange={(e) => setForm({ ...form, linkedProjectCode: e.target.value || undefined })} className={cInputCls} placeholder="V4" />
+              <Input fullWidth inputSize="sm" value={form.linkedProjectCode ?? ""} onChange={(e) => setForm({ ...form, linkedProjectCode: e.target.value || undefined })} placeholder="V4" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">关联假设</label>
-              <input value={form.linkedAssumptionCode ?? ""} onChange={(e) => setForm({ ...form, linkedAssumptionCode: e.target.value || undefined })} className={cInputCls} placeholder="H5" />
+              <Input fullWidth inputSize="sm" value={form.linkedAssumptionCode ?? ""} onChange={(e) => setForm({ ...form, linkedAssumptionCode: e.target.value || undefined })} placeholder="H5" />
             </div>
           </div>
         </div>

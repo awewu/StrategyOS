@@ -4,9 +4,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import type { LineView } from "@/lib/innovation/views";
 import { DEFAULT_GATE_THRESHOLDS } from "@/lib/innovation/views";
-
-const inp =
-  "w-full rounded-md border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-2.5 py-1.5 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none";
+import { Input } from "@/components/ui/primitives";
 
 const STAGES = [
   { value: "introduction", label: "导入" },
@@ -80,7 +78,7 @@ export function LineEditor({
         <div className="space-y-4">
           <div>
             <label className="text-xs text-[var(--color-text-secondary)]">产品线名称</label>
-            <input className={inp} value={name} onChange={(e) => setName(e.target.value)} placeholder="例如:某产品线" />
+            <Input fullWidth inputSize="sm" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如:某产品线" />
           </div>
 
           <div>
@@ -134,17 +132,19 @@ export function LineEditor({
             <div className="mt-1 space-y-2">
               {weights.map((w, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <input
-                    className={inp}
+                  <Input
+                    fullWidth
+                    inputSize="sm"
                     placeholder="维度 key(如 material/mrl/cost)"
                     value={w.key}
                     onChange={(e) => setWeights((cur) => cur.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)))}
                   />
-                  <input
+                  <Input
                     type="number"
                     step="0.05"
                     min="0"
-                    className={`${inp} w-24`}
+                    inputSize="sm"
+                    className="w-24"
                     value={w.weight}
                     onChange={(e) =>
                       setWeights((cur) => cur.map((x, j) => (j === i ? { ...x, weight: Number(e.target.value) } : x)))
@@ -168,40 +168,44 @@ export function LineEditor({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">回收期阈值(年)</label>
-              <input
+              <Input
                 type="number"
                 step="0.5"
-                className={inp}
+                fullWidth
+                inputSize="sm"
                 value={thresholds.maxPaybackYears}
                 onChange={(e) => setThresholds((t) => ({ ...t, maxPaybackYears: Number(e.target.value) }))}
               />
             </div>
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">ROIC−WACC 门槛</label>
-              <input
+              <Input
                 type="number"
                 step="0.01"
-                className={inp}
+                fullWidth
+                inputSize="sm"
                 value={thresholds.minRoicOverWacc}
                 onChange={(e) => setThresholds((t) => ({ ...t, minRoicOverWacc: Number(e.target.value) }))}
               />
             </div>
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">最低分(D/F/V)</label>
-              <input
+              <Input
                 type="number"
-                className={inp}
+                fullWidth
+                inputSize="sm"
                 value={thresholds.minScore}
                 onChange={(e) => setThresholds((t) => ({ ...t, minScore: Number(e.target.value) }))}
               />
             </div>
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">证据门槛(L1–L6)</label>
-              <input
+              <Input
                 type="number"
                 min="1"
                 max="6"
-                className={inp}
+                fullWidth
+                inputSize="sm"
                 value={evidenceBar}
                 onChange={(e) => {
                   const bar = Math.min(6, Math.max(1, Number(e.target.value)));

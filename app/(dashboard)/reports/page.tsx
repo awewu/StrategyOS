@@ -5,6 +5,7 @@ import { PulseOpsPanel } from "@/components/reports/PulseOpsPanel";
 import { ReportsArchive } from "@/components/reports/ReportsArchive";
 import { ReportReceipts } from "@/components/reports/ReportReceipts";
 import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getOrgUnitsSummary } from "@/lib/data/org-units-access";
 import { getEffectiveRole, getEffectiveSession } from "@/lib/auth/guard";
@@ -34,6 +35,8 @@ export default async function ReportsPage() {
         title="OPS 运营"
         subtitle="部门/体系/事业部月报、MON_PULSE 与会议纪要"
       />
+
+      <GemPanel />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <MonthlyPulseForm orgUnits={visibleOrgUnits} />

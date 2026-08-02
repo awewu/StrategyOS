@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ExecutionDashboard } from "@/components/execution/ExecutionDashboard";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEffectiveRole, getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
@@ -58,6 +59,7 @@ export default async function ExecutionPage({
           </>
         }
       />
+      <GemPanel />
       <ExecutionDashboard data={filtered} sliceLabel={resolved?.slice.label} />
       <ConceptGuide ids={["fourDX", "cynefin"]} />
     </div>

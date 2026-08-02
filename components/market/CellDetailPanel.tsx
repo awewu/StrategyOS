@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { CellDetail } from "@/lib/market-intel/workbench-data";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 
 const DIM_LABEL: Record<string, string> = { product: "产品", gtm: "GTM", brand: "品牌", strategy: "战略模式" };
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
@@ -16,8 +17,6 @@ const POS_LABEL: Record<string, { label: string; cls: string }> = {
   parity: { label: "持平", cls: "text-[var(--color-text-muted)]" },
   lag: { label: "落后", cls: "text-[var(--signal-red)]" },
 };
-
-const inputCls = "rounded border border-[var(--surface-border)] bg-white px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 export function CellDetailPanel({
   productLineId, regionId, competitorId,
@@ -230,43 +229,43 @@ function CellEditForm({ productLineId, regionId, competitorId, existing, onSaved
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">威胁等级</label>
-          <select value={form.threatLevel} onChange={(e) => setForm({ ...form, threatLevel: e.target.value })} className={inputCls + " w-full"}>
+          <Select fullWidth selectSize="sm" value={form.threatLevel} onChange={(e) => setForm({ ...form, threatLevel: e.target.value })}>
             <option value="critical">极高</option>
             <option value="high">高</option>
             <option value="medium">中</option>
             <option value="low">低</option>
-          </select>
+          </Select>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">我方态势</label>
-          <select value={form.ourPosition} onChange={(e) => setForm({ ...form, ourPosition: e.target.value })} className={inputCls + " w-full"}>
+          <Select fullWidth selectSize="sm" value={form.ourPosition} onChange={(e) => setForm({ ...form, ourPosition: e.target.value })}>
             <option value="lead">领先</option>
             <option value="parity">持平</option>
             <option value="lag">落后</option>
-          </select>
+          </Select>
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">对手市占率估算 (%)</label>
-          <input type="number" value={form.marketShareEst} onChange={(e) => setForm({ ...form, marketShareEst: e.target.value })} placeholder="如 18.5" className={inputCls + " w-full"} />
+          <Input fullWidth inputSize="sm" type="number" value={form.marketShareEst} onChange={(e) => setForm({ ...form, marketShareEst: e.target.value })} placeholder="如 18.5" />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">价格指数（我方=100）</label>
-          <input type="number" value={form.priceIndexUs} onChange={(e) => setForm({ ...form, priceIndexUs: e.target.value })} placeholder="如 89" className={inputCls + " w-full"} />
+          <Input fullWidth inputSize="sm" type="number" value={form.priceIndexUs} onChange={(e) => setForm({ ...form, priceIndexUs: e.target.value })} placeholder="如 89" />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">对手渠道数（家）</label>
-          <input type="number" value={form.dealerCountComp} onChange={(e) => setForm({ ...form, dealerCountComp: e.target.value })} className={inputCls + " w-full"} />
+          <Input fullWidth inputSize="sm" type="number" value={form.dealerCountComp} onChange={(e) => setForm({ ...form, dealerCountComp: e.target.value })} />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">我方渠道数（家）</label>
-          <input type="number" value={form.dealerCountUs} onChange={(e) => setForm({ ...form, dealerCountUs: e.target.value })} className={inputCls + " w-full"} />
+          <Input fullWidth inputSize="sm" type="number" value={form.dealerCountUs} onChange={(e) => setForm({ ...form, dealerCountUs: e.target.value })} />
         </div>
       </div>
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">一句话战场结论</label>
-        <textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })}
+        <Textarea fullWidth value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })}
           rows={2} placeholder="如：华东热泵战场史密斯处于绝对优势…"
-          className={inputCls + " w-full resize-none"} />
+          className="resize-none" />
       </div>
       <button onClick={save} disabled={saving}
         className="rounded-md bg-[var(--color-accent)] px-4 py-1.5 text-sm text-white hover:opacity-90 disabled:opacity-50">
@@ -329,33 +328,33 @@ function WinLossTab({ regionId, competitorId, productLineId, records, onAdded }:
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">结果</label>
-              <select value={form.outcome} onChange={(e) => setForm({ ...form, outcome: e.target.value })} className={inputCls + " w-full"}>
+              <Select fullWidth selectSize="sm" value={form.outcome} onChange={(e) => setForm({ ...form, outcome: e.target.value })}>
                 <option value="win">赢单</option>
                 <option value="loss">丢单</option>
                 <option value="no_decision">未决</option>
-              </select>
+              </Select>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">客户类型</label>
-              <input value={form.customerType} onChange={(e) => setForm({ ...form, customerType: e.target.value })} placeholder="如酒店工程/精装楼盘" className={inputCls + " w-full"} />
+              <Input fullWidth inputSize="sm" value={form.customerType} onChange={(e) => setForm({ ...form, customerType: e.target.value })} placeholder="如酒店工程/精装楼盘" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目名称</label>
-              <input value={form.projectName} onChange={(e) => setForm({ ...form, projectName: e.target.value })} className={inputCls + " w-full"} />
+              <Input fullWidth inputSize="sm" value={form.projectName} onChange={(e) => setForm({ ...form, projectName: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">合同金额（万元）</label>
-              <input type="number" value={form.dealSizeCny} onChange={(e) => setForm({ ...form, dealSizeCny: e.target.value })} className={inputCls + " w-full"} />
+              <Input fullWidth inputSize="sm" type="number" value={form.dealSizeCny} onChange={(e) => setForm({ ...form, dealSizeCny: e.target.value })} />
             </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">{form.outcome === "win" ? "赢单原因" : "丢单原因"}</label>
-            <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              rows={2} className={inputCls + " w-full resize-none"} />
+            <Textarea fullWidth value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })}
+              rows={2} className="resize-none" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">日期</label>
-            <input type="date" value={form.recordedAt} onChange={(e) => setForm({ ...form, recordedAt: e.target.value })} className={inputCls} />
+            <Input type="date" inputSize="sm" value={form.recordedAt} onChange={(e) => setForm({ ...form, recordedAt: e.target.value })} />
           </div>
           <div className="flex gap-2">
             <button onClick={submit} disabled={saving}

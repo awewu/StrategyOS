@@ -11,6 +11,7 @@ import { CapitalTab } from "@/components/finance/CapitalTab";
 import { SpbpScenarioEditor } from "@/components/finance/SpbpScenarioEditor";
 import { StacksEditor } from "@/components/stacks/StacksEditor";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StratosTabNav } from "@/components/ui/StratosTabNav";
 import { KpiTile } from "@/components/ui/KpiTile";
@@ -74,6 +75,8 @@ async function FinanceContent({
           </Link>
         }
       />
+
+      <GemPanel />
 
       <StratosTabNav tabs={tabs} />
 

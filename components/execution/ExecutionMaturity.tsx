@@ -7,8 +7,7 @@ import {
   ReferenceLine, ResponsiveContainer, Cell,
 } from "recharts";
 import { TENSION_META, type ExecutionMaturityPoint, type TensionType } from "@/lib/execution/tension-analysis";
-
-const mInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
+import { Input, Select } from "@/components/ui/primitives";
 
 function MaturityModal({ item, onClose, onSaved }: {
   item: Partial<ExecutionMaturityPoint>; onClose: () => void; onSaved: () => void;
@@ -34,10 +33,9 @@ function MaturityModal({ item, onClose, onSaved }: {
   const pctField = (label: string, key: "milestoneOnTimeRate" | "assumptionHitRate") => (
     <div className="space-y-1">
       <label className="text-xs font-medium text-[var(--color-text-secondary)]">{label}（0–100）</label>
-      <input type="number" min={0} max={100}
+      <Input type="number" fullWidth inputSize="sm" min={0} max={100}
         value={form[key] != null ? Math.round((form[key] as number) * 100) : ""}
-        onChange={(e) => setForm({ ...form, [key]: e.target.value === "" ? undefined : Number(e.target.value) / 100 })}
-        className={mInputCls} />
+        onChange={(e) => setForm({ ...form, [key]: e.target.value === "" ? undefined : Number(e.target.value) / 100 })} />
     </div>
   );
 
@@ -48,23 +46,23 @@ function MaturityModal({ item, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目代号 *</label>
-              <input value={form.projectCode ?? ""} onChange={(e) => setForm({ ...form, projectCode: e.target.value })} className={mInputCls} placeholder="V4" />
+              <Input fullWidth inputSize="sm" value={form.projectCode ?? ""} onChange={(e) => setForm({ ...form, projectCode: e.target.value })} placeholder="V4" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目名称 *</label>
-              <input value={form.projectName ?? ""} onChange={(e) => setForm({ ...form, projectName: e.target.value })} className={mInputCls} />
+              <Input fullWidth inputSize="sm" value={form.projectName ?? ""} onChange={(e) => setForm({ ...form, projectName: e.target.value })} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">负责人</label>
-              <input value={form.owner ?? ""} onChange={(e) => setForm({ ...form, owner: e.target.value })} className={mInputCls} />
+              <Input fullWidth inputSize="sm" value={form.owner ?? ""} onChange={(e) => setForm({ ...form, owner: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">层面</label>
-              <select value={form.horizon} onChange={(e) => setForm({ ...form, horizon: e.target.value })} className={mInputCls}>
+              <Select fullWidth selectSize="sm" value={form.horizon} onChange={(e) => setForm({ ...form, horizon: e.target.value })}>
                 <option value="H1">H1</option><option value="H2">H2</option><option value="H3">H3</option>
-              </select>
+              </Select>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -74,21 +72,21 @@ function MaturityModal({ item, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">响应延迟（天）</label>
-              <input type="number" value={form.responseLatencyDays ?? ""} onChange={(e) => setForm({ ...form, responseLatencyDays: e.target.value === "" ? undefined : Number(e.target.value) })} className={mInputCls} />
+              <Input type="number" fullWidth inputSize="sm" value={form.responseLatencyDays ?? ""} onChange={(e) => setForm({ ...form, responseLatencyDays: e.target.value === "" ? undefined : Number(e.target.value) })} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">预算规模（万）</label>
-              <input type="number" value={form.budgetTotal ?? ""} onChange={(e) => setForm({ ...form, budgetTotal: e.target.value === "" ? undefined : Number(e.target.value) })} className={mInputCls} />
+              <Input type="number" fullWidth inputSize="sm" value={form.budgetTotal ?? ""} onChange={(e) => setForm({ ...form, budgetTotal: e.target.value === "" ? undefined : Number(e.target.value) })} />
             </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">主要张力</label>
-            <select value={form.tensionType} onChange={(e) => setForm({ ...form, tensionType: e.target.value as TensionType })} className={mInputCls}>
+            <Select fullWidth selectSize="sm" value={form.tensionType} onChange={(e) => setForm({ ...form, tensionType: e.target.value as TensionType })}>
               <option value="capability">能力张力</option>
               <option value="direction">方向张力</option>
               <option value="adaptation">适应张力</option>
               <option value="resource">资源张力</option>
-            </select>
+            </Select>
           </div>
         </div>
         <div className="mt-5 flex justify-end gap-2">

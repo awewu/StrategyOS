@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AARRRFunnel } from "@/components/growth/AARRRFunnel";
 import { KellerBrandPyramid } from "@/components/growth/KellerBrandPyramid";
 import type { AarrrFunnelStage, KellerBrandLayer } from "@/lib/types/stratos";
+import { Input } from "@/components/ui/primitives";
 
 export function GrowthAnalyticsEditor({
   initialAarrr,
@@ -108,10 +109,10 @@ export function GrowthAnalyticsEditor({
             </div>
             {aarrr.map((s, i) => (
               <div key={s.stage} className="grid gap-1 rounded border border-[var(--surface-border)] p-2 text-xs sm:grid-cols-4">
-                <input className="rounded border px-2 py-1" value={s.label} onChange={(e) => patchAarrr(i, "label", e.target.value)} />
-                <input type="number" className="rounded border px-2 py-1 font-data" value={s.count} onChange={(e) => patchAarrr(i, "count", Number(e.target.value))} />
-                <input type="number" className="rounded border px-2 py-1 font-data" value={s.conversionPct} onChange={(e) => patchAarrr(i, "conversionPct", Number(e.target.value))} />
-                <input type="number" className="rounded border px-2 py-1 font-data" value={s.benchmarkPct} onChange={(e) => patchAarrr(i, "benchmarkPct", Number(e.target.value))} />
+                <Input fullWidth inputSize="sm" value={s.label} onChange={(e) => patchAarrr(i, "label", e.target.value)} />
+                <Input type="number" fullWidth inputSize="sm" className="font-data" value={s.count} onChange={(e) => patchAarrr(i, "count", Number(e.target.value))} />
+                <Input type="number" fullWidth inputSize="sm" className="font-data" value={s.conversionPct} onChange={(e) => patchAarrr(i, "conversionPct", Number(e.target.value))} />
+                <Input type="number" fullWidth inputSize="sm" className="font-data" value={s.benchmarkPct} onChange={(e) => patchAarrr(i, "benchmarkPct", Number(e.target.value))} />
               </div>
             ))}
           </div>
@@ -122,9 +123,9 @@ export function GrowthAnalyticsEditor({
             </div>
             {keller.map((l, i) => (
               <div key={l.layer} className="grid gap-1 rounded border border-[var(--surface-border)] p-2 text-xs sm:grid-cols-4">
-                <input className="rounded border px-2 py-1 sm:col-span-2" value={l.name} onChange={(e) => patchKeller(i, "name", e.target.value)} />
-                <input type="number" className="rounded border px-2 py-1 font-data" value={l.score} onChange={(e) => patchKeller(i, "score", Number(e.target.value))} />
-                <input type="number" className="rounded border px-2 py-1 font-data" value={l.target} onChange={(e) => patchKeller(i, "target", Number(e.target.value))} />
+                <Input fullWidth inputSize="sm" className="sm:col-span-2" value={l.name} onChange={(e) => patchKeller(i, "name", e.target.value)} />
+                <Input type="number" fullWidth inputSize="sm" className="font-data" value={l.score} onChange={(e) => patchKeller(i, "score", Number(e.target.value))} />
+                <Input type="number" fullWidth inputSize="sm" className="font-data" value={l.target} onChange={(e) => patchKeller(i, "target", Number(e.target.value))} />
               </div>
             ))}
           </div>

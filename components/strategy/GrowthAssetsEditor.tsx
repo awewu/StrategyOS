@@ -8,6 +8,7 @@ import type {
   JtbdRowInput,
   RoadmapRowInput,
 } from "@/lib/strategy/growth-assets";
+import { Input, Select } from "@/components/ui/primitives";
 
 const LANES = [
   { value: "now", label: "Now" },
@@ -21,9 +22,6 @@ const STATUSES = [
   { value: "deferred", label: "推迟" },
 ] as const;
 const BRANDS = ["RHEEM", "EVERHOT", "RUUD", "AUQAHART"] as const;
-
-const inputCls =
-  "w-full rounded border border-[var(--surface-border)] bg-transparent px-2 py-1 text-sm";
 
 export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle }) {
   const router = useRouter();
@@ -57,14 +55,14 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
   }
 
   const lineSelect = (value: string, onChange: (v: string) => void) => (
-    <select className={inputCls} value={value} onChange={(e) => onChange(e.target.value)}>
+    <Select fullWidth selectSize="sm" value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="">选择产品线</option>
       {lines.map((l) => (
         <option key={l.id} value={l.id}>
           {l.code} · {l.name}
         </option>
       ))}
-    </select>
+    </Select>
   );
 
   return (
@@ -77,27 +75,33 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
           产品线（{lines.length}）— 路线图与 JTBD 的挂靠对象
         </h3>
         <div className="flex flex-wrap items-center gap-2">
-          <input
-            className={`${inputCls} max-w-28`}
+          <Input
+            fullWidth
+            inputSize="sm"
+            className="max-w-28"
             placeholder="Code"
             value={newLine.code}
             onChange={(e) => setNewLine({ ...newLine, code: e.target.value })}
           />
-          <input
-            className={`${inputCls} max-w-48`}
+          <Input
+            fullWidth
+            inputSize="sm"
+            className="max-w-48"
             placeholder="名称"
             value={newLine.name}
             onChange={(e) => setNewLine({ ...newLine, name: e.target.value })}
           />
-          <select
-            className={`${inputCls} max-w-32`}
+          <Select
+            fullWidth
+            selectSize="sm"
+            wrapperClassName="max-w-32"
             value={newLine.brandCode}
             onChange={(e) => setNewLine({ ...newLine, brandCode: e.target.value })}
           >
             {BRANDS.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
-          </select>
+          </Select>
           <button
             type="button"
             className="stratos-btn stratos-btn--ghost text-xs"
@@ -136,20 +140,21 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
         <div className="space-y-2">
           {brandCards.map((r, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[7rem_1fr_1fr_1fr_2rem]">
-              <select
-                className={inputCls}
+              <Select
+                fullWidth
+                selectSize="sm"
                 value={r.brandCode}
                 onChange={(e) => setBrandCards(brandCards.map((x, j) => (j === i ? { ...x, brandCode: e.target.value as BrandCardRowInput["brandCode"] } : x)))}
               >
                 {BRANDS.map((b) => (
                   <option key={b} value={b}>{b}</option>
                 ))}
-              </select>
-              <input className={inputCls} placeholder="制胜愿景 ≤60" value={r.winningAspiration}
+              </Select>
+              <Input fullWidth inputSize="sm" placeholder="制胜愿景 ≤60" value={r.winningAspiration}
                 onChange={(e) => setBrandCards(brandCards.map((x, j) => (j === i ? { ...x, winningAspiration: e.target.value } : x)))} />
-              <input className={inputCls} placeholder="在哪竞争 Where to Play" value={r.whereToPlay}
+              <Input fullWidth inputSize="sm" placeholder="在哪竞争 Where to Play" value={r.whereToPlay}
                 onChange={(e) => setBrandCards(brandCards.map((x, j) => (j === i ? { ...x, whereToPlay: e.target.value } : x)))} />
-              <input className={inputCls} placeholder="如何取胜 How to Win" value={r.howToWin}
+              <Input fullWidth inputSize="sm" placeholder="如何取胜 How to Win" value={r.howToWin}
                 onChange={(e) => setBrandCards(brandCards.map((x, j) => (j === i ? { ...x, howToWin: e.target.value } : x)))} />
               <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
                 onClick={() => setBrandCards(brandCards.filter((_, j) => j !== i))}>×</button>
@@ -177,22 +182,22 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
           {roadmap.map((r, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[1fr_6rem_1fr_6rem_6rem_2rem]">
               {lineSelect(r.productLineId, (v) => setRoadmap(roadmap.map((x, j) => (j === i ? { ...x, productLineId: v } : x))))}
-              <select className={inputCls} value={r.lane}
+              <Select fullWidth selectSize="sm" value={r.lane}
                 onChange={(e) => setRoadmap(roadmap.map((x, j) => (j === i ? { ...x, lane: e.target.value as RoadmapRowInput["lane"] } : x)))}>
                 {LANES.map((l) => (
                   <option key={l.value} value={l.value}>{l.label}</option>
                 ))}
-              </select>
-              <input className={inputCls} placeholder="里程碑" value={r.milestone}
+              </Select>
+              <Input fullWidth inputSize="sm" placeholder="里程碑" value={r.milestone}
                 onChange={(e) => setRoadmap(roadmap.map((x, j) => (j === i ? { ...x, milestone: e.target.value } : x)))} />
-              <input className={inputCls} placeholder="2026-Q3" value={r.targetQuarter}
+              <Input fullWidth inputSize="sm" placeholder="2026-Q3" value={r.targetQuarter}
                 onChange={(e) => setRoadmap(roadmap.map((x, j) => (j === i ? { ...x, targetQuarter: e.target.value } : x)))} />
-              <select className={inputCls} value={r.status}
+              <Select fullWidth selectSize="sm" value={r.status}
                 onChange={(e) => setRoadmap(roadmap.map((x, j) => (j === i ? { ...x, status: e.target.value as RoadmapRowInput["status"] } : x)))}>
                 {STATUSES.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
-              </select>
+              </Select>
               <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
                 onClick={() => setRoadmap(roadmap.filter((_, j) => j !== i))}>×</button>
             </div>
@@ -219,9 +224,9 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
           {jtbd.map((r, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[1fr_2fr_1fr_2rem]">
               {lineSelect(r.productLineId, (v) => setJtbd(jtbd.map((x, j) => (j === i ? { ...x, productLineId: v } : x))))}
-              <input className={inputCls} placeholder="任务陈述：当…时，我想…以便…" value={r.statement}
+              <Input fullWidth inputSize="sm" placeholder="任务陈述：当…时，我想…以便…" value={r.statement}
                 onChange={(e) => setJtbd(jtbd.map((x, j) => (j === i ? { ...x, statement: e.target.value } : x)))} />
-              <input className={inputCls} placeholder="主客群" value={r.primarySegment}
+              <Input fullWidth inputSize="sm" placeholder="主客群" value={r.primarySegment}
                 onChange={(e) => setJtbd(jtbd.map((x, j) => (j === i ? { ...x, primarySegment: e.target.value } : x)))} />
               <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
                 onClick={() => setJtbd(jtbd.filter((_, j) => j !== i))}>×</button>

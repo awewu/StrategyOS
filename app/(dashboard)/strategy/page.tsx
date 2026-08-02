@@ -7,6 +7,7 @@ import { StrategyTabs } from "@/components/strategy/StrategyTabs";
 import { GrowthAssetsEditor } from "@/components/strategy/GrowthAssetsEditor";
 import { getGrowthAssetsBundle } from "@/lib/strategy/growth-assets";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCapitalSummaryLine } from "@/lib/data/entity-getters";
 import { getStrategyBundle } from "@/lib/data/strategy-data";
@@ -37,6 +38,7 @@ export default async function StrategyPage({
         title="战略总览"
         subtitle={`我们的战略主张是什么 · 三栈与制胜逻辑 · ${activePeriod}`}
       />
+      <GemPanel />
       <StrategyTabs active={activeTab} />
       <PlanLifecycleBar />
       {activeTab === "view" ? (

@@ -1,4 +1,5 @@
 import { CommitmentCockpit } from "@/components/cockpit/CommitmentCockpit";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getEffectiveRole, getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
 import { assertSliceAccess, getOrgScope } from "@/lib/auth/scope";
@@ -45,6 +46,7 @@ export default async function CockpitPage({
         title="坚守驾驶舱"
         subtitle={`承诺兑现 · 逾期示警 · ${sliceLabel}`}
       />
+      <GemPanel />
       <CommitmentCockpit
         commitments={commitments}
         sliceLabel={resolved?.slice.label}

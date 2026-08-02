@@ -3,11 +3,10 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import { TENSION_META, type TensionItem, type TensionType } from "@/lib/execution/tension-analysis";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 
 const SEV_COLOR = { high: "bg-[var(--signal-red)]", medium: "bg-[var(--signal-yellow)]", low: "bg-[var(--signal-green)]" } as const;
 const SEV_LABEL = { high: "高", medium: "中", low: "低" } as const;
-const tInputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
-
 function TensionCard({ item, active, onClick }: { item: TensionItem; active: boolean; onClick: () => void }) {
   const meta = TENSION_META[item.tensionType];
   return (
@@ -59,52 +58,52 @@ function TensionModal({ item, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目代号 *</label>
-              <input value={form.projectCode ?? ""} onChange={(e) => setForm({ ...form, projectCode: e.target.value })} className={tInputCls} placeholder="V4" />
+              <Input fullWidth inputSize="sm" value={form.projectCode ?? ""} onChange={(e) => setForm({ ...form, projectCode: e.target.value })} placeholder="V4" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">项目名称 *</label>
-              <input value={form.projectName ?? ""} onChange={(e) => setForm({ ...form, projectName: e.target.value })} className={tInputCls} placeholder="热泵新品上市" />
+              <Input fullWidth inputSize="sm" value={form.projectName ?? ""} onChange={(e) => setForm({ ...form, projectName: e.target.value })} placeholder="热泵新品上市" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">张力类型</label>
-              <select value={form.tensionType} onChange={(e) => setForm({ ...form, tensionType: e.target.value as TensionType })} className={tInputCls}>
+              <Select fullWidth selectSize="sm" value={form.tensionType} onChange={(e) => setForm({ ...form, tensionType: e.target.value as TensionType })}>
                 <option value="capability">能力张力</option>
                 <option value="direction">方向张力</option>
                 <option value="adaptation">适应张力</option>
                 <option value="resource">资源张力</option>
-              </select>
+              </Select>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">严重度</label>
-              <select value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value as TensionItem["severity"] })} className={tInputCls}>
+              <Select fullWidth selectSize="sm" value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value as TensionItem["severity"] })}>
                 <option value="high">高</option>
                 <option value="medium">中</option>
                 <option value="low">低</option>
-              </select>
+              </Select>
             </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">信号 *</label>
-            <textarea value={form.signal ?? ""} onChange={(e) => setForm({ ...form, signal: e.target.value })} rows={2} className={tInputCls + " resize-none"} placeholder="样机测试通过率 72%，目标 100%，已延期两个月" />
+            <Textarea fullWidth value={form.signal ?? ""} onChange={(e) => setForm({ ...form, signal: e.target.value })} rows={2} className="resize-none" placeholder="样机测试通过率 72%，目标 100%，已延期两个月" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">诊断</label>
-            <textarea value={form.diagnosis ?? ""} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} rows={2} className={tInputCls + " resize-none"} placeholder="产品化能力缺口，非执行懈怠" />
+            <Textarea fullWidth value={form.diagnosis ?? ""} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} rows={2} className="resize-none" placeholder="产品化能力缺口，非执行懈怠" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">建议</label>
-            <textarea value={form.recommendation ?? ""} onChange={(e) => setForm({ ...form, recommendation: e.target.value })} rows={2} className={tInputCls + " resize-none"} placeholder="引入外部集成顾问，并行建立内部能力" />
+            <Textarea fullWidth value={form.recommendation ?? ""} onChange={(e) => setForm({ ...form, recommendation: e.target.value })} rows={2} className="resize-none" placeholder="引入外部集成顾问，并行建立内部能力" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">关联假设</label>
-              <input value={form.linkedAssumptionCode ?? ""} onChange={(e) => setForm({ ...form, linkedAssumptionCode: e.target.value || undefined })} className={tInputCls} placeholder="H2" />
+              <Input fullWidth inputSize="sm" value={form.linkedAssumptionCode ?? ""} onChange={(e) => setForm({ ...form, linkedAssumptionCode: e.target.value || undefined })} placeholder="H2" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">关联 KR</label>
-              <input value={form.linkedKr ?? ""} onChange={(e) => setForm({ ...form, linkedKr: e.target.value || undefined })} className={tInputCls} />
+              <Input fullWidth inputSize="sm" value={form.linkedKr ?? ""} onChange={(e) => setForm({ ...form, linkedKr: e.target.value || undefined })} />
             </div>
           </div>
         </div>

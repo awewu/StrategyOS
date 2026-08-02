@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { BudgetVersionView, BudgetAction } from "@/lib/finance/budget-versions";
+import { Input } from "@/components/ui/primitives";
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   draft: { text: "草案", cls: "bg-black/[0.06] text-[var(--color-text-secondary)]" },
@@ -69,16 +70,16 @@ export function BudgetVersionsPanel({ initial }: { initial: BudgetVersionView[] 
         <div className="flex flex-wrap items-end gap-2">
           <label className="text-xs">
             财年
-            <input
-              className="stratos-input mt-1 block w-24"
+            <Input
+              className="mt-1 block w-24"
               value={form.fiscalYear}
               onChange={(e) => setForm((f) => ({ ...f, fiscalYear: e.target.value }))}
             />
           </label>
           <label className="text-xs">
             版本名称
-            <input
-              className="stratos-input mt-1 block w-64"
+            <Input
+              className="mt-1 block w-64"
               placeholder="如：2025 年度预算 V1"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -86,16 +87,16 @@ export function BudgetVersionsPanel({ initial }: { initial: BudgetVersionView[] 
           </label>
           <label className="text-xs">
             关联情景
-            <input
-              className="stratos-input mt-1 block w-40"
+            <Input
+              className="mt-1 block w-40"
               value={form.scenarioCode}
               onChange={(e) => setForm((f) => ({ ...f, scenarioCode: e.target.value }))}
             />
           </label>
           <label className="text-xs">
             备注
-            <input
-              className="stratos-input mt-1 block w-72"
+            <Input
+              className="mt-1 block w-72"
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             />

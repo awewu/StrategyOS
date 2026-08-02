@@ -8,7 +8,9 @@ import {
   saveNorthStarToApi,
   type NorthStarForm,
 } from "@/components/compass/NorthStarEditModal";
+import { RationalityReviewPanel } from "@/components/compass/RationalityReviewPanel";
 import { riskVerdict } from "@/lib/compass/risk-engine";
+import { Input, Textarea } from "@/components/ui/primitives";
 
 const CATEGORY_LABEL: Record<string, string> = {
   market: "市场", technology: "技术", regulation: "政策", competition: "竞争", capability: "能力",
@@ -45,7 +47,7 @@ function ConfidenceFragilityDot({ confidence, fragility }: { confidence: number;
 
 export function CompassClient({ bundle }: { bundle: CompassBundle }) {
   const { northStar, milestones, premises, currentRevenue, planBsc, planSource, planId } = bundle;
-  const [tab, setTab] = useState<"path" | "premises">("path");
+  const [tab, setTab] = useState<"path" | "premises" | "rationality">("path");
   const [editPremise, setEditPremise] = useState<PremiseAudit | null>(null);
   const [editMilestone, setEditMilestone] = useState<CompassMilestone | null>(null);
   const [editNorthStar, setEditNorthStar] = useState<boolean>(false);
@@ -260,7 +262,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-1 w-fit">
-        {([["path", "路径风险反推"], ["premises", "战略前提审计"]] as const).map(([id, label]) => (
+        {([["path", "路径风险反推"], ["premises", "战略前提审计"], ["rationality", "合理性审视"]] as const).map(([id, label]) => (
           <button key={id} onClick={() => setTab(id)}
             className={`rounded-md px-4 py-1.5 text-sm transition-colors ${tab === id ? "bg-[var(--color-accent)] text-white" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"}`}>
             {label}
@@ -499,6 +501,9 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
         </section>
       )}
 
+      {/* Rationality review tab */}
+      {tab === "rationality" && <RationalityReviewPanel />}
+
       {/* Edit modal */}
       {editMilestone && northStar ? (
         <MilestoneEditModal
@@ -533,7 +538,6 @@ function MilestoneEditModal({ milestone, saving, onClose, onSave }: {
   onSave: (data: CompassMilestone) => void;
 }) {
   const [form, setForm] = useState({ ...milestone });
-  const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
   const isNew = !form.id || !form.id.includes("-");
 
   return (
@@ -542,17 +546,17 @@ function MilestoneEditModal({ milestone, saving, onClose, onSave }: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">年份</label>
-              <input type="number" className={inp} value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: +e.target.value }))} />
+              <Input type="number" fullWidth inputSize="sm" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: +e.target.value }))} />
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">标签</label>
-              <input className={inp} value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} placeholder="如：站稳1亿" />
+              <Input fullWidth inputSize="sm" value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} placeholder="如：站稳1亿" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">目标营收（万元）</label>
-              <input type="number" className={inp} value={form.revenueTarget ?? ""} onChange={(e) => setForm((f) => ({ ...f, revenueTarget: e.target.value ? +e.target.value : null }))} />
+              <Input type="number" fullWidth inputSize="sm" value={form.revenueTarget ?? ""} onChange={(e) => setForm((f) => ({ ...f, revenueTarget: e.target.value ? +e.target.value : null }))} />
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">目标利润率 {form.profitMarginTarget != null ? Math.round(form.profitMarginTarget * 100) : 0}%</label>
@@ -561,13 +565,13 @@ function MilestoneEditModal({ milestone, saving, onClose, onSave }: {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">实际营收（万元，可选）</label>
-            <input type="number" className={inp} value={form.revenueActual ?? ""} onChange={(e) => setForm((f) => ({ ...f, revenueActual: e.target.value ? +e.target.value : null }))} />
+            <Input type="number" fullWidth inputSize="sm" value={form.revenueActual ?? ""} onChange={(e) => setForm((f) => ({ ...f, revenueActual: e.target.value ? +e.target.value : null }))} />
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">必要条件（逗号分隔）</label>
-            <input className={inp} value={form.keyConditions.join("，")} onChange={(e) => setForm((f) => ({ ...f, keyConditions: e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean) }))} />
+            <Input fullWidth inputSize="sm" value={form.keyConditions.join("，")} onChange={(e) => setForm((f) => ({ ...f, keyConditions: e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean) }))} />
           </div>
-          <textarea rows={2} className={inp} value={form.progressNote ?? ""} onChange={(e) => setForm((f) => ({ ...f, progressNote: e.target.value || null }))} placeholder="进度说明（可选）" />
+          <Textarea rows={2} fullWidth value={form.progressNote ?? ""} onChange={(e) => setForm((f) => ({ ...f, progressNote: e.target.value || null }))} placeholder="进度说明（可选）" />
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>
@@ -587,12 +591,11 @@ function PremiseEditModal({ premise, saving, onClose, onSave }: {
   onSave: (data: Partial<PremiseAudit>) => void;
 }) {
   const [form, setForm] = useState({ ...premise });
-  const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
   return (
     <Modal onClose={onClose} size="lg" title={`${form.code} 前提假设更新`}>
         <div className="space-y-3">
-          <textarea rows={3} className={inp} value={form.premise} onChange={e => setForm(f => ({ ...f, premise: e.target.value }))} placeholder="假设内容" />
+          <Textarea rows={3} fullWidth value={form.premise} onChange={e => setForm(f => ({ ...f, premise: e.target.value }))} placeholder="假设内容" />
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-xs font-medium text-[var(--color-text-muted)]">置信度 {form.confidence}%</label>
@@ -603,9 +606,9 @@ function PremiseEditModal({ premise, saving, onClose, onSave }: {
               <input type="range" min={0} max={100} value={form.fragility} onChange={e => setForm(f => ({ ...f, fragility: +e.target.value }))} className="w-full accent-[var(--color-accent)]" />
             </div>
           </div>
-          <textarea rows={2} className={inp} value={form.validationNote ?? ""} onChange={e => setForm(f => ({ ...f, validationNote: e.target.value }))} placeholder="验证说明（可选）" />
-          <input className={inp} value={form.failSignal ?? ""} onChange={e => setForm(f => ({ ...f, failSignal: e.target.value || null }))} placeholder="失效信号（如有，留空清除）" />
-          <input className={inp} value={form.signalSource ?? ""} onChange={e => setForm(f => ({ ...f, signalSource: e.target.value || null }))} placeholder="信号来源（如有）" />
+          <Textarea rows={2} fullWidth value={form.validationNote ?? ""} onChange={e => setForm(f => ({ ...f, validationNote: e.target.value }))} placeholder="验证说明（可选）" />
+          <Input fullWidth inputSize="sm" value={form.failSignal ?? ""} onChange={e => setForm(f => ({ ...f, failSignal: e.target.value || null }))} placeholder="失效信号（如有，留空清除）" />
+          <Input fullWidth inputSize="sm" value={form.signalSource ?? ""} onChange={e => setForm(f => ({ ...f, signalSource: e.target.value || null }))} placeholder="信号来源（如有）" />
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:bg-black/[0.04]">取消</button>

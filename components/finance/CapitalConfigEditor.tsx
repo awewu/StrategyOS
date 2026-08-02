@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PostInvestPanel, RealOptionsPanel } from "@/components/finance/RealOptionsPanel";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 import type { PostInvestDeviation, RealOptionTag } from "@/lib/types/stratos";
 
 const STATUS_OPTS: PostInvestDeviation["status"][] = ["on_track", "watch", "critical"];
@@ -128,20 +129,24 @@ export function CapitalConfigEditor({
             </div>
             {options.map((o, i) => (
               <div key={i} className="grid gap-2 rounded-lg border border-[var(--surface-border)] p-4 sm:grid-cols-2">
-                <input
-                  className="stratos-input text-sm"
+                <Input
+                  fullWidth
+                  inputSize="sm"
                   value={o.icCode}
                   placeholder="IC 编号"
                   onChange={(e) => patchOption(i, { icCode: e.target.value })}
                 />
-                <input
-                  className="stratos-input text-sm"
+                <Input
+                  fullWidth
+                  inputSize="sm"
                   value={o.title}
                   placeholder="标题"
                   onChange={(e) => patchOption(i, { title: e.target.value })}
                 />
-                <input
-                  className="stratos-input text-sm sm:col-span-2"
+                <Input
+                  fullWidth
+                  inputSize="sm"
+                  className="sm:col-span-2"
                   value={o.stageGate}
                   placeholder="阶段门"
                   onChange={(e) => patchOption(i, { stageGate: e.target.value })}
@@ -154,15 +159,17 @@ export function CapitalConfigEditor({
                   />
                   放弃权
                 </label>
-                <input
+                <Input
                   type="number"
-                  className="stratos-input text-sm"
+                  fullWidth
+                  inputSize="sm"
                   value={o.nextCommitAmount}
                   placeholder="下期 commit（万）"
                   onChange={(e) => patchOption(i, { nextCommitAmount: Number(e.target.value) })}
                 />
-                <textarea
-                  className="stratos-input text-sm sm:col-span-2"
+                <Textarea
+                  fullWidth
+                  className="sm:col-span-2"
                   rows={2}
                   value={o.optionValueNote}
                   placeholder="期权价值说明"
@@ -181,42 +188,49 @@ export function CapitalConfigEditor({
             </div>
             {deviations.map((d, i) => (
               <div key={i} className="grid gap-2 rounded-lg border border-[var(--surface-border)] p-4 sm:grid-cols-3">
-                <input
-                  className="stratos-input text-sm"
+                <Input
+                  fullWidth
+                  inputSize="sm"
                   value={d.icCode}
                   placeholder="IC 编号"
                   onChange={(e) => patchDeviation(i, { icCode: e.target.value })}
                 />
-                <input
-                  className="stratos-input text-sm sm:col-span-2"
+                <Input
+                  fullWidth
+                  inputSize="sm"
+                  className="sm:col-span-2"
                   value={d.title}
                   placeholder="标题"
                   onChange={(e) => patchDeviation(i, { title: e.target.value })}
                 />
-                <input
+                <Input
                   type="number"
-                  className="stratos-input text-sm"
+                  fullWidth
+                  inputSize="sm"
                   value={d.approvedCapex}
                   placeholder="批准 CAPEX"
                   onChange={(e) => patchDeviation(i, { approvedCapex: Number(e.target.value) })}
                 />
-                <input
+                <Input
                   type="number"
-                  className="stratos-input text-sm"
+                  fullWidth
+                  inputSize="sm"
                   value={d.actualCapex}
                   placeholder="实际 CAPEX"
                   onChange={(e) => patchDeviation(i, { actualCapex: Number(e.target.value) })}
                 />
-                <input
+                <Input
                   type="number"
-                  className="stratos-input text-sm"
+                  fullWidth
+                  inputSize="sm"
                   value={d.expectedIrr}
                   placeholder="预期 IRR %"
                   onChange={(e) => patchDeviation(i, { expectedIrr: Number(e.target.value) })}
                 />
-                <input
+                <Input
                   type="number"
-                  className="stratos-input text-sm"
+                  fullWidth
+                  inputSize="sm"
                   value={d.actualIrr ?? ""}
                   placeholder="实际 IRR %"
                   onChange={(e) =>
@@ -225,15 +239,17 @@ export function CapitalConfigEditor({
                     })
                   }
                 />
-                <input
+                <Input
                   type="number"
-                  className="stratos-input text-sm"
+                  fullWidth
+                  inputSize="sm"
                   value={d.deviationPct}
                   placeholder="偏离 %"
                   onChange={(e) => patchDeviation(i, { deviationPct: Number(e.target.value) })}
                 />
-                <select
-                  className="stratos-input text-sm"
+                <Select
+                  fullWidth
+                  selectSize="sm"
                   value={d.status}
                   onChange={(e) =>
                     patchDeviation(i, { status: e.target.value as PostInvestDeviation["status"] })
@@ -244,7 +260,7 @@ export function CapitalConfigEditor({
                       {s}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             ))}
           </section>

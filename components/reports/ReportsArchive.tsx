@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Input, Select, Textarea } from "@/components/ui/primitives";
 
 type OrgUnit = { id: string; name: string; level: string };
 type ReportRow = {
@@ -198,20 +199,22 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="label-xs">报告类型</label>
-              <select
-                className="stratos-input mt-1"
+              <Select
+                fullWidth
+                className="mt-1"
                 value={form.reportType}
                 onChange={(e) => setForm((f) => ({ ...f, reportType: e.target.value }))}
               >
                 {Object.entries(REPORT_TYPE_LABELS).filter(([k]) => k !== "MON_PULSE").map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="label-xs">所属部门/事业部</label>
-              <select
-                className="stratos-input mt-1"
+              <Select
+                fullWidth
+                className="mt-1"
                 required={["MON_RPT", "QTR_REV", "ANNUAL_RPT"].includes(form.reportType)}
                 value={form.orgUnitId}
                 onChange={(e) => setForm((f) => ({ ...f, orgUnitId: e.target.value }))}
@@ -220,13 +223,14 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                 {orgUnits.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="label-xs">报告期</label>
-              <input
+              <Input
+                fullWidth
                 type="month"
-                className="stratos-input mt-1"
+                className="mt-1"
                 value={form.period}
                 onChange={(e) => setForm((f) => ({ ...f, period: e.target.value }))}
               />
@@ -234,8 +238,9 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           </div>
           <div>
             <label className="label-xs">报告标题 *</label>
-            <input
-              className="stratos-input mt-1 w-full"
+            <Input
+              fullWidth
+              className="mt-1"
               placeholder="如：空调事业部 2026-06 月度经营报告"
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -255,8 +260,9 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           </div>
           <div>
             <label className="label-xs">或直接粘贴文字内容</label>
-            <textarea
-              className="stratos-input mt-1 w-full min-h-[80px] resize-y"
+            <Textarea
+              fullWidth
+              className="mt-1 min-h-[80px]"
               placeholder="可粘贴报告正文，补充说明文件中无法提取的内容"
               value={form.rawContent}
               onChange={(e) => setForm((f) => ({ ...f, rawContent: e.target.value }))}
@@ -282,8 +288,8 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <select
-          className="stratos-input text-sm"
+        <Select
+          selectSize="sm"
           value={filters.orgUnitId}
           onChange={(e) => f("orgUnitId", e.target.value)}
         >
@@ -291,9 +297,9 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           {orgUnits.map((u) => (
             <option key={u.id} value={u.id}>{u.name}</option>
           ))}
-        </select>
-        <select
-          className="stratos-input text-sm"
+        </Select>
+        <Select
+          selectSize="sm"
           value={filters.reportType}
           onChange={(e) => f("reportType", e.target.value)}
         >
@@ -301,15 +307,15 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           {Object.entries(REPORT_TYPE_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
-        </select>
-        <input
+        </Select>
+        <Input
+          inputSize="sm"
           type="month"
-          className="stratos-input text-sm"
           value={filters.period}
           onChange={(e) => f("period", e.target.value)}
         />
-        <select
-          className="stratos-input text-sm"
+        <Select
+          selectSize="sm"
           value={filters.approval}
           onChange={(e) => f("approval", e.target.value)}
         >
@@ -317,7 +323,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
           <option value="PENDING">待审批</option>
           <option value="APPROVED">已存档</option>
           <option value="REJECTED">已退回</option>
-        </select>
+        </Select>
         <button
           type="button"
           onClick={() => {

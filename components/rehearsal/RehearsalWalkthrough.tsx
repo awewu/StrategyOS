@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { RehearsalPresentMode } from "@/components/rehearsal/RehearsalPresentMode";
 import { PresentationSetupModal } from "@/components/rehearsal/PresentationSetupModal";
 import { typography } from "@/lib/brand/typography";
+import { Select } from "@/components/ui/primitives";
 import { Q3_REHEARSAL_AGENDA, REHEARSAL_TOTAL_MIN } from "@/lib/rehearsal/q3-agenda";
 import type { RehearsalLiveContext } from "@/lib/rehearsal/live-context";
 import {
@@ -113,31 +114,33 @@ function StrategyDeckPicker({
       <div className="grid gap-3 md:grid-cols-[1fr_1.4fr_auto] md:items-end">
         <label className="text-caption">
           部门
-          <select
+          <Select
+            fullWidth
             value={orgUnitId}
             onChange={(e) => changeOrg(e.target.value)}
-            className="stratos-input mt-1 text-sm"
+            className="mt-1"
           >
             {orgs.map((org) => (
               <option key={org.id} value={org.id}>
                 {org.name} · {org.options.length} 版
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="text-caption">
           战略版本
-          <select
+          <Select
+            fullWidth
             value={selectedVersion?.key ?? ""}
             onChange={(e) => changeVersion(e.target.value)}
-            className="stratos-input mt-1 text-sm"
+            className="mt-1"
           >
             {versions.map((option) => (
               <option key={option.key} value={option.key}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <button
           type="button"

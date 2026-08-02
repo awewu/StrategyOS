@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { SOURCE_LABEL } from "@/lib/market-intel/types";
 import type { SourceKind } from "@/lib/market-intel/types";
+import { Input, Select } from "@/components/ui/primitives";
 
 type Source = {
   id: string; competitor: string; kind: SourceKind;
@@ -15,8 +16,6 @@ const HEALTH_COLOR: Record<string, string> = {
   active: "var(--signal-green)", stale: "var(--signal-yellow)", empty: "var(--signal-red)",
 };
 const HEALTH_LABEL: Record<string, string> = { active: "活跃", stale: "过时", empty: "空" };
-
-const inputCls = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 export function IntelSourcesEditor({ sources: init, saving, post, del }: {
   sources: Source[];
@@ -103,23 +102,23 @@ export function IntelSourcesEditor({ sources: init, saving, post, del }: {
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">竞品名称 *</label>
-                <input value={form.competitor ?? ""} onChange={(e) => setForm({ ...form, competitor: e.target.value })} className={inputCls} placeholder="如：史密斯" />
+                <Input fullWidth inputSize="sm" value={form.competitor ?? ""} onChange={(e) => setForm({ ...form, competitor: e.target.value })} placeholder="如：史密斯" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">来源类型 *</label>
-                <select value={form.kind ?? "official_site"} onChange={(e) => setForm({ ...form, kind: e.target.value as SourceKind })} className={inputCls}>
+                <Select fullWidth selectSize="sm" value={form.kind ?? "official_site"} onChange={(e) => setForm({ ...form, kind: e.target.value as SourceKind })}>
                   {(Object.keys(SOURCE_LABEL) as SourceKind[]).map((k) => (
                     <option key={k} value={k}>{SOURCE_LABEL[k]}</option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">URL（可选）</label>
-                <input value={form.url ?? ""} onChange={(e) => setForm({ ...form, url: e.target.value || null })} className={inputCls} placeholder="https://..." />
+                <Input fullWidth inputSize="sm" value={form.url ?? ""} onChange={(e) => setForm({ ...form, url: e.target.value || null })} placeholder="https://..." />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-[var(--color-text-secondary)]">抓取频率（天）</label>
-                <input type="number" min={1} value={form.cadenceDays ?? 7} onChange={(e) => setForm({ ...form, cadenceDays: +e.target.value })} className={inputCls} />
+                <Input type="number" fullWidth inputSize="sm" min={1} value={form.cadenceDays ?? 7} onChange={(e) => setForm({ ...form, cadenceDays: +e.target.value })} />
               </div>
               <div className="space-y-1">
                 <label className="flex items-center gap-2 text-sm">

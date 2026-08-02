@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { CompiledStrategicPayload } from "@/lib/compiler/strategic-compiler";
 import type { QualityReject } from "@/lib/compiler/import-quality";
 import type { ImportDeductionReport } from "@/lib/compiler/import-deduction";
+import { Textarea } from "@/components/ui/primitives";
 
 type ImportMode = "merge" | "replace";
 
@@ -193,9 +194,10 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
           <label className="label-xs" htmlFor="strategic-import-text">
             或粘贴战略正文
           </label>
-          <textarea
+          <Textarea
             id="strategic-import-text"
-            className="stratos-input mt-1 min-h-[7.5rem]"
+            fullWidth
+            className="mt-1 min-h-[7.5rem]"
             placeholder={"O1: 营收 6000 万路径\nKR1: 酒店签约 1200 家\n财务: EBIT 11.2%"}
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}

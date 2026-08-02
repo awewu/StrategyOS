@@ -2,6 +2,7 @@ import type {
   LedgerBundle,
   TbDisplayRow,
 } from "@/lib/finance/ledger-queries";
+import { Input } from "@/components/ui/primitives";
 
 export type LedgerTab = "overview" | "tb" | "gl" | "facts" | "bridge" | "pvi" | "budget" | "accounts" | "depts" | "ops" | "trend" | "manual";
 
@@ -64,12 +65,13 @@ function SearchForm({ tab, q, period }: { tab: LedgerTab; q?: string; period?: s
     <form method="get" action="/finance/ledger" className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="tab" value={tab} />
       {period ? <input type="hidden" name="period" value={period} /> : null}
-      <input
+      <Input
         type="search"
         name="q"
+        inputSize="sm"
         defaultValue={q ?? ""}
         placeholder="按科目码 / 名称 / 美国科目搜索…"
-        className="stratos-input w-64 text-sm"
+        className="w-64"
       />
       <button type="submit" className="stratos-btn stratos-btn--ghost text-xs">
         搜索

@@ -3,17 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiveYearForecast, SensitivityPanel } from "@/components/finance/FiveYearForecast";
+import { Input } from "@/components/ui/primitives";
 import type { FpaYearRow, SensitivityDriver } from "@/lib/types/stratos";
 
-function numInput(
-  value: number,
-  onChange: (v: number) => void,
-  className = "stratos-input py-1 font-data text-xs",
-) {
+function numInput(value: number, onChange: (v: number) => void) {
   return (
-    <input
+    <Input
       type="number"
-      className={className}
+      inputSize="sm"
+      fullWidth
+      className="font-data"
       value={Number.isFinite(value) ? value : 0}
       onChange={(e) => onChange(Number(e.target.value))}
     />
@@ -130,8 +129,9 @@ export function OutlookEditor({
                   {rows.map((r, i) => (
                     <tr key={r.year}>
                       <td>
-                        <input
-                          className="stratos-input py-1 w-20 font-data text-xs"
+                        <Input
+                          inputSize="sm"
+                          className="w-20 font-data"
                           value={r.year}
                           onChange={(e) => patchRow(i, { year: e.target.value })}
                         />
@@ -155,8 +155,8 @@ export function OutlookEditor({
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <label className="block">
                     <span className="label-xs">驱动项</span>
-                    <input
-                      className="stratos-input"
+                    <Input
+                      fullWidth
                       value={d.label}
                       onChange={(e) => patchDriver(i, { label: e.target.value })}
                     />
@@ -167,8 +167,8 @@ export function OutlookEditor({
                   </label>
                   <label className="block">
                     <span className="label-xs">单位</span>
-                    <input
-                      className="stratos-input"
+                    <Input
+                      fullWidth
                       value={d.unit}
                       onChange={(e) => patchDriver(i, { unit: e.target.value })}
                     />

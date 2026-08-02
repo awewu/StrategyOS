@@ -5,6 +5,7 @@ import { DownloadPdfButton } from "@/components/brand/DownloadPdfButton";
 import { getInboxSummary } from "@/lib/inbox/count";
 import { CommandBoardShell } from "@/components/command/CommandBoardShell";
 import { CommandTabs } from "@/components/command/CommandTabs";
+import { GemPanel } from "@/components/gems/GemPanel";
 import { TimelineEditor } from "@/components/command/TimelineEditor";
 import { DecisionsEditor } from "@/components/command/DecisionsEditor";
 import { TopAlertsPanel } from "@/components/command/TopAlertsPanel";
@@ -137,6 +138,9 @@ export default async function CommandPage({
         </section>
       ) : (
       <>
+      {/* ⓪ CEO Gem「帅」· AI 审计洞察主脊 */}
+      <GemPanel />
+
       {/* ① 致辞 · 一句话态势 + 推论 */}
       <ExecutiveSummary scr={scr} />
       <ImplicationsBar items={implications} />

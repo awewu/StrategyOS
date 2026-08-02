@@ -2213,6 +2213,34 @@ model CompassPremiseAudit {
   @@map("compass_premise_audits")
 }
 
+/// 季度战略"合理性审视"裁决留痕。中央 AI (Tandem) 给出 persevere/pivot/kill 建议,
+/// 人工在此基础上做最终裁决并留痕 —— 坚守与审视是一对辩证, 既存 AI 建议也存人工决策。
+/// 一条 = 对某个前提/Bet/整体在某期次的一次裁决记录。
+model RationalityVerdict {
+  id             String    @id @default(uuid())
+  period         String    @db.VarChar(20) // 期次, e.g. "2026-H1"
+  targetKind     String    @db.VarChar(20) // premise | bet | overall
+  targetCode     String?   @db.VarChar(40) @map("target_code") // 前提/Bet 编号 (overall 时空)
+  targetLabel    String?   @db.VarChar(500) @map("target_label") // 快照: 裁决时的描述
+  // 中央 AI 建议
+  aiRecommendation String? @db.VarChar(20) @map("ai_recommendation") // persevere | pivot | kill | mixed
+  aiRationale      String? @db.VarChar(2000) @map("ai_rationale")
+  aiModel          String? @db.VarChar(60) @map("ai_model")
+  aiGeneratedAt    DateTime? @map("ai_generated_at")
+  // 人工最终裁决 (留痕)
+  humanDecision  String?   @db.VarChar(20) @map("human_decision") // persevere | pivot | kill | null=未决
+  humanRationale String?   @db.VarChar(2000) @map("human_rationale")
+  decidedBy      String?   @db.VarChar(100) @map("decided_by")
+  decidedAt      DateTime? @map("decided_at")
+  // 治理回执 (可选: proposeAction 回传 Hermes 的引用)
+  governanceRef  String?   @db.VarChar(200) @map("governance_ref")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([period, targetKind])
+  @@map("rationality_verdicts")
+}
+
 // ── 战略职责主线 (事在前) + 会议时点 + 当期责任切片 (人在后) ──────────────
 // 设计原则: 战略职责(StrategyMandate)是第一性的、跨会议延续的主线;
 // 会议(StrategyMeeting)是职责被认领/交账/移交的时点;

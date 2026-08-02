@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { BscCard } from "@/lib/fpa/bsc-config-access";
 import { BscLights } from "@/components/health/BscLights";
 import type { TrafficLight } from "@/lib/types/stratos";
+import { Input } from "@/components/ui/primitives";
 
 export function BscConfigEditor({
   initialCards,
@@ -85,9 +86,9 @@ export function BscConfigEditor({
           {cards.map((c, i) => (
             <div key={c.key} className="rounded-lg border border-[var(--surface-border)] p-4 space-y-2">
               <p className="text-xs font-medium text-[var(--color-text-muted)]">{c.key}</p>
-              <input className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm" value={c.label} onChange={(e) => patch(i, "label", e.target.value)} placeholder="维度" />
-              <input className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm" value={c.satisfaction} onChange={(e) => patch(i, "satisfaction", e.target.value)} placeholder="满意维度" />
-              <input className="w-full rounded border border-[var(--surface-border)] px-2 py-1 text-sm" value={c.target} onChange={(e) => patch(i, "target", e.target.value)} placeholder="目标" />
+              <Input fullWidth inputSize="sm" value={c.label} onChange={(e) => patch(i, "label", e.target.value)} placeholder="维度" />
+              <Input fullWidth inputSize="sm" value={c.satisfaction} onChange={(e) => patch(i, "satisfaction", e.target.value)} placeholder="满意维度" />
+              <Input fullWidth inputSize="sm" value={c.target} onChange={(e) => patch(i, "target", e.target.value)} placeholder="目标" />
             </div>
           ))}
         </div>

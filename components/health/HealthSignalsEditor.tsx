@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Input, Select } from "@/components/ui/primitives";
 
 interface KpiRow {
   kpiName: string;
@@ -18,9 +19,6 @@ const DIMS = [
   { key: "process", label: "流程" },
   { key: "learning", label: "学习" },
 ] as const;
-
-const inputCls =
-  "w-full rounded border border-[var(--surface-border)] bg-transparent px-2 py-1 text-sm";
 
 export function HealthSignalsEditor({
   initialLights,
@@ -89,15 +87,16 @@ export function HealthSignalsEditor({
         {DIMS.map((d) => (
           <label key={d.key} className="flex items-center gap-2 text-sm">
             <span className="w-10 text-[var(--color-text-muted)]">{d.label}</span>
-            <select
-              className={inputCls}
+            <Select
+              fullWidth
+              selectSize="sm"
               value={lights[d.key]}
               onChange={(e) => setLights({ ...lights, [d.key]: e.target.value })}
             >
               <option value="green">绿</option>
               <option value="yellow">黄</option>
               <option value="red">红</option>
-            </select>
+            </Select>
           </label>
         ))}
       </div>
@@ -120,25 +119,25 @@ export function HealthSignalsEditor({
       <div className="space-y-2">
         {kpis.map((r, i) => (
           <div key={i} className="grid gap-2 sm:grid-cols-[1fr_7rem_7rem_5rem_7rem_6rem_2rem]">
-            <input className={inputCls} placeholder="KPI 名称" value={r.kpiName}
+            <Input fullWidth inputSize="sm" placeholder="KPI 名称" value={r.kpiName}
               onChange={(e) => setKpis(kpis.map((x, j) => (j === i ? { ...x, kpiName: e.target.value } : x)))} />
-            <input className={inputCls} placeholder="当前值" value={r.kpiValue}
+            <Input fullWidth inputSize="sm" placeholder="当前值" value={r.kpiValue}
               onChange={(e) => setKpis(kpis.map((x, j) => (j === i ? { ...x, kpiValue: e.target.value } : x)))} />
-            <input className={inputCls} placeholder="目标值" value={r.kpiTarget}
+            <Input fullWidth inputSize="sm" placeholder="目标值" value={r.kpiTarget}
               onChange={(e) => setKpis(kpis.map((x, j) => (j === i ? { ...x, kpiTarget: e.target.value } : x)))} />
-            <select className={inputCls} value={r.signal}
+            <Select fullWidth selectSize="sm" value={r.signal}
               onChange={(e) => setKpis(kpis.map((x, j) => (j === i ? { ...x, signal: e.target.value } : x)))}>
               <option value="green">绿</option>
               <option value="yellow">黄</option>
               <option value="red">红</option>
-            </select>
-            <input className={inputCls} placeholder="编码(选填)" value={r.kpiCode ?? ""}
+            </Select>
+            <Input fullWidth inputSize="sm" placeholder="编码(选填)" value={r.kpiCode ?? ""}
               onChange={(e) => setKpis(kpis.map((x, j) => (j === i ? { ...x, kpiCode: e.target.value } : x)))} />
-            <select className={inputCls} value={r.bscDimension ?? ""}
+            <Select fullWidth selectSize="sm" value={r.bscDimension ?? ""}
               onChange={(e) => setKpis(kpis.map((x, j) => (j === i ? { ...x, bscDimension: e.target.value } : x)))}>
               <option value="">维度…</option>
               {DIMS.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
-            </select>
+            </Select>
             <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
               onClick={() => setKpis(kpis.filter((_, j) => j !== i))}>×</button>
           </div>

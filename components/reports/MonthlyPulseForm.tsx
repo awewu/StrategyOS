@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { Input, Select } from "@/components/ui/primitives";
 
 type OrgUnit = { id: string; name: string; level: string };
 
@@ -106,8 +107,9 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <label className="label-xs">组织单元</label>
-          <select
-            className="stratos-input mt-1"
+          <Select
+            fullWidth
+            className="mt-1"
             value={form.orgUnitId}
             onChange={(e) => setForm((f) => ({ ...f, orgUnitId: e.target.value }))}
           >
@@ -115,21 +117,23 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
             {orgUnits.map((u) => (
               <option key={u.id} value={u.id}>{u.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label className="label-xs">报告期</label>
-          <input
+          <Input
+            fullWidth
             type="month"
-            className="stratos-input mt-1"
+            className="mt-1"
             value={form.period}
             onChange={(e) => setForm((f) => ({ ...f, period: e.target.value }))}
           />
         </div>
         <div>
           <label className="label-xs">标题（可选）</label>
-          <input
-            className="stratos-input mt-1 w-full"
+          <Input
+            fullWidth
+            className="mt-1"
             placeholder="留空自动生成"
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -138,8 +142,9 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
       </div>
       <div>
         <label className="label-xs">本月一句话 *</label>
-        <input
-          className="stratos-input mt-1 w-full"
+        <Input
+          fullWidth
+          className="mt-1"
           placeholder="如：Q2 营收按 B 轨，热泵 Crux 进入验证期"
           value={form.oneLiner}
           onChange={(e) => {
@@ -151,8 +156,9 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
       </div>
       <div>
         <label className="label-xs">偏离的 KR</label>
-        <input
-          className="stratos-input mt-1 w-full"
+        <Input
+          fullWidth
+          className="mt-1"
           placeholder="如：酒店签约 820/1200，华东覆盖低于目标"
           value={form.offTrackKr}
           onChange={(e) => setForm((f) => ({ ...f, offTrackKr: e.target.value }))}
@@ -160,8 +166,9 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
       </div>
       <div>
         <label className="label-xs">需协调 / 求助</label>
-        <input
-          className="stratos-input mt-1 w-full"
+        <Input
+          fullWidth
+          className="mt-1"
           placeholder="如：需 CFO 确认 H2 CAPEX 分期"
           value={form.needHelp}
           onChange={(e) => setForm((f) => ({ ...f, needHelp: e.target.value }))}

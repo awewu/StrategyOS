@@ -7,6 +7,7 @@ import {
   CoreValuesPanel,
   DoctrinesPanel,
 } from "@/components/culture/CulturePanels";
+import { Input, Textarea } from "@/components/ui/primitives";
 import type { CultureHandbookContent } from "@/lib/culture/content";
 
 export function CultureHandbookEditor({
@@ -111,10 +112,10 @@ export function CultureHandbookEditor({
           <h3 className="stratos-section-title">三大信条</h3>
           {handbook.doctrines.map((d, i) => (
             <div key={i} className="grid gap-2 rounded-lg border border-[var(--surface-border)] p-4 sm:grid-cols-2">
-              <input className="stratos-input text-sm" value={d.en} placeholder="English" onChange={(e) => patchDoctrine(i, "en", e.target.value)} />
-              <input className="stratos-input text-sm" value={d.zh} placeholder="中文" onChange={(e) => patchDoctrine(i, "zh", e.target.value)} />
-              <input className="stratos-input text-sm sm:col-span-2" value={d.hint} placeholder="提示" onChange={(e) => patchDoctrine(i, "hint", e.target.value)} />
-              <textarea className="stratos-input text-sm sm:col-span-2" rows={2} value={d.scenario} placeholder="自检场景" onChange={(e) => patchDoctrine(i, "scenario", e.target.value)} />
+              <Input fullWidth inputSize="sm" value={d.en} placeholder="English" onChange={(e) => patchDoctrine(i, "en", e.target.value)} />
+              <Input fullWidth inputSize="sm" value={d.zh} placeholder="中文" onChange={(e) => patchDoctrine(i, "zh", e.target.value)} />
+              <Input fullWidth inputSize="sm" className="sm:col-span-2" value={d.hint} placeholder="提示" onChange={(e) => patchDoctrine(i, "hint", e.target.value)} />
+              <Textarea fullWidth className="sm:col-span-2" rows={2} value={d.scenario} placeholder="自检场景" onChange={(e) => patchDoctrine(i, "scenario", e.target.value)} />
             </div>
           ))}
         </section>
@@ -123,15 +124,16 @@ export function CultureHandbookEditor({
           <h3 className="stratos-section-title">四个满意</h3>
           <div className="grid gap-2 sm:grid-cols-2">
             {handbook.fourSatisfactionPillars.map((p, i) => (
-              <input key={i} className="stratos-input text-sm" value={p} onChange={(e) => patchPillar(i, e.target.value)} />
+              <Input key={i} fullWidth inputSize="sm" value={p} onChange={(e) => patchPillar(i, e.target.value)} />
             ))}
           </div>
-          <input className="stratos-input text-sm" value={handbook.coreValuesIntro.headline} placeholder="标题" onChange={(e) => patchIntro("headline", e.target.value)} />
-          <textarea className="stratos-input text-sm" rows={3} value={handbook.coreValuesIntro.body} onChange={(e) => patchIntro("body", e.target.value)} />
+          <Input fullWidth inputSize="sm" value={handbook.coreValuesIntro.headline} placeholder="标题" onChange={(e) => patchIntro("headline", e.target.value)} />
+          <Textarea fullWidth rows={3} value={handbook.coreValuesIntro.body} onChange={(e) => patchIntro("body", e.target.value)} />
           {handbook.coreValuesIntro.principles.map((p, i) => (
-            <input
+            <Input
               key={i}
-              className="stratos-input text-sm"
+              fullWidth
+              inputSize="sm"
               value={p}
               onChange={(e) => {
                 const next = [...handbook.coreValuesIntro.principles];
@@ -140,18 +142,20 @@ export function CultureHandbookEditor({
               }}
             />
           ))}
-          <textarea className="stratos-input text-sm" rows={2} value={handbook.coreValuesIntro.decisionTest} placeholder="决策自检" onChange={(e) => patchIntro("decisionTest", e.target.value)} />
+          <Textarea fullWidth rows={2} value={handbook.coreValuesIntro.decisionTest} placeholder="决策自检" onChange={(e) => patchIntro("decisionTest", e.target.value)} />
         </section>
 
         <section className="stratos-card stratos-card--padded space-y-4">
           <h3 className="stratos-section-title">六项基本原则</h3>
           {handbook.behaviorGuidelines.map((g, gi) => (
             <div key={g.id} className="rounded-lg border border-[var(--surface-border)] p-4">
-              <input className="stratos-input mb-2 text-sm font-medium" value={g.title} onChange={(e) => patchGuideline(gi, "title", e.target.value)} />
+              <Input fullWidth inputSize="sm" className="mb-2 font-medium" value={g.title} onChange={(e) => patchGuideline(gi, "title", e.target.value)} />
               {g.items.map((item, ii) => (
-                <input
+                <Input
                   key={ii}
-                  className="stratos-input mb-1 text-sm"
+                  fullWidth
+                  inputSize="sm"
+                  className="mb-1"
                   value={item}
                   onChange={(e) => {
                     const next = [...g.items];

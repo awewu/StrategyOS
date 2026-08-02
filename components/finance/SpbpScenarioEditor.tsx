@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Scenario } from "@/lib/types/stratos";
+import { Input, Textarea } from "@/components/ui/primitives";
 import { weightedRunway } from "@/lib/stratos/spbp-bayes";
 import { monteCarloForecast } from "@/lib/stratos/monte-carlo";
 
@@ -182,16 +183,16 @@ export function SpbpScenarioEditor({
           <article key={sc.id} className="stratos-card stratos-card--padded">
             {editing ? (
               <div className="space-y-3">
-                <input className="stratos-input" value={sc.name} onChange={(e) => patchScenario(i, { name: e.target.value })} />
+                <Input fullWidth value={sc.name} onChange={(e) => patchScenario(i, { name: e.target.value })} />
                 <label className="block">
                   <span className="label-xs">概率 %</span>
-                  <input type="number" className="stratos-input" value={sc.probability} onChange={(e) => patchScenario(i, { probability: +e.target.value })} />
+                  <Input type="number" fullWidth value={sc.probability} onChange={(e) => patchScenario(i, { probability: +e.target.value })} />
                 </label>
-                <textarea className="stratos-input" rows={3} value={sc.drivers.join("\n")} onChange={(e) => patchScenario(i, { drivers: e.target.value.split("\n").filter(Boolean) })} placeholder="驱动因素（每行一条）" />
+                <Textarea fullWidth rows={3} value={sc.drivers.join("\n")} onChange={(e) => patchScenario(i, { drivers: e.target.value.split("\n").filter(Boolean) })} placeholder="驱动因素（每行一条）" />
                 <div className="grid grid-cols-3 gap-2">
-                  <input type="number" className="stratos-input" value={sc.fpaImpact.revenue} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, revenue: +e.target.value } })} placeholder="营收" />
-                  <input type="number" className="stratos-input" value={sc.fpaImpact.profit} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, profit: +e.target.value } })} placeholder="利润" />
-                  <input type="number" step="0.1" className="stratos-input" value={sc.fpaImpact.runwayMonths} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, runwayMonths: +e.target.value } })} placeholder="Runway" />
+                  <Input type="number" fullWidth value={sc.fpaImpact.revenue} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, revenue: +e.target.value } })} placeholder="营收" />
+                  <Input type="number" fullWidth value={sc.fpaImpact.profit} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, profit: +e.target.value } })} placeholder="利润" />
+                  <Input type="number" step="0.1" fullWidth value={sc.fpaImpact.runwayMonths} onChange={(e) => patchScenario(i, { fpaImpact: { ...sc.fpaImpact, runwayMonths: +e.target.value } })} placeholder="Runway" />
                 </div>
               </div>
             ) : (

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { Input, Textarea } from "@/components/ui/primitives";
 import type { NorthStar } from "@/lib/compass/types";
 
 export interface NorthStarForm {
@@ -37,8 +38,6 @@ export function NorthStarEditModal({
     geographyDesc: northStar?.geographyDesc ?? null,
     brandDesc: northStar?.brandDesc ?? null,
   });
-  const inp =
-    "stratos-input py-1.5 text-sm";
   const hasText = Boolean(form.mission.trim() && form.vision.trim());
   const hasMetrics = form.targetYear > currentYear && form.revenueTarget > 0;
   const valid = northStar ? hasText : hasText && hasMetrics;
@@ -53,9 +52,9 @@ export function NorthStarEditModal({
         <div className="space-y-3">
           <div>
             <label className="label-xs">使命 · 为何存在</label>
-            <textarea
+            <Textarea
               rows={2}
-              className={inp}
+              fullWidth
               value={form.mission}
               onChange={(e) => setForm((f) => ({ ...f, mission: e.target.value }))}
               placeholder="如：让每个中国家庭和建筑用上高效、可靠的热能系统"
@@ -63,9 +62,9 @@ export function NorthStarEditModal({
           </div>
           <div>
             <label className="label-xs">愿景 · 终点形态</label>
-            <textarea
+            <Textarea
               rows={2}
-              className={inp}
+              fullWidth
               value={form.vision}
               onChange={(e) => setForm((f) => ({ ...f, vision: e.target.value }))}
               placeholder="如：2030 年成为中国热泵与热水领域综合竞争力第一的民营品牌集团"
@@ -74,18 +73,20 @@ export function NorthStarEditModal({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="label-xs">目标年</label>
-              <input
+              <Input
                 type="number"
-                className={inp}
+                inputSize="sm"
+                fullWidth
                 value={form.targetYear}
                 onChange={(e) => setForm((f) => ({ ...f, targetYear: +e.target.value }))}
               />
             </div>
             <div>
               <label className="label-xs">终点营收（万元）</label>
-              <input
+              <Input
                 type="number"
-                className={inp}
+                inputSize="sm"
+                fullWidth
                 value={form.revenueTarget}
                 onChange={(e) => setForm((f) => ({ ...f, revenueTarget: +e.target.value }))}
               />
@@ -102,20 +103,23 @@ export function NorthStarEditModal({
               />
             </div>
           </div>
-          <input
-            className={inp}
+          <Input
+            fullWidth
+            inputSize="sm"
             value={form.marketPositionDesc ?? ""}
             onChange={(e) => setForm((f) => ({ ...f, marketPositionDesc: e.target.value || null }))}
             placeholder="市场地位（可选）"
           />
-          <input
-            className={inp}
+          <Input
+            fullWidth
+            inputSize="sm"
             value={form.geographyDesc ?? ""}
             onChange={(e) => setForm((f) => ({ ...f, geographyDesc: e.target.value || null }))}
             placeholder="地理覆盖（可选）"
           />
-          <input
-            className={inp}
+          <Input
+            fullWidth
+            inputSize="sm"
             value={form.brandDesc ?? ""}
             onChange={(e) => setForm((f) => ({ ...f, brandDesc: e.target.value || null }))}
             placeholder="品牌格局（可选）"

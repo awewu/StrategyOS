@@ -5,9 +5,8 @@ import { Modal } from "@/components/ui/Modal";
 import type { DealType } from "@/lib/ma/types";
 import type { DealTypeProfileView, DealView } from "@/lib/ma/views";
 import { DEAL_STAGE_LABEL, DEAL_STAGE_ORDER, DEAL_TYPE_LABEL } from "@/lib/ma/views";
+import { Input, Select } from "@/components/ui/primitives";
 
-const inp =
-  "w-full rounded-md border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-2.5 py-1.5 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none";
 const sectionCls = "rounded-lg border border-[var(--surface-border)] p-3";
 const addBtn = "text-xs text-[var(--color-accent)]";
 const delBtn = "rounded px-2 py-1 text-xs text-[var(--signal-red)]";
@@ -147,40 +146,40 @@ export function DealEditor({
           <div className="grid gap-3 sm:grid-cols-[1fr_130px_130px]">
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">交易名称</label>
-              <input className={inp} value={name} onChange={(e) => setName(e.target.value)} />
+              <Input fullWidth inputSize="sm" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">形态</label>
-              <select className={inp} value={dealType} onChange={(e) => setDealType(e.target.value as DealType)}>
+              <Select fullWidth selectSize="sm" value={dealType} onChange={(e) => setDealType(e.target.value as DealType)}>
                 {(Object.keys(DEAL_TYPE_LABEL) as DealType[]).map((t) => <option key={t} value={t}>{DEAL_TYPE_LABEL[t]}</option>)}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">阶段</label>
-              <select className={inp} value={stage} onChange={(e) => setStage(e.target.value)}>
+              <Select fullWidth selectSize="sm" value={stage} onChange={(e) => setStage(e.target.value)}>
                 {DEAL_STAGE_ORDER.map((s) => <option key={s} value={s}>{DEAL_STAGE_LABEL[s]}</option>)}
-              </select>
+              </Select>
             </div>
           </div>
 
           <div>
             <label className="text-xs text-[var(--color-text-secondary)]">并购论点(为什么做)</label>
-            <input className={inp} value={thesis} onChange={(e) => setThesis(e.target.value)} placeholder="例:收购材料能力,解产品线死穴,锁供应+降 BOM" />
+            <Input fullWidth inputSize="sm" value={thesis} onChange={(e) => setThesis(e.target.value)} placeholder="例:收购材料能力,解产品线死穴,锁供应+降 BOM" />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="text-xs text-[var(--color-text-secondary)]">挂靠 Crux(可选)</label>
-              <input className={inp} value={linkedCrux} onChange={(e) => setLinkedCrux(e.target.value)} />
+              <Input fullWidth inputSize="sm" value={linkedCrux} onChange={(e) => setLinkedCrux(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-xs text-[var(--color-text-secondary)]">能力方向</label>
-                <input className={inp} value={direction} onChange={(e) => setDirection(e.target.value)} placeholder="tech/channel/brand/material" />
+                <Input fullWidth inputSize="sm" value={direction} onChange={(e) => setDirection(e.target.value)} placeholder="tech/channel/brand/material" />
               </div>
               <div>
                 <label className="text-xs text-[var(--color-text-secondary)]">交易主责人</label>
-                <input className={inp} value={dealLead} onChange={(e) => setDealLead(e.target.value)} />
+                <Input fullWidth inputSize="sm" value={dealLead} onChange={(e) => setDealLead(e.target.value)} />
               </div>
             </div>
           </div>
@@ -198,7 +197,7 @@ export function DealEditor({
               ] as const).map(([label, val, set]) => (
                 <div key={label}>
                   <label className="text-caption">{label}</label>
-                  <input className={inp} type="number" step="any" value={val} onChange={(e) => set(e.target.value)} />
+                  <Input fullWidth inputSize="sm" type="number" step="any" value={val} onChange={(e) => set(e.target.value)} />
                 </div>
               ))}
             </div>
@@ -210,17 +209,17 @@ export function DealEditor({
               ] as const).map(([label, val, set]) => (
                 <div key={label}>
                   <label className="text-caption">{label}</label>
-                  <input className={inp} type="number" value={val} onChange={(e) => set(e.target.value)} />
+                  <Input fullWidth inputSize="sm" type="number" value={val} onChange={(e) => set(e.target.value)} />
                 </div>
               ))}
               <div>
                 <label className="text-caption">earnout 条件</label>
-                <input className={inp} value={earnoutTerms} onChange={(e) => setEarnoutTerms(e.target.value)} placeholder="挂协同兑现" />
+                <Input fullWidth inputSize="sm" value={earnoutTerms} onChange={(e) => setEarnoutTerms(e.target.value)} placeholder="挂协同兑现" />
               </div>
             </div>
             <div className="mt-2">
               <label className="text-caption">预算标签(budget_tag → FPA)</label>
-              <input className={inp} value={budgetTag} onChange={(e) => setBudgetTag(e.target.value)} />
+              <Input fullWidth inputSize="sm" value={budgetTag} onChange={(e) => setBudgetTag(e.target.value)} />
             </div>
           </div>
 
@@ -245,11 +244,11 @@ export function DealEditor({
             </div>
             {screening.map((s, i) => (
               <div key={i} className="mt-2 grid grid-cols-[140px_1fr_70px_40px] items-center gap-2">
-                <input className={inp} placeholder="维度" value={s.dimension} onChange={(e) => setScreening((c) => c.map((x, j) => j === i ? { ...x, dimension: e.target.value } : x))} />
-                <input className={inp} placeholder="判断" value={s.judgment} onChange={(e) => setScreening((c) => c.map((x, j) => j === i ? { ...x, judgment: e.target.value } : x))} />
-                <select className={inp} value={s.evidenceLevel} onChange={(e) => setScreening((c) => c.map((x, j) => j === i ? { ...x, evidenceLevel: Number(e.target.value) } : x))}>
+                <Input fullWidth inputSize="sm" placeholder="维度" value={s.dimension} onChange={(e) => setScreening((c) => c.map((x, j) => j === i ? { ...x, dimension: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" placeholder="判断" value={s.judgment} onChange={(e) => setScreening((c) => c.map((x, j) => j === i ? { ...x, judgment: e.target.value } : x))} />
+                <Select fullWidth selectSize="sm" value={s.evidenceLevel} onChange={(e) => setScreening((c) => c.map((x, j) => j === i ? { ...x, evidenceLevel: Number(e.target.value) } : x))}>
                   {[1, 2, 3, 4, 5, 6].map((l) => <option key={l} value={l}>L{l}</option>)}
-                </select>
+                </Select>
                 <button type="button" className={delBtn} onClick={() => setScreening((c) => c.filter((_, j) => j !== i))}>删</button>
               </div>
             ))}
@@ -262,12 +261,12 @@ export function DealEditor({
             </div>
             {valuations.map((v, i) => (
               <div key={i} className="mt-2 grid grid-cols-[110px_1fr_1fr_1fr_40px] items-center gap-2">
-                <select className={inp} value={v.method} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, method: e.target.value } : x))}>
+                <Select fullWidth selectSize="sm" value={v.method} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, method: e.target.value } : x))}>
                   {METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-                </select>
-                <input className={inp} type="number" placeholder="低" value={v.low} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, low: e.target.value } : x))} />
-                <input className={inp} type="number" placeholder="基准" value={v.base} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, base: e.target.value } : x))} />
-                <input className={inp} type="number" placeholder="高" value={v.high} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, high: e.target.value } : x))} />
+                </Select>
+                <Input fullWidth inputSize="sm" type="number" placeholder="低" value={v.low} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, low: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" type="number" placeholder="基准" value={v.base} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, base: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" type="number" placeholder="高" value={v.high} onChange={(e) => setValuations((c) => c.map((x, j) => j === i ? { ...x, high: e.target.value } : x))} />
                 <button type="button" className={delBtn} onClick={() => setValuations((c) => c.filter((_, j) => j !== i))}>删</button>
               </div>
             ))}
@@ -280,16 +279,16 @@ export function DealEditor({
             </div>
             {synergies.map((s, i) => (
               <div key={i} className="mt-2 grid grid-cols-[70px_1fr_90px_90px_80px_60px_40px] items-center gap-2">
-                <select className={inp} value={s.type} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, type: e.target.value } : x))}>
+                <Select fullWidth selectSize="sm" value={s.type} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, type: e.target.value } : x))}>
                   <option value="cost">成本</option><option value="revenue">收入</option>
-                </select>
-                <input className={inp} placeholder="协同项" value={s.title} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
-                <input className={inp} type="number" title="run-rate/年" placeholder="run-rate" value={s.runRate} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, runRate: e.target.value } : x))} />
-                <input className={inp} title="爬坡 %/年" placeholder="30/70/100" value={s.ramp} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, ramp: e.target.value } : x))} />
-                <input className={inp} type="number" title="一次性成本" placeholder="一次性" value={s.oneTimeCost} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, oneTimeCost: e.target.value } : x))} />
-                <select className={inp} value={s.evidenceLevel} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, evidenceLevel: Number(e.target.value) } : x))}>
+                </Select>
+                <Input fullWidth inputSize="sm" placeholder="协同项" value={s.title} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" type="number" title="run-rate/年" placeholder="run-rate" value={s.runRate} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, runRate: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" title="爬坡 %/年" placeholder="30/70/100" value={s.ramp} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, ramp: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" type="number" title="一次性成本" placeholder="一次性" value={s.oneTimeCost} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, oneTimeCost: e.target.value } : x))} />
+                <Select fullWidth selectSize="sm" value={s.evidenceLevel} onChange={(e) => setSynergies((c) => c.map((x, j) => j === i ? { ...x, evidenceLevel: Number(e.target.value) } : x))}>
                   {[1, 2, 3, 4, 5, 6].map((l) => <option key={l} value={l}>L{l}</option>)}
-                </select>
+                </Select>
                 <button type="button" className={delBtn} onClick={() => setSynergies((c) => c.filter((_, j) => j !== i))}>删</button>
               </div>
             ))}
@@ -302,13 +301,13 @@ export function DealEditor({
             </div>
             {findings.map((f, i) => (
               <div key={i} className="mt-2 grid grid-cols-[100px_1fr_80px_90px_40px] items-center gap-2">
-                <select className={inp} value={f.workstream} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, workstream: e.target.value } : x))}>
+                <Select fullWidth selectSize="sm" value={f.workstream} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, workstream: e.target.value } : x))}>
                   {WORKSTREAMS.map((w) => <option key={w}>{w}</option>)}
-                </select>
-                <input className={inp} placeholder="发现" value={f.finding} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, finding: e.target.value } : x))} />
-                <select className={inp} value={f.status} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, status: e.target.value } : x))}>
+                </Select>
+                <Input fullWidth inputSize="sm" placeholder="发现" value={f.finding} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, finding: e.target.value } : x))} />
+                <Select fullWidth selectSize="sm" value={f.status} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, status: e.target.value } : x))}>
                   <option value="open">未解</option><option value="mitigated">已缓解</option><option value="closed">已关</option>
-                </select>
+                </Select>
                 <label className="flex items-center gap-1 text-[11px] text-[var(--signal-red)]">
                   <input type="checkbox" checked={f.dealBreaker} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, dealBreaker: e.target.checked } : x))} />
                   breaker
@@ -325,12 +324,12 @@ export function DealEditor({
             </div>
             {conditions.map((c0, i) => (
               <div key={i} className="mt-2 grid grid-cols-[1fr_100px_120px_80px_40px] items-center gap-2">
-                <input className={inp} placeholder="条件" value={c0.item} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, item: e.target.value } : x))} />
-                <input className={inp} placeholder="负责人" value={c0.owner} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, owner: e.target.value } : x))} />
-                <input className={inp} type="date" value={c0.dueDate} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, dueDate: e.target.value } : x))} />
-                <select className={inp} value={c0.status} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, status: e.target.value } : x))}>
+                <Input fullWidth inputSize="sm" placeholder="条件" value={c0.item} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, item: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" placeholder="负责人" value={c0.owner} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, owner: e.target.value } : x))} />
+                <Input fullWidth inputSize="sm" type="date" value={c0.dueDate} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, dueDate: e.target.value } : x))} />
+                <Select fullWidth selectSize="sm" value={c0.status} onChange={(e) => setConditions((c) => c.map((x, j) => j === i ? { ...x, status: e.target.value } : x))}>
                   <option value="open">未关</option><option value="closed">已关</option>
-                </select>
+                </Select>
                 <button type="button" className={delBtn} onClick={() => setConditions((c) => c.filter((_, j) => j !== i))}>删</button>
               </div>
             ))}

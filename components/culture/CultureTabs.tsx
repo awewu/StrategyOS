@@ -13,6 +13,7 @@ import {
 } from "@/components/culture/CulturePanels";
 import { CultureHandbookEditor } from "@/components/culture/CultureHandbookEditor";
 import { WushiPanel } from "@/components/culture/WushiPanel";
+import { Input, Textarea } from "@/components/ui/primitives";
 import { SectionCard } from "@/components/ui/KpiTile";
 import { typography } from "@/lib/brand/typography";
 import {
@@ -297,17 +298,19 @@ export function CultureTabs({
                 >
                   {editing ? (
                     <div className="grid gap-2 sm:grid-cols-2">
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={w.period}
                         onChange={(e) =>
                           setWinners((prev) => prev.map((x, j) => (j === i ? { ...x, period: e.target.value } : x)))
                         }
                         placeholder="期次"
                       />
-                      <input
+                      <Input
                         type="number"
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                        fullWidth
+                        inputSize="sm"
                         value={w.year}
                         onChange={(e) =>
                           setWinners((prev) =>
@@ -315,8 +318,10 @@ export function CultureTabs({
                           )
                         }
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
+                        className="sm:col-span-2"
                         value={w.awardName}
                         onChange={(e) =>
                           setWinners((prev) =>
@@ -325,24 +330,27 @@ export function CultureTabs({
                         }
                         placeholder="奖项名称"
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={w.winner}
                         onChange={(e) =>
                           setWinners((prev) => prev.map((x, j) => (j === i ? { ...x, winner: e.target.value } : x)))
                         }
                         placeholder="获奖人/团队"
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={w.unit}
                         onChange={(e) =>
                           setWinners((prev) => prev.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)))
                         }
                         placeholder="单位"
                       />
-                      <textarea
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
+                      <Textarea
+                        fullWidth
+                        className="sm:col-span-2"
                         rows={2}
                         value={w.citation}
                         onChange={(e) =>
@@ -393,31 +401,36 @@ export function CultureTabs({
                 <li key={r.id} className="px-5 py-4">
                   {editing ? (
                     <div className="grid gap-2 sm:grid-cols-2">
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={r.date}
                         onChange={(e) =>
                           setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, date: e.target.value } : x)))
                         }
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={r.unit}
                         onChange={(e) =>
                           setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)))
                         }
                         placeholder="单位"
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
+                        className="sm:col-span-2"
                         value={r.title}
                         onChange={(e) =>
                           setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))
                         }
                         placeholder="标题"
                       />
-                      <textarea
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm sm:col-span-2"
+                      <Textarea
+                        fullWidth
+                        className="sm:col-span-2"
                         rows={3}
                         value={r.summary}
                         onChange={(e) =>
@@ -425,16 +438,18 @@ export function CultureTabs({
                         }
                         placeholder="摘要"
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={r.author}
                         onChange={(e) =>
                           setRecords((prev) => prev.map((x, j) => (j === i ? { ...x, author: e.target.value } : x)))
                         }
                         placeholder="发布人"
                       />
-                      <input
-                        className="rounded border border-[var(--surface-border)] px-2 py-1 text-sm"
+                      <Input
+                        fullWidth
+                        inputSize="sm"
                         value={r.relatedPrinciple ?? ""}
                         onChange={(e) =>
                           setRecords((prev) =>
