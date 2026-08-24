@@ -9,6 +9,7 @@ import { DataSourceBanner } from "@/components/shell/DataSourceBanner";
 import { CommandPalette } from "@/components/shell/CommandPalette";
 import { HubSubNav } from "@/components/shell/HubSubNav";
 import { LoopGuide } from "@/components/shell/LoopGuide";
+import { PageGuide } from "@/components/shell/PageGuide";
 import { NotificationsBell } from "@/components/shell/NotificationsBell";
 
 function DevRoleSync({
@@ -53,6 +54,7 @@ function ShellInner({
             <DataSourceBanner />
             <LoopGuide />
             <HubSubNav />
+            <PageGuide />
             {children}
           </div>
         </main>
