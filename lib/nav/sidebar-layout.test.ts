@@ -15,7 +15,7 @@ describe("sidebar-layout · CEO", () => {
     assert.equal(layout.railStandalone.length, CEO_RAIL_STANDALONE_IDS.size);
     assert.ok(NAV_PRIMARY_HUBS.some((h) => h.id === "budget"));
     assert.equal(layout.bottomHubs.length, 0);
-    assert.ok(layout.moreLinks.some((l) => l.href === "/decode"));
+    assert.ok(layout.moreLinks.some((l) => l.href === "/monitor/health"));
     assert.ok(layout.moreLinks.some((l) => l.href === "/culture"));
     assert.ok(layout.moreLinks.some((l) => l.href === "/reports"));
     assert.ok(layout.moreLinks.some((l) => l.href === "/admin/access"));

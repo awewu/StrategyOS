@@ -108,7 +108,7 @@
   --brand-rhautt-grey:  #efefef;
 
   /* ── Sidebar rail ── */
-  --sidebar-w: 80px;
+  --sidebar-w: 244px;
   --sidebar-rail-bg: #181b20;
   --sidebar-rail-border: rgba(255, 255, 255, 0.1);
   --sidebar-rail-text: rgba(255, 255, 255, 0.92);
@@ -335,6 +335,196 @@ body {
 
 .stratos-nav-hub {
   position: relative;
+}
+
+/* ── Expanded lifecycle sections (AppNav) ── */
+.stratos-nav-section {
+  margin-bottom: 0.15rem;
+  border-radius: 8px;
+}
+
+.stratos-nav-section--active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stratos-nav-section__head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stratos-nav-section__title {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.4rem 0.45rem;
+  color: var(--sidebar-rail-text);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stratos-nav-section__title:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-rail-text-hover);
+}
+
+.stratos-nav-section--active .stratos-nav-section__title {
+  color: var(--sidebar-rail-active-text);
+}
+
+.stratos-nav-section__icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--sidebar-rail-icon);
+}
+
+.stratos-nav-section--active .stratos-nav-section__icon {
+  color: var(--ruud-red-primary);
+}
+
+.stratos-nav-section__stage {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.stratos-nav-section--active .stratos-nav-section__stage {
+  background: var(--ruud-red-primary);
+  color: #fff;
+}
+
+.stratos-nav-section__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.stratos-nav-section__toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+.stratos-nav-section__toggle:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.stratos-nav-section__toggle:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.stratos-nav-section__chevron {
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1;
+  transform: rotate(90deg);
+  transition: transform 0.15s ease;
+}
+
+.stratos-nav-section__chevron.is-open {
+  transform: rotate(270deg);
+}
+
+.stratos-nav-section__list {
+  margin: 0.1rem 0 0.35rem;
+  padding: 0 0 0 1.65rem;
+  list-style: none;
+}
+
+.stratos-nav-child {
+  display: block;
+  border-radius: 6px;
+  margin-bottom: 0.05rem;
+  padding: 0.34rem 0.5rem;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: 0.78125rem;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.74);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stratos-nav-child:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.stratos-nav-child--active {
+  background: var(--sidebar-rail-active-bg);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--ruud-red-primary);
+}
+
+.stratos-nav-leaf {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  margin-bottom: 0.1rem;
+  padding: 0.42rem 0.5rem;
+  color: var(--sidebar-rail-text);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stratos-nav-leaf:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sidebar-rail-text-hover);
+}
+
+.stratos-nav-leaf--active {
+  background: var(--sidebar-rail-active-bg);
+  color: #fff;
+}
+
+.stratos-nav-leaf--active .stratos-nav-leaf__icon {
+  color: var(--ruud-red-primary);
+}
+
+.stratos-nav-leaf__icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--sidebar-rail-icon);
+}
+
+.stratos-nav-leaf__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .stratos-nav-item {
@@ -656,6 +846,96 @@ body {
   background: color-mix(in srgb, var(--ruud-teal) 8%, white);
   color: var(--ruud-teal);
   font-weight: 600;
+}
+
+/* ── Closed-loop orientation bar (LoopGuide) ── */
+.stratos-loop-guide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: var(--space-section);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  background: var(--color-bg-surface);
+}
+
+.stratos-loop-guide__track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stratos-loop-guide__node {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stratos-loop-guide__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stratos-loop-guide__pill:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-text-primary);
+}
+
+.stratos-loop-guide__pill--active {
+  background: var(--ruud-red-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.stratos-loop-guide__stage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.stratos-loop-guide__pill--active .stratos-loop-guide__stage {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+
+.stratos-loop-guide__arrow {
+  margin: 0 0.1rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.stratos-loop-guide__next {
+  margin-left: auto;
+  font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
+  font-size: var(--type-caption);
+  font-weight: 600;
+  color: var(--ruud-red-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.stratos-loop-guide__next:hover {
+  text-decoration: underline;
 }
 
 /* Type scale — page · section · body · label (sync with --type-* tokens) */

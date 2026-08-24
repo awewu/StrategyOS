@@ -33,6 +33,7 @@ function HubTabs({ hub }: { hub: NavHub }) {
 export function HubSubNav() {
   const pathname = usePathname();
   const hub = getHubForPathname(pathname);
-  if (!hub) return null;
+  // Single-child hubs need no tab bar — the sidebar section already surfaces it.
+  if (!hub || hub.children.length <= 1) return null;
   return <HubTabs hub={hub} />;
 }

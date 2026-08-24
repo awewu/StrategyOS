@@ -12,6 +12,8 @@ export type NavHub = {
   shortLabel: string;
   icon: NavIconId;
   defaultHref: string;
+  /** Closed-loop stage tag (定/解/行/察/断/复) for lifecycle hubs; support hubs omit. */
+  stage?: string;
   children: NavChild[];
 };
 
@@ -23,18 +25,25 @@ export type NavStandalone = {
   href: string;
 };
 
+/**
+ * Hubs are ordered as the strategy closed-loop lifecycle so the sidebar reads
+ * as「定→解→行→察→断→复」+ 支撑职能. `posture`(指挥) anchors the top because it is
+ * the executive daily-overview + alert surface (InboxNavBadge keys on its id).
+ * @see docs/STRATOS-ROLE-OPERATION-LOOPS.md Part C
+ */
 export const NAV_HUBS: NavHub[] = [
   {
     id: "posture",
-    label: "战略态势",
-    shortLabel: "态势",
+    label: "指挥决策",
+    shortLabel: "指挥",
     icon: "posture",
+    stage: "断",
     defaultHref: "/command",
     children: [
-      { href: "/command", label: "总览 · 指挥舱" },
-      { href: "/command/issues", label: "议题（告警 · 决策 · 前提）" },
-      { href: "/command/compass", label: "战略罗盘" },
-      { href: "/strategy", label: "一页纸 · 展望" },
+      { href: "/command", label: "态势总览 · 指挥舱" },
+      { href: "/command/issues", label: "议题 · 告警/决策/前提" },
+      { href: "/command/compass", label: "战略罗盘 · 坚守或转向" },
+      { href: "/strategy", label: "战略一页纸 · 展望" },
       { href: "/board", label: "董事会包" },
     ],
   },
@@ -43,16 +52,65 @@ export const NAV_HUBS: NavHub[] = [
     label: "战略制定",
     shortLabel: "制定",
     icon: "formulate",
+    stage: "定",
     defaultHref: "/strategy/input",
     children: [
       { href: "/strategy/input", label: "编制战略" },
       { href: "/versions", label: "历史版本 · 对照" },
-      { href: "/mandates", label: "战略职责" },
+      { href: "/mandates", label: "谁负责什么" },
+    ],
+  },
+  {
+    id: "decode",
+    label: "战略解码",
+    shortLabel: "解码",
+    icon: "operate",
+    stage: "解",
+    defaultHref: "/decode",
+    children: [
+      { href: "/decode", label: "解码 · BSC/X-Matrix/OKR" },
+    ],
+  },
+  {
+    id: "execute",
+    label: "执行坚守",
+    shortLabel: "执行",
+    icon: "portfolio",
+    stage: "行",
+    defaultHref: "/cockpit",
+    children: [
+      { href: "/cockpit", label: "坚守驾驶舱 · 承诺兑现" },
+      { href: "/execution", label: "执行全览 · 项目 Vx" },
+    ],
+  },
+  {
+    id: "monitor",
+    label: "监测健康",
+    shortLabel: "监测",
+    icon: "operate",
+    stage: "察",
+    defaultHref: "/monitor/health",
+    children: [
+      { href: "/monitor/health", label: "集团健康" },
+      { href: "/monitor/bu", label: "事业部" },
+      { href: "/monitor/functions", label: "职能体系" },
+      { href: "/reports", label: "报告中心 · OPS" },
+    ],
+  },
+  {
+    id: "council",
+    label: "复盘与会",
+    shortLabel: "复盘",
+    icon: "tools",
+    stage: "复",
+    defaultHref: "/council",
+    children: [
+      { href: "/council", label: "战略会 · 彩排/准入/会议" },
     ],
   },
   {
     id: "portfolio",
-    label: "增长与投资组合",
+    label: "增长与投资",
     shortLabel: "增长",
     icon: "portfolio",
     defaultHref: "/innovation",
@@ -68,24 +126,8 @@ export const NAV_HUBS: NavHub[] = [
     icon: "finance",
     defaultHref: "/finance",
     children: [
-      { href: "/finance", label: "FPA（报表 · 资本 · 展望）" },
+      { href: "/finance", label: "FPA · 报表/资本/展望" },
       { href: "/finance/ledger", label: "总账中台" },
-    ],
-  },
-  {
-    id: "operate",
-    label: "解码与监测",
-    shortLabel: "监测",
-    icon: "operate",
-    defaultHref: "/decode",
-    children: [
-      { href: "/decode", label: "战略解码（BSC · X-Matrix · OKR）" },
-      { href: "/cockpit", label: "坚守驾驶舱 · 承诺兑现" },
-      { href: "/monitor/functions", label: "职能体系" },
-      { href: "/monitor/bu", label: "事业部" },
-      { href: "/monitor/health", label: "集团健康" },
-      { href: "/execution", label: "执行 · 全览" },
-      { href: "/reports", label: "报告中心 · OPS" },
     ],
   },
   {
@@ -93,9 +135,8 @@ export const NAV_HUBS: NavHub[] = [
     label: "工具",
     shortLabel: "工具",
     icon: "tools",
-    defaultHref: "/council",
+    defaultHref: "/tools/import",
     children: [
-      { href: "/council", label: "战略会（彩排 · 准入 · 会议）" },
       { href: "/tools/import", label: "数据导入" },
     ],
   },
@@ -118,13 +159,17 @@ export const NAV_STANDALONE: NavStandalone[] = [
   },
 ];
 
-/** 侧栏底部：监测 → 工具 */
-export const NAV_MONITOR_HUB = NAV_HUBS.find((h) => h.id === "operate")!;
+/** 支撑职能 hub（非闭环主脊）：监测健康 / 复盘与会 / 工具，供折叠布局归组用 */
+export const NAV_SUPPORT_HUB_IDS = ["monitor", "council", "tools"] as const;
+export const NAV_MONITOR_HUB = NAV_HUBS.find((h) => h.id === "monitor")!;
 export const NAV_TOOLS_HUB = NAV_HUBS.find((h) => h.id === "tools")!;
 
 export const NAV_PRIMARY_HUBS = NAV_HUBS.filter(
-  (h) => h.id !== "operate" && h.id !== "tools",
+  (h) => !(NAV_SUPPORT_HUB_IDS as readonly string[]).includes(h.id),
 );
+
+/** Closed-loop lifecycle hubs (with a stage tag), in loop order — for LoopGuide. */
+export const NAV_LIFECYCLE: NavHub[] = NAV_HUBS.filter((h) => Boolean(h.stage));
 
 export const NAV_ACCESS = {
   id: "access",
@@ -143,16 +188,16 @@ export function matchesNavRoute(pathname: string, href: string): boolean {
   return pathname === pathOnly || pathname.startsWith(`${pathOnly}/`);
 }
 
+/** Compat-redirect stubs surfaced under their canonical hub for active highlighting. */
+const HUB_EXTRA_PATHS: Record<string, (p: string) => boolean> = {
+  posture: (p) => p === "/outlook" || p === "/inbox" || p.startsWith("/strategy/outlook"),
+  monitor: (p) => p.startsWith("/monitor/"),
+  execute: (p) => p === "/execution" || p.startsWith("/execution/"),
+  council: (p) => p === "/rehearsal" || p === "/gates" || p.startsWith("/tools/meeting"),
+};
+
 export function hubContainsPath(hub: NavHub, pathname: string): boolean {
-  if (hub.id === "operate") {
-    if (pathname.startsWith("/monitor/")) return true;
-    if (pathname === "/execution" || pathname.startsWith("/execution/")) return true;
-  }
-  if (hub.id === "tools") {
-    if (pathname === "/rehearsal" || pathname === "/gates" || pathname.startsWith("/tools/meeting")) return true;
-  }
-  if (hub.id === "posture" && (pathname === "/outlook" || pathname === "/inbox")) return true;
-  if (hub.id === "posture" && pathname.startsWith("/strategy/outlook")) return true;
+  if (HUB_EXTRA_PATHS[hub.id]?.(pathname)) return true;
   return hub.children.some((c) => matchesNavRoute(pathname, c.href));
 }
 
@@ -171,9 +216,12 @@ export type PaletteGroup = (typeof PALETTE_GROUPS)[number];
 const HUB_PALETTE_GROUP: Record<string, PaletteGroup> = {
   posture: "指挥",
   formulate: "战略",
+  decode: "执行",
+  execute: "执行",
+  monitor: "执行",
+  council: "工具",
   portfolio: "战略",
   budget: "财务",
-  operate: "执行",
   tools: "工具",
 };
 
