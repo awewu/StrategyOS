@@ -188,6 +188,16 @@ export function AppNav({
     if (!mobileOpen) return;
     const aside = asideRef.current;
     const hamburger = hamburgerRef.current;
+    // Lock background scroll and remove the main content from the interaction +
+    // a11y tree while the modal drawer is open (drawer/hamburger are siblings of
+    // <main>, so they stay reachable). `inert` covers keyboard + pointer + AT.
+    const main = document.querySelector<HTMLElement>(".stratos-shell-main");
+    const prevBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (main) {
+      main.inert = true;
+      main.setAttribute("aria-hidden", "true");
+    }
     const focusables = () =>
       Array.from(
         aside?.querySelectorAll<HTMLElement>(
@@ -221,6 +231,11 @@ export function AppNav({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevBodyOverflow;
+      if (main) {
+        main.inert = false;
+        main.removeAttribute("aria-hidden");
+      }
       hamburger?.focus();
     };
   }, [mobileOpen]);
