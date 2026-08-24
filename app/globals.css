@@ -1032,6 +1032,10 @@ body {
   color: var(--color-accent);
 }
 
+.stratos-page-guide__label--spaced {
+  margin-top: 0.55rem;
+}
+
 .stratos-page-guide__text {
   margin: 0;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;

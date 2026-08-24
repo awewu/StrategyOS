@@ -39,12 +39,16 @@ export function PageGuide() {
             ))}
           </ol>
         </div>
-        {guide.handoff ? (
-          <div className="stratos-page-guide__block">
-            <p className="stratos-page-guide__label">上下游衔接</p>
-            <p className="stratos-page-guide__text">{guide.handoff}</p>
-          </div>
-        ) : null}
+        <div className="stratos-page-guide__block">
+          <p className="stratos-page-guide__label">谁来用</p>
+          <p className="stratos-page-guide__text">{guide.roles}</p>
+          {guide.io ? (
+            <>
+              <p className="stratos-page-guide__label stratos-page-guide__label--spaced">输入 · 输出</p>
+              <p className="stratos-page-guide__text">{guide.io}</p>
+            </>
+          ) : null}
+        </div>
       </div>
     </details>
   );
