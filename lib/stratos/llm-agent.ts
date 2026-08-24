@@ -4,26 +4,10 @@
  */
 import type { ReportPattern, StrategyFormationType } from "@/lib/types/stratos";
 import type { ParsedReport } from "./report-agent";
+import { llmConfigured, llmModel as model } from "@/lib/ai/llm-config";
+import { askTandem } from "@/lib/ai/tandem-brain";
 
-export function llmConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY || process.env.STRATOS_LLM_API_KEY);
-}
-
-function apiKey(): string | undefined {
-  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
-}
-
-function baseUrl(): string {
-  return (
-    process.env.STRATOS_LLM_BASE_URL ??
-    process.env.OPENAI_BASE_URL ??
-    "https://api.openai.com/v1"
-  ).replace(/\/$/, "");
-}
-
-function model(): string {
-  return process.env.STRATOS_LLM_MODEL ?? "gpt-4o-mini";
-}
+export { llmConfigured };
 
 interface LlmPayload {
   patterns: Array<{
@@ -52,33 +36,18 @@ Extract JSON only:
 Period: ${period}. Report id: ${reportId}.`;
 
   try {
-    const res = await fetch(`${baseUrl()}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: model(),
-        temperature: 0.2,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: rawContent.slice(0, 12000) },
-        ],
-      }),
-      signal: AbortSignal.timeout(8000),
+    const res = await askTandem({
+      scenario: "long_context",
+      purpose: "report-parse",
+      system,
+      user: rawContent.slice(0, 12000),
+      temperature: 0.2,
+      responseJson: true,
+      timeoutMs: 8000,
     });
+    if (!res.ok || !res.content) return null;
 
-    if (!res.ok) return null;
-
-    const data = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) return null;
-
-    const payload = JSON.parse(content) as LlmPayload;
+    const payload = JSON.parse(res.content) as LlmPayload;
     const patterns: ReportPattern[] = (payload.patterns ?? []).map((p) => ({
       formationType: p.formationType,
       title: p.title,

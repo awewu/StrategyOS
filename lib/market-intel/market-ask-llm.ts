@@ -2,6 +2,8 @@
  * Market Ask AI — SCR-style推演，复用 StratOS LLM 配置。
  */
 import { hermesLlmConfigured } from "@/lib/market-intel/hermes-llm";
+import { llmApiKey as llmKey } from "@/lib/ai/llm-config";
+import { askTandem } from "@/lib/ai/tandem-brain";
 import {
   buildSwotPrompt,
   generateTows,
@@ -9,21 +11,6 @@ import {
   type SwotBoard,
   type TowsSet,
 } from "@/lib/market-intel/swot";
-
-function llmKey(): string | undefined {
-  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
-}
-
-function llmBaseUrl(): string {
-  return (process.env.STRATOS_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(
-    /\/$/,
-    "",
-  );
-}
-
-function llmModel(): string {
-  return process.env.STRATOS_LLM_MODEL ?? "gpt-4o-mini";
-}
 
 export function marketAskConfigured(): boolean {
   return hermesLlmConfigured();
@@ -57,32 +44,19 @@ export async function askMarketAi(
   ].join("\n");
 
   try {
-    const res = await fetch(llmBaseUrl() + "/chat/completions", {
-      method: "POST",
-      signal: AbortSignal.timeout(35000),
-      headers: { Authorization: "Bearer " + llmKey(), "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: llmModel(),
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          {
-            role: "user",
-            content: `上下文：\n${context.slice(0, 8000)}\n\n问题：${question}`,
-          },
-        ],
-      }),
+    const res = await askTandem({
+      scenario: "reasoning_complex",
+      purpose: "market-ask",
+      system,
+      user: `上下文：\n${context.slice(0, 8000)}\n\n问题：${question}`,
+      temperature: 0.3,
+      responseJson: true,
+      timeoutMs: 35000,
     });
-    if (!res.ok) {
+    if (!res.ok || !res.content) {
       return { error: "LLM 请求失败", fallback: true, text: ruleBasedAnswer(question, context) };
     }
-    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const raw = data.choices?.[0]?.message?.content;
-    if (!raw) {
-      return { error: "空响应", fallback: true, text: ruleBasedAnswer(question, context) };
-    }
-    const parsed = JSON.parse(raw) as MarketAskResult;
+    const parsed = JSON.parse(res.content) as MarketAskResult;
     return {
       situation: parsed.situation ?? "",
       complication: parsed.complication ?? "",
@@ -115,24 +89,17 @@ export async function askSwotAi(board: SwotBoard): Promise<SwotAiResult> {
 
   const { system, user } = buildSwotPrompt(board);
   try {
-    const res = await fetch(llmBaseUrl() + "/chat/completions", {
-      method: "POST",
-      signal: AbortSignal.timeout(35000),
-      headers: { Authorization: "Bearer " + llmKey(), "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: llmModel(),
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-      }),
+    const res = await askTandem({
+      scenario: "reasoning_complex",
+      purpose: "swot-tows",
+      system,
+      user,
+      temperature: 0.3,
+      responseJson: true,
+      timeoutMs: 35000,
     });
-    if (!res.ok) return fallback();
-    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const raw = data.choices?.[0]?.message?.content;
-    const parsed = raw ? parseSwotResponse(raw) : null;
+    if (!res.ok || !res.content) return fallback();
+    const parsed = parseSwotResponse(res.content);
     return parsed ? { tows: parsed, engine: "llm" } : fallback();
   } catch {
     return fallback();

@@ -13,6 +13,7 @@ import {
 } from "./agents";
 import { getAgentPrompt, type AgentContext } from "./agent-prompts";
 import { gatherAgentContext } from "./agent-context";
+import { askTandem } from "@/lib/ai/tandem-brain";
 import * as demo from "@/lib/stratos-demo-data";
 
 function step(
@@ -36,56 +37,26 @@ interface AgentLlmResult {
   status: "done" | "skipped";
 }
 
-function llmApiKey(): string | undefined {
-  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
-}
-
-function llmBaseUrl(): string {
-  return (
-    process.env.STRATOS_LLM_BASE_URL ??
-    process.env.OPENAI_BASE_URL ??
-    "https://api.openai.com/v1"
-  ).replace(/\/$/, "");
-}
-
-function llmModel(): string {
-  return process.env.STRATOS_LLM_MODEL ?? "gpt-4o-mini";
-}
-
 async function callAgentLlm(
   agent: StratAgent,
   ctx: AgentContext
 ): Promise<AgentLlmResult | null> {
   const prompt = getAgentPrompt(agent);
   if (!prompt) return null;
-  const apiKey = llmApiKey();
-  if (!apiKey) return null;
+  if (!llmConfigured()) return null;
 
   try {
-    const res = await fetch(`${llmBaseUrl()}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: llmModel(),
-        temperature: 0.2,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: prompt.system },
-          { role: "user", content: prompt.user(ctx) },
-        ],
-      }),
-      signal: AbortSignal.timeout(10000),
+    const res = await askTandem({
+      scenario: "reasoning_complex",
+      purpose: `agent-${agent.id}`,
+      system: prompt.system,
+      user: prompt.user(ctx),
+      temperature: 0.2,
+      responseJson: true,
+      timeoutMs: 10000,
     });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) return null;
-    const parsed = JSON.parse(content) as {
+    if (!res.ok || !res.content) return null;
+    const parsed = JSON.parse(res.content) as {
       output?: string[];
       status?: string;
     };

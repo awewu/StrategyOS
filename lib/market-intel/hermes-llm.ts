@@ -4,19 +4,11 @@
  * Falls back gracefully when LLM key absent or fetch fails.
  */
 import type { IntelSignal, IntelSource } from "./types";
-
-function llmKey(): string | undefined {
-  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
-}
-function llmBaseUrl(): string {
-  return (process.env.STRATOS_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "");
-}
-function llmModel(): string {
-  return process.env.STRATOS_LLM_MODEL ?? "gpt-4o-mini";
-}
+import { llmConfigured, wrapUntrustedExternal } from "@/lib/ai/llm-config";
+import { askTandem } from "@/lib/ai/tandem-brain";
 
 export function hermesLlmConfigured(): boolean {
-  return Boolean(llmKey());
+  return llmConfigured();
 }
 
 export async function fetchPlainText(url: string): Promise<string | null> {
@@ -58,7 +50,7 @@ export async function extractWithLlm(
   sourceId: string,
   sourceKind: IntelSource["kind"],
 ): Promise<IntelSignal[]> {
-  if (!llmKey()) return [];
+  if (!llmConfigured()) return [];
 
   const system = [
     "You are Hermes, competitive intelligence agent for Rheem China (HVAC heat pump / water heater).",
@@ -72,25 +64,20 @@ export async function extractWithLlm(
   ].join("\n");
 
   try {
-    const res = await fetch(llmBaseUrl() + "/chat/completions", {
-      method: "POST",
-      signal: AbortSignal.timeout(30_000),
-      headers: { Authorization: "Bearer " + llmKey(), "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: llmModel(),
-        temperature: 0,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: text.slice(0, 5000) },
-        ],
-      }),
+    // 外部抓取的竞品网页原文 = 不可信输入，中和 + 显式边界后再喂模型（堵间接注入）。
+    // 经 tandem-brain 收口：开关开→Tandem 受治理 AI，关→fail-soft 直连。
+    const res = await askTandem({
+      scenario: "tool_use",
+      purpose: "competitive-intel-extraction",
+      system,
+      user: wrapUntrustedExternal(text, 5000),
+      temperature: 0,
+      responseJson: true,
+      timeoutMs: 30_000,
     });
-    if (!res.ok) return [];
-    const json = await res.json() as { choices?: { message?: { content?: string } }[] };
-    const raw = json.choices?.[0]?.message?.content ?? "{}";
+    if (!res.ok || !res.content) return [];
     let parsed: unknown;
-    try { parsed = JSON.parse(raw); } catch { return []; }
+    try { parsed = JSON.parse(res.content); } catch { return []; }
     const arr: RawSignal[] = Array.isArray(parsed)
       ? parsed
       : Array.isArray((parsed as Record<string, unknown>).signals)

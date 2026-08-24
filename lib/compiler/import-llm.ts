@@ -3,27 +3,13 @@
  * Falls back gracefully when no API key (rules-only).
  */
 import { llmConfigured } from "@/lib/stratos/llm-agent";
+import { llmModel as model } from "@/lib/ai/llm-config";
+import { askTandem } from "@/lib/ai/tandem-brain";
 import type { CompiledStrategicPayload, PlanDimension } from "./strategic-compiler";
 import type { QualityReject, SanitizeResult } from "./import-quality";
 import { compileStrategicText } from "./strategic-compiler";
 
 export { llmConfigured as compilerLlmConfigured };
-
-function apiKey(): string | undefined {
-  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
-}
-
-function baseUrl(): string {
-  return (
-    process.env.STRATOS_LLM_BASE_URL ??
-    process.env.OPENAI_BASE_URL ??
-    "https://api.openai.com/v1"
-  ).replace(/\/$/, "");
-}
-
-function model(): string {
-  return process.env.STRATOS_LLM_MODEL ?? "gpt-4o-mini";
-}
 
 export type SemanticDedupePair = {
   incoming: string;
@@ -120,29 +106,17 @@ async function callSemanticDedupeLlm(incoming: string[], existing: string[]): Pr
   });
 
   try {
-    const res = await fetch(`${baseUrl()}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: model(),
-        temperature: 0.1,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-      }),
-      signal: AbortSignal.timeout(12000),
+    const res = await askTandem({
+      scenario: "tool_use",
+      purpose: "okr-semantic-dedupe",
+      system,
+      user,
+      temperature: 0.1,
+      responseJson: true,
+      timeoutMs: 12000,
     });
-
-    if (!res.ok) return null;
-    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) return null;
-    return parseSemanticDedupePayload(content, incoming, existing);
+    if (!res.ok || !res.content) return null;
+    return parseSemanticDedupePayload(res.content, incoming, existing);
   } catch {
     return null;
   }
@@ -256,30 +230,17 @@ async function extractWithLlm(rawText: string): Promise<CompiledStrategicPayload
 剔除幻灯片页脚、讨论稿、重复行。中文 OKR 为主。`;
 
   try {
-    const res = await fetch(`${baseUrl()}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: model(),
-        temperature: 0.15,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: rawText.slice(0, 28000) },
-        ],
-      }),
-      signal: AbortSignal.timeout(20000),
+    const res = await askTandem({
+      scenario: "long_context",
+      purpose: "strategic-plan-extract",
+      system,
+      user: rawText.slice(0, 28000),
+      temperature: 0.15,
+      responseJson: true,
+      timeoutMs: 20000,
     });
-
-    if (!res.ok) return null;
-    const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) return null;
-
-    const payload = JSON.parse(content) as LlmExtractPayload;
+    if (!res.ok || !res.content) return null;
+    const payload = JSON.parse(res.content) as LlmExtractPayload;
     const objectives = (payload.objectives ?? [])
       .filter((o) => o.objective?.trim() || (o.keyResults?.length ?? 0) > 0)
       .map((o) => ({

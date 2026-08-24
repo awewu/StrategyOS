@@ -1,21 +1,10 @@
 import { createCanvas } from "@napi-rs/canvas";
 import { join, sep } from "node:path";
 import { pathToFileURL } from "node:url";
+import { ocrApiKey as apiKey, ocrBaseUrl as baseUrl, ocrModel as model } from "@/lib/ai/llm-config";
 
 const OCR_BATCH_SIZE = 3;
 const OCR_MAX_PAGES = 40;
-
-function apiKey(): string | undefined {
-  return process.env.STRATOS_LLM_API_KEY ?? process.env.OPENAI_API_KEY;
-}
-
-function baseUrl(): string {
-  return (process.env.STRATOS_LLM_BASE_URL ?? process.env.OPENAI_BASE_URL ?? "https://dashscope.aliyuncs.com/compatible-mode/v1").replace(/\/$/, "");
-}
-
-function model(): string {
-  return process.env.STRATOS_OCR_MODEL ?? "qwen-vl-plus";
-}
 
 function ensurePdfJsPolyfills() {
   const global = globalThis as Record<string, unknown>;
