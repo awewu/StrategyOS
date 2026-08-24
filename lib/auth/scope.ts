@@ -44,6 +44,26 @@ export function getProjectScope(role: RoleKey, session?: SessionPayload | null):
   return DEMO_PROJECT_SCOPE[role];
 }
 
+/** Minimal session shape the client needs to resolve a viewer's real scope. */
+export type ScopeSession = Pick<SessionPayload, "orgUnitId" | "orgScopeIds" | "projectCode">;
+
+export type ScopeLabels = { orgLabels: string[]; projectCodes: string[] };
+
+/**
+ * Human-readable scope for a viewer — the real org-unit name(s) and project
+ * code(s) they are limited to. Empty `orgLabels` means full-company scope.
+ * Pure + isomorphic: usable server-side (real session) and client-side (demo
+ * role, session omitted → falls back to the role's demo scope).
+ */
+export function resolveScopeLabels(role: RoleKey, session?: ScopeSession | null): ScopeLabels {
+  const orgIds = getOrgScope(role, session as SessionPayload | null);
+  const projects = getProjectScope(role, session as SessionPayload | null);
+  const orgLabels = (orgIds ?? [])
+    .map((id) => getSliceByIdGlobal(id)?.slice.label ?? null)
+    .filter((label): label is string => Boolean(label));
+  return { orgLabels, projectCodes: projects ?? [] };
+}
+
 export function orgScopeWhere(orgIds: string[] | null): { orgUnitId?: { in: string[] } } {
   if (orgIds == null) return {};
   return { orgUnitId: { in: orgIds } };

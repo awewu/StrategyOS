@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import type { RoleKey } from "@/lib/constants";
+import type { ScopeSession } from "@/lib/auth/scope";
 import { RoleProvider, useRole } from "@/lib/context/role-context";
 import { AppNav } from "@/components/shell/AppNav";
 import { AccessDeniedBanner } from "@/components/shell/AccessDeniedBanner";
@@ -70,14 +71,16 @@ export function DashboardShell({
   initialRole,
   secureMode = false,
   devBypassAuth = false,
+  sessionScope = null,
 }: {
   children: React.ReactNode;
   initialRole: RoleKey;
   secureMode?: boolean;
   devBypassAuth?: boolean;
+  sessionScope?: ScopeSession | null;
 }) {
   return (
-    <RoleProvider initialRole={initialRole}>
+    <RoleProvider initialRole={initialRole} sessionScope={sessionScope}>
       <ShellInner
         initialRole={initialRole}
         secureMode={secureMode}

@@ -2,10 +2,13 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { ROLES, type RoleKey } from "@/lib/constants";
+import type { ScopeSession } from "@/lib/auth/scope";
 
 interface RoleContextValue {
   role: RoleKey;
   setRole: (role: RoleKey) => void;
+  /** Real per-user scope from the session (org unit / project), if authenticated. */
+  sessionScope: ScopeSession | null;
 }
 
 const RoleContext = createContext<RoleContextValue | null>(null);
@@ -17,9 +20,11 @@ function persistRoleCookie(role: RoleKey) {
 export function RoleProvider({
   children,
   initialRole = "ceo",
+  sessionScope = null,
 }: {
   children: ReactNode;
   initialRole?: RoleKey;
+  sessionScope?: ScopeSession | null;
 }) {
   const [role, setRoleState] = useState<RoleKey>(initialRole);
 
@@ -29,7 +34,9 @@ export function RoleProvider({
   }
 
   return (
-    <RoleContext.Provider value={{ role, setRole }}>{children}</RoleContext.Provider>
+    <RoleContext.Provider value={{ role, setRole, sessionScope }}>
+      {children}
+    </RoleContext.Provider>
   );
 }
 
