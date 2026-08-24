@@ -229,8 +229,29 @@ function paletteGroupForStandalone(_id: string): PaletteGroup {
   return "战略";
 }
 
-export function flattenNavLinks(): { href: string; label: string; group: PaletteGroup }[] {
-  const out: { href: string; label: string; group: PaletteGroup }[] = [];
+export type NavDeepLink = { href: string; label: string; group: PaletteGroup };
+
+/**
+ * ⌘K deep-links into sub-tabs that are not first-class hub children.
+ * Declared as data (not inline) so they stay reviewable and don't silently rot
+ * out of sync with the routes they point at.
+ */
+export const NAV_DEEP_LINKS: NavDeepLink[] = [
+  { href: "/council?tab=rehearsal", label: "战略会 · 彩排", group: "工具" },
+  { href: "/council?tab=gates", label: "战略会 · 准入 Gate", group: "工具" },
+  { href: "/council?tab=meeting", label: "战略会 · 会议工具", group: "工具" },
+  { href: "/command?tab=a3", label: "指挥舱 · 董事会 A3 全景", group: "指挥" },
+  { href: "/strategy?tab=onepager", label: "战略总览 · 战略一页纸", group: "指挥" },
+  { href: "/strategy/outlook", label: "战略总览 · 战略展望", group: "指挥" },
+  { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "执行" },
+  { href: "/decode?tab=okr", label: "战略解码 · OKR", group: "执行" },
+  { href: "/finance?tab=capital", label: "FPA · 资本配置", group: "财务" },
+  { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
+  { href: "/finance?tab=scenarios", label: "FPA · SPBP 情景", group: "财务" },
+];
+
+export function flattenNavLinks(): NavDeepLink[] {
+  const out: NavDeepLink[] = [];
   for (const hub of NAV_HUBS) {
     const group = HUB_PALETTE_GROUP[hub.id] ?? "工具";
     for (const c of hub.children) {
@@ -240,18 +261,6 @@ export function flattenNavLinks(): { href: string; label: string; group: Palette
   for (const s of NAV_STANDALONE) {
     out.push({ href: s.href, label: s.label, group: paletteGroupForStandalone(s.id) });
   }
-  out.push(
-    { href: "/council?tab=rehearsal", label: "战略会 · 彩排", group: "工具" },
-    { href: "/council?tab=gates", label: "战略会 · 准入 Gate", group: "工具" },
-    { href: "/council?tab=meeting", label: "战略会 · 会议工具", group: "工具" },
-    { href: "/command?tab=a3", label: "指挥舱 · 董事会 A3 全景", group: "指挥" },
-    { href: "/strategy?tab=onepager", label: "战略总览 · 战略一页纸", group: "指挥" },
-    { href: "/strategy/outlook", label: "战略总览 · 战略展望", group: "指挥" },
-    { href: "/decode?tab=hoshin", label: "战略解码 · X-Matrix", group: "执行" },
-    { href: "/decode?tab=okr", label: "战略解码 · OKR", group: "执行" },
-    { href: "/finance?tab=capital", label: "FPA · 资本配置", group: "财务" },
-    { href: "/finance?tab=forecast", label: "FPA · 5 年展望", group: "财务" },
-    { href: "/finance?tab=scenarios", label: "FPA · SPBP 情景", group: "财务" },
-  );
+  out.push(...NAV_DEEP_LINKS);
   return out;
 }

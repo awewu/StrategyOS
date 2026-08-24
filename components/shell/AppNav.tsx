@@ -162,6 +162,7 @@ export function AppNav({
   const home = roleHomePath(role);
   const showAccess = isAdmin(role);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const hubs = useMemo(
     () => NAV_HUBS.map((h) => filterHubForRole(h, role)).filter(Boolean) as NavHub[],
@@ -179,16 +180,40 @@ export function AppNav({
   }
 
   return (
-    <aside className="stratos-sidebar">
-      <Link
-        href={home}
-        className="stratos-sidebar__logo"
-        title={`${brand.sidebarLabelZh} · ${brand.rhautt.taglineEn}`}
+    <>
+      <button
+        type="button"
+        className="stratos-sidebar__hamburger"
+        aria-label={mobileOpen ? "关闭导航" : "打开导航"}
+        aria-expanded={mobileOpen}
+        onClick={() => setMobileOpen((v) => !v)}
       >
-        <RhauttSidebarLogo />
-      </Link>
+        <span className="stratos-sidebar__hamburger-bar" aria-hidden />
+        <span className="stratos-sidebar__hamburger-bar" aria-hidden />
+        <span className="stratos-sidebar__hamburger-bar" aria-hidden />
+      </button>
+      {mobileOpen ? (
+        <div
+          className="stratos-sidebar__backdrop"
+          aria-hidden
+          onClick={() => setMobileOpen(false)}
+        />
+      ) : null}
+      <aside className={`stratos-sidebar ${mobileOpen ? "stratos-sidebar--open" : ""}`}>
+        <Link
+          href={home}
+          className="stratos-sidebar__logo"
+          title={`${brand.sidebarLabelZh} · ${brand.rhautt.taglineEn}`}
+        >
+          <RhauttSidebarLogo />
+        </Link>
 
-      <nav className="stratos-sidebar__nav">
+        <nav
+          className="stratos-sidebar__nav"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("a")) setMobileOpen(false);
+          }}
+        >
         {hubs.map((hub) => (
           <NavSection
             key={hub.id}
@@ -221,13 +246,14 @@ export function AppNav({
         ) : null}
       </nav>
 
-      <div className="stratos-sidebar__foot">
-        <RoleSwitcher compact hidden={secureMode && !devBypassAuth} />
-        <LogoutButton />
-        <kbd className="stratos-sidebar__kbd" title="⌘K 命令面板">
-          ⌘K
-        </kbd>
-      </div>
-    </aside>
+        <div className="stratos-sidebar__foot">
+          <RoleSwitcher compact hidden={secureMode && !devBypassAuth} />
+          <LogoutButton />
+          <kbd className="stratos-sidebar__kbd" title="⌘K 命令面板">
+            ⌘K
+          </kbd>
+        </div>
+      </aside>
+    </>
   );
 }

@@ -7,6 +7,7 @@
 - 视觉识别（色值、Logo、打印主题）→ [BRAND_VI.md](./BRAND_VI.md)（VI 源）
 - 交互气质与方法论映射 → [UI_VI.md](./UI_VI.md)（注：其色板章节为旧 dark-first 版本，已被 `app/globals.css` 的 Ruud light 主题取代；以本文与 globals.css 为准）
 - 组件层级与依赖规则 → **本文**
+- **信息架构（导航分组 / 页面归属 / 角色操作闭环）→ [STRATOS-ROLE-OPERATION-LOOPS.md](./STRATOS-ROLE-OPERATION-LOOPS.md)**（IA 权威）。本文只管「组件分几层」，不管「页面归到哪个导航入口」——后者由 IA 文档 + `lib/nav/hubs.ts` + `lib/nav/page-guides.ts` 承载。
 
 ---
 

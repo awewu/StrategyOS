@@ -8,11 +8,18 @@
  */
 import { usePathname } from "next/navigation";
 import { getPageGuide } from "@/lib/nav/page-guides";
+import { roleToLevel } from "@/lib/auth/permissions";
+import { useRole } from "@/lib/context/role-context";
 
 export function PageGuide() {
   const pathname = usePathname();
+  const { role } = useRole();
   const guide = getPageGuide(pathname);
   if (!guide) return null;
+
+  // Read-only roles (observer / board, level 0) can't perform the steps —
+  // label the flow as reference so they aren't misled.
+  const readOnly = roleToLevel(role) === 0;
 
   return (
     <details className="stratos-page-guide print:hidden">
@@ -32,7 +39,9 @@ export function PageGuide() {
           <p className="stratos-page-guide__text">{guide.principle}</p>
         </div>
         <div className="stratos-page-guide__block">
-          <p className="stratos-page-guide__label">操作流程</p>
+          <p className="stratos-page-guide__label">
+            操作流程{readOnly ? "（你的角色为只读，以下供参考）" : ""}
+          </p>
           <ol className="stratos-page-guide__steps">
             {guide.steps.map((step, i) => (
               <li key={i}>{step}</li>
