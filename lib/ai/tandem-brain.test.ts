@@ -1,6 +1,12 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { askTandem, tandemAiEnabled } from "./tandem-brain";
+import {
+  askTandem,
+  tandemAiEnabled,
+  tandemStrictMode,
+  onTandemBypass,
+  type TandemBypassEvent,
+} from "./tandem-brain";
 
 const realFetch = globalThis.fetch;
 const saved = {
@@ -10,6 +16,7 @@ const saved = {
   token: process.env.TANDEM_AI_TOKEN,
   key: process.env.STRATOS_LLM_API_KEY,
   openai: process.env.OPENAI_API_KEY,
+  strict: process.env.STRATOS_TANDEM_STRICT,
 };
 
 function restore(name: string, val: string | undefined) {
@@ -25,6 +32,8 @@ afterEach(() => {
   restore("TANDEM_AI_TOKEN", saved.token);
   restore("STRATOS_LLM_API_KEY", saved.key);
   restore("OPENAI_API_KEY", saved.openai);
+  restore("STRATOS_TANDEM_STRICT", saved.strict);
+  onTandemBypass(null);
 });
 
 const input = { scenario: "reasoning_complex" as const, system: "sys", user: "u" };
@@ -106,5 +115,96 @@ describe("askTandem", () => {
     const res = await askTandem(input);
     assert.equal(res.source, "fallback");
     assert.equal(res.content, "fell-back");
+  });
+});
+
+describe("tandemStrictMode (fail-closed)", () => {
+  it("only true when STRATOS_TANDEM_STRICT=1", () => {
+    process.env.STRATOS_TANDEM_STRICT = "1";
+    assert.equal(tandemStrictMode(), true);
+    delete process.env.STRATOS_TANDEM_STRICT;
+    assert.equal(tandemStrictMode(), false);
+  });
+
+  it("strict + endpoint unreachable → source 'unavailable', NO fallback", async () => {
+    process.env.STRATOS_USE_TANDEM_AI = "1";
+    process.env.STRATOS_TANDEM_STRICT = "1";
+    process.env.TANDEM_AI_BASE_URL = "https://ai.rhautt.com";
+    process.env.TANDEM_AI_TOKEN = "svc-token";
+    process.env.STRATOS_LLM_API_KEY = "k"; // present, but must NOT be used
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      throw new Error("tandem down");
+    }) as unknown as typeof fetch;
+    const res = await askTandem(input);
+    assert.equal(res.source, "unavailable");
+    assert.equal(res.ok, false);
+    assert.equal(calls, 1); // governed-chat attempted once, no direct fallback call
+  });
+
+  it("strict + unconfigured → 'unavailable', not 'fallback'", async () => {
+    process.env.STRATOS_USE_TANDEM_AI = "1";
+    process.env.STRATOS_TANDEM_STRICT = "1";
+    delete process.env.TANDEM_AI_BASE_URL;
+    delete process.env.TANDEM_ISSUER;
+    delete process.env.TANDEM_AI_TOKEN;
+    process.env.STRATOS_LLM_API_KEY = "k";
+    const res = await askTandem(input);
+    assert.equal(res.source, "unavailable");
+  });
+});
+
+describe("onTandemBypass (observability)", () => {
+  it("records reason + strict flag on every bypass path", async () => {
+    const events: TandemBypassEvent[] = [];
+    onTandemBypass((e) => events.push(e));
+    process.env.STRATOS_USE_TANDEM_AI = "1";
+    process.env.TANDEM_AI_BASE_URL = "https://ai.rhautt.com";
+    process.env.TANDEM_AI_TOKEN = "svc-token";
+    process.env.STRATOS_LLM_API_KEY = "k";
+    delete process.env.STRATOS_TANDEM_STRICT;
+    let call = 0;
+    globalThis.fetch = (async () => {
+      call += 1;
+      if (call === 1) return { ok: false, status: 503, json: async () => ({}) };
+      return { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: "x" } }] }) };
+    }) as unknown as typeof fetch;
+    await askTandem(input);
+    assert.equal(events.length, 1);
+    assert.equal(events[0]!.reason, "non_2xx");
+    assert.equal(events[0]!.strict, false);
+    assert.equal(events[0]!.scenario, "reasoning_complex");
+  });
+
+  it("records 'blocked' when governance blocks", async () => {
+    const events: TandemBypassEvent[] = [];
+    onTandemBypass((e) => events.push(e));
+    process.env.STRATOS_USE_TANDEM_AI = "1";
+    process.env.TANDEM_AI_BASE_URL = "https://ai.rhautt.com";
+    process.env.TANDEM_AI_TOKEN = "svc-token";
+    globalThis.fetch = (async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: false, blocked: true }),
+    })) as unknown as typeof fetch;
+    await askTandem(input);
+    assert.equal(events.length, 1);
+    assert.equal(events[0]!.reason, "blocked");
+  });
+
+  it("listener throwing never breaks the main flow", async () => {
+    onTandemBypass(() => {
+      throw new Error("audit sink down");
+    });
+    delete process.env.STRATOS_USE_TANDEM_AI;
+    process.env.STRATOS_LLM_API_KEY = "k";
+    globalThis.fetch = (async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ choices: [{ message: { content: "ok" } }] }),
+    })) as unknown as typeof fetch;
+    const res = await askTandem(input);
+    assert.equal(res.content, "ok");
   });
 });

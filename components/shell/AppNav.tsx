@@ -11,7 +11,7 @@
 import { RhauttSidebarLogo } from "@/components/brand/RhauttSidebarLogo";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { canAccessRoute, filterNavHref, isAdmin, roleHomePath } from "@/lib/auth/permissions";
 import { brand } from "@/lib/brand/tokens";
 import { RoleSwitcher } from "@/components/shell/RoleSwitcher";
@@ -163,12 +163,67 @@ export function AppNav({
   const showAccess = isAdmin(role);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [prevPath, setPrevPath] = useState(pathname);
+  const asideRef = useRef<HTMLElement | null>(null);
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+
+  // Close the mobile drawer on route change (covers programmatic/⌘K navigation).
+  // Render-time state adjustment per React docs — avoids cascading effect renders.
+  if (pathname !== prevPath) {
+    setPrevPath(pathname);
+    if (mobileOpen) setMobileOpen(false);
+  }
 
   const hubs = useMemo(
     () => NAV_HUBS.map((h) => filterHubForRole(h, role)).filter(Boolean) as NavHub[],
     [role],
   );
   const standalone = NAV_STANDALONE.filter((item) => filterNavHref(role, item.href));
+
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // Drawer a11y: Escape to close, focus into the drawer on open + return focus
+  // to the toggle on close, and trap Tab within the drawer while it is open.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const aside = asideRef.current;
+    const hamburger = hamburgerRef.current;
+    const focusables = () =>
+      Array.from(
+        aside?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+
+    focusables()[0]?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setMobileOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      hamburger?.focus();
+    };
+  }, [mobileOpen]);
 
   function toggle(id: string) {
     setCollapsed((prev) => {
@@ -183,9 +238,11 @@ export function AppNav({
     <>
       <button
         type="button"
+        ref={hamburgerRef}
         className="stratos-sidebar__hamburger"
         aria-label={mobileOpen ? "关闭导航" : "打开导航"}
         aria-expanded={mobileOpen}
+        aria-controls="stratos-sidebar"
         onClick={() => setMobileOpen((v) => !v)}
       >
         <span className="stratos-sidebar__hamburger-bar" aria-hidden />
@@ -196,10 +253,17 @@ export function AppNav({
         <div
           className="stratos-sidebar__backdrop"
           aria-hidden
-          onClick={() => setMobileOpen(false)}
+          onClick={closeMobile}
         />
       ) : null}
-      <aside className={`stratos-sidebar ${mobileOpen ? "stratos-sidebar--open" : ""}`}>
+      <aside
+        ref={asideRef}
+        id="stratos-sidebar"
+        className={`stratos-sidebar ${mobileOpen ? "stratos-sidebar--open" : ""}`}
+        role={mobileOpen ? "dialog" : undefined}
+        aria-modal={mobileOpen ? true : undefined}
+        aria-label={mobileOpen ? "主导航" : undefined}
+      >
         <Link
           href={home}
           className="stratos-sidebar__logo"
@@ -211,7 +275,7 @@ export function AppNav({
         <nav
           className="stratos-sidebar__nav"
           onClick={(e) => {
-            if ((e.target as HTMLElement).closest("a")) setMobileOpen(false);
+            if ((e.target as HTMLElement).closest("a")) closeMobile();
           }}
         >
         {hubs.map((hub) => (

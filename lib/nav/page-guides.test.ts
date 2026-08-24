@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { NAV_HUBS, NAV_STANDALONE } from "./hubs";
 import { getPageGuide, PAGE_GUIDES } from "./page-guides";
+import { getMatchingRule } from "@/lib/auth/permissions";
 
 describe("page-guides", () => {
   it("every nav hub child route resolves to a guide", () => {
@@ -41,5 +42,14 @@ describe("page-guides", () => {
     // /decode?tab=okr → /decode; /reports/123 → /reports
     assert.ok(getPageGuide("/reports/some-id"), "nested /reports unresolved");
     assert.equal(getPageGuide("/strategy"), PAGE_GUIDES["/strategy"]);
+  });
+
+  it("no guide points at a dead route (anti-drift: every guide route has a permission rule)", () => {
+    for (const route of Object.keys(PAGE_GUIDES)) {
+      assert.ok(
+        getMatchingRule(route) !== null,
+        `PageGuide route ${route} has no permission rule — likely renamed/removed route (drift)`,
+      );
+    }
   });
 });

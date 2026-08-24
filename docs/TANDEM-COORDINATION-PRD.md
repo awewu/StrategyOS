@@ -53,6 +53,8 @@ StratOS lib/market-intel/* ─(OIDC token)→ Tandem 治理 AI API ─→ govern
    - 战略推理 / 3+1 决策辅助 → `reasoning_complex`
    - 高频轻量（提示/摘要）→ `high_frequency`
 4. **env 开关**：`STRATOS_USE_TANDEM_AI=1` 灰度开启；关闭时完全走现有直连（零回归）。`TANDEM_AI_BASE_URL` 可覆盖（默认取 `TANDEM_ISSUER`）。
+5. **fail-closed 严格模式（可选 `STRATOS_TANDEM_STRICT=1`）**：治理平面不可达（未配置/超时/非 2xx/坏返回体）时**不回退直连**，直接返回 `source:"unavailable"` 阻断——用于「写动作必须经治理」的红线场景（对齐集团 harness fail-closed 口径）。治理明确 `blocked` 在严格与非严格两种模式下都不回退。默认非严格（fail-soft），保持零回归。
+6. **旁路可观测**：每次回退/阻断都经 `recordTandemBypass` 上报 `{ reason, scenario, purpose, strict }`，可用 `onTandemBypass(fn)` 注入审计/告警监听（监听异常绝不影响主流程）。`reason ∈ disabled|unconfigured|network_error|non_2xx|bad_payload|blocked`。
 
 ### 2.3 安全/治理收益（收口后自动获得）
 - 抓取的竞品网页原文经 Tandem guardrail 中和后再进模型（堵住注入面）。

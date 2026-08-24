@@ -10,7 +10,10 @@
  * 当前状态（脚手架）：
  * - 默认关（STRATOS_USE_TANDEM_AI!=='1'）→ 直接走本地直连底座 directLlmChat，零回归。
  * - Tandem 侧对外端点 POST /api/ai/governed-chat 就绪后，置 STRATOS_USE_TANDEM_AI=1 灰度开启。
- * - fail-soft：Tandem 未配置/不可达/超时/非 2xx → 回退直连，功能绝不 500。
+ * - fail-soft（默认）：Tandem 未配置/不可达/超时/非 2xx → 回退直连，功能绝不 500。
+ * - fail-closed（可选 STRATOS_TANDEM_STRICT=1）：治理平面不可达时不回退，直接 unavailable
+ *   阻断，用于「写动作必须经治理」的红线场景。治理明确 blocked 在两种模式下都不回退。
+ * - 旁路可观测：每次回退/阻断都经 recordTandemBypass 上报（可注入监听做审计/告警）。
  */
 import {
   directLlmChat,
@@ -39,8 +42,11 @@ export interface AskTandemInput {
 export interface AskTandemResult {
   ok: boolean;
   content: string | null;
-  /** tandem = 经 Tandem 治理返回；fallback = 回退直连；disabled = 开关未开。 */
-  source: "tandem" | "fallback" | "disabled";
+  /**
+   * tandem = 经 Tandem 治理返回；fallback = 回退直连；disabled = 开关未开；
+   * unavailable = 严格模式下治理平面不可达且拒绝回退（fail-closed 阻断）。
+   */
+  source: "tandem" | "fallback" | "disabled" | "unavailable";
   model?: string;
   blocked?: boolean;
 }
@@ -48,6 +54,47 @@ export interface AskTandemResult {
 /** 收口开关：仅当 STRATOS_USE_TANDEM_AI='1' 时启用 Tandem 路径。 */
 export function tandemAiEnabled(): boolean {
   return process.env.STRATOS_USE_TANDEM_AI === "1";
+}
+
+/** 严格 fail-closed 开关：治理不可达时不回退直连，直接阻断。 */
+export function tandemStrictMode(): boolean {
+  return process.env.STRATOS_TANDEM_STRICT === "1";
+}
+
+/** 旁路原因：为何未经 Tandem 治理返回。 */
+export type TandemBypassReason =
+  | "disabled"
+  | "unconfigured"
+  | "network_error"
+  | "non_2xx"
+  | "bad_payload"
+  | "blocked";
+
+export interface TandemBypassEvent {
+  reason: TandemBypassReason;
+  scenario: TandemScenario;
+  purpose?: string;
+  /** true = 严格模式下阻断（fail-closed）；false = fail-soft 回退直连。 */
+  strict: boolean;
+}
+
+let bypassListener: ((e: TandemBypassEvent) => void) | null = null;
+
+/** 注入旁路监听（审计/告警/测试）；传 null 清除。返回上一个监听以便还原。 */
+export function onTandemBypass(
+  fn: ((e: TandemBypassEvent) => void) | null,
+): ((e: TandemBypassEvent) => void) | null {
+  const prev = bypassListener;
+  bypassListener = fn;
+  return prev;
+}
+
+function recordTandemBypass(e: TandemBypassEvent): void {
+  try {
+    bypassListener?.(e);
+  } catch {
+    // 监听器异常绝不影响主流程。
+  }
 }
 
 function tandemBaseUrl(): string | undefined {
@@ -59,8 +106,29 @@ function tandemToken(): string | undefined {
   return process.env.TANDEM_AI_TOKEN?.trim() || undefined;
 }
 
-/** 回退到本地直连底座（同一收口点）。 */
-async function fallbackDirect(input: AskTandemInput): Promise<AskTandemResult> {
+/**
+ * 旁路处理：fail-soft 回退直连，或严格模式下 fail-closed 阻断。
+ * 所有回退/阻断都必须经此以保证可观测。
+ */
+async function bypass(
+  input: AskTandemInput,
+  reason: TandemBypassReason,
+): Promise<AskTandemResult> {
+  const strict = tandemStrictMode();
+  recordTandemBypass({
+    reason,
+    scenario: input.scenario,
+    purpose: input.purpose ?? input.scenario,
+    strict,
+  });
+  // 治理明确阻断：两种模式都不回退。
+  if (reason === "blocked") {
+    return { ok: false, content: null, source: "tandem", blocked: true };
+  }
+  // 严格模式：治理平面不可达 → fail-closed，不回退直连。
+  if (strict) {
+    return { ok: false, content: null, source: "unavailable" };
+  }
   const messages: LlmChatMessage[] = [
     { role: "system", content: input.system },
     { role: "user", content: input.user },
@@ -82,13 +150,13 @@ export async function askTandem(input: AskTandemInput): Promise<AskTandemResult>
   if (!tandemAiEnabled()) {
     // 开关未开：若本地已配置 LLM 则回退直连，否则明确 disabled。
     return llmConfigured()
-      ? await fallbackDirect(input)
+      ? await bypass(input, "disabled")
       : { ok: false, content: null, source: "disabled" };
   }
 
   const base = tandemBaseUrl();
   const token = tandemToken();
-  if (!base || !token) return await fallbackDirect(input);
+  if (!base || !token) return await bypass(input, "unconfigured");
 
   try {
     const res = await fetch(`${base}/api/ai/governed-chat`, {
@@ -109,7 +177,7 @@ export async function askTandem(input: AskTandemInput): Promise<AskTandemResult>
         ],
       }),
     });
-    if (!res.ok) return await fallbackDirect(input);
+    if (!res.ok) return await bypass(input, "non_2xx");
     const data = (await res.json()) as {
       ok?: boolean;
       answer?: string;
@@ -118,11 +186,17 @@ export async function askTandem(input: AskTandemInput): Promise<AskTandemResult>
     };
     // 治理明确阻断：如实上报，不回退（尊重 Tandem 输出闸）。
     if (data.blocked) {
+      recordTandemBypass({
+        reason: "blocked",
+        scenario: input.scenario,
+        purpose: input.purpose ?? input.scenario,
+        strict: tandemStrictMode(),
+      });
       return { ok: false, content: null, source: "tandem", blocked: true, model: data.model };
     }
-    if (!data.ok || typeof data.answer !== "string") return await fallbackDirect(input);
+    if (!data.ok || typeof data.answer !== "string") return await bypass(input, "bad_payload");
     return { ok: true, content: data.answer, source: "tandem", model: data.model };
   } catch {
-    return await fallbackDirect(input);
+    return await bypass(input, "network_error");
   }
 }
