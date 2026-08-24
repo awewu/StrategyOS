@@ -76,9 +76,20 @@ describe("askTandem", () => {
     process.env.STRATOS_USE_TANDEM_AI = "1";
     process.env.TANDEM_AI_BASE_URL = "https://ai.rhautt.com";
     process.env.TANDEM_AI_TOKEN = "svc-token";
-    globalThis.fetch = (async (url: string) => {
-      assert.ok(String(url).endsWith("/api/ai/governed-chat"));
-      return { ok: true, status: 200, json: async () => ({ ok: true, answer: "governed", model: "deepseek" }) };
+    globalThis.fetch = (async (url: string, init?: { body?: string }) => {
+      assert.ok(String(url).endsWith("/api/gateway/ai-chat"));
+      const sent = JSON.parse(String(init?.body ?? "{}")) as {
+        intent?: string;
+        messages?: { role: string; content: string }[];
+      };
+      // Gateway contract: intent required, messages user/assistant only (no system role).
+      assert.ok(sent.intent && sent.intent.length > 0);
+      assert.deepEqual(
+        sent.messages?.map((m) => m.role),
+        ["user"],
+      );
+      assert.ok(sent.messages?.[0]?.content.includes("sys")); // system folded into user
+      return { ok: true, status: 200, json: async () => ({ ok: true, answer: "governed", usage: { model: "deepseek" } }) };
     }) as unknown as typeof fetch;
     const res = await askTandem(input);
     assert.equal(res.source, "tandem");
@@ -86,7 +97,23 @@ describe("askTandem", () => {
     assert.equal(res.model, "deepseek");
   });
 
-  it("enabled + governance blocked → blocked true, no fallback", async () => {
+  it("enabled + governance blocked (HTTP 403) → blocked true, no fallback", async () => {
+    process.env.STRATOS_USE_TANDEM_AI = "1";
+    process.env.TANDEM_AI_BASE_URL = "https://ai.rhautt.com";
+    process.env.TANDEM_AI_TOKEN = "svc-token";
+    process.env.STRATOS_LLM_API_KEY = "k"; // present, but blocked must NOT fall back
+    globalThis.fetch = (async () => ({
+      ok: false,
+      status: 403,
+      json: async () => ({ ok: false, blocked: { stage: "output", reasons: ["L0"] } }),
+    })) as unknown as typeof fetch;
+    const res = await askTandem(input);
+    assert.equal(res.source, "tandem");
+    assert.equal(res.blocked, true);
+    assert.equal(res.ok, false);
+  });
+
+  it("enabled + governance blocked (200 body) → blocked true, no fallback", async () => {
     process.env.STRATOS_USE_TANDEM_AI = "1";
     process.env.TANDEM_AI_BASE_URL = "https://ai.rhautt.com";
     process.env.TANDEM_AI_TOKEN = "svc-token";

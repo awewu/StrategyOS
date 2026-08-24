@@ -68,11 +68,14 @@ StratOS lib/market-intel/* ─(OIDC token)→ Tandem 治理 AI API ─→ govern
 - **M2**：其余直连点（market-ask-llm / import-llm）接入。
 - **M3**：全量切换，直连仅作降级兜底。
 
-## 4. 前置依赖（Tandem 仓，另立项，不在本 PRD 交付）
-Tandem 需对外暴露**受治理的 AI API**（当前 governedChat 仅内部）：
-- `POST /api/ai/governed-chat`：入参 `{ scenario, purpose, messages, actor }`，内部走 `governedChat`（含 guardrail + 四闸 + TAF 路由 + LlmUsageLog）；出参 `{ ok, answer, blocked?, usage, model }`。
-- 认证复用现有 OIDC 信任域（`ai.rhautt.com`），做**调用方鉴权 + 租户隔离 + 配额**（对齐 `tenant-ai-policy`）。
-- 与 Tandem 正在规划的 "MCP Server / A2A 对外开放" 同批推进（见 Tandem 侧战略盘点）。
+## 4. 前置依赖（Tandem 仓）——**已就绪**
+Tandem 已上线集团统一 AI 网关（`app/api/gateway/ai-chat/route.ts` + `lib/gateway/ai-gateway.ts`），StratOS 直接对接：
+- **端点**：`POST /api/gateway/ai-chat`（内部走 `governedChat`：基线闸/输出闸/审计/计量 + TAF 多模型路由）。
+- **鉴权**：服务令牌 `Authorization: Bearer <AI_GATEWAY_STRATOS_TOKEN>`（Tandem 侧按系统独立签发/轮换；StratOS 侧同值置于 `TANDEM_AI_TOKEN`）。
+- **入参**：`{ intent(必填), messages:[{role:'user'|'assistant', content}], scenario?, temperature?, maxTokens?, responseFormat? }`。⚠️ **不接受 system 角色**（治理 system 由网关注入）——故 StratOS 的任务 `system` 折叠进首条 `user`。
+- **出参**：成功 `200 { ok:true, answer, gates, warnings, checkId, usage }`；治理拦截 `403 { ok:false, blocked, gates, warnings }`；未启用 `503`；未授权 `401`；LLM 故障 `502`。
+- **纪律对齐**：网关只产文本、不触发企业动作；L0 红线 HARD_BLOCK 必拦；闸内部故障 fail-open（StratOS 侧自有 fail-soft/fail-closed）。
+- StratOS 客户端 `lib/ai/tandem-brain.ts` 已按此契约对接（path/intent/user-only messages/403→blocked）。剩余仅**部署配置**：Tandem 配 `AI_GATEWAY_STRATOS_TOKEN`、StratOS 配 `TANDEM_AI_BASE_URL`+`TANDEM_AI_TOKEN` 并置 `STRATOS_USE_TANDEM_AI=1` 灰度。
 
 ## 5. 验收
 - 开 `STRATOS_USE_TANDEM_AI=1`：竞品情报抽取走 Tandem，`LlmUsageLog` 出现对应 scenario 记录；Tandem 不可达时自动回退直连、功能不 500。

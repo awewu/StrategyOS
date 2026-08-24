@@ -7,9 +7,14 @@
  *
  * 边界：两仓独立。本模块只调用 Tandem 对外 AI API 契约，不依赖其代码。
  *
- * 当前状态（脚手架）：
+ * 当前状态：
  * - 默认关（STRATOS_USE_TANDEM_AI!=='1'）→ 直接走本地直连底座 directLlmChat，零回归。
- * - Tandem 侧对外端点 POST /api/ai/governed-chat 就绪后，置 STRATOS_USE_TANDEM_AI=1 灰度开启。
+ * - 对接 Tandem 集团统一 AI 网关 POST /api/gateway/ai-chat（governedChat 治理通道，
+ *   服务令牌 = Tandem 侧 AI_GATEWAY_STRATOS_TOKEN）；置 STRATOS_USE_TANDEM_AI=1 灰度开启。
+ * - 契约：请求 { intent, scenario?, messages:[{role:user|assistant,content}], temperature?,
+ *   responseFormat? }（system 由治理闸注入，故 StratOS 的 system 折叠进首条 user）；
+ *   成功 200 { ok:true, answer, usage }；治理拦截 403 { ok:false, blocked }；
+ *   未启用 503 / 未授权 401 / LLM 故障 502。
  * - fail-soft（默认）：Tandem 未配置/不可达/超时/非 2xx → 回退直连，功能绝不 500。
  * - fail-closed（可选 STRATOS_TANDEM_STRICT=1）：治理平面不可达时不回退，直接 unavailable
  *   阻断，用于「写动作必须经治理」的红线场景。治理明确 blocked 在两种模式下都不回退。
@@ -158,8 +163,13 @@ export async function askTandem(input: AskTandemInput): Promise<AskTandemResult>
   const token = tandemToken();
   if (!base || !token) return await bypass(input, "unconfigured");
 
+  // system 由治理闸注入；网关只接受 user|assistant，故把 StratOS 的任务 system 折叠进 user。
+  const userContent = input.system?.trim()
+    ? `${input.system}\n\n---\n\n${input.user}`
+    : input.user;
+
   try {
-    const res = await fetch(`${base}/api/ai/governed-chat`, {
+    const res = await fetch(`${base}/api/gateway/ai-chat`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -169,33 +179,26 @@ export async function askTandem(input: AskTandemInput): Promise<AskTandemResult>
       cache: "no-store",
       signal: AbortSignal.timeout(input.timeoutMs ?? 30_000),
       body: JSON.stringify({
+        intent: input.purpose ?? input.scenario,
         scenario: input.scenario,
-        purpose: input.purpose ?? input.scenario,
-        messages: [
-          { role: "system", content: input.system },
-          { role: "user", content: input.user },
-        ],
+        temperature: input.temperature,
+        responseFormat: input.responseJson ? "json" : undefined,
+        messages: [{ role: "user", content: userContent }],
       }),
     });
+    // 治理闸拦截：网关对 blocked 返回 403 + { blocked }（尊重输出闸，两种模式都不回退）。
+    if (res.status === 403) return await bypass(input, "blocked");
     if (!res.ok) return await bypass(input, "non_2xx");
     const data = (await res.json()) as {
       ok?: boolean;
       answer?: string;
       blocked?: boolean;
-      model?: string;
+      usage?: { model?: string };
     };
-    // 治理明确阻断：如实上报，不回退（尊重 Tandem 输出闸）。
-    if (data.blocked) {
-      recordTandemBypass({
-        reason: "blocked",
-        scenario: input.scenario,
-        purpose: input.purpose ?? input.scenario,
-        strict: tandemStrictMode(),
-      });
-      return { ok: false, content: null, source: "tandem", blocked: true, model: data.model };
-    }
+    // 兼容 200 携带 blocked 的实现。
+    if (data.blocked) return await bypass(input, "blocked");
     if (!data.ok || typeof data.answer !== "string") return await bypass(input, "bad_payload");
-    return { ok: true, content: data.answer, source: "tandem", model: data.model };
+    return { ok: true, content: data.answer, source: "tandem", model: data.usage?.model };
   } catch {
     return await bypass(input, "network_error");
   }
