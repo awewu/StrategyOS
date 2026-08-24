@@ -1,6 +1,13 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { canAccessRoute, filterNavHref, roleHomePath, isAdmin, isExecutive } from "./permissions";
+import {
+  canAccessRoute,
+  filterNavHref,
+  roleHomePath,
+  isAdmin,
+  isExecutive,
+  pageAccessPosture,
+} from "./permissions";
 import { flattenNavLinks } from "@/lib/nav/hubs";
 
 const CEO_MAIN_ROUTES = [
@@ -70,5 +77,34 @@ describe("permissions · staff role", () => {
   it("can access strategy versions and see the nav link", () => {
     assert.equal(canAccessRoute("staff", "/versions"), true);
     assert.equal(filterNavHref("staff", "/versions"), true);
+  });
+});
+
+describe("permissions · pageAccessPosture (PageGuide tailoring)", () => {
+  it("readonly for L0 roles on pages they can view", () => {
+    assert.equal(pageAccessPosture("observer", "/strategy"), "readonly");
+    assert.equal(pageAccessPosture("observer", "/monitor/bu"), "readonly");
+  });
+
+  it("company for executives (ceo/cfo) on full-company pages", () => {
+    assert.equal(pageAccessPosture("ceo", "/command"), "company");
+    assert.equal(pageAccessPosture("cfo", "/finance"), "company");
+    assert.equal(pageAccessPosture("ceo", "/monitor/bu"), "company");
+  });
+
+  it("scoped for own-unit action roles (vp/pm/staff)", () => {
+    assert.equal(pageAccessPosture("vp", "/monitor/bu"), "scoped");
+    assert.equal(pageAccessPosture("vp", "/cockpit"), "scoped");
+    assert.equal(pageAccessPosture("pm", "/execution"), "scoped");
+    assert.equal(pageAccessPosture("staff", "/versions"), "scoped");
+  });
+
+  it("none when the viewer cannot reach the page", () => {
+    // VP (L2) cannot reach L3 command deck / finance.
+    assert.equal(pageAccessPosture("vp", "/command"), "none");
+    assert.equal(pageAccessPosture("pm", "/finance"), "none");
+    // board is whitelisted to /board only.
+    assert.equal(pageAccessPosture("board", "/command"), "none");
+    assert.equal(pageAccessPosture("board", "/board"), "readonly");
   });
 });

@@ -1049,6 +1049,12 @@ body {
   color: var(--color-text-secondary);
 }
 
+.stratos-page-guide__scope {
+  margin-top: 0.3rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
 .stratos-page-guide__steps {
   margin: 0;
   padding-left: 1.15rem;

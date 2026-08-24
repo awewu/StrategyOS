@@ -186,6 +186,30 @@ export function canViewDraftOnePager(role: RoleKey): boolean {
   return role === "ceo" || role === "cfo";
 }
 
+/**
+ * Viewer's posture toward a specific page — used by PageGuide to tailor the
+ * explainer beyond a binary read-only flag. Grounded in the L0–L3 data-scope
+ * model documented at the top of this file:
+ * - none:    can't reach/act on the page (defensive; e.g. redirect stubs)
+ * - readonly: L0 (observer/board) — can view, can't perform steps
+ * - scoped:  L1–L2 (pm/vp/system_head/staff) — can act, but only within their
+ *            own project/unit slice, not the full company
+ * - company: L3+ (ceo/cfo, admin) — full-company scope
+ */
+export type PageAccessPosture = "none" | "readonly" | "scoped" | "company";
+
+export function pageAccessPosture(
+  role: RoleKey,
+  pathname: string,
+  config = getPermissionConfig(),
+): PageAccessPosture {
+  if (!canAccessRoute(role, pathname, config)) return "none";
+  const level = roleToLevel(role);
+  if (level === 0) return "readonly";
+  if (level >= 3) return "company";
+  return "scoped";
+}
+
 export function filterNavHref(role: RoleKey, href: string): boolean {
   const pathOnly = href.split("?")[0]!;
   return canAccessRoute(role, pathOnly);
