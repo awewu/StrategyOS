@@ -5,6 +5,7 @@ import { RehearsalWalkthrough } from "@/components/rehearsal/RehearsalWalkthroug
 import { DecisionReviewPanel } from "@/components/council/DecisionReviewPanel";
 import { getDecisionReviewCards } from "@/lib/council/decision-review";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { StratosTabNav } from "@/components/ui/StratosTabNav";
 import { getRehearsalBundle } from "@/lib/data/strategy-data";
 import { getFiveForceRecords } from "@/lib/gates/five-forces";
@@ -37,6 +38,7 @@ export default async function CouncilPage({
 }: {
   searchParams: Promise<{ tab?: string; orgUnitId?: string; snapshotId?: string; setup?: string }>;
 }) {
+  await requireRouteAccess("/council");
   const params = await searchParams;
   const tab = parseTab(params.tab);
 

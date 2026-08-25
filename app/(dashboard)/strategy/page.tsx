@@ -11,7 +11,7 @@ import { GemPanel } from "@/components/gems/GemPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getCapitalSummaryLine } from "@/lib/data/entity-getters";
 import { getStrategyBundle } from "@/lib/data/strategy-data";
-import { getEffectiveRole } from "@/lib/auth/guard";
+import { getEffectiveRole, requireRouteAccess } from "@/lib/auth/guard";
 import { getStrategyOnePagerForViewer } from "@/lib/strategy/one-pager-store";
 import { getActivePeriod } from "@/lib/data/active-period";
 
@@ -20,6 +20,7 @@ export default async function StrategyPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  await requireRouteAccess("/strategy");
   const { tab } = await searchParams;
   const activeTab = tab === "onepager" ? ("onepager" as const) : ("view" as const);
   const role = await getEffectiveRole();

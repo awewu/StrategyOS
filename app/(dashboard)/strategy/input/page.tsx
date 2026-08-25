@@ -5,7 +5,7 @@ import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
 import { getOrgUnitsWithChildren } from "@/lib/data/org-units-access";
 import { getVersionsBundle } from "@/lib/data/versions-data";
-import { prisma } from "@/lib/db";
+import { prisma, safeDbQuery } from "@/lib/db";
 import { topDiffs } from "@/lib/stratos";
 
 const HORIZON_START = 2026;
@@ -50,42 +50,52 @@ export default async function StrategyInputPage({
   const [session, orgUnits, users, { stratDiffs }, historySnapshots, plan] = await Promise.all([
     getEffectiveSession(),
     getOrgUnitsWithChildren(),
-    prisma.user.findMany({
-      orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        orgUnit: { select: { name: true } },
-      },
-    }),
-    getVersionsBundle(),
-    prisma.planSubmissionSnapshot.findMany({
-      where: { horizonStart: HORIZON_START, horizonEnd: HORIZON_END },
-      orderBy: [{ orgUnitId: "asc" }, { version: "desc" }],
-      select: {
-        id: true,
-        orgUnitId: true,
-        version: true,
-        status: true,
-        submittedAt: true,
-        snapshotJson: true,
-        orgUnit: { select: { name: true } },
-        plan: {
+    safeDbQuery(
+      () =>
+        prisma.user.findMany({
+          orderBy: [{ name: "asc" }, { createdAt: "asc" }],
           select: {
-            attachments: {
-              orderBy: { uploadedAt: "asc" },
-              select: { id: true, filename: true, sizeBytes: true, mimeType: true },
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            orgUnit: { select: { name: true } },
+          },
+        }),
+      [],
+    ),
+    getVersionsBundle(),
+    safeDbQuery(
+      () =>
+        prisma.planSubmissionSnapshot.findMany({
+          where: { horizonStart: HORIZON_START, horizonEnd: HORIZON_END },
+          orderBy: [{ orgUnitId: "asc" }, { version: "desc" }],
+          select: {
+            id: true,
+            orgUnitId: true,
+            version: true,
+            status: true,
+            submittedAt: true,
+            snapshotJson: true,
+            orgUnit: { select: { name: true } },
+            plan: {
+              select: {
+                attachments: {
+                  orderBy: { uploadedAt: "asc" },
+                  select: { id: true, filename: true, sizeBytes: true, mimeType: true },
+                },
+              },
             },
           },
-        },
-      },
-    }),
+        }),
+      [],
+    ),
     planId
-      ? prisma.strategicPlan.findUnique({
-          where: { id: planId },
-          include: {
+      ? safeDbQuery(
+          () =>
+            prisma.strategicPlan.findUnique({
+              where: { id: planId },
+              include: {
             objectives: { include: { keyResults: { orderBy: { sortOrder: "asc" } } }, orderBy: { sortOrder: "asc" } },
             initiatives: { orderBy: { sortOrder: "asc" } },
             resourceReqs: true,
@@ -101,7 +111,9 @@ export default async function StrategyInputPage({
             budgetItems: { orderBy: { sortOrder: "asc" } },
             roadmapItems: { orderBy: { sortOrder: "asc" } },
           },
-        })
+            }),
+          null,
+        )
       : Promise.resolve(null),
   ]);
   const top3 = topDiffs(stratDiffs, 3);

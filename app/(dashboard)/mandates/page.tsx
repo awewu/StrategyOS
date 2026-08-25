@@ -1,9 +1,11 @@
 import { getMandateBundle } from "@/lib/mandate/data";
 import { MandatesClient } from "@/components/mandate/MandatesClient";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { getActivePeriod } from "@/lib/data/active-period";
 
 export default async function MandatesPage() {
+  await requireRouteAccess("/mandates");
   const [bundle, activePeriod] = await Promise.all([getMandateBundle(), getActivePeriod()]);
   return (
     <div className="stratos-page">

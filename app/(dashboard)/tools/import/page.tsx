@@ -1,11 +1,13 @@
 import { SheetImportClient } from "@/components/tools/SheetImportClient";
 import { StrategicImportPanel } from "@/components/compiler/StrategicImportPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { getImportFreshness } from "@/lib/finance/import-freshness";
 
 export const metadata = { title: "数据导入 · StratOS" };
 
 export default async function SheetImportPage() {
+  await requireRouteAccess("/tools/import");
   const fresh = await getImportFreshness();
   return (
     <div className="stratos-page">

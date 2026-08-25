@@ -5,10 +5,12 @@ import { KpiHealthEditor } from "@/components/finance/KpiHealthEditor";
 import { HealthSignalsEditor } from "@/components/health/HealthSignalsEditor";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { getHealthBundle, getOpsHealthSeries } from "@/lib/data/strategy-data";
 import { getKpiHealthMetrics } from "@/lib/fpa/kpi-health";
 
 export default async function MonitorHealthPage() {
+  await requireRouteAccess("/monitor/health");
   const [data, opsSeries, kpiHealth] = await Promise.all([
     getHealthBundle(),
     getOpsHealthSeries(),

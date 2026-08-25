@@ -1,14 +1,16 @@
 import { MarketConfigPanel } from "@/components/market/MarketConfigPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { prisma } from "@/lib/db";
+import { requireRouteAccess } from "@/lib/auth/guard";
+import { prisma, safeDbQuery } from "@/lib/db";
 
 export default async function MarketConfigPage() {
+  await requireRouteAccess("/market/config");
   const [regions, productLines, brands, productsRaw, sourcesRaw] = await Promise.all([
-    prisma.salesRegion.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
-    prisma.mktProductLine.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
-    prisma.competitorBrand.findMany({ orderBy: [{ tier: "asc" }, { sortOrder: "asc" }] }),
-    prisma.competitorProduct.findMany({ where: { isOurs: false }, orderBy: [{ hotRank: "asc" }, { sortOrder: "asc" }] }),
-    prisma.intelSource.findMany({ orderBy: { createdAt: "asc" } }),
+    safeDbQuery(() => prisma.salesRegion.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }), []),
+    safeDbQuery(() => prisma.mktProductLine.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }), []),
+    safeDbQuery(() => prisma.competitorBrand.findMany({ orderBy: [{ tier: "asc" }, { sortOrder: "asc" }] }), []),
+    safeDbQuery(() => prisma.competitorProduct.findMany({ where: { isOurs: false }, orderBy: [{ hotRank: "asc" }, { sortOrder: "asc" }] }), []),
+    safeDbQuery(() => prisma.intelSource.findMany({ orderBy: { createdAt: "asc" } }), []),
   ]);
   const products = productsRaw.map((p) => ({
     id: p.id, brandId: p.brandId, productLineId: p.productLineId, name: p.name,

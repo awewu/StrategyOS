@@ -7,10 +7,12 @@ import { StrategyPatternPanel } from "@/components/versions/StrategyPatternPanel
 import { SnapshotFreezePanel } from "@/components/versions/SnapshotFreezePanel";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { getVersionsBundle } from "@/lib/data/versions-data";
 import { getActivePeriod } from "@/lib/data/active-period";
 
 export default async function VersionsPage() {
+  await requireRouteAccess("/versions");
   const { snapshots, stratDiffs, strategyPattern, decisionLedger, snapshotFY25, snapshotFY26 } =
     await getVersionsBundle();
   const activePeriod = await getActivePeriod();

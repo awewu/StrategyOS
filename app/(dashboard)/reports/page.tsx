@@ -8,12 +8,13 @@ import { ReportsPanorama } from "@/components/reports/ReportsPanorama";
 import { GemPanel } from "@/components/gems/GemPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getOrgUnitsSummary } from "@/lib/data/org-units-access";
-import { getEffectiveRole, getEffectiveSession } from "@/lib/auth/guard";
+import { getEffectiveRole, getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
 import { getManagementReport, getFpaSummary } from "@/lib/data/strategy-data";
 import { getOrgScope } from "@/lib/auth/scope";
 import { getReportReceipts } from "@/lib/reports/receipts";
 
 export default async function ReportsPage() {
+  await requireRouteAccess("/reports");
   const role = await getEffectiveRole();
   const session = await getEffectiveSession();
   const orgScope = getOrgScope(role, session);

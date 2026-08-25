@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DecodeWorkspace } from "@/components/decode/DecodeWorkspace";
 import { ConceptGuide } from "@/components/ui/ConceptGuide";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { getDecodeBundle } from "@/lib/data/strategy-data";
 import { getOkrBundle } from "@/lib/decode/okr-access";
 import { getStrategyOnePager } from "@/lib/strategy/one-pager-store";
@@ -11,6 +12,7 @@ export default async function DecodePage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  await requireRouteAccess("/decode");
   const { tab } = await searchParams;
   const [{ source, bsc, hoshinFlat }, okr, onePager] = await Promise.all([
     getDecodeBundle(),

@@ -7,7 +7,7 @@ import { ReadonlyProductQuarterlyTabs } from "@/components/strategy/ReadonlyProd
 import { ReadonlyRoadmapGantt } from "@/components/strategy/ReadonlyRoadmapGantt";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
-import { prisma } from "@/lib/db";
+import { prisma, safeDbQuery } from "@/lib/db";
 
 const HORIZON_START = 2026;
 const HORIZON_END = 2028;
@@ -294,37 +294,45 @@ export default async function StrategySubmissionsPage({
   await requireRouteAccess("/strategy/submissions");
   const { planId } = await searchParams;
 
-  const plans = await prisma.strategicPlan.findMany({
-    where: { horizonStart: HORIZON_START, horizonEnd: HORIZON_END },
-    include: { orgUnit: true, submittedBy: true },
-    orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
-  });
+  const plans = await safeDbQuery(
+    () =>
+      prisma.strategicPlan.findMany({
+        where: { horizonStart: HORIZON_START, horizonEnd: HORIZON_END },
+        include: { orgUnit: true, submittedBy: true },
+        orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
+      }),
+    [],
+  );
   const selectedPlanId = planId ?? plans[0]?.id;
   const plan = selectedPlanId
-    ? await prisma.strategicPlan.findUnique({
-        where: { id: selectedPlanId },
-        include: {
-          orgUnit: true,
-          submittedBy: true,
-          objectives: {
-            include: { keyResults: { orderBy: { sortOrder: "asc" } } },
-            orderBy: { sortOrder: "asc" },
-          },
-          initiatives: { orderBy: { sortOrder: "asc" } },
-          resourceReqs: true,
-          assumptions: true,
-          attachments: { orderBy: { uploadedAt: "asc" } },
-          swotItems: { orderBy: { sortOrder: "asc" } },
-          orgChartNodes: { orderBy: { sortOrder: "asc" } },
-          channelPlans: { orderBy: { sortOrder: "asc" } },
-          customerPlans: { orderBy: { sortOrder: "asc" } },
-          productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
-          marketInsights: { orderBy: { sortOrder: "asc" } },
-          actionItems: { orderBy: { sortOrder: "asc" } },
-          budgetItems: { orderBy: { sortOrder: "asc" } },
-          roadmapItems: { orderBy: { sortOrder: "asc" } },
-        },
-      })
+    ? await safeDbQuery(
+        () =>
+          prisma.strategicPlan.findUnique({
+            where: { id: selectedPlanId },
+            include: {
+              orgUnit: true,
+              submittedBy: true,
+              objectives: {
+                include: { keyResults: { orderBy: { sortOrder: "asc" } } },
+                orderBy: { sortOrder: "asc" },
+              },
+              initiatives: { orderBy: { sortOrder: "asc" } },
+              resourceReqs: true,
+              assumptions: true,
+              attachments: { orderBy: { uploadedAt: "asc" } },
+              swotItems: { orderBy: { sortOrder: "asc" } },
+              orgChartNodes: { orderBy: { sortOrder: "asc" } },
+              channelPlans: { orderBy: { sortOrder: "asc" } },
+              customerPlans: { orderBy: { sortOrder: "asc" } },
+              productQuarterly: { orderBy: [{ year: "asc" }, { sortOrder: "asc" }] },
+              marketInsights: { orderBy: { sortOrder: "asc" } },
+              actionItems: { orderBy: { sortOrder: "asc" } },
+              budgetItems: { orderBy: { sortOrder: "asc" } },
+              roadmapItems: { orderBy: { sortOrder: "asc" } },
+            },
+          }),
+        null,
+      )
     : null;
 
   return (

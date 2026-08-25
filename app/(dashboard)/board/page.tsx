@@ -11,7 +11,7 @@ import { getStrategyOnePagerForViewer } from "@/lib/strategy/one-pager-store";
 import { buildTopAlerts } from "@/lib/panorama/scr";
 import { getBoardMinutes, getBoardPackLock, getResolutionSignatures } from "@/lib/board/governance";
 import { LockPackButton, SignResolutionButton } from "@/components/board/BoardActions";
-import { getEffectiveSession } from "@/lib/auth/guard";
+import { getEffectiveSession, requireRouteAccess } from "@/lib/auth/guard";
 
 export const metadata = { title: "董事会包 · StratOS" };
 
@@ -48,6 +48,7 @@ async function getResolutions(limit = 12): Promise<Resolution[]> {
 /** 董事会包：已发布一页纸 · KPI 快照 · 决议记录 · 风险 — 全只读，可打印存 PDF */
 export default async function BoardPackPage() {
   // 董事会包固定只读口径：无论谁看，都只展示已发布版本（observer 视角）
+  await requireRouteAccess("/board");
   const [onePager, deck, mgmt, resolutions, activePeriod, session] = await Promise.all([
     getStrategyOnePagerForViewer("observer"),
     getCommandDeckBundle(),

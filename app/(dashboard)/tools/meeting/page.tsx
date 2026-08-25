@@ -1,7 +1,9 @@
 import { MeetingToolsClient } from "@/components/meeting/MeetingToolsClient";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 
-export default function MeetingToolsPage() {
+export default async function MeetingToolsPage() {
+  await requireRouteAccess("/tools/meeting");
   return (
     <div className="stratos-page">
       <PageHeader

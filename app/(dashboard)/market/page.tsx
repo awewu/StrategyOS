@@ -11,6 +11,7 @@ import { SwotPanel } from "@/components/market/SwotPanel";
 import { GrowthAnalyticsEditor } from "@/components/growth/GrowthAnalyticsEditor";
 import { getGrowthAnalytics } from "@/lib/fpa/growth-analytics-access";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { requireRouteAccess } from "@/lib/auth/guard";
 import { KpiTile } from "@/components/ui/KpiTile";
 import { buildMarketBrief } from "@/lib/market-intel/brief";
 import { demoSources, demoSignals, demoTracks, demoInternalSwot } from "@/lib/market-intel/demo-data";
@@ -79,6 +80,7 @@ export default async function MarketPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
+  await requireRouteAccess("/market");
   const { tab } = await searchParams;
   const initialTab =
     tab === "swot" || tab === "workbench" || tab === "intel" ? tab : "landscape";
