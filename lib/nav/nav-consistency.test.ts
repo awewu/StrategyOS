@@ -92,7 +92,7 @@ describe("nav ↔ permission consistency", () => {
   });
 
   it("standalone destinations follow their own route permission", () => {
-    for (const role of ALL_ROLES) {
+    for (const _role of ALL_ROLES) {
       for (const s of NAV_STANDALONE) {
         // No hub gate stands between the role and a standalone route, so the only
         // requirement is that the route rule itself resolves — asserted below.

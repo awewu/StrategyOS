@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { AGENT_PROMPTS, getAgentPrompt } from "./agent-prompts";
 import { STRAT_AGENTS } from "./agents";
-import { runAgentOrchestrationSmart, runAgentOrchestrationStreaming } from "./llm-orchestration";
+import { runAgentOrchestrationSmart } from "./llm-orchestration";
 import { parseReportContent } from "./report-agent";
 
 describe("agent-prompts", () => {

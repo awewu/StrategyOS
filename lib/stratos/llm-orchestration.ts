@@ -2,7 +2,7 @@
  * LLM-first 11-Agent orchestration — per-agent parallel prompts, rules fallback when no API key.
  */
 import { llmConfigured, parseReportSmart } from "./llm-agent";
-import { parseReportContent, type ParsedReport } from "./report-agent";
+import { parseReportContent } from "./report-agent";
 import { updateScenarioProbabilities } from "./spbp-bayes";
 import { computeRobustOverall } from "./robust-score";
 import {
