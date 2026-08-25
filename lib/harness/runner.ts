@@ -190,14 +190,30 @@ const SCHEMA_CRITICAL_COLUMNS: { table: string; column: string }[] = [
 
 async function checkSchemaSync(): Promise<HarnessCheck> {
   return timed("schema-sync", "data", "Schema ↔ DB column sync", async () => {
+    const hasDbUrl = Boolean(process.env.DATABASE_URL?.trim());
     try {
-      execSync("npx prisma validate", { cwd: ROOT, stdio: "pipe", encoding: "utf8" });
+      // Validate schema *syntax* even in demo mode: `prisma validate` resolves
+      // env("DATABASE_URL") before parsing, so supply a throwaway URL when unset
+      // (it never connects) — otherwise a demo env fails on P1012, not on a real
+      // schema defect. Keeps demo-mode consistent with the [database] check.
+      execSync("npx prisma validate", {
+        cwd: ROOT,
+        stdio: "pipe",
+        encoding: "utf8",
+        env: hasDbUrl
+          ? process.env
+          : { ...process.env, DATABASE_URL: "postgresql://demo:demo@localhost:5432/demo" },
+      });
     } catch (err) {
       const out =
         err && typeof err === "object" && "stderr" in err
           ? String((err as { stderr?: string }).stderr ?? "")
           : "invalid schema";
       return { status: "fail", message: "prisma validate failed", meta: { output: out.slice(-400) } };
+    }
+
+    if (!hasDbUrl) {
+      return { status: "warn", message: "DATABASE_URL unset — validated schema syntax only (demo mode)" };
     }
 
     if (!(await dbAvailable())) {
