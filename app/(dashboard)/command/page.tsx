@@ -137,7 +137,7 @@ export default async function CommandPage({
           </div>
         </section>
       ) : (
-      <>
+      <div className="flex flex-col gap-6">
       {/* ⓪ CEO Gem「帅」· AI 审计洞察主脊 */}
       <GemPanel />
 
@@ -169,32 +169,34 @@ export default async function CommandPage({
         </section>
       )}
 
-      {/* ② 风险与决策 */}
-      {hardBlock ? (
-        <section
-          className="stratos-card stratos-card--padded border-[var(--signal-red)]/30 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]"
-          aria-label="HardBlock"
-        >
-          <p className="text-label text-[var(--signal-red)]">HardBlock · 硬阻断</p>
-          <div className="mt-2">
-            <TopAlertsPanel alerts={[hardBlock]} embedded />
-          </div>
-          <div className="mt-4 flex flex-wrap gap-3 text-caption">
-            <Link href="/finance?tab=overview" className="text-[var(--color-accent)] hover:underline">
-              FPA Runway →
-            </Link>
-            <Link href="/council?tab=gates" className="text-[var(--color-text-muted)] hover:underline">
-              Gate 准入 →
-            </Link>
-          </div>
-        </section>
-      ) : null}
+      {/* ② 风险与决策 · 硬阻断与决策并排, 用满横向空间而非上下堆叠成条 */}
+      <div className={hardBlock ? "grid gap-6 lg:grid-cols-2 lg:items-start" : "contents"}>
+        {hardBlock ? (
+          <section
+            className="stratos-card stratos-card--padded border-[var(--signal-red)]/30 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]"
+            aria-label="HardBlock"
+          >
+            <p className="text-label text-[var(--signal-red)]">HardBlock · 硬阻断</p>
+            <div className="mt-2">
+              <TopAlertsPanel alerts={[hardBlock]} embedded />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-3 text-caption">
+              <Link href="/finance?tab=overview" className="text-[var(--color-accent)] hover:underline">
+                FPA Runway →
+              </Link>
+              <Link href="/council?tab=gates" className="text-[var(--color-text-muted)] hover:underline">
+                Gate 准入 →
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
-      <DecisionsEditor
-        initialDecisions={deck.decisions}
-        derivedDecisions={deck.derivedDecisions}
-        source={deck.decisionsSource}
-      />
+        <DecisionsEditor
+          initialDecisions={deck.decisions}
+          derivedDecisions={deck.derivedDecisions}
+          source={deck.decisionsSource}
+        />
+      </div>
 
       {/* ③ 态势板 · 状态亮点 → 变化 → 预警 */}
       <CommandBoardShell>
@@ -298,7 +300,7 @@ export default async function CommandPage({
           />
         </div>
       </details>
-      </>
+      </div>
       )}
     </div>
   );
