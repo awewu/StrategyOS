@@ -8,7 +8,7 @@ function HubTabs({ hub }: { hub: NavHub }) {
   const pathname = usePathname();
 
   return (
-    <nav className="stratos-hub-subnav print:hidden" aria-label={`${hub.label} 子页面`}>
+    <nav className="stratos-hub-subnav print:hidden md:hidden" aria-label={`${hub.label} 子页面`}>
       <p className="stratos-hub-subnav__eyebrow">{hub.label}</p>
       <ul className="stratos-hub-subnav__list">
         {hub.children.map((item) => {

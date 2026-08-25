@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CommandTabs } from "@/components/command/CommandTabs";
 import { InboxClient, PipelineStatusBar } from "@/components/inbox/InboxClient";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
@@ -26,7 +25,6 @@ export default async function CommandIssuesPage() {
           ) : undefined
         }
       />
-      <CommandTabs active="issues" />
       <PipelineStatusBar status={pipeline} />
       <InboxClient initialItems={items} />
     </div>

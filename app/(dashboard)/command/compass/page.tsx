@@ -1,7 +1,6 @@
 import { getCompassBundle } from "@/lib/compass/data";
 import { CompassClient } from "@/components/compass/CompassClient";
 import { CompassSwotBridge } from "@/components/compass/CompassSwotBridge";
-import { CommandTabs } from "@/components/command/CommandTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireRouteAccess } from "@/lib/auth/guard";
 
@@ -15,7 +14,6 @@ export default async function CommandCompassPage() {
         title="战略罗盘"
         subtitle="从5年终极目标反推当前路径风险 · 假设前提实时审计"
       />
-      <CommandTabs active="compass" />
       <CompassClient bundle={bundle} />
       <div className="mt-8">
         <CompassSwotBridge premises={bundle.premises} />
