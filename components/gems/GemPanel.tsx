@@ -115,45 +115,61 @@ export function GemPanel({ endpoint = "/api/gems/me" }: { endpoint?: string }) {
         {status === "loading" ? (
           <div className="mt-3 h-16 animate-pulse rounded-[var(--radius-control)] bg-[var(--surface-raised)]" />
         ) : data && data.cards.length > 0 ? (
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-4 divide-y divide-[var(--surface-border)]">
             {data.cards.map((c) => {
               const m = KIND_META[c.kind];
               return (
-                <li
-                  key={c.id}
-                  className="rounded-[var(--radius-control)] border border-[var(--surface-border)] bg-[var(--surface-elevated)] p-3"
-                  style={{ borderLeft: `3px solid ${m.bar}` }}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone={m.tone}>{m.label}</Badge>
-                        <span className="text-sm font-medium text-[var(--color-text-primary)]">{c.title}</span>
-                      </div>
-                      {c.detail ? (
-                        <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-secondary)]">{c.detail}</p>
-                      ) : null}
-                      {c.evidence.length > 0 ? (
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          {c.evidence.map((e, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1 rounded bg-[var(--surface-raised)] px-1.5 py-0.5 text-[11px]"
-                            >
-                              <span className="text-[var(--color-text-muted)]">{e.label}</span>
-                              <span className="font-medium text-[var(--color-text-primary)]">{e.value}</span>
-                            </span>
-                          ))}
-                        </div>
+                <li key={c.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <span
+                    className="mt-[7px] size-2 shrink-0 rounded-full"
+                    style={{ background: m.bar }}
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        <span className="text-[var(--color-text-muted)]">{m.label}</span>
+                        <span className="mx-1.5 text-[var(--surface-border-strong)]">·</span>
+                        {c.title}
+                      </p>
+                      {c.action ? (
+                        <Link
+                          href={c.action.href}
+                          className="shrink-0 text-xs font-medium text-[var(--color-accent)] no-underline hover:underline"
+                        >
+                          {c.action.label} →
+                        </Link>
                       ) : null}
                     </div>
-                    {c.action ? (
-                      <Link
-                        href={c.action.href}
-                        className="shrink-0 rounded-[var(--radius-control)] border border-[var(--surface-border-strong)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] no-underline transition-colors duration-[var(--motion-fast)] hover:bg-[var(--surface-raised)] hover:text-[var(--color-accent)]"
-                      >
-                        {c.action.label} →
-                      </Link>
+                    {c.detail ? (
+                      <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-text-secondary)]">{c.detail}</p>
+                    ) : null}
+                    {c.evidence.length > 0 ? (
+                      <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+                        {c.evidence.map((e, i) => {
+                          const content = (
+                            <>
+                              {e.label}{" "}
+                              <span className="font-medium text-[var(--color-text-secondary)]">{e.value}</span>
+                            </>
+                          );
+                          return (
+                            <span key={i}>
+                              {i > 0 ? <span className="mx-1.5 text-[var(--surface-border-strong)]">·</span> : null}
+                              {e.href ? (
+                                <Link
+                                  href={e.href}
+                                  className="text-[var(--color-text-muted)] no-underline hover:text-[var(--color-accent)]"
+                                >
+                                  {content}
+                                </Link>
+                              ) : (
+                                content
+                              )}
+                            </span>
+                          );
+                        })}
+                      </p>
                     ) : null}
                   </div>
                 </li>

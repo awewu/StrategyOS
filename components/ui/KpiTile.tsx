@@ -69,7 +69,7 @@ export function KpiTile({
     </div>
   );
 
-  const cls = `stratos-card stratos-card--flat stratos-card--padded block transition-colors hover:border-[var(--surface-border-strong)] ${className}`.trim();
+  const cls = `stratos-card stratos-card--flat stratos-kpi-tile block transition-colors hover:border-[var(--surface-border-strong)] ${className}`.trim();
 
   return href ? (
     <a href={href} className={cls}>

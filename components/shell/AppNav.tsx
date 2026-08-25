@@ -328,9 +328,10 @@ export function AppNav({
         <div className="stratos-sidebar__foot">
           <RoleSwitcher compact hidden={secureMode && !devBypassAuth} />
           <LogoutButton />
-          <kbd className="stratos-sidebar__kbd" title="⌘K 命令面板">
-            ⌘K
-          </kbd>
+          <div className="stratos-sidebar__kbd" title="⌘K 打开命令面板">
+            <span className="stratos-sidebar__kbd-label">命令面板</span>
+            <kbd className="stratos-sidebar__kbd-key">⌘K</kbd>
+          </div>
         </div>
       </aside>
     </>
