@@ -64,7 +64,9 @@ export function RationalityReviewPanel() {
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 3000); };
 
   const load = useCallback(async () => {
-    setLoading(true);
+    // No synchronous setState here: `loading` already initializes to true for the
+    // mount fetch, and refreshes surface progress via `requesting`. This keeps the
+    // on-mount effect free of cascading renders (react-hooks/set-state-in-effect).
     try {
       const res = await fetch(`/api/compass/rationality-verdict`, { cache: "no-store" });
       const data = await res.json();
@@ -74,6 +76,10 @@ export function RationalityReviewPanel() {
     finally { setLoading(false); }
   }, []);
 
+  // Fetch-on-mount: `load` only calls setState after an awaited fetch (async, not
+  // synchronous), so it cannot cascade renders. The lint can't see across the async
+  // boundary and flags any effect that reaches a setState — safe to allow here.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
 
   async function requestVerdict() {
