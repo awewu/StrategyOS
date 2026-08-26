@@ -9,7 +9,7 @@ import type { HealthPayload } from "@/lib/health/payload";
 import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
 import { computeCommitmentSummary } from "@/lib/execution/commitment-summary";
 import type { ReportListRow } from "@/lib/reports/report-queries";
-import type { InsightCard } from "./types";
+import type { GemMetric, InsightCard } from "./types";
 import { num } from "./core";
 
 const STANCE_LABEL: Record<string, string> = {
@@ -163,6 +163,52 @@ export function strategyCards(
   }
 
   return { cards, drops };
+}
+
+/** FPA + 战略计分(BSC)关键数据点 — 供 CEO/CFO Gem「数据呈现」列。全部取自 digest 真值。 */
+export function strategyMetrics(digest: StrategyDigest): GemMetric[] {
+  const { fpa, counts } = digest;
+  const revenueGap =
+    fpa.revenueBudget > 0 ? (fpa.revenueForecast - fpa.revenueBudget) / fpa.revenueBudget : 0;
+  return [
+    {
+      label: "现金 Runway",
+      value: `${num(fpa.cashRunwayMonths)} 月`,
+      tone: fpa.cashRunwayMonths > 0 && fpa.cashRunwayMonths < 3 ? "red" : "green",
+      href: "/finance?tab=overview",
+    },
+    {
+      label: "营收预测",
+      value: num(fpa.revenueForecast),
+      hint: `预算 ${num(fpa.revenueBudget)}`,
+      tone: revenueGap < -0.05 ? "red" : "neutral",
+      href: "/finance",
+    },
+    {
+      label: "利润预测",
+      value: num(fpa.profitForecast),
+      tone: fpa.profitForecast < 0 ? "red" : "green",
+      href: "/finance",
+    },
+    {
+      label: "脆弱前提",
+      value: String(counts.fragilePremises),
+      tone: counts.fragilePremises > 0 ? "red" : "green",
+      href: "/compass",
+    },
+    {
+      label: "硬阻断",
+      value: String(counts.hardBlocks),
+      tone: counts.hardBlocks > 0 ? "red" : "green",
+      href: "/gates",
+    },
+    {
+      label: "重大 Bet",
+      value: String(counts.bets),
+      tone: "accent",
+      href: "/decode",
+    },
+  ];
 }
 
 /** B-A-F 营收背离(CFO 专属)。 */

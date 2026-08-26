@@ -45,7 +45,7 @@ export function scoreMilestones(
 
 export function riskVerdict(score: number | null): { label: string; color: string; bg: string } {
   if (score === null) return { label: "未评估", color: "var(--color-text-muted)", bg: "transparent" };
-  if (score >= 70) return { label: "高风险", color: "var(--signal-red)", bg: "rgba(139,14,4,0.08)" };
-  if (score >= 40) return { label: "中等风险", color: "var(--signal-yellow)", bg: "rgba(180,83,9,0.08)" };
-  return { label: "可控", color: "var(--signal-green)", bg: "rgba(31,138,69,0.08)" };
+  if (score >= 70) return { label: "高风险", color: "var(--signal-red-text)", bg: "color-mix(in srgb, var(--signal-red) 8%, transparent)" };
+  if (score >= 40) return { label: "中等风险", color: "var(--signal-yellow-text)", bg: "color-mix(in srgb, var(--signal-yellow) 8%, transparent)" };
+  return { label: "可控", color: "var(--signal-green-text)", bg: "color-mix(in srgb, var(--signal-green) 8%, transparent)" };
 }

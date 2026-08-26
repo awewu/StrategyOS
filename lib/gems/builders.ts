@@ -25,6 +25,7 @@ import {
   healthCards,
   reportGapCards,
   strategyCards,
+  strategyMetrics,
 } from "./lenses";
 
 const MAX_REPORT_SCAN = 50;
@@ -53,8 +54,8 @@ export async function buildCeoGem(_ctx?: GemBuildContext): Promise<GemInsightRes
 
   return assembleResult({
     gem: "ceo",
-    persona: "帅",
-    tagline: "全局战略参谋",
+    persona: "CEO",
+    tagline: "战略决策顾问",
     period,
     generatedAt: digest.generatedAt,
     headline:
@@ -62,6 +63,7 @@ export async function buildCeoGem(_ctx?: GemBuildContext): Promise<GemInsightRes
       `runway ${num(digest.fpa.cashRunwayMonths)} 月 · Bet ${digest.counts.bets}`,
     stance,
     cards,
+    metrics: strategyMetrics(digest),
     drops,
     dataSource: digest.dataSource,
   });
@@ -80,8 +82,8 @@ export async function buildCfoGem(_ctx?: GemBuildContext): Promise<GemInsightRes
 
   return assembleResult({
     gem: "cfo",
-    persona: "algak",
-    tagline: "财务审计官",
+    persona: "CFO",
+    tagline: "财务分析顾问",
     period,
     generatedAt: digest.generatedAt,
     headline:
@@ -89,6 +91,7 @@ export async function buildCfoGem(_ctx?: GemBuildContext): Promise<GemInsightRes
       `预测 ${num(digest.fpa.revenueForecast)} · Bet ${digest.counts.bets}`,
     stance: verdict?.stance,
     cards,
+    metrics: strategyMetrics(digest),
     drops,
     dataSource: digest.dataSource,
   });
@@ -111,8 +114,8 @@ export async function buildBoardGem(_ctx?: GemBuildContext): Promise<GemInsightR
 
   return assembleResult({
     gem: "board",
-    persona: "观澜",
-    tagline: "治理观察",
+    persona: "董事会",
+    tagline: "治理监督",
     period,
     generatedAt: digest.generatedAt,
     headline: `硬阻断 ${digest.counts.hardBlocks} · 重大变化 ${digest.topDiffs.length} · 整体研判 ${stance ?? "待生成"}`,
@@ -139,8 +142,8 @@ export async function buildObserverGem(_ctx?: GemBuildContext): Promise<GemInsig
 
   return assembleResult({
     gem: "observer",
-    persona: "览",
-    tagline: "只读向导",
+    persona: "观察",
+    tagline: "只读视图",
     period,
     generatedAt: digest.generatedAt,
     headline: `战略诊断 crux: ${digest.diagnosis.crux || "—"}`,
@@ -218,8 +221,8 @@ export async function buildStaffGem(ctx: GemBuildContext): Promise<GemInsightRes
 
   return assembleResult({
     gem: "staff",
-    persona: "策",
-    tagline: "战略幕僚",
+    persona: "幕僚",
+    tagline: "战略研究顾问",
     period,
     generatedAt: digest.generatedAt,
     headline: reports
@@ -238,8 +241,8 @@ export async function buildAdminGem(_ctx?: GemBuildContext): Promise<GemInsightR
 
   return assembleResult({
     gem: "admin",
-    persona: "枢",
-    tagline: "系统审计",
+    persona: "运维",
+    tagline: "系统运行监控",
     period,
     headline: `状态 ${payload.status.toUpperCase()} · mode ${payload.mode} · dataSource ${payload.dataSource}`,
     cards,
@@ -249,13 +252,13 @@ export async function buildAdminGem(_ctx?: GemBuildContext): Promise<GemInsightR
 }
 
 export function buildVpGem(ctx: GemBuildContext): Promise<GemInsightResult> {
-  return buildCommitmentGem(ctx, { gem: "vp", persona: "拿云", tagline: "事业部教练" });
+  return buildCommitmentGem(ctx, { gem: "vp", persona: "VP", tagline: "事业部经营顾问" });
 }
 
 export function buildSystemHeadGem(ctx: GemBuildContext): Promise<GemInsightResult> {
-  return buildCommitmentGem(ctx, { gem: "system_head", persona: "执衡", tagline: "职能负责" });
+  return buildCommitmentGem(ctx, { gem: "system_head", persona: "职能", tagline: "职能管理顾问" });
 }
 
 export function buildPmGem(ctx: GemBuildContext): Promise<GemInsightResult> {
-  return buildCommitmentGem(ctx, { gem: "pm", persona: "匠", tagline: "执行搭子" });
+  return buildCommitmentGem(ctx, { gem: "pm", persona: "PM", tagline: "项目执行顾问" });
 }

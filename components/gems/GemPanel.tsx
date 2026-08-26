@@ -5,9 +5,9 @@
  * 挂在角色 home 顶部, 把该角色该看的审计项按 风险>变化>建议>待办 排好, 每条带证据引用 + 下钻。
  * 用 B0 原语 (Card/Badge) 渲染, 全部颜色/动效绑 L0 token。
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Badge, type BadgeTone, Card, CardBody } from "@/components/ui/primitives";
+import { Card, CardBody } from "@/components/ui/primitives";
 
 type Kind = "risk" | "change" | "advice" | "todo";
 
@@ -26,6 +26,13 @@ interface InsightCard {
   action?: { href: string; label: string };
   source: string;
 }
+interface GemMetric {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: "neutral" | "red" | "green" | "accent";
+  href?: string;
+}
 interface GemResult {
   persona: string;
   tagline: string;
@@ -33,16 +40,26 @@ interface GemResult {
   headline: string;
   stance?: string;
   cards: InsightCard[];
+  metrics: GemMetric[];
   counts: Record<Kind, number>;
   drops: number;
   dataSource: string;
 }
 
-const KIND_META: Record<Kind, { label: string; tone: BadgeTone; bar: string }> = {
-  risk: { label: "风险", tone: "red", bar: "var(--signal-red)" },
-  change: { label: "变化", tone: "accent", bar: "var(--color-accent)" },
-  advice: { label: "建议", tone: "green", bar: "var(--signal-green)" },
-  todo: { label: "待办", tone: "neutral", bar: "var(--color-text-muted)" },
+const METRIC_TONE: Record<NonNullable<GemMetric["tone"]>, string> = {
+  neutral: "var(--color-text-primary)",
+  red: "var(--signal-red-text)",
+  green: "var(--signal-green-text)",
+  accent: "var(--color-accent)",
+};
+
+/** 严重度只编码一次：仅 critical/high 打红标，其余静默——红色只留给真正的风险。 */
+const SEVERITY: Record<string, { label: string; loud: boolean }> = {
+  critical: { label: "严重", loud: true },
+  high: { label: "高", loud: true },
+  medium: { label: "", loud: false },
+  low: { label: "", loud: false },
+  info: { label: "", loud: false },
 };
 
 export function GemPanel({ endpoint = "/api/gems/me" }: { endpoint?: string }) {
@@ -69,124 +86,167 @@ export function GemPanel({ endpoint = "/api/gems/me" }: { endpoint?: string }) {
 
   if (status === "error") return null;
 
+  const bright = data?.cards.filter((c) => c.kind === "advice" || c.kind === "change") ?? [];
+  const dark = data?.cards.filter((c) => c.kind === "risk" || c.kind === "todo") ?? [];
+  const metrics = data?.metrics ?? [];
+  const hasMetrics = metrics.length > 0;
+
   return (
     <Card tone="raised" className="border-l-4 border-l-[var(--color-accent)]">
       <CardBody>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-grid h-8 min-w-8 shrink-0 place-items-center rounded-full bg-[var(--color-accent)] px-2 text-sm font-bold text-white">
-              {data?.persona ?? "…"}
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-                {data ? `${data.persona} · ${data.tagline}` : "审计助理"}
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)]">
-                {status === "loading" ? "审计中…" : data?.headline}
-              </p>
-            </div>
-          </div>
-          {data ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              {data.counts.risk > 0 ? (
-                <Badge tone="red" dot>
-                  {data.counts.risk} 风险
-                </Badge>
-              ) : null}
-              {data.counts.change > 0 ? (
-                <Badge tone="accent" dot>
-                  {data.counts.change} 变化
-                </Badge>
-              ) : null}
-              {data.counts.advice > 0 ? (
-                <Badge tone="green" dot>
-                  {data.counts.advice} 建议
-                </Badge>
-              ) : null}
-              {data.counts.todo > 0 ? (
-                <Badge tone="neutral" dot>
-                  {data.counts.todo} 待办
-                </Badge>
-              ) : null}
-            </div>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+            {data ? `${data.persona} · ${data.tagline}` : "审计助理"}
+          </p>
+          {data?.period ? (
+            <span className="shrink-0 text-[var(--type-label)] text-[var(--color-text-muted)]">期次 {data.period}</span>
           ) : null}
         </div>
 
         {status === "loading" ? (
-          <div className="mt-3 h-16 animate-pulse rounded-[var(--radius-control)] bg-[var(--surface-raised)]" />
-        ) : data && data.cards.length > 0 ? (
-          <ul className="mt-4 divide-y divide-[var(--surface-border)]">
-            {data.cards.map((c) => {
-              const m = KIND_META[c.kind];
-              return (
-                <li key={c.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <span
-                    className="mt-[7px] size-2 shrink-0 rounded-full"
-                    style={{ background: m.bar }}
-                    aria-hidden
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                        <span className="text-[var(--color-text-muted)]">{m.label}</span>
-                        <span className="mx-1.5 text-[var(--surface-border-strong)]">·</span>
-                        {c.title}
-                      </p>
-                      {c.action ? (
-                        <Link
-                          href={c.action.href}
-                          className="shrink-0 text-xs font-medium text-[var(--color-accent)] no-underline hover:underline"
-                        >
-                          {c.action.label} →
-                        </Link>
-                      ) : null}
-                    </div>
-                    {c.detail ? (
-                      <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-text-secondary)]">{c.detail}</p>
-                    ) : null}
-                    {c.evidence.length > 0 ? (
-                      <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
-                        {c.evidence.map((e, i) => {
-                          const content = (
-                            <>
-                              {e.label}{" "}
-                              <span className="font-medium text-[var(--color-text-secondary)]">{e.value}</span>
-                            </>
-                          );
-                          return (
-                            <span key={i}>
-                              {i > 0 ? <span className="mx-1.5 text-[var(--surface-border-strong)]">·</span> : null}
-                              {e.href ? (
-                                <Link
-                                  href={e.href}
-                                  className="text-[var(--color-text-muted)] no-underline hover:text-[var(--color-accent)]"
-                                >
-                                  {content}
-                                </Link>
-                              ) : (
-                                content
-                              )}
-                            </span>
-                          );
-                        })}
-                      </p>
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="mt-4 h-20 animate-pulse rounded-[var(--radius-control)] bg-[var(--surface-raised)]" />
         ) : (
-          <p className="mt-3 text-sm text-[var(--color-text-muted)]">本期无需 CEO 立即处置的审计项。</p>
-        )}
+          <div
+            className={`mt-4 grid grid-cols-1 gap-4 md:gap-0 ${
+              hasMetrics ? "md:grid-cols-3" : "md:grid-cols-2"
+            }`}
+          >
+            <GemColumn title="亮点" color="var(--signal-green)" count={bright.length}>
+              {bright.length > 0 ? (
+                <ul className="space-y-1">
+                  {bright.map((c) => (
+                    <InsightRow key={c.id} card={c} />
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-[var(--color-text-muted)]">暂无亮点</p>
+              )}
+            </GemColumn>
 
-        {data && (data.drops > 0 || data.dataSource) ? (
-          <p className="mt-2 text-[11px] text-[var(--color-text-muted)]">
-            {data.drops > 0 ? `${data.drops} 条数据因缺少可引用证据被丢弃(防幻觉) · ` : ""}
-            数据源 {data.dataSource} · 期次 {data.period}
-          </p>
-        ) : null}
+            <GemColumn title="暗点" color="var(--signal-red)" count={dark.length}>
+              {dark.length > 0 ? (
+                <ul className="space-y-1">
+                  {dark.map((c) => (
+                    <InsightRow key={c.id} card={c} />
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-[var(--signal-green-text)]">无风险项</p>
+              )}
+            </GemColumn>
+
+            {hasMetrics ? (
+              <GemColumn title="FPA · BSC" color="var(--color-accent)">
+                <ul className="space-y-1">
+                  {metrics.map((m, i) => (
+                    <MetricRow key={i} metric={m} />
+                  ))}
+                </ul>
+              </GemColumn>
+            ) : null}
+          </div>
+        )}
       </CardBody>
     </Card>
+  );
+}
+
+function GemColumn({
+  title,
+  color,
+  count,
+  children,
+}: {
+  title: string;
+  color: string;
+  count?: number;
+  children: ReactNode;
+}) {
+  return (
+    <div className="min-w-0 md:px-5 md:first:pl-0 md:last:pr-0 md:[&:not(:first-child)]:border-l md:[&:not(:first-child)]:border-[var(--surface-border)]">
+      <div className="mb-2 flex items-center gap-1.5">
+        <span className="size-1.5 rounded-full" style={{ background: color }} aria-hidden />
+        <span className="text-[var(--type-label)] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+          {title}
+        </span>
+        {typeof count === "number" && count > 0 ? (
+          <span className="text-[var(--type-label)] text-[var(--color-text-muted)]">· {count}</span>
+        ) : null}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * 每条洞察最多 2 行：陈述句（+仅 critical/high 的红标）＋一行合并的 meta。
+ * 明细与证据合并为行内文字，不用 chips 盒子；下钻链接悬停/键盘聚焦时浮现。
+ */
+function InsightRow({ card }: { card: InsightCard }) {
+  const sev = SEVERITY[card.severity] ?? SEVERITY.info;
+  const evidenceText = (card.evidence ?? [])
+    .slice(0, 2)
+    .map((e) => `${e.label} ${e.value}`)
+    .join(" · ");
+  const meta = [card.detail, evidenceText].filter(Boolean).join(" · ");
+  return (
+    <li className="group rounded-md px-1.5 py-1.5 transition-colors hover:bg-[var(--surface-raised)]">
+      <div className="flex items-baseline gap-1.5">
+        {sev.loud ? (
+          <span className="shrink-0 rounded-sm bg-[var(--signal-red)]/10 px-1 text-[var(--type-label)] font-semibold leading-tight text-[var(--signal-red-text)]">
+            {sev.label}
+          </span>
+        ) : null}
+        <span className="min-w-0 flex-1 text-[var(--type-body-sm)] leading-snug text-[var(--color-text-primary)]">
+          {card.title}
+        </span>
+      </div>
+      {meta || card.action ? (
+        <div className="mt-0.5 flex items-baseline gap-2 text-[var(--type-label)] leading-snug">
+          <span className="min-w-0 flex-1 truncate text-[var(--color-text-muted)]" title={meta}>
+            {meta}
+          </span>
+          {card.action ? (
+            <Link
+              href={card.action.href}
+              className="shrink-0 font-medium text-[var(--color-accent)] no-underline opacity-0 transition-opacity hover:underline focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              {card.action.label} →
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
+function MetricRow({ metric }: { metric: GemMetric }) {
+  const color = METRIC_TONE[metric.tone ?? "neutral"];
+  const body = (
+    <div className="flex items-baseline justify-between gap-2 px-1 py-0.5">
+      <span className="text-xs text-[var(--color-text-muted)]">{metric.label}</span>
+      <span className="text-right">
+        <span className="text-[var(--type-body-sm)] font-semibold tabular-nums" style={{ color }}>
+          {metric.value}
+        </span>
+        {metric.hint ? (
+          <span className="ml-1.5 text-[var(--type-label)] text-[var(--color-text-muted)]">{metric.hint}</span>
+        ) : null}
+      </span>
+    </div>
+  );
+  return (
+    <li>
+      {metric.href ? (
+        <Link
+          href={metric.href}
+          className="block rounded-[var(--radius-control)] no-underline hover:bg-[var(--surface-raised)]"
+        >
+          {body}
+        </Link>
+      ) : (
+        body
+      )}
+    </li>
   );
 }

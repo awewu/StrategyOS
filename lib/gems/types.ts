@@ -40,6 +40,16 @@ export interface GemBuildContext {
   projectScope: string[] | null;
 }
 
+/** 结构化关键数据点(FPA/BSC 计分), 供 Gem 面板「数据呈现」列渲染。 */
+export interface GemMetric {
+  label: string;
+  value: string;
+  /** 次要上下文, e.g. "预算 1,200" */
+  hint?: string;
+  tone?: "neutral" | "red" | "green" | "accent";
+  href?: string;
+}
+
 export interface GemInsightResult {
   gem: string;
   persona: string;
@@ -52,6 +62,8 @@ export interface GemInsightResult {
   /** 若已有中央 AI/人工合理性研判, 其整体立场 */
   stance?: string;
   cards: InsightCard[];
+  /** FPA/BSC 关键数据(策略型 Gem 提供; 其余角色为空数组)。 */
+  metrics: GemMetric[];
   counts: Record<InsightKind, number>;
   /** 因缺少可引用证据被丢弃的条目数(防幻觉透明度) */
   drops: number;

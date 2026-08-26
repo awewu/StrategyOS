@@ -2,7 +2,7 @@
  * Gems 引擎共享工具 — 排序 / 计数 / 组装 / 动作重定向。
  * 所有角色 Gem 复用同一套原语, 保证洞察卡形态与优先级一致。
  */
-import type { GemInsightResult, InsightCard, InsightKind, InsightSeverity } from "./types";
+import type { GemInsightResult, GemMetric, InsightCard, InsightKind, InsightSeverity } from "./types";
 
 export const SEV_RANK: Record<InsightSeverity, number> = {
   critical: 4,
@@ -56,6 +56,7 @@ export function assembleResult(opts: {
   headline: string;
   stance?: string;
   cards: InsightCard[];
+  metrics?: GemMetric[];
   drops: number;
   dataSource: string;
 }): GemInsightResult {
@@ -69,6 +70,7 @@ export function assembleResult(opts: {
     headline: opts.headline,
     stance: opts.stance,
     cards,
+    metrics: opts.metrics ?? [],
     counts: countCards(cards),
     drops: opts.drops,
     dataSource: opts.dataSource,

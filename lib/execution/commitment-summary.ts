@@ -22,7 +22,7 @@ export function computeCommitmentSummary(records: CommitmentRecord[]): Commitmen
 
 /** Fulfillment-rate color: ≥70 green · ≥50 yellow · else red. */
 export function fulfillmentRateColor(rate: number): string {
-  if (rate >= 70) return "var(--signal-green)";
-  if (rate >= 50) return "var(--signal-yellow)";
-  return "var(--signal-red)";
+  if (rate >= 70) return "var(--signal-green-text)";
+  if (rate >= 50) return "var(--signal-yellow-text)";
+  return "var(--signal-red-text)";
 }

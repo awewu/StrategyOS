@@ -32,9 +32,9 @@ describe("commitment-summary", () => {
   });
 
   it("rate color thresholds 70/50", () => {
-    assert.equal(fulfillmentRateColor(70), "var(--signal-green)");
-    assert.equal(fulfillmentRateColor(69), "var(--signal-yellow)");
-    assert.equal(fulfillmentRateColor(50), "var(--signal-yellow)");
-    assert.equal(fulfillmentRateColor(49), "var(--signal-red)");
+    assert.equal(fulfillmentRateColor(70), "var(--signal-green-text)");
+    assert.equal(fulfillmentRateColor(69), "var(--signal-yellow-text)");
+    assert.equal(fulfillmentRateColor(50), "var(--signal-yellow-text)");
+    assert.equal(fulfillmentRateColor(49), "var(--signal-red-text)");
   });
 });
