@@ -1,6 +1,6 @@
 # StratOS · 品牌视觉识别规范（BRAND VI v2.0）
 
-**版本：** v2.0 · 2026-07-14（Ruud/Rheem 浅色主题重写）  
+**版本：** v2.1 · 2026-08-25（字阶收缩至高密度驾驶舱档；信号色维持 v2.0 定稿不变）  
 **状态：** 定稿 · 与 `app/globals.css` Brand Tokens v2.0 + `lib/brand/tokens.ts` 同步  
 **权威来源：** 运行时以 `app/globals.css` 的 CSS 变量为准；本文件与 `lib/brand/tokens.ts` 为其镜像。  
 **关联：** [UI_VI.md](./UI_VI.md) · [ONE_PAGE_PANORAMA.md](./ONE_PAGE_PANORAMA.md) · [STRATOS_BLUEPRINT.md](./STRATOS_BLUEPRINT.md)
@@ -118,7 +118,7 @@
 |------|------|------|
 | 英文/数据 | Geist Mono / DIN / Roboto | KPI · B-A-F · budget_tag |
 | 中文 | Noto Sans SC / 思源黑体 | 界面 · 诊断 · 标语 |
-| 比例 | 32 : 20 : 16 : 12 : 11 | 页面 : 卡片 : 子栏目/正文 : 说明 : 标签（`--type-*`）|
+| 比例 | 22 : 17 : 15 : 14 : 12 : 11 | 页面 : 区块 : 卡片 : 正文 : 说明 : 标签（`--type-*`）· 主 KPI 28 为全页唯一最大字 |
 | 数据 | Geist Mono · tabular-nums | KPI · B-A-F · budget_tag（`.font-data`）|
 
 ---

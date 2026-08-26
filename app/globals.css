@@ -32,8 +32,15 @@
   --space-section: 3rem;
   --space-card: 1.75rem;
   --space-page-block: 2.5rem;
-  --radius-card: 10px;
-  --radius-control: 8px;
+  --radius-card: 16px;      /* Tandem VI rounded-2xl */
+  --radius-control: 10px;   /* Tandem VI rounded-md */
+
+  /* Tandem VI 柔和阴影 token（§5.1，禁 Material） */
+  --shadow-soft-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-soft-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-soft-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
+  --shadow-soft-xl: 0 24px 64px rgba(0, 0, 0, 0.14);
 
   /* ── Motion ──
    * fast: hover / 微交互；base: overlay / 展开折叠；slow: 骨架屏呼吸。
@@ -42,6 +49,16 @@
   --motion-base: 200ms;
   --motion-slow: 300ms;
   --motion-ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+  /* Tandem VI 动效 token（对齐 docs/UI-DESIGN-COMMUNICATION.md §8） */
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  --duration-emphasis: 700ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1); /* iOS spring */
 
   /* ── Interactive color: authentic Ruud cyan ──
    * Ruud links/buttons = #50c8e8, hover #3eb5d4. For AA text/icon contrast
@@ -58,7 +75,7 @@
   --accent-sim:     #6d3fc0;
   --accent-sim-dim: color-mix(in srgb, var(--accent-sim) 12%, white);
 
-  /* ── Signal red: Ruud's own deep red, risk only ── */
+  /* ── Legacy alias — 跟随 BRAND_VI 定稿信号红 ── */
   --color-signal-red: #8b0e04;
 
   /* ── Typography ── */
@@ -67,11 +84,15 @@
   --color-text-secondary: #4e5758;   /* Ruud body slate */
   --color-text-muted:     #657073;   /* Ruud muted slate — WCAG AA 5.1:1 on white (was #828c8d 3.45:1) */
 
-  /* ── Semantic signals ── */
-  --signal-green:   #1f8a45;
-  --signal-yellow:  #b45309;
-  --signal-red:     #8b0e04;
+  /* ── Semantic signals — BRAND_VI §3.3 定稿（Ruud 工业哑光，不可挪用；勿套 Tandem 亮色板） ── */
+  --signal-green:   #1f8a45;   /* 正常 · 验证 · Gate 通过 */
+  --signal-yellow:  #b45309;   /* 关注 · 偏差 */
+  --signal-red:     #8b0e04;   /* 预警 · 否决 · Hx 失效 */
   --signal-neutral: #828c8d;
+  /* 文字消费别名——定稿色本身即 AA（4.5/4.5/10:1 on white），与填充同源 */
+  --signal-green-text:  var(--signal-green);
+  --signal-yellow-text: var(--signal-yellow);
+  --signal-red-text:    var(--signal-red);
 
   /* ── BSC dimensions ── */
   --bsc-financial: #8b0e04;
@@ -125,15 +146,22 @@
   --ruud-dark-red: #76232f;
   --nav-active-indicator: var(--ruud-red-primary);
 
-  /* ── Typography scale (栏目 → 卡片 → 槽位 → 正文) · UI_VI 32:20:16:12 ── */
-  --type-page: 2rem;           /* 32 · 页面标题 */
-  --type-section: 1.25rem;     /* 20 · 卡片/区块标题 */
-  --type-subsection: 1rem;     /* 16 · 子栏目标题 */
-  --type-body: 1rem;           /* 16 · 正文 */
-  --type-label: 0.6875rem;     /* 11 · 栏目标签（下限） */
+  /* 中文字体走系统栈(PingFang / 微软雅黑)——premium 且零下载；
+   * next/font 的 Noto Sans SC(latin 子集)不含 CJK，加载无益，已移除。 */
+  --font-noto-sc: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+
+  /* ── Typography scale — 高密度驾驶舱档：层级靠字重/留白，不靠字号。
+   * Tandem 的 title 档（36/28/22）是门户型标准，不适用于密集仪表盘；
+   * 这里对齐的是 Tandem 的语义层级（title-1/2/3·body·caption·footnote）而非像素值。 */
+  --type-page: 1.375rem;       /* 22 · 页面标题 */
+  --type-section: 1.0625rem;   /* 17 · 区块标题 */
+  --type-subsection: 0.9375rem;/* 15 · 卡片标题 */
+  --type-body: 0.875rem;       /* 14 · 正文 */
+  --type-label: 0.6875rem;     /* 11 · 微标签（全局下限） */
   --type-caption: 0.75rem;     /* 12 · 说明 / meta */
-  --type-kpi: 1.5rem;          /* 24 · 槽位数值 */
-  --type-kpi-hero: 2rem;       /* 32 · 主 KPI */
+  --type-body-sm: 0.8125rem;   /* 13 · 小号控件 / 密集正文 */
+  --type-kpi: 1.375rem;        /* 22 · 槽位数值 */
+  --type-kpi-hero: 1.75rem;    /* 28 · 主 KPI（全页唯一最大字） */
 
   /* UI_VI §4.2 aliases (sync with --type-*) */
   --text-h1: var(--type-kpi-hero);
@@ -172,12 +200,12 @@
   --color-foreground: var(--color-text-primary);
   --color-surface:    var(--color-bg-surface);
   --color-muted:      var(--color-text-muted);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  --font-sans: var(--font-inter), var(--font-noto-sc), -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
 
   /* Tailwind 字号刻度锚定到 --type-* token：
    * 裸 text-xs/2xl/3xl 等 utility 由 token 中央驱动，调 token 即全站生效。
-   * xs=caption(12) · sm=14 · base=body(16) · xl=section(20) · 2xl=kpi(24) · 3xl=kpi-hero(32) */
+   * xs=caption(12) · base=body(14) · xl=section(17) · 2xl=kpi(22) · 3xl=kpi-hero(28) */
   --text-xs: var(--type-caption);
   --text-base: var(--type-body);
   --text-xl: var(--type-section);
@@ -196,6 +224,20 @@ body {
   line-height: 1.65;
   letter-spacing: 0; /* 中文不加字距——加了发虚 */
 }
+
+/* ── 全局键盘焦点环（a11y）· :where() 零特异性，组件可覆盖 ── */
+:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-control, 4px);
+}
+
+/* Tandem VI 柔和阴影工具类（§5.1，禁用 Material shadow-*） */
+.shadow-soft-xs { box-shadow: var(--shadow-soft-xs); }
+.shadow-soft-sm { box-shadow: var(--shadow-soft-sm); }
+.shadow-soft { box-shadow: var(--shadow-soft); }
+.shadow-soft-lg { box-shadow: var(--shadow-soft-lg); }
+.shadow-soft-xl { box-shadow: var(--shadow-soft-xl); }
 
 .stratos-shell-bg {
   background: var(--color-bg-deep);
@@ -888,11 +930,9 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 1rem;
-  margin-bottom: var(--space-section);
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--surface-border);
-  border-radius: 10px;
-  background: var(--color-bg-surface);
+  margin-bottom: 1.25rem;
+  padding: 0;
+  /* denoised: 内联面包屑细条，无描边/底色 */
 }
 
 .stratos-loop-guide__track {
@@ -962,8 +1002,8 @@ body {
   margin-left: auto;
   font-family: var(--font-noto-sc), "Noto Sans SC", "PingFang SC", sans-serif;
   font-size: var(--type-caption);
-  font-weight: 600;
-  color: var(--ruud-red-primary);
+  font-weight: 500;
+  color: var(--color-accent);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -974,17 +1014,15 @@ body {
 
 /* ── On-page working-principle + workflow explainer (PageGuide) ── */
 .stratos-page-guide {
-  margin-bottom: var(--space-section);
-  border: 1px solid var(--surface-border);
-  border-radius: 10px;
-  background: var(--color-bg-surface);
+  margin-bottom: 1.25rem;
+  /* denoised: 无描边白卡，默认折叠的安静细条 */
 }
 
 .stratos-page-guide__summary {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 0.85rem;
+  padding: 0.4rem 0;
   cursor: pointer;
   list-style: none;
 }
@@ -1048,7 +1086,7 @@ body {
   display: grid;
   gap: 0.75rem;
   border-top: 1px solid var(--surface-border);
-  padding: 0.75rem 0.85rem 0.9rem;
+  padding: 0.75rem 0 0.9rem;
 }
 
 @media (min-width: 900px) {
@@ -1100,9 +1138,9 @@ body {
 /* Type scale — page · section · body · label (sync with --type-* tokens) */
 .text-headline {
   font-size: var(--type-page);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 .text-title {
   font-size: var(--type-section);
@@ -1474,7 +1512,7 @@ textarea.stratos-input {
 
 .stratos-segment__item--danger.stratos-segment__item--active {
   background: color-mix(in srgb, var(--signal-red) 12%, white);
-  color: var(--signal-red);
+  color: var(--signal-red-text);
 }
 
 a.stratos-segment__item {
