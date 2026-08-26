@@ -58,7 +58,7 @@ export function ExecutionAnalyticsEditor({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}
+          {msg ? <span className="text-xs text-[var(--signal-green-text)]">{msg}</span> : null}
           {editing ? (
             <>
               <button

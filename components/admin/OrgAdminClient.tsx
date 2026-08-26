@@ -101,7 +101,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
           <span className="text-sm text-[var(--color-text-primary)] truncate">{u.name}</span>
           {u.nameEn && <span className="text-caption truncate">{u.nameEn}</span>}
           {u.planCount > 0 && (
-            <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">
+            <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-accent)]">
               {u.planCount} 份战略
             </span>
           )}
@@ -118,7 +118,7 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
           <button onClick={() => editUnit(u)}
             className="rounded px-2 py-1 text-caption hover:bg-black/[0.04]">改</button>
           <button onClick={() => remove(u)}
-            className="rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删</button>
+            className="rounded px-2 py-1 text-xs text-[var(--signal-red-text)] hover:bg-[var(--signal-red)]/10">删</button>
         </div>
       </div>
     );
@@ -129,8 +129,8 @@ export function OrgAdminClient({ units }: { units: OrgUnit[] }) {
       {toast && (
         <div className={`fixed right-6 top-6 z-50 rounded-lg border px-4 py-2 text-sm shadow-lg ${
           toast.kind === "ok"
-            ? "border-[var(--signal-green)]/30 bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
-            : "border-[var(--signal-red)]/30 bg-[var(--signal-red)]/10 text-[var(--signal-red)]"
+            ? "border-[var(--signal-green)]/30 bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
+            : "border-[var(--signal-red)]/30 bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]"
         }`}>
           {toast.msg}
         </div>

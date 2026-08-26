@@ -91,7 +91,7 @@ export function TimelineEditor({
         <span className="text-caption">
           战略时间轴 {source === "database" ? "· 已自定义" : "· 版本库推导"}
         </span>
-        {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}
+        {msg ? <span className="text-xs text-[var(--signal-green-text)]">{msg}</span> : null}
         {editing ? (
           <>
             <button

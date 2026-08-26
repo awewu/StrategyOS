@@ -30,8 +30,8 @@ type ImportResult = {
 };
 
 function riskColor(level: string) {
-  if (level === "block") return "text-[var(--signal-red)]";
-  if (level === "warn") return "text-[var(--signal-yellow)]";
+  if (level === "block") return "text-[var(--signal-red-text)]";
+  if (level === "warn") return "text-[var(--signal-yellow-text)]";
   return "text-[var(--color-text-muted)]";
 }
 
@@ -184,7 +184,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
           />
           {extracting ? <p className="mt-1 text-caption">正在提取文本...</p> : null}
           {!extracting && extractStatus ? (
-            <p className={`mt-1 text-xs ${extractStatus.startsWith("已") ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
+            <p className={`mt-1 text-xs ${extractStatus.startsWith("已") ? "text-[var(--signal-green-text)]" : "text-[var(--signal-red-text)]"}`}>
               {extractStatus}
             </p>
           ) : null}
@@ -247,7 +247,7 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
               ))}
             </div>
             {audit.reviewCandidates.length > 0 ? (
-              <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[11px] text-[var(--signal-yellow)]">
+              <ul className="mt-2 max-h-28 space-y-1 overflow-y-auto text-[var(--type-label)] text-[var(--signal-yellow-text)]">
                 {audit.reviewCandidates.slice(0, 10).map((r, i) => (
                   <li key={i}>
                     [{r.reason}] {r.text.slice(0, 56)} — {r.reviewHint}
@@ -320,12 +320,12 @@ export function StrategicImportPanel({ embedded }: { embedded?: boolean }) {
         )}
 
         {result?.ok && result.imported ? (
-          <div className="mt-4 rounded-lg border border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 px-3 py-2 text-xs text-[var(--signal-green)]">
+          <div className="mt-4 rounded-lg border border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 px-3 py-2 text-xs text-[var(--signal-green-text)]">
             已导入：{result.imported.join(" · ")}
           </div>
         ) : null}
         {result?.error ? (
-          <p className="mt-3 text-xs text-[var(--signal-red)]">{result.error}</p>
+          <p className="mt-3 text-xs text-[var(--signal-red-text)]">{result.error}</p>
         ) : null}
       </div>
     </section>

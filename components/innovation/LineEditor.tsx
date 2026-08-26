@@ -153,7 +153,7 @@ export function LineEditor({
                   <button
                     type="button"
                     onClick={() => setWeights((cur) => cur.filter((_, j) => j !== i))}
-                    className="rounded px-2 py-1 text-xs text-[var(--signal-red)]"
+                    className="rounded px-2 py-1 text-xs text-[var(--signal-red-text)]"
                   >
                     删
                   </button>
@@ -216,7 +216,7 @@ export function LineEditor({
             </div>
           </div>
 
-          {error && <p className="text-xs text-[var(--signal-red)]">{error}</p>}
+          {error && <p className="text-xs text-[var(--signal-red-text)]">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)]">

@@ -17,7 +17,7 @@ export async function PulseOpsPanel() {
           <h2 className="text-title text-[var(--color-text-primary)]">脉搏与导入 · Ops</h2>
           <p className="text-caption mt-0.5">查重拦截统计与最近档案入库摘要</p>
         </div>
-        <div className="flex flex-wrap gap-2 text-[11px]">
+        <div className="flex flex-wrap gap-2 text-[var(--type-label)]">
           {stats.byType.slice(0, 5).map((row) => (
             <span
               key={row.reportType}
@@ -42,7 +42,7 @@ export async function PulseOpsPanel() {
           <p className="text-caption">跨月相同一句话</p>
           <p
             className={`mt-1 text-xl font-semibold ${
-              stats.copyPasteSuspects > 0 ? "text-[var(--signal-yellow)]" : "text-[var(--color-text-primary)]"
+              stats.copyPasteSuspects > 0 ? "text-[var(--signal-yellow-text)]" : "text-[var(--color-text-primary)]"
             }`}
           >
             {stats.copyPasteSuspects}
@@ -52,7 +52,7 @@ export async function PulseOpsPanel() {
 
       {stats.duplicateBlocks.length > 0 && (
         <div className="mt-5">
-          <h3 className="text-xs font-semibold text-[var(--signal-yellow)]">同组织同月多条脉搏</h3>
+          <h3 className="text-xs font-semibold text-[var(--signal-yellow-text)]">同组织同月多条脉搏</h3>
           <ul className="mt-2 space-y-2">
             {stats.duplicateBlocks.map((block) => (
               <li

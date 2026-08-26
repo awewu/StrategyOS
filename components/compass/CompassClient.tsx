@@ -230,8 +230,8 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
             { label: "所需年复合增速", value: pct(requiredCagr), warn: requiredCagr > 0.25 },
           ].map(item => (
             <div key={item.label} className="rounded-lg bg-black/[0.025] px-3 py-2.5">
-              <div className="text-[11px] tracking-wide text-[var(--color-text-muted)]">{item.label}</div>
-              <div className={`mt-1 font-data text-lg font-semibold ${item.warn ? "text-[var(--signal-red)]" : "text-[var(--color-text-primary)]"}`}>
+              <div className="text-[var(--type-label)] tracking-wide text-[var(--color-text-muted)]">{item.label}</div>
+              <div className={`mt-1 font-data text-lg font-semibold ${item.warn ? "text-[var(--signal-red-text)]" : "text-[var(--color-text-primary)]"}`}>
                 {item.value}
               </div>
             </div>
@@ -251,10 +251,10 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
       {(failCount > 0 || fragileCount > 0) && (
         <div className="flex flex-wrap gap-3 rounded-lg border border-[var(--signal-red)]/30 bg-[var(--signal-red)]/5 px-4 py-3 text-sm">
           {failCount > 0 && (
-            <span className="text-[var(--signal-red)] font-medium">⚠ {failCount} 条战略前提已出现失效信号</span>
+            <span className="text-[var(--signal-red-text)] font-medium">⚠ {failCount} 条战略前提已出现失效信号</span>
           )}
           {fragileCount > 0 && (
-            <span className="text-[var(--signal-yellow)] font-medium">△ {fragileCount} 条高脆弱性假设置信度不足</span>
+            <span className="text-[var(--signal-yellow-text)] font-medium">△ {fragileCount} 条高脆弱性假设置信度不足</span>
           )}
           <span className="text-caption ml-auto">点击下方「前提审计」查看详情</span>
         </div>
@@ -374,7 +374,7 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
 
                 {m.keyConditions.length > 0 && (
                   <div className="mt-3">
-                    <div className="mb-1 text-[11px] tracking-wide text-[var(--color-text-muted)]">必要条件</div>
+                    <div className="mb-1 text-[var(--type-label)] tracking-wide text-[var(--color-text-muted)]">必要条件</div>
                     <div className="flex flex-wrap gap-1.5">
                       {m.keyConditions.map((c, i) => (
                         <span key={i} className="rounded bg-black/[0.04] px-2 py-0.5 text-xs text-[var(--color-text-secondary)]">{c}</span>
@@ -472,11 +472,11 @@ export function CompassClient({ bundle }: { bundle: CompassBundle }) {
                       {p.failSignal ? (
                         <div>
                           {p.signalSource?.startsWith("自动·") ? (
-                            <span className="mb-1 inline-block rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">
+                            <span className="mb-1 inline-block rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-accent)]">
                               {p.signalSource}
                             </span>
                           ) : null}
-                          <span className="inline-block rounded bg-[var(--signal-red)]/10 px-1.5 py-0.5 text-xs text-[var(--signal-red)]">⚠ 失效信号</span>
+                          <span className="inline-block rounded bg-[var(--signal-red)]/10 px-1.5 py-0.5 text-xs text-[var(--signal-red-text)]">⚠ 失效信号</span>
                           <div className="mt-0.5 text-caption">{p.failSignal}</div>
                           {p.signalSource && !p.signalSource.startsWith("自动·") ? (
                             <div className="text-caption">{p.signalSource}</div>

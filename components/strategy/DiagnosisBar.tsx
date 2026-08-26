@@ -17,7 +17,7 @@ export function DiagnosisBar({ diagnosis }: { diagnosis: StrategicDiagnosis }) {
       <div className="mt-3 flex flex-wrap gap-4 text-sm text-[var(--color-text-muted)]">
         <span>瓶颈：{bottleneck[diagnosis.bottleneckType]}</span>
         <span>枢纽：{diagnosis.crux}</span>
-        <span className="rounded bg-[color-mix(in_srgb,var(--signal-green)_20%,transparent)] px-2 py-0.5 text-[var(--signal-green)]">{diagnosis.status}</span>
+        <span className="rounded bg-[color-mix(in_srgb,var(--signal-green)_20%,transparent)] px-2 py-0.5 text-[var(--signal-green-text)]">{diagnosis.status}</span>
       </div>
     </section>
   );

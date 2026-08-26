@@ -17,7 +17,7 @@ export default function DashboardError({
   return (
     <div className="stratos-section-gap flex min-h-[50vh] flex-col items-center justify-center px-6 text-center">
       <div className="stratos-card stratos-card--padded w-full max-w-lg border-[var(--signal-red)]/25 bg-[color-mix(in_srgb,var(--signal-red)_5%,white)]">
-        <p className="label-xs text-[var(--signal-red)]">页面加载失败</p>
+        <p className="label-xs text-[var(--signal-red-text)]">页面加载失败</p>
         <h1 className="mt-2 text-title text-[var(--color-text-primary)]">此模块暂时不可用</h1>
         <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
           可能是数据库连接或数据格式异常。请重试；若持续出现，请联系管理员。

@@ -77,10 +77,10 @@ export function StrategyGrowthPanel({ bundle }: { bundle: StrategyBundle }) {
                 <span
                   className={`text-xs font-medium ${
                     gap.status === "lagging"
-                      ? "text-[var(--signal-red)]"
+                      ? "text-[var(--signal-red-text)]"
                       : gap.status === "leading"
-                        ? "text-[var(--signal-green)]"
-                        : "text-[var(--signal-yellow)]"
+                        ? "text-[var(--signal-green-text)]"
+                        : "text-[var(--signal-yellow-text)]"
                   }`}
                 >
                   {gap.status === "lagging" ? "落后" : gap.status === "leading" ? "领先" : "持平"}

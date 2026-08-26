@@ -8,9 +8,9 @@ export function KellerBrandPyramid({ layers }: { layers: KellerBrandLayer[] }) {
       <h3 className="text-sm font-medium" style={{ color: colors.stackGtm }}>
         品牌心智金字塔（Keller）· RUUD 华东
       </h3>
-      <p className="mb-4 mt-1 text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+      <p className="mb-4 mt-1 text-[var(--type-label)] leading-relaxed text-[var(--color-text-muted)]">
         自下而上：从「先被知道」到「忠诚共鸣」，低层是高层的地基。
-        条长 = 调研得分 / 目标；<span className="text-[var(--signal-yellow)]">橙色 = 距目标缺口 ≥ 10%，即心智短板</span>。
+        条长 = 调研得分 / 目标；<span className="text-[var(--signal-yellow-text)]">橙色 = 距目标缺口 ≥ 10%，即心智短板</span>。
       </p>
       <div className="space-y-2">
         {[...layers].reverse().map((l) => {
@@ -18,13 +18,13 @@ export function KellerBrandPyramid({ layers }: { layers: KellerBrandLayer[] }) {
           const ok = l.score >= l.target * 0.9;
           return (
             <div key={l.layer} className="flex items-center gap-3">
-              <div className="w-28 shrink-0 text-right text-[11px] leading-tight text-[var(--color-text-muted)]">
+              <div className="w-28 shrink-0 text-right text-[var(--type-label)] leading-tight text-[var(--color-text-muted)]">
                 L{l.layer} {l.name}
               </div>
               <div className="flex-1">
                 <div className="h-6 overflow-hidden rounded bg-black/[0.04]">
                   <div
-                    className="flex h-full items-center justify-end pr-2 text-[11px] font-data"
+                    className="flex h-full items-center justify-end pr-2 text-[var(--type-label)] font-data"
                     style={{
                       width: `${pct}%`,
                       backgroundColor: ok ? "rgba(212,165,116,0.4)" : "rgba(230,81,0,0.35)",
@@ -43,7 +43,7 @@ export function KellerBrandPyramid({ layers }: { layers: KellerBrandLayer[] }) {
       </div>
       <p className="mt-4 border-t border-[var(--surface-border)] pt-3 text-xs text-[var(--color-text-secondary)]">
         {gaps.length > 0 ? (
-          <>结论：短板在<span className="font-medium text-[var(--signal-yellow)]">{gaps.map((l) => `「L${l.layer} ${l.name}」`).join("、")}</span>，品牌投入应先补齐低层再向上建。</>
+          <>结论：短板在<span className="font-medium text-[var(--signal-yellow-text)]">{gaps.map((l) => `「L${l.layer} ${l.name}」`).join("、")}</span>，品牌投入应先补齐低层再向上建。</>
         ) : (
           <>结论：四层均接近目标，品牌心智健康。</>
         )}

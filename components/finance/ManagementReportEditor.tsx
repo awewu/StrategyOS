@@ -76,7 +76,7 @@ export function ManagementReportEditor({
         <span className="text-caption">
           利润桥 {bridgeSource === "database" ? "· 已自定义" : "· FPA 推导"}
         </span>
-        {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}
+        {msg ? <span className="text-xs text-[var(--signal-green-text)]">{msg}</span> : null}
         {editing ? (
           <>
             <button type="button" className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-xs" onClick={() => { setBridge(report.marginBridge); setEditing(false); }}>

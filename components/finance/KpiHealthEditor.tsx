@@ -171,7 +171,7 @@ export function KpiHealthEditor({ bundle }: { bundle: KpiHealthBundle }) {
                     <div>
                       <span className="text-[var(--color-text-primary)]">{r.name}</span>
                       {r.category ? (
-                        <span className="ml-2 text-[11px] text-[var(--color-text-muted)]">{r.category}</span>
+                        <span className="ml-2 text-[var(--type-label)] text-[var(--color-text-muted)]">{r.category}</span>
                       ) : null}
                     </div>
                   )}
@@ -218,7 +218,7 @@ export function KpiHealthEditor({ bundle }: { bundle: KpiHealthBundle }) {
                   <td className="text-right">
                     <button
                       type="button"
-                      className="text-caption text-[var(--signal-red)] hover:underline"
+                      className="text-caption text-[var(--signal-red-text)] hover:underline"
                       onClick={() => setRows((rs) => rs.filter((x) => x.id !== r.id))}
                     >
                       删除

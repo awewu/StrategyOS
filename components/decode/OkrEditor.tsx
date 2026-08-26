@@ -171,7 +171,7 @@ export function OkrEditor({
         <p
           className="rounded-md px-3 py-2 text-sm"
           style={{
-            color: msg.kind === "ok" ? "var(--signal-green)" : "var(--signal-red)",
+            color: msg.kind === "ok" ? "var(--signal-green-text)" : "var(--signal-red-text)",
             backgroundColor:
               msg.kind === "ok"
                 ? "color-mix(in srgb, var(--signal-green) 8%, white)"
@@ -224,7 +224,7 @@ export function OkrEditor({
                           ↰ {o.hoshinLabel}
                         </span>
                       ) : (
-                        <span className="text-[var(--signal-yellow)]">未挂 Hoshin 承接链</span>
+                        <span className="text-[var(--signal-yellow-text)]">未挂 Hoshin 承接链</span>
                       )}
                     </p>
                   </>
@@ -235,7 +235,7 @@ export function OkrEditor({
                 {editing ? (
                   <button
                     type="button"
-                    className="text-xs text-[var(--signal-red)] hover:underline"
+                    className="text-xs text-[var(--signal-red-text)] hover:underline"
                     onClick={() => setObjectives((prev) => prev.filter((_, j) => j !== oi))}
                   >
                     删 O
@@ -287,7 +287,7 @@ export function OkrEditor({
                         />
                         <button
                           type="button"
-                          className="text-xs text-[var(--signal-red)] hover:underline"
+                          className="text-xs text-[var(--signal-red-text)] hover:underline"
                           onClick={() =>
                             patchObjective(oi, { keyResults: o.keyResults.filter((_, k) => k !== ki) })
                           }

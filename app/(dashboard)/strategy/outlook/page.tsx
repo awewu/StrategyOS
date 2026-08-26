@@ -68,7 +68,7 @@ export default async function StrategyOutlookPage() {
               <div key={h.key} className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] p-4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-subsection text-[var(--color-text-primary)]">{h.label}</span>
-                  <span className="font-data text-xl tabular-nums" style={{ color: h.tone }}>{val}%</span>
+                  <span className="font-data text-xl tabular-nums" style={{ color: `color-mix(in srgb, ${h.tone} 72%, black)` }}>{val}%</span>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full bg-black/[0.06]">
                   <div className="h-full rounded-full" style={{ width: `${Math.min(val, 100)}%`, backgroundColor: h.tone }} />

@@ -27,7 +27,7 @@ export function ReportApprovalActions({ reportId }: { reportId: string }) {
         type="button"
         disabled={submitting != null}
         onClick={() => void submit("APPROVED")}
-        className="rounded border border-[var(--signal-green)]/25 px-3 py-1.5 text-xs text-[var(--signal-green)] hover:bg-[var(--signal-green)]/10 disabled:opacity-50"
+        className="rounded border border-[var(--signal-green)]/25 px-3 py-1.5 text-xs text-[var(--signal-green-text)] hover:bg-[var(--signal-green)]/10 disabled:opacity-50"
       >
         {submitting === "APPROVED" ? "存档中..." : "存档"}
       </button>
@@ -35,7 +35,7 @@ export function ReportApprovalActions({ reportId }: { reportId: string }) {
         type="button"
         disabled={submitting != null}
         onClick={() => void submit("REJECTED")}
-        className="rounded border border-[var(--signal-red)]/25 px-3 py-1.5 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10 disabled:opacity-50"
+        className="rounded border border-[var(--signal-red)]/25 px-3 py-1.5 text-xs text-[var(--signal-red-text)] hover:bg-[var(--signal-red)]/10 disabled:opacity-50"
       >
         {submitting === "REJECTED" ? "退回中..." : "退回"}
       </button>

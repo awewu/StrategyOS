@@ -36,7 +36,7 @@ export function BscCards({
             }`}
           >
             {/* satisfaction label */}
-            <div className="text-[0.65rem] font-medium tracking-[0.1em]"
+            <div className="text-[var(--type-label)] font-medium tracking-[0.1em]"
               style={{ color: DIM_COLOR[c.key] + "b0" }}>
               {c.satisfaction}
             </div>
@@ -48,7 +48,7 @@ export function BscCards({
               <TrafficLightDot signal={c.light} />
             </div>
             {/* target */}
-            <p className="mt-2.5 font-data text-[0.75rem] tabular-nums text-[var(--color-text-muted)] leading-tight">
+            <p className="mt-2.5 font-data text-[var(--type-caption)] tabular-nums text-[var(--color-text-muted)] leading-tight">
               {c.target}
             </p>
           </div>

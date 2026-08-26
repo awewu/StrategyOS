@@ -132,7 +132,7 @@ export function FpaEditor({ initial, source }: { initial: FpaSummary; source: "d
             </button>
           )}
           <span
-            className={`font-data text-sm ${fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}`}
+            className={`font-data text-sm ${fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]"}`}
           >
             runway {editing ? (
               <input

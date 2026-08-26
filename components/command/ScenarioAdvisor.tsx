@@ -9,7 +9,7 @@ export function ScenarioAdvisor({ scenarios, embedded = false }: { scenarios: Sc
       <ul className="space-y-2 text-sm">
         <li>
           · 加权 runway{" "}
-          <span className="font-data text-[var(--signal-red)]">
+          <span className="font-data text-[var(--signal-red-text)]">
             {(
               scenarios.reduce((a, s) => a + s.fpaImpact.runwayMonths * (s.probability / 100), 0)
             ).toFixed(1)}{" "}

@@ -106,7 +106,7 @@ export function AddRowButton({ label, onClick }: { label: string; onClick: () =>
 /** 行内删除按钮（红色 ×/删除） */
 export function RemoveRowButton({ onClick, label = "×" }: { onClick: () => void; label?: string }) {
   return (
-    <button onClick={onClick} className="text-xs text-[var(--signal-red)] hover:underline">
+    <button onClick={onClick} className="text-xs text-[var(--signal-red-text)] hover:underline">
       {label}
     </button>
   );

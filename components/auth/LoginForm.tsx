@@ -80,13 +80,13 @@ export function LoginForm({
       </div>
 
       {displayError && (
-        <p className="rounded bg-[color-mix(in_srgb,var(--signal-red)_10%,transparent)] px-3 py-2 text-center text-sm text-[var(--signal-red)]">
+        <p className="rounded bg-[color-mix(in_srgb,var(--signal-red)_10%,transparent)] px-3 py-2 text-center text-sm text-[var(--signal-red-text)]">
           {displayError}
         </p>
       )}
 
       {needsWorkosConfig && (
-        <div className="rounded-lg border border-[color-mix(in_srgb,var(--signal-red)_30%,transparent)] bg-[color-mix(in_srgb,var(--signal-red)_5%,transparent)] px-4 py-3 text-sm text-[var(--signal-red)]">
+        <div className="rounded-lg border border-[color-mix(in_srgb,var(--signal-red)_30%,transparent)] bg-[color-mix(in_srgb,var(--signal-red)_5%,transparent)] px-4 py-3 text-sm text-[var(--signal-red-text)]">
           <p className="font-medium">需要配置 WorkOS</p>
           <p className="mt-1 text-xs">
             已启用 <code>STRATOS_REQUIRE_AUTH=1</code>，但未检测到 WorkOS 密钥。生产环境请配置{" "}

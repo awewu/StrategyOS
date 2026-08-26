@@ -19,7 +19,7 @@ export function SignResolutionButton({
   const [err, setErr] = useState("");
 
   if (role !== "board" && !isAdmin(role)) return null;
-  if (signedByMe) return <span className="text-xs text-[var(--signal-green)]">已签署 ✓</span>;
+  if (signedByMe) return <span className="text-xs text-[var(--signal-green-text)]">已签署 ✓</span>;
 
   async function sign() {
     setBusy(true);
@@ -43,7 +43,7 @@ export function SignResolutionButton({
 
   return (
     <span className="flex items-center gap-2">
-      {err ? <span className="text-xs text-[var(--signal-red)]">{err}</span> : null}
+      {err ? <span className="text-xs text-[var(--signal-red-text)]">{err}</span> : null}
       <button
         type="button"
         disabled={busy}
@@ -84,7 +84,7 @@ export function LockPackButton() {
 
   return (
     <span className="flex items-center gap-2">
-      {err ? <span className="text-xs text-[var(--signal-red)]">{err}</span> : null}
+      {err ? <span className="text-xs text-[var(--signal-red-text)]">{err}</span> : null}
       <button
         type="button"
         disabled={busy}

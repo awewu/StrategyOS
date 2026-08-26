@@ -71,7 +71,7 @@ export function MarketConfigPanel({ regions: init_r, productLines: init_p, brand
         ))}
       </div>
 
-      {msg && <p className="rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{msg}</p>}
+      {msg && <p className="rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{msg}</p>}
 
       {tab === "regions" && (
         <RegionsEditor regions={regions} setRegions={setRegions} saving={saving} post={apiPost} del={apiDel} />
@@ -145,9 +145,9 @@ function RegionsEditor({ regions, setRegions, saving, post, del }: {
           <div className="flex items-center gap-3 border-b border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-2.5">
             <span className="font-medium text-[var(--color-text-primary)]">{zone.name}</span>
             <span className="text-caption">{zone.code}</span>
-            <span className={zone.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{zone.active ? "启用" : "停用"}</span>
+            <span className={zone.active ? "ml-auto text-xs text-[var(--signal-green-text)]" : "ml-auto text-caption"}>{zone.active ? "启用" : "停用"}</span>
             <button onClick={() => startEdit(zone)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-            <button onClick={() => remove(zone.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+            <button onClick={() => remove(zone.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
             <button onClick={() => startNew(zone.id)} className="text-xs text-[var(--color-accent)] hover:underline">+ 省</button>
           </div>
           <div className="divide-y divide-[var(--surface-border)]">
@@ -155,9 +155,9 @@ function RegionsEditor({ regions, setRegions, saving, post, del }: {
               <div key={prov.id} className="flex items-center gap-3 px-4 py-2 pl-8 text-sm">
                 <span className="text-[var(--color-text-secondary)]">{prov.name}</span>
                 <span className="text-caption">{prov.code}</span>
-                <span className={prov.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{prov.active ? "启用" : "停用"}</span>
+                <span className={prov.active ? "ml-auto text-xs text-[var(--signal-green-text)]" : "ml-auto text-caption"}>{prov.active ? "启用" : "停用"}</span>
                 <button onClick={() => startEdit(prov)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-                <button onClick={() => remove(prov.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+                <button onClick={() => remove(prov.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
               </div>
             ))}
             {provincesOf(zone.id).length === 0 && (
@@ -238,9 +238,9 @@ function ProductLinesEditor({ lines, setLines, saving, post, del }: {
           <div className="flex items-center gap-3 border-b border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-2.5">
             <span className="font-medium text-[var(--color-text-primary)]">{pl.name}</span>
             <span className="text-caption">{pl.code}</span>
-            <span className={pl.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{pl.active ? "启用" : "停用"}</span>
+            <span className={pl.active ? "ml-auto text-xs text-[var(--signal-green-text)]" : "ml-auto text-caption"}>{pl.active ? "启用" : "停用"}</span>
             <button onClick={() => startEdit(pl)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-            <button onClick={() => remove(pl.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+            <button onClick={() => remove(pl.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
             <button onClick={() => startNew(pl.id)} className="text-xs text-[var(--color-accent)] hover:underline">+ 细分</button>
           </div>
           <div className="divide-y divide-[var(--surface-border)]">
@@ -249,9 +249,9 @@ function ProductLinesEditor({ lines, setLines, saving, post, del }: {
                 <span className="text-[var(--color-text-secondary)]">{sub.name}</span>
                 <span className="text-caption">{sub.code}</span>
                 {sub.description && <span className="text-caption truncate max-w-[200px]">{sub.description}</span>}
-                <span className={sub.active ? "ml-auto text-xs text-[var(--signal-green)]" : "ml-auto text-caption"}>{sub.active ? "启用" : "停用"}</span>
+                <span className={sub.active ? "ml-auto text-xs text-[var(--signal-green-text)]" : "ml-auto text-caption"}>{sub.active ? "启用" : "停用"}</span>
                 <button onClick={() => startEdit(sub)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-                <button onClick={() => remove(sub.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+                <button onClick={() => remove(sub.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
               </div>
             ))}
             {subsOf(pl.id).length === 0 && <p className="px-4 py-2 pl-8 text-caption">暂无细分品类</p>}
@@ -344,17 +344,17 @@ function BrandsEditor({ brands, setBrands, saving, post, del }: {
                 <td className="px-4 py-2.5 text-[var(--color-text-secondary)]">{TIER_LABEL[b.tier] ?? b.tier}</td>
                 <td className="px-4 py-2.5">
                   <span className={
-                    b.threatLevel === "critical" ? "text-[var(--signal-red)]" :
-                    b.threatLevel === "high" ? "text-[var(--signal-red)]/70" :
+                    b.threatLevel === "critical" ? "text-[var(--signal-red-text)]" :
+                    b.threatLevel === "high" ? "text-[var(--signal-red-text)]/70" :
                     "text-[var(--color-text-muted)]"
                   }>{THREAT_LABEL[b.threatLevel] ?? b.threatLevel}</span>
                 </td>
                 <td className="px-4 py-2.5 text-[var(--color-text-secondary)] max-w-[200px] truncate">{b.positioning ?? "—"}</td>
-                <td className="px-4 py-2.5 text-xs">{b.active ? <span className="text-[var(--signal-green)]">启用</span> : <span className="text-[var(--color-text-muted)]">停用</span>}</td>
+                <td className="px-4 py-2.5 text-xs">{b.active ? <span className="text-[var(--signal-green-text)]">启用</span> : <span className="text-[var(--color-text-muted)]">停用</span>}</td>
                 <td className="px-4 py-2.5">
                   <div className="flex gap-3">
                     <button onClick={() => startEdit(b)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-                    <button onClick={() => remove(b.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+                    <button onClick={() => remove(b.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
                   </div>
                 </td>
               </tr>
@@ -477,7 +477,7 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
             {shown.map((p) => (
               <tr key={p.id}>
                 <td className="px-3 py-2.5">
-                  {p.hotRank != null ? <span className="rounded bg-[var(--signal-yellow)]/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-[var(--signal-yellow)]">#{p.hotRank}</span> : <span className="text-[var(--color-text-muted)]">—</span>}
+                  {p.hotRank != null ? <span className="rounded bg-[var(--signal-yellow)]/20 px-1.5 py-0.5 font-mono text-xs font-semibold text-[var(--signal-yellow-text)]">#{p.hotRank}</span> : <span className="text-[var(--color-text-muted)]">—</span>}
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="font-medium text-[var(--color-text-primary)]">{p.name}</div>
@@ -489,12 +489,12 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
                   {p.priceMin != null ? `${p.priceMin}${p.priceMax != null && p.priceMax !== p.priceMin ? `–${p.priceMax}` : ""}` : "—"}
                 </td>
                 <td className="px-3 py-2.5 text-xs">
-                  {p.salesVelocity ? <span className={p.salesVelocity === "rising" ? "text-[var(--signal-red)]" : p.salesVelocity === "declining" ? "text-[var(--signal-green)]" : "text-[var(--color-text-muted)]"}>{VELOCITY_LABEL[p.salesVelocity] ?? p.salesVelocity}</span> : "—"}
+                  {p.salesVelocity ? <span className={p.salesVelocity === "rising" ? "text-[var(--signal-red-text)]" : p.salesVelocity === "declining" ? "text-[var(--signal-green-text)]" : "text-[var(--color-text-muted)]"}>{VELOCITY_LABEL[p.salesVelocity] ?? p.salesVelocity}</span> : "—"}
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="flex gap-3">
                     <button onClick={() => startEdit(p)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-                    <button onClick={() => remove(p.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+                    <button onClick={() => remove(p.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
                   </div>
                 </td>
               </tr>
@@ -527,7 +527,7 @@ function HotProductsEditor({ products, setProducts, brands, productLines, saving
             <Field label="价格上限(万)"><Input fullWidth inputSize="sm" type="number" value={form.priceMax ?? ""} onChange={(e) => setForm({ ...form, priceMax: e.target.value ? +e.target.value : null })} /></Field>
           </div>
           <Field label="定位"><Input fullWidth inputSize="sm" value={form.positioning ?? ""} onChange={(e) => setForm({ ...form, positioning: e.target.value || null })} /></Field>
-          <div className="my-1 border-t border-dashed border-[var(--surface-border)] pt-2 text-xs font-semibold text-[var(--signal-yellow)]">🔥 爆款信号（留空 hotRank = 非爆款）</div>
+          <div className="my-1 border-t border-dashed border-[var(--surface-border)] pt-2 text-xs font-semibold text-[var(--signal-yellow-text)]">🔥 爆款信号（留空 hotRank = 非爆款）</div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="爆款排名 (1=最热)"><Input fullWidth inputSize="sm" type="number" value={form.hotRank ?? ""} onChange={(e) => setForm({ ...form, hotRank: e.target.value ? +e.target.value : null })} /></Field>
             <Field label="动销趋势">

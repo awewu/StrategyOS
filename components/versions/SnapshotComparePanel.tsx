@@ -234,7 +234,7 @@ export function SnapshotComparePanel() {
         </button>
       </div>
 
-      {error ? <p className="mt-3 text-sm text-[var(--signal-red)]">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-[var(--signal-red-text)]">{error}</p> : null}
 
       <div className="mt-5 border-t border-[var(--surface-border)] pt-4">
         <div className="mb-3 flex flex-wrap items-center gap-3 text-caption">

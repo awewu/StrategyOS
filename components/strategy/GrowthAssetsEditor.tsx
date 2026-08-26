@@ -156,7 +156,7 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
                 onChange={(e) => setBrandCards(brandCards.map((x, j) => (j === i ? { ...x, whereToPlay: e.target.value } : x)))} />
               <Input fullWidth inputSize="sm" placeholder="如何取胜 How to Win" value={r.howToWin}
                 onChange={(e) => setBrandCards(brandCards.map((x, j) => (j === i ? { ...x, howToWin: e.target.value } : x)))} />
-              <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
+              <button type="button" className="text-[var(--signal-red-text)]" aria-label="删除行"
                 onClick={() => setBrandCards(brandCards.filter((_, j) => j !== i))}>×</button>
             </div>
           ))}
@@ -198,7 +198,7 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </Select>
-              <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
+              <button type="button" className="text-[var(--signal-red-text)]" aria-label="删除行"
                 onClick={() => setRoadmap(roadmap.filter((_, j) => j !== i))}>×</button>
             </div>
           ))}
@@ -228,7 +228,7 @@ export function GrowthAssetsEditor({ initial }: { initial: GrowthAssetsBundle })
                 onChange={(e) => setJtbd(jtbd.map((x, j) => (j === i ? { ...x, statement: e.target.value } : x)))} />
               <Input fullWidth inputSize="sm" placeholder="主客群" value={r.primarySegment}
                 onChange={(e) => setJtbd(jtbd.map((x, j) => (j === i ? { ...x, primarySegment: e.target.value } : x)))} />
-              <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
+              <button type="button" className="text-[var(--signal-red-text)]" aria-label="删除行"
                 onClick={() => setJtbd(jtbd.filter((_, j) => j !== i))}>×</button>
             </div>
           ))}

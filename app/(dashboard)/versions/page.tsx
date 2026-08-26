@@ -55,7 +55,7 @@ export default async function VersionsPage() {
             </div>
             <span
               className={`mt-2 inline-block text-xs ${
-                s.status === "FROZEN" ? "text-[var(--signal-green)]" : "text-[var(--color-accent)]"
+                s.status === "FROZEN" ? "text-[var(--signal-green-text)]" : "text-[var(--color-accent)]"
               }`}
             >
               {s.status}

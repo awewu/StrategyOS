@@ -113,7 +113,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
           {loading ? "推演中…" : "推演"}
         </button>
       </form>
-      {err ? <p className="mt-3 text-sm text-[var(--signal-red)]">{err}</p> : null}
+      {err ? <p className="mt-3 text-sm text-[var(--signal-red-text)]">{err}</p> : null}
       {answer?.mode === "fallback" ? (
         <pre className="mt-4 whitespace-pre-wrap rounded-lg border border-[var(--surface-border)] bg-white p-4 text-xs text-[var(--color-text-secondary)]">
           {answer.text}
@@ -126,7 +126,7 @@ export function MarketAskAiPanel({ signals }: { signals: IntelSignal[] }) {
             <dd className="mt-1">{answer.situation}</dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-[var(--signal-yellow)]">C · 影响</dt>
+            <dt className="text-xs font-medium text-[var(--signal-yellow-text)]">C · 影响</dt>
             <dd className="mt-1">{answer.complication}</dd>
           </div>
           <div>

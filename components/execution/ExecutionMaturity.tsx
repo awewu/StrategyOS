@@ -41,7 +41,7 @@ function MaturityModal({ item, onClose, onSaved }: {
 
   return (
     <Modal onClose={onClose} size="lg" title={item.projectCode ? "编辑成熟度" : "新增项目成熟度"}>
-        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -136,7 +136,7 @@ function TooltipContent({ active, payload }: { active?: boolean; payload?: Array
         <div>学习速度（假设命中率）<span className="ml-2 text-[var(--color-text-primary)]">{Math.round(p.assumptionHitRate * 100)}%</span></div>
         <div>响应延迟<span className="ml-2 text-[var(--color-text-primary)]">{p.responseLatencyDays} 天</span></div>
         <div>预算规模<span className="ml-2 text-[var(--color-text-primary)]">{p.budgetTotal} 万</span></div>
-        <div>张力类型<span className="ml-2 font-medium" style={{ color: meta.color }}>{meta.label}</span></div>
+        <div>张力类型<span className="ml-2 font-medium" style={{ color: `color-mix(in srgb, ${meta.color} 72%, black)` }}>{meta.label}</span></div>
       </div>
     </div>
   );
@@ -173,7 +173,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
           <span>均速 <span className="text-[var(--color-text-primary)]">{avgSpeed}%</span></span>
           <span>均学 <span className="text-[var(--color-text-primary)]">{avgLearn}%</span></span>
           {highRisk.length > 0 && (
-            <span className="text-[var(--signal-red)]">{highRisk.map((p) => p.projectCode).join("、")} 高风险</span>
+            <span className="text-[var(--signal-red-text)]">{highRisk.map((p) => p.projectCode).join("、")} 高风险</span>
           )}
           <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 录入项目</button>
         </div>
@@ -211,7 +211,7 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
 
         <div className="space-y-2">
           {selectedPoint && meta ? (
-            <div className={`rounded-lg border p-4 ${meta.bgColor} border-opacity-40`} style={{ borderColor: meta.color + "66" }}>
+            <div className={`rounded-lg border p-4 ${meta.bgColor} border-opacity-40`} style={{ borderColor: `color-mix(in srgb, ${meta.color} 40%, transparent)` }}>
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-medium">{selectedPoint.projectName}</span>
                 <button onClick={() => setEditItem(selectedPoint)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
@@ -220,10 +220,10 @@ export function ExecutionMaturity({ points }: { points: ExecutionMaturityPoint[]
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">负责人</span><span>{selectedPoint.owner}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">层面</span><span>{selectedPoint.horizon}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">响应延迟</span>
-                  <span className={selectedPoint.responseLatencyDays > 14 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}>{selectedPoint.responseLatencyDays} 天</span>
+                  <span className={selectedPoint.responseLatencyDays > 14 ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]"}>{selectedPoint.responseLatencyDays} 天</span>
                 </div>
                 <div className="flex justify-between"><span className="text-[var(--color-text-muted)]">主要张力</span>
-                  <span style={{ color: meta.color }}>{meta.label}</span>
+                  <span style={{ color: `color-mix(in srgb, ${meta.color} 72%, black)` }}>{meta.label}</span>
                 </div>
                 <div className="mt-3 border-t border-[var(--surface-border)] pt-3">
                   <div className="mb-1 text-[var(--color-text-muted)]">建议对策</div>

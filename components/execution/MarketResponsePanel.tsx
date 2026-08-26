@@ -46,7 +46,7 @@ function EvidenceCard({ item, onEdit }: { item: MarketEvidence; onEdit: (i: Mark
           )}
         </div>
         <div className="flex flex-shrink-0 items-center gap-2">
-          <span className="rounded px-2 py-0.5 text-xs font-medium" style={{ color: meta.color, backgroundColor: meta.color + "20" }}>
+          <span className="rounded px-2 py-0.5 text-xs font-medium" style={{ color: `color-mix(in srgb, ${meta.color} 72%, black)`, backgroundColor: `color-mix(in srgb, ${meta.color} 12%, white)` }}>
             {meta.label}
           </span>
           <button onClick={() => onEdit(item)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
@@ -88,7 +88,7 @@ function EvidenceModal({ item, onClose, onSaved }: {
 
   return (
     <Modal onClose={onClose} size="lg" title={`录入市场反馈 · ${form.actionLabel}`}>
-        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>}
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">市场证据</label>
@@ -156,7 +156,7 @@ function PositionModal({ item, onClose, onSaved }: {
 
   return (
     <Modal onClose={onClose} size="lg" title={`录入竞争位移 · ${form.dimension}`}>
-        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -231,7 +231,7 @@ function CompetitiveTable({ positions, onEdit }: {
                   <td className="px-3 py-2.5">{p.theirValue ?? <span className="text-[var(--color-text-secondary)]">待录入</span>}</td>
                   <td className="px-3 py-2.5">
                     {p.delta
-                      ? <span className={p.delta.includes("落后") ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}>{p.delta}</span>
+                      ? <span className={p.delta.includes("落后") ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]"}>{p.delta}</span>
                       : <span className="text-[var(--color-text-secondary)]">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-[var(--color-text-secondary)]">
@@ -293,13 +293,13 @@ export function MarketResponsePanel({
             </span>
           )}
           {failedCount > 0 && (
-            <span className="flex items-center gap-1.5 text-[var(--signal-red)]">
+            <span className="flex items-center gap-1.5 text-[var(--signal-red-text)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--signal-red)]" />
               {failedCount} 假设失效
             </span>
           )}
           {effectiveCount > 0 && (
-            <span className="flex items-center gap-1.5 text-[var(--signal-green)]">
+            <span className="flex items-center gap-1.5 text-[var(--signal-green-text)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--signal-green)]" />
               {effectiveCount} 执行有效
             </span>

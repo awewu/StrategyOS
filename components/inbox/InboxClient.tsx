@@ -36,7 +36,7 @@ export function PipelineStatusBar({ status }: { status: PipelineStatus }) {
 
   return (
     <section className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-3 text-xs">
-      <span className={status.fpaReady ? "text-[var(--signal-green)]" : "text-[var(--signal-yellow)]"}>
+      <span className={status.fpaReady ? "text-[var(--signal-green-text)]" : "text-[var(--signal-yellow-text)]"}>
         FPA / Runway {status.fpaReady ? "已接入" : "待同步"} · {status.runwayMonths?.toFixed(1) ?? "—"} 月
       </span>
       <button
@@ -109,7 +109,7 @@ export function InboxClient({ initialItems }: { initialItems: InboxItemView[] })
                 <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-caption">
                   {STATUS_LABEL[item.status]}
                 </span>
-                <span className="text-[11px] tracking-wide text-[var(--color-text-muted)]">
+                <span className="text-[var(--type-label)] tracking-wide text-[var(--color-text-muted)]">
                   {item.source}
                 </span>
               </div>

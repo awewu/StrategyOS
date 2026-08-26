@@ -44,7 +44,7 @@ export function ExecutiveSummary({
           <dt className={labelClass}>
             {mckinseySections.scr.complication.id} · {mckinseySections.scr.complication.labelZh}
           </dt>
-          <dd className={`stratos-prose font-medium ${isPrint ? "text-[var(--signal-yellow)]" : "text-[var(--signal-yellow)]"}`}>
+          <dd className={`stratos-prose font-medium ${isPrint ? "text-[var(--signal-yellow-text)]" : "text-[var(--signal-yellow-text)]"}`}>
             {scr.complication}
           </dd>
         </div>

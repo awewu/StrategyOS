@@ -45,9 +45,9 @@ export function CommitmentQuickActions({
 
   return (
     <span className="flex flex-shrink-0 items-center gap-2 text-xs">
-      {err ? <span className="text-[var(--signal-red)]">{err}</span> : null}
+      {err ? <span className="text-[var(--signal-red-text)]">{err}</span> : null}
       {nudged ? (
-        <span className="text-[var(--signal-green)]">已催办 ✓</span>
+        <span className="text-[var(--signal-green-text)]">已催办 ✓</span>
       ) : (
         <button
           type="button"
@@ -62,7 +62,7 @@ export function CommitmentQuickActions({
         type="button"
         disabled={busy}
         onClick={() => void patch({ status: "completed" })}
-        className="text-[var(--signal-green)] hover:underline disabled:opacity-50"
+        className="text-[var(--signal-green-text)] hover:underline disabled:opacity-50"
       >
         标记完成
       </button>

@@ -58,7 +58,7 @@ export function ConceptGuide({
               </div>
 
               {c.keyQuestion ? (
-                <p className="rounded-md border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.06] px-3 py-2 text-[13px]">
+                <p className="rounded-md border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/[0.06] px-3 py-2 text-[var(--type-body-sm)]">
                   <span className="text-[var(--color-text-muted)]">关键一问 · </span>
                   {c.keyQuestion}
                 </p>

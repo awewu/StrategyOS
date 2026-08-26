@@ -50,7 +50,7 @@ export function DecisionLedgerPanel({
           {fromCode} → {toCode}
         </span>
         {isDemoBaseline && (
-          <span className="stratos-chip stratos-chip--warn text-[11px]">演示基线</span>
+          <span className="stratos-chip stratos-chip--warn text-[var(--type-label)]">演示基线</span>
         )}
       </div>
 
@@ -93,7 +93,7 @@ export function DecisionLedgerPanel({
           <ul className="space-y-1">
             {gate.reversals.map((r, i) => (
               <li key={i} className="text-sm text-[var(--color-text-primary)]">
-                <span className="text-[var(--signal-red)]">▾</span>{" "}
+                <span className="text-[var(--signal-red-text)]">▾</span>{" "}
                 [{OBJECT_LABEL[r.objectType]}] {r.title}
                 <span className="font-data ml-2 text-caption">
                   {STATUS_LABEL[r.fromStatus] ?? r.fromStatus} → {STATUS_LABEL[r.toStatus] ?? r.toStatus}
@@ -110,7 +110,7 @@ export function DecisionLedgerPanel({
           <ul className="space-y-1">
             {revivals.map((r, i) => (
               <li key={i} className="text-sm text-[var(--color-text-primary)]">
-                <span className="text-[var(--signal-yellow)]">▴</span>{" "}
+                <span className="text-[var(--signal-yellow-text)]">▴</span>{" "}
                 [{OBJECT_LABEL[r.objectType]}] {r.title}
                 <span className="font-data ml-2 text-caption">
                   {STATUS_LABEL[r.fromStatus] ?? r.fromStatus} → {STATUS_LABEL[r.toStatus] ?? r.toStatus}
@@ -134,7 +134,7 @@ export function DecisionLedgerPanel({
 
       {ledger.prompts.length > 0 && (
         <div className="mt-4 rounded-md border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/5 p-3">
-          <div className="mb-1 text-xs font-medium text-[var(--signal-yellow)]">复盘提示 · 建议进战略会议程</div>
+          <div className="mb-1 text-xs font-medium text-[var(--signal-yellow-text)]">复盘提示 · 建议进战略会议程</div>
           <ul className="space-y-1">
             {ledger.prompts.map((p, i) => (
               <li key={i} className="text-xs text-[var(--color-text-primary)]">· {p}</li>

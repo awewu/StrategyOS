@@ -11,7 +11,7 @@ const STYLE: Record<CynefinDomain, string> = {
   clear: "bg-[color-mix(in_srgb,var(--color-text-muted)_18%,white)] text-[var(--color-text-secondary)]",
   complicated: "bg-[var(--accent-sim-dim)] text-[var(--accent-sim)]",
   complex: "bg-[color-mix(in_srgb,var(--bsc-customer)_14%,white)] text-[var(--bsc-customer)]",
-  chaotic: "bg-[color-mix(in_srgb,var(--signal-red)_14%,white)] text-[var(--signal-red)]",
+  chaotic: "bg-[color-mix(in_srgb,var(--signal-red)_14%,white)] text-[var(--signal-red-text)]",
 };
 
 const LABEL: Record<CynefinDomain, string> = {

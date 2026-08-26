@@ -27,7 +27,7 @@ export function MetricTrendPanel({ series }: { series: MetricSeries[] }) {
                 {hint ? (
                   <span
                     className="text-xs font-medium"
-                    style={{ color: hint.startsWith("⚠") ? "var(--signal-red)" : "var(--signal-green)" }}
+                    style={{ color: hint.startsWith("⚠") ? "var(--signal-red-text)" : "var(--signal-green-text)" }}
                   >
                     {hint}
                   </span>

@@ -130,7 +130,7 @@ export function SwotTowsPanel({ items }: { items: SwotPanelItem[] }) {
         </div>
       )}
 
-      {err && <p className="text-caption text-[var(--signal-red)]">{err}</p>}
+      {err && <p className="text-caption text-[var(--signal-red-text)]">{err}</p>}
 
       {tows && (
         <div className="space-y-3">

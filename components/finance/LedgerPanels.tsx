@@ -83,9 +83,9 @@ function SearchForm({ tab, q, period }: { tab: LedgerTab; q?: string; period?: s
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="stratos-card stratos-card--padded">
-      <p className="text-[11px] tracking-wide text-[var(--color-text-muted,#888)]">{label}</p>
+      <p className="text-[var(--type-label)] tracking-wide text-[var(--color-text-muted,#888)]">{label}</p>
       <p className="mt-1 text-2xl font-semibold">{value}</p>
-      {hint ? <p className="mt-1 text-[11px] text-[var(--color-text-muted,#888)]">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-[var(--type-label)] text-[var(--color-text-muted,#888)]">{hint}</p> : null}
     </div>
   );
 }
@@ -111,7 +111,7 @@ function OverviewPanel({ bundle }: { bundle: LedgerBundle }) {
             return (
               <p key={b.period} className="text-sm">
                 {b.period} · 借 {money(b.debit)} / 贷 {money(b.credit)} ·{" "}
-                <span style={{ color: balanced ? "var(--signal-green)" : "var(--signal-red)" }}>
+                <span style={{ color: balanced ? "var(--signal-green-text)" : "var(--signal-red-text)" }}>
                   {balanced ? "平衡 ✓" : `差额 ${money(b.debit - b.credit)}`}
                 </span>
               </p>
@@ -144,7 +144,7 @@ function OverviewPanel({ bundle }: { bundle: LedgerBundle }) {
                   <td>{b.period ?? "—"}</td>
                   <td className="text-right">{nf.format(b.rowCount)}</td>
                   <td>
-                    <span style={{ color: b.status === "imported" ? "var(--signal-green)" : b.status === "failed" ? "var(--signal-red)" : "var(--signal-yellow)" }}>
+                    <span style={{ color: b.status === "imported" ? "var(--signal-green-text)" : b.status === "failed" ? "var(--signal-red-text)" : "var(--signal-yellow-text)" }}>
                       {b.status === "imported" ? "已导入" : b.status === "failed" ? "失败" : "待处理"}
                     </span>
                   </td>
@@ -203,7 +203,7 @@ function TbPanel({ bundle, q, period }: { bundle: LedgerBundle; q?: string; peri
                   <td className="max-w-[240px] truncate" title={r.accountName ?? undefined}>{r.accountName ?? "—"}</td>
                   <td>{r.accountType ? ACCOUNT_TYPE_LABEL[r.accountType] ?? r.accountType : "—"}</td>
                   <td className="max-w-[180px] truncate" title={r.usAccountDesc ?? undefined}>
-                    {r.usAccountCode ? `${r.usAccountCode} ${r.usAccountDesc ?? ""}` : <span style={{ color: "var(--signal-yellow)" }}>未映射</span>}
+                    {r.usAccountCode ? `${r.usAccountCode} ${r.usAccountDesc ?? ""}` : <span style={{ color: "var(--signal-yellow-text)" }}>未映射</span>}
                   </td>
                   <td className="text-right font-mono text-xs">{money(r.opening)}</td>
                   <td className="text-right font-mono text-xs">{money(r.debit)}</td>
@@ -292,7 +292,7 @@ function AccountsPanel({ bundle, q, period }: { bundle: LedgerBundle; q?: string
                   <td className="max-w-[260px] truncate" title={r.name}>{r.name}</td>
                   <td>{ACCOUNT_TYPE_LABEL[r.accountType] ?? r.accountType}</td>
                   <td className="font-mono text-xs">
-                    {r.usAccountCode ?? <span style={{ color: "var(--signal-yellow)" }}>未映射</span>}
+                    {r.usAccountCode ?? <span style={{ color: "var(--signal-yellow-text)" }}>未映射</span>}
                   </td>
                   <td className="max-w-[220px] truncate" title={r.usAccountDesc ?? undefined}>{r.usAccountDesc ?? "—"}</td>
                   <td className="font-mono text-xs">{r.consolidateTo ?? "—"}</td>
@@ -312,12 +312,12 @@ function FactsPanel({ bundle, q, period }: { bundle: LedgerBundle; q?: string; p
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {bundle.scenarioSummaries.map((s) => (
           <div key={s.code} className="stratos-card stratos-card--padded">
-            <p className="text-[11px] tracking-wide text-[var(--color-text-muted,#888)]">
+            <p className="text-[var(--type-label)] tracking-wide text-[var(--color-text-muted,#888)]">
               {SCENARIO_KIND_LABEL[s.kind] ?? s.kind}
             </p>
             <p className="mt-1 truncate text-sm font-semibold" title={s.code}>{s.name}</p>
             <p className="mt-1 font-mono text-lg">{money(s.total)}</p>
-            <p className="text-[11px] text-[var(--color-text-muted,#888)]">{nf.format(s.factCount)} 条事实</p>
+            <p className="text-[var(--type-label)] text-[var(--color-text-muted,#888)]">{nf.format(s.factCount)} 条事实</p>
           </div>
         ))}
       </div>
@@ -388,7 +388,7 @@ function BridgePanel({ bundle }: { bundle: LedgerBundle }) {
                     <div className="flex items-center justify-between text-xs">
                       <span>{BRIDGE_LABEL[item.bridgeCode] ?? item.bridgeCode}</span>
                       <span className="font-mono">
-                        <span style={{ color: positive ? "var(--signal-green)" : "var(--signal-red)" }}>
+                        <span style={{ color: positive ? "var(--signal-green-text)" : "var(--signal-red-text)" }}>
                           {positive ? "+" : ""}{money(item.amount)}
                         </span>
                         <span className="ml-3 text-[var(--color-text-muted,#888)]">累计 {money(item.cumulative)}</span>
@@ -404,7 +404,7 @@ function BridgePanel({ bundle }: { bundle: LedgerBundle }) {
                 );
               })}
             </div>
-            <p className="mt-3 text-[11px] text-[var(--color-text-muted,#888)]">
+            <p className="mt-3 text-[var(--type-label)] text-[var(--color-text-muted,#888)]">
               按 OneStream UD5 利润桥维度聚合（量→价→结构→降本→新品→战略举措→其他），台数类指标已排除。
             </p>
           </div>

@@ -324,7 +324,7 @@ export function RehearsalPresentMode({
           <div className="text-right">
             <div className="text-caption">本环节</div>
             <div
-              className={`font-data text-4xl tabular-nums ${overtime ? "text-[var(--signal-red)]" : "text-[var(--color-accent)]"}`}
+              className={`font-data text-4xl tabular-nums ${overtime ? "text-[var(--signal-red-text)]" : "text-[var(--color-accent)]"}`}
             >
               {overtime ? "+" : ""}
               {formatClock(overtime ? segmentElapsed - segmentBudgetSec : segmentRemaining)}
@@ -349,7 +349,7 @@ export function RehearsalPresentMode({
           <button
             type="button"
             onClick={onExit}
-            className="rounded border border-[var(--signal-red)]/40 px-4 py-2 text-sm text-[var(--signal-red)]"
+            className="rounded border border-[var(--signal-red)]/40 px-4 py-2 text-sm text-[var(--signal-red-text)]"
           >
             退出 Esc
           </button>
@@ -399,7 +399,7 @@ export function RehearsalPresentMode({
                         onClick={() => persistCheck(key, !done)}
                         className={`flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                           done
-                            ? "border-[color-mix(in_srgb,var(--signal-green)_40%,transparent)] bg-[color-mix(in_srgb,var(--signal-green)_10%,white)] text-[var(--signal-green)]"
+                            ? "border-[color-mix(in_srgb,var(--signal-green)_40%,transparent)] bg-[color-mix(in_srgb,var(--signal-green)_10%,white)] text-[var(--signal-green-text)]"
                             : "border-[var(--surface-border)] bg-black/[0.04]"
                         }`}
                       >

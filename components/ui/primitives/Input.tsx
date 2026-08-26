@@ -36,7 +36,7 @@ const TONES: Record<InputTone, string> = {
 
 const SIZES: Record<InputSize, string> = {
   xs: "px-2 py-1 text-xs",
-  sm: "h-8 px-2.5 text-[13px]",
+  sm: "h-8 px-2.5 text-[var(--type-body-sm)]",
   md: "h-10 px-3 text-sm",
 };
 

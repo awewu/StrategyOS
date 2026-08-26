@@ -15,17 +15,12 @@ import { BafBar } from "@/components/finance/BafBar";
 import { RobustTrend } from "@/components/health/RobustTrend";
 import { TrafficLightDot } from "@/components/ui/TrafficLight";
 import { ExecutiveSummary } from "@/components/ui/ExecutiveSummary";
-import { ImplicationsBar } from "@/components/ui/ImplicationsBar";
 import { KpiTile, SectionCard } from "@/components/ui/KpiTile";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { brand } from "@/lib/brand/tokens";
 import { getCommandDeckBundle } from "@/lib/data/strategy-data";
 import { getActivePeriod } from "@/lib/data/active-period";
-import {
-  buildScrSummary,
-  buildTopAlerts,
-  buildImplications,
-} from "@/lib/panorama/scr";
+import { buildScrSummary, buildTopAlerts } from "@/lib/panorama/scr";
 import { topDiffs } from "@/lib/stratos";
 
 function pct(v: number) {
@@ -77,9 +72,7 @@ export default async function CommandPage({
   const top3 = topDiffs(deck.stratDiffs, 3);
   const scr = buildScrSummary(deck);
   const alerts = buildTopAlerts(deck);
-  const implications = buildImplications(deck);
   const kpis = deck.managementReport.kpis;
-  const hardBlock = alerts.find((a) => a.severity === "critical") ?? alerts[0];
 
   return (
     <div className="stratos-page">
@@ -92,7 +85,7 @@ export default async function CommandPage({
             <Link href="/command/issues" className="stratos-btn stratos-btn--ghost relative">
               议题
               {inbox.open > 0 ? (
-                <span className="ml-1 inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-[var(--signal-red)] px-1.5 py-0.5 text-[0.625rem] font-semibold text-white">
+                <span className="ml-1 inline-flex min-w-[1.125rem] items-center justify-center rounded-full bg-[var(--signal-red)] px-1.5 py-0.5 text-[0.6875rem] font-semibold text-white">
                   {inbox.open}
                 </span>
               ) : null}
@@ -141,9 +134,8 @@ export default async function CommandPage({
       {/* ⓪ CEO Gem「帅」· AI 审计洞察主脊 */}
       <GemPanel />
 
-      {/* ① 致辞 · 一句话态势 + 推论 */}
+      {/* ① 致辞 · 一句话态势 */}
       <ExecutiveSummary scr={scr} />
-      <ImplicationsBar items={implications} />
 
       {/* ①.5 BSC 红线突破 · 经营底线全局预警（KPI 阈值，非 OKR 先导） */}
       {deck.bscComparison?.anyBreached && (
@@ -153,7 +145,7 @@ export default async function CommandPage({
         >
           <div className="flex items-center gap-2">
             <TrafficLightDot signal="red" />
-            <p className="text-label text-[var(--signal-red)]">BSC 红线突破 · 经营底线告警（需预警 / 叫停 / 绩效处理）</p>
+            <p className="text-label text-[var(--signal-red-text)]">BSC 红线突破 · 经营底线告警（需预警 / 叫停 / 绩效处理）</p>
           </div>
           <ul className="mt-2 space-y-1 text-caption">
             {deck.bscComparison.dims.flatMap((d) =>
@@ -169,34 +161,12 @@ export default async function CommandPage({
         </section>
       )}
 
-      {/* ② 风险与决策 · 硬阻断与决策并排, 用满横向空间而非上下堆叠成条 */}
-      <div className={hardBlock ? "grid gap-6 lg:grid-cols-2 lg:items-start" : "contents"}>
-        {hardBlock ? (
-          <section
-            className="stratos-card stratos-card--padded border-[var(--signal-red)]/30 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]"
-            aria-label="HardBlock"
-          >
-            <p className="text-label text-[var(--signal-red)]">HardBlock · 硬阻断</p>
-            <div className="mt-2">
-              <TopAlertsPanel alerts={[hardBlock]} embedded />
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3 text-caption">
-              <Link href="/finance?tab=overview" className="text-[var(--color-accent)] hover:underline">
-                FPA Runway →
-              </Link>
-              <Link href="/council?tab=gates" className="text-[var(--color-text-muted)] hover:underline">
-                Gate 准入 →
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        <DecisionsEditor
-          initialDecisions={deck.decisions}
-          derivedDecisions={deck.derivedDecisions}
-          source={deck.decisionsSource}
-        />
-      </div>
+      {/* ② 决策 */}
+      <DecisionsEditor
+        initialDecisions={deck.decisions}
+        derivedDecisions={deck.derivedDecisions}
+        source={deck.decisionsSource}
+      />
 
       {/* ③ 态势板 · 状态亮点 → 变化 → 预警 */}
       <CommandBoardShell>

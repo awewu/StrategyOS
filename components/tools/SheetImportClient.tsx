@@ -211,8 +211,8 @@ export function SheetImportClient() {
             </span>
           )}
         </div>
-        {error && <p className="mt-2 text-sm text-[var(--signal-red)]">{error}</p>}
-        {savedMsg && <p className="mt-2 text-sm text-[var(--signal-green)]">{savedMsg}</p>}
+        {error && <p className="mt-2 text-sm text-[var(--signal-red-text)]">{error}</p>}
+        {savedMsg && <p className="mt-2 text-sm text-[var(--signal-green-text)]">{savedMsg}</p>}
       </section>
 
       {result && spec && (
@@ -221,7 +221,7 @@ export function SheetImportClient() {
             <div className="mb-2 flex flex-wrap items-center gap-3 text-sm">
               <span className="font-medium text-[var(--color-text-primary)]">列映射</span>
               <span
-                className={`text-xs ${result.mapSource === "guess" ? "text-[var(--signal-yellow)]" : "text-[var(--color-text-muted)]"}`}
+                className={`text-xs ${result.mapSource === "guess" ? "text-[var(--signal-yellow-text)]" : "text-[var(--color-text-muted)]"}`}
               >
                 {MAP_SOURCE_LABEL[result.mapSource]}
               </span>
@@ -231,7 +231,7 @@ export function SheetImportClient() {
                 <div key={f.key} className="flex items-center gap-2 text-sm">
                   <span className="w-32 shrink-0 text-[var(--color-text-secondary)]">
                     {f.label}
-                    {f.required && <span className="text-[var(--signal-red)]"> *</span>}
+                    {f.required && <span className="text-[var(--signal-red-text)]"> *</span>}
                   </span>
                   <select
                     className={`${inp} flex-1 ${f.required && !result.columnMap[f.key] ? "border-[var(--signal-red)]" : ""}`}
@@ -271,8 +271,8 @@ export function SheetImportClient() {
             <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
               <span className="text-[var(--color-text-primary)]">预检结果</span>
               <span className="font-data text-[var(--color-text-muted)]">共 {result.totalRows} 行</span>
-              <span className="font-data text-[var(--signal-green)]">可入库 {result.validRows}</span>
-              <span className={`font-data ${result.errorRows > 0 ? "text-[var(--signal-red)]" : "text-[var(--color-text-muted)]"}`}>
+              <span className="font-data text-[var(--signal-green-text)]">可入库 {result.validRows}</span>
+              <span className={`font-data ${result.errorRows > 0 ? "text-[var(--signal-red-text)]" : "text-[var(--color-text-muted)]"}`}>
                 error 行 {result.errorRows}
               </span>
             </div>
@@ -280,7 +280,7 @@ export function SheetImportClient() {
               <ul className="max-h-48 space-y-1 overflow-y-auto">
                 {result.issues.map((i, k) => (
                   <li key={k} className="text-xs">
-                    <span className={i.severity === "error" ? "text-[var(--signal-red)]" : "text-[var(--signal-yellow)]"}>
+                    <span className={i.severity === "error" ? "text-[var(--signal-red-text)]" : "text-[var(--signal-yellow-text)]"}>
                       [{i.severity === "error" ? "错误" : "警告"}]
                     </span>{" "}
                     <span className="text-[var(--color-text-muted)]">第 {i.row} 行</span>{" "}
@@ -325,8 +325,8 @@ export function SheetImportClient() {
               <span className="text-[var(--color-text-primary)]">差异预览 · 与 DB 现状对比</span>
               {result.diff ? (
                 <>
-                  <span className="font-data text-[var(--signal-green)]">新增 {result.diff.created}</span>
-                  <span className="font-data text-[var(--signal-yellow)]">更新 {result.diff.updated}</span>
+                  <span className="font-data text-[var(--signal-green-text)]">新增 {result.diff.created}</span>
+                  <span className="font-data text-[var(--signal-yellow-text)]">更新 {result.diff.updated}</span>
                   <span className="font-data text-[var(--color-text-muted)]">不变 {result.diff.unchanged}</span>
                 </>
               ) : (
@@ -343,8 +343,8 @@ export function SheetImportClient() {
                       <span
                         className={`mr-2 rounded px-1.5 py-0.5 ${
                           r.status === "new"
-                            ? "bg-[var(--signal-green)]/12 text-[var(--signal-green)]"
-                            : "bg-[var(--signal-yellow)]/12 text-[var(--signal-yellow)]"
+                            ? "bg-[var(--signal-green)]/12 text-[var(--signal-green-text)]"
+                            : "bg-[var(--signal-yellow)]/12 text-[var(--signal-yellow-text)]"
                         }`}
                       >
                         {r.status === "new" ? "新增" : "更新"}
@@ -372,17 +372,17 @@ export function SheetImportClient() {
                 {busy ? "入库中…" : "确认入库"}
               </button>
               {result.errorRows > 0 && (
-                <span className="text-xs text-[var(--signal-red)]">存在 error 行,修正后才能入库</span>
+                <span className="text-xs text-[var(--signal-red-text)]">存在 error 行,修正后才能入库</span>
               )}
               {committed && (
-                <span className="text-xs text-[var(--signal-green)]">
+                <span className="text-xs text-[var(--signal-green-text)]">
                   已入库:新增 {committed.created} · 更新 {committed.updated}
                   {committed.skipped > 0 ? ` · 跳过 ${committed.skipped}` : ""}
                 </span>
               )}
             </div>
             {committed?.assertionTriggered && (
-              <p className="mt-2 rounded border border-[var(--signal-red)]/40 bg-[var(--signal-red)]/8 px-2.5 py-1.5 text-xs text-[var(--signal-red)]">
+              <p className="mt-2 rounded border border-[var(--signal-red)]/40 bg-[var(--signal-red)]/8 px-2.5 py-1.5 text-xs text-[var(--signal-red-text)]">
                 ⚠ §16.2 一票否决:现金 runway 低于 3 个月,已触发 HealthAssertion — 指挥舱将显示硬阻断条。
               </p>
             )}

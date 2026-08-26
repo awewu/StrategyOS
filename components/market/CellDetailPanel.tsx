@@ -7,15 +7,15 @@ import { Input, Select, Textarea } from "@/components/ui/primitives";
 const DIM_LABEL: Record<string, string> = { product: "产品", gtm: "GTM", brand: "品牌", strategy: "战略模式" };
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   todo: { label: "待研究", cls: "bg-black/[0.06] text-[var(--color-text-muted)]" },
-  in_progress: { label: "进行中", cls: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]" },
-  current: { label: "现行", cls: "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" },
-  stale: { label: "需复研", cls: "bg-[var(--signal-red)]/15 text-[var(--signal-red)]" },
+  in_progress: { label: "进行中", cls: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]" },
+  current: { label: "现行", cls: "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]" },
+  stale: { label: "需复研", cls: "bg-[var(--signal-red)]/15 text-[var(--signal-red-text)]" },
   archived: { label: "已归档", cls: "bg-black/[0.06] text-[var(--color-text-muted)]" },
 };
 const POS_LABEL: Record<string, { label: string; cls: string }> = {
-  lead: { label: "领先", cls: "text-[var(--signal-green)]" },
+  lead: { label: "领先", cls: "text-[var(--signal-green-text)]" },
   parity: { label: "持平", cls: "text-[var(--color-text-muted)]" },
-  lag: { label: "落后", cls: "text-[var(--signal-red)]" },
+  lag: { label: "落后", cls: "text-[var(--signal-red-text)]" },
 };
 
 export function CellDetailPanel({
@@ -107,7 +107,7 @@ export function CellDetailPanel({
                       <tr key={s.key} className="border-b border-[var(--surface-border)] last:border-0">
                         <td className="px-3 py-2 text-[var(--color-text-secondary)]">
                           {s.label}{s.unit ? " (" + s.unit + ")" : ""}
-                          {s.weight >= 3 && <span className="ml-1 text-[11px] text-[var(--color-accent)]">核心</span>}
+                          {s.weight >= 3 && <span className="ml-1 text-[var(--type-label)] text-[var(--color-accent)]">核心</span>}
                         </td>
                         <td className="px-3 py-2 text-right font-data tabular-nums">{s.valueNum ?? s.valueText ?? "—"}</td>
                         <td className="px-3 py-2 text-right font-data tabular-nums">{c?.valueNum ?? c?.valueText ?? "—"}</td>
@@ -132,9 +132,9 @@ export function CellDetailPanel({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-xs text-[var(--color-accent)]">{DIM_LABEL[r.dimension]}</span>
                       <span className="text-sm font-medium">{r.subtopic}</span>
-                      <span className={"rounded px-1.5 py-0.5 text-[11px] " + STATUS_LABEL[r.status].cls}>{STATUS_LABEL[r.status].label}</span>
-                      {r.editedManually && <span className="rounded bg-[var(--signal-green)]/15 px-1.5 py-0.5 text-[11px] text-[var(--signal-green)]">人工确认</span>}
-                      {r.origin === "hermes" && !r.editedManually && <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-[11px] text-[var(--color-accent)]">Hermes 草稿</span>}
+                      <span className={"rounded px-1.5 py-0.5 text-[var(--type-label)] " + STATUS_LABEL[r.status].cls}>{STATUS_LABEL[r.status].label}</span>
+                      {r.editedManually && <span className="rounded bg-[var(--signal-green)]/15 px-1.5 py-0.5 text-[var(--type-label)] text-[var(--signal-green-text)]">人工确认</span>}
+                      {r.origin === "hermes" && !r.editedManually && <span className="rounded bg-[var(--color-accent-dim)] px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-accent)]">Hermes 草稿</span>}
                       <span className="ml-auto text-caption">置信 {r.confidence}</span>
                     </div>
                     {r.findings && <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{r.findings}</p>}
@@ -225,7 +225,7 @@ function CellEditForm({ productLineId, regionId, competitorId, existing, onSaved
   return (
     <div className="space-y-4">
       <p className="text-caption">人工录入或修订该战场评估，保存后标记为&ldquo;人工确认&rdquo;。</p>
-      {err && <p className="rounded bg-[var(--signal-red)]/10 px-3 py-1.5 text-xs text-[var(--signal-red)]">{err}</p>}
+      {err && <p className="rounded bg-[var(--signal-red)]/10 px-3 py-1.5 text-xs text-[var(--signal-red-text)]">{err}</p>}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className="text-xs font-medium text-[var(--color-text-secondary)]">威胁等级</label>
@@ -324,7 +324,7 @@ function WinLossTab({ regionId, competitorId, productLineId, records, onAdded }:
 
       {showForm && (
         <div className="rounded-lg border border-[var(--surface-border)] p-4 space-y-3">
-          {err && <p className="text-xs text-[var(--signal-red)]">{err}</p>}
+          {err && <p className="text-xs text-[var(--signal-red-text)]">{err}</p>}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">结果</label>
@@ -371,7 +371,7 @@ function WinLossTab({ regionId, competitorId, productLineId, records, onAdded }:
           {records.map((w) => (
             <div key={w.id} className={"rounded-md border-l-[3px] border border-[var(--surface-border)] p-3 " + (w.outcome === "win" ? "border-l-[var(--signal-green)]" : "border-l-[var(--signal-red)]")}>
               <div className="flex flex-wrap items-center gap-2">
-                <span className={"rounded px-1.5 py-0.5 text-xs font-medium " + (w.outcome === "win" ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-[var(--signal-red)]/15 text-[var(--signal-red)]")}>
+                <span className={"rounded px-1.5 py-0.5 text-xs font-medium " + (w.outcome === "win" ? "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]" : "bg-[var(--signal-red)]/15 text-[var(--signal-red-text)]")}>
                   {w.outcome === "win" ? "赢单" : w.outcome === "loss" ? "丢单" : "未决"}
                 </span>
                 <span className="text-sm font-medium">{w.projectName}</span>
@@ -406,7 +406,7 @@ function Sparkline({ title, points }: { title: string; points: { period: string;
     <div>
       <div className="mb-1 flex items-center justify-between">
         <span className="text-sm text-[var(--color-text-secondary)]">{title}</span>
-        <span className={"font-data text-xs " + (Number(delta) > 0 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]")}>
+        <span className={"font-data text-xs " + (Number(delta) > 0 ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]")}>
           {Number(delta) > 0 ? "+" : ""}{delta}% · {first} → {last}
         </span>
       </div>

@@ -28,7 +28,7 @@ function latestActualOf(series: MetricSeries | undefined): number | null {
 
 // ─── Signal colours ──────────────────────────────────────────────────────────
 const SIG_COLOR = { green: colors.signalGreen, yellow: colors.signalYellow, red: colors.signalRed } as const;
-const SIG_BG    = { green: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]", yellow: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]", red: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]" } as const;
+const SIG_BG    = { green: "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]", yellow: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]", red: "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]" } as const;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function fmt(v: number | null, unit: string) {
@@ -92,17 +92,17 @@ function MetricChart({ metric, domainColor, series, onEdit }: {
             <div className="mt-1 flex items-baseline gap-3">
               <span className="font-data text-2xl">{fmt(latestActual, metric.unit)}</span>
               {yoyDelta && (
-                <span className={`text-xs ${yoyDelta.up === metric.higherIsBetter ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
+                <span className={`text-xs ${yoyDelta.up === metric.higherIsBetter ? "text-[var(--signal-green-text)]" : "text-[var(--signal-red-text)]"}`}>
                   同比 {yoyDelta.text}
                 </span>
               )}
               {momDelta && (
-                <span className={`text-xs ${momDelta.up === metric.higherIsBetter ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
+                <span className={`text-xs ${momDelta.up === metric.higherIsBetter ? "text-[var(--signal-green-text)]" : "text-[var(--signal-red-text)]"}`}>
                   环比 {momDelta.text}
                 </span>
               )}
               {planDelta && (
-                <span className={`text-xs ${Math.abs(Number(planDelta.text)) < 3 ? "text-[var(--color-text-muted)]" : planDelta.up === metric.higherIsBetter ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
+                <span className={`text-xs ${Math.abs(Number(planDelta.text)) < 3 ? "text-[var(--color-text-muted)]" : planDelta.up === metric.higherIsBetter ? "text-[var(--signal-green-text)]" : "text-[var(--signal-red-text)]"}`}>
                   vs目标 {planDelta.text}
                 </span>
               )}
@@ -300,7 +300,7 @@ function OpsMetricInputModal({ metric, series, onClose, onSaved }: {
 
   return (
     <Modal onClose={onClose} size="sm" title={`录入月度实绩 · ${metric.name}`} subtitle={`单位 ${metric.unit} · 留空实际值表示未来规划月`}>
-        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>}
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">月份</label>

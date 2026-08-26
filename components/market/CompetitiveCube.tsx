@@ -71,7 +71,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
               className="flex items-center gap-1.5 rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm hover:bg-black/[0.04]">
               竞品筛选
               {hiddenBrands.size > 0 && (
-                <span className="rounded-full bg-[var(--color-accent)] px-1.5 text-[11px] text-white">{data.brands.length - hiddenBrands.size}/{data.brands.length}</span>
+                <span className="rounded-full bg-[var(--color-accent)] px-1.5 text-[var(--type-label)] text-white">{data.brands.length - hiddenBrands.size}/{data.brands.length}</span>
               )}
             </button>
             {filterOpen && (
@@ -106,7 +106,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
                 <th key={b.id} className="px-3 py-2 text-center">
                   <div className="font-medium text-[var(--color-text-secondary)] text-sm">{b.name}</div>
                   {hotForBrand(b.id).length > 0 && (
-                    <div className="text-[11px] font-normal text-[var(--signal-yellow)]">🔥 {hotForBrand(b.id).length}款爆品</div>
+                    <div className="text-[var(--type-label)] font-normal text-[var(--signal-yellow-text)]">🔥 {hotForBrand(b.id).length}款爆品</div>
                   )}
                 </th>
               ))}
@@ -174,7 +174,7 @@ export function CompetitiveCube({ data }: { data: WorkbenchData }) {
           <div className="space-y-2.5">
             {data.hotProducts.filter((p) => p.productLineId === productLineId).map((p) => (
               <div key={p.id} className="flex gap-3 text-xs">
-                <span className="shrink-0 rounded bg-[var(--signal-yellow)]/20 px-1.5 py-0.5 font-mono font-semibold text-[var(--signal-yellow)]">#{p.hotRank}</span>
+                <span className="shrink-0 rounded bg-[var(--signal-yellow)]/20 px-1.5 py-0.5 font-mono font-semibold text-[var(--signal-yellow-text)]">#{p.hotRank}</span>
                 <div>
                   <span className="font-medium text-[var(--color-text-primary)]">{p.name}</span>
                   {p.modelCode && <span className="ml-2 text-[var(--color-text-muted)]">{p.modelCode}</span>}

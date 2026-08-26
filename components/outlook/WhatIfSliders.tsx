@@ -14,8 +14,8 @@ function fmt(n: number, suffix = "万"): string {
 }
 
 function toneFor(n: number): string {
-  if (n > 0) return "var(--signal-green)";
-  if (n < 0) return "var(--signal-red)";
+  if (n > 0) return "var(--signal-green-text)";
+  if (n < 0) return "var(--signal-red-text)";
   return "var(--color-text-muted)";
 }
 
@@ -96,7 +96,7 @@ export function WhatIfSliders({ fpa }: { fpa: FpaSummary }) {
           <p className="label-xs">Runway</p>
           <p
             className="mt-1 font-data text-xl tabular-nums"
-            style={{ color: projectedRunway < 3 ? "var(--signal-red)" : toneFor(total.runway) }}
+            style={{ color: projectedRunway < 3 ? "var(--signal-red-text)" : toneFor(total.runway) }}
           >
             {projectedRunway.toFixed(1)} 月
             <span className="ml-2 text-xs font-normal text-[var(--color-text-muted)]">

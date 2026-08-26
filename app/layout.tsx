@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono, Noto_Sans_SC, Nunito } from "next/font/google";
+import { Inter, Geist_Mono, Nunito } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,13 +12,6 @@ const inter = Inter({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const notoSansSc = Noto_Sans_SC({
-  variable: "--font-noto-sc",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  display: "swap",
 });
 
 /** Rhautt group wordmark — rounded bold sans (Nunito) */
@@ -46,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${inter.variable} ${geistMono.variable} ${notoSansSc.variable} ${nunitoRhautt.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${nunitoRhautt.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

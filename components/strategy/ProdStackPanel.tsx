@@ -53,7 +53,7 @@ export function ProdStackPanel({
           {gaps.map((g) => (
             <div key={g.competitor} className="flex justify-between text-sm">
               <span>{g.competitor} · {g.dimension}</span>
-              <span className={g.status === "lagging" ? "text-[var(--signal-red)]" : ""}>
+              <span className={g.status === "lagging" ? "text-[var(--signal-red-text)]" : ""}>
                 {g.status} → {g.closure}
               </span>
             </div>

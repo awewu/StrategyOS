@@ -2,16 +2,16 @@ import Link from "next/link";
 import { issueStatusLabel, type ReportReceipt } from "@/lib/reports/receipts";
 
 const APPROVAL_LABEL: Record<string, { text: string; color: string }> = {
-  PENDING: { text: "待审阅", color: "var(--signal-yellow)" },
-  APPROVED: { text: "已通过", color: "var(--signal-green)" },
-  REJECTED: { text: "已退回", color: "var(--signal-red)" },
+  PENDING: { text: "待审阅", color: "var(--signal-yellow-text)" },
+  APPROVED: { text: "已通过", color: "var(--signal-green-text)" },
+  REJECTED: { text: "已退回", color: "var(--signal-red-text)" },
 };
 
 const ISSUE_COLOR: Record<string, string> = {
-  OPEN: "var(--signal-yellow)",
+  OPEN: "var(--signal-yellow-text)",
   DEFERRED: "var(--color-text-muted)",
   ASSIGNED: "var(--color-accent)",
-  CLOSED: "var(--signal-green)",
+  CLOSED: "var(--signal-green-text)",
 };
 
 /** 报告→议题回执面板："我交了有没有用"的反馈闭环 */

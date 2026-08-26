@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { existsSync } from "node:fs";
 import { join, normalize, sep } from "node:path";
@@ -25,9 +25,9 @@ const APPROVAL_LABEL: Record<string, string> = {
 };
 
 const APPROVAL_STYLE: Record<string, string> = {
-  PENDING: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]",
-  APPROVED: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
-  REJECTED: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]",
+  PENDING: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]",
+  APPROVED: "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]",
+  REJECTED: "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]",
 };
 
 function fmtBytes(n: number) {
@@ -107,7 +107,7 @@ function FileLinkItem({
         <>
           <p className="mt-1 truncate text-sm font-medium text-[var(--color-text-primary)]">{fileName || "无文件"}</p>
           {fileName && filePath && !fileAvailable && (
-            <p className="mt-1 text-[11px] text-[var(--signal-red)]">文件未同步到当前环境</p>
+            <p className="mt-1 text-[var(--type-label)] text-[var(--signal-red-text)]">文件未同步到当前环境</p>
           )}
         </>
       )}
@@ -122,7 +122,7 @@ function PatternItem({ item }: { item: unknown }) {
   const title = typeof pattern.title === "string" ? pattern.title : stringifyValue(item);
   return (
     <div>
-      <div className="text-[11px] font-medium tracking-wide text-[var(--color-accent)]">
+      <div className="text-[var(--type-label)] font-medium tracking-wide text-[var(--color-accent)]">
         {formationType}
         {pattern.suggestDeliberate === true ? " · 建议写入 deliberate" : ""}
       </div>
@@ -207,7 +207,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
           <div>
             <p className="text-caption">审批状态</p>
             <span
-              className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+              className={`mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[var(--type-label)] font-medium ${
                 APPROVAL_STYLE[report.approvalStatus] ?? ""
               }`}
             >
@@ -244,7 +244,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
             <div>{report.textExtracted ? "已抽取原始文本" : "未抽取原始文本"}</div>
             <div>{report.hasSignals ? "可反哺执行审计" : "无命中信号"}</div>
             {report.parseWarning && (
-              <div className="sm:col-span-3 text-[var(--signal-yellow)]">{report.parseWarning}</div>
+              <div className="sm:col-span-3 text-[var(--signal-yellow-text)]">{report.parseWarning}</div>
             )}
           </div>
         )}

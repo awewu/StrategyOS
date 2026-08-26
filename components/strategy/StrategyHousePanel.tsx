@@ -21,11 +21,11 @@ export function StrategyHousePanel({ mission, vision, bscCards, threeYearItems, 
     <section className="w-full overflow-x-auto">
       <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <div className="rounded-tl-lg bg-[var(--house-mission)] p-4 text-white">
-          <div className="mb-1 text-[11px] font-semibold tracking-wide opacity-80">使 命</div>
+          <div className="mb-1 text-[var(--type-label)] font-semibold tracking-wide opacity-80">使 命</div>
           <p className="text-sm leading-snug font-medium">{mission}</p>
         </div>
         <div className="rounded-tr-lg bg-[var(--house-vision)] p-4 text-white">
-          <div className="mb-1 text-[11px] font-semibold tracking-wide opacity-80">愿 景</div>
+          <div className="mb-1 text-[var(--type-label)] font-semibold tracking-wide opacity-80">愿 景</div>
           <p className="text-sm leading-snug font-medium">{vision}</p>
         </div>
       </div>
@@ -42,7 +42,7 @@ export function StrategyHousePanel({ mission, vision, bscCards, threeYearItems, 
               key={k}
               className={`flex flex-col bg-[var(--house-vision-tint)] p-3 ${i < n - 1 ? "border-r border-[var(--surface-border)]" : ""}`}
             >
-              <div className="mb-2 text-[11px] font-semibold tracking-wide text-[var(--house-vision)]">
+              <div className="mb-2 text-[var(--type-label)] font-semibold tracking-wide text-[var(--house-vision)]">
                 {COL_LABEL[k]}
               </div>
               <ul className="space-y-1">
@@ -68,7 +68,7 @@ export function StrategyHousePanel({ mission, vision, bscCards, threeYearItems, 
               key={k}
               className={`flex flex-col bg-[var(--house-annual-tint)] p-3 ${i < n - 1 ? "border-r border-[var(--surface-border)]" : ""}`}
             >
-              <div className="mb-2 text-[11px] font-semibold tracking-wide text-[var(--house-annual)]">
+              <div className="mb-2 text-[var(--type-label)] font-semibold tracking-wide text-[var(--house-annual)]">
                 {COL_LABEL[k]}
               </div>
               <ol className="list-none space-y-1">

@@ -94,7 +94,7 @@ export function DoctrinesPanel({ handbook }: { handbook?: CultureHandbookContent
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-5 py-4"
             style={{ borderTopWidth: 3, borderTopColor: DOCTRINE_COLORS[i] }}
           >
-            <p className="font-data text-[0.65rem] font-semibold tracking-[0.12em]" style={{ color: DOCTRINE_COLORS[i] }}>
+            <p className="font-data text-[var(--type-label)] font-semibold tracking-[0.12em]" style={{ color: DOCTRINE_COLORS[i] }}>
               {d.en}
             </p>
             <h3 className={`${typography.h3} mt-2`}>{d.zh}</h3>
@@ -164,7 +164,7 @@ export function BehaviorGuidelinesPanel({ handbook }: { handbook?: CultureHandbo
             key={g.id}
             className="rounded-xl border border-[var(--surface-border)] bg-[var(--surface-panel)] px-4 py-4"
           >
-            <p className="font-data text-[0.65rem] font-semibold tracking-wide text-[var(--color-text-muted)]">
+            <p className="font-data text-[var(--type-label)] font-semibold tracking-wide text-[var(--color-text-muted)]">
               原则 {g.id}
             </p>
             <h3 className={`${typography.h3} mt-1.5`}>{g.title}</h3>

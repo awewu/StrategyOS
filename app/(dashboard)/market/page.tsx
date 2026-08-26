@@ -169,7 +169,7 @@ export default async function MarketPage({
     <div className="space-y-8">
       {marketIssues.length > 0 ? (
         <section aria-label="市场威胁议题">
-          <p className="mb-3 text-label text-[var(--signal-red)]">
+          <p className="mb-3 text-label text-[var(--signal-red-text)]">
             威胁议题 · 待裁决 {marketIssues.filter((i) => i.status === "OPEN").length} 条
           </p>
           <InboxClient initialItems={marketIssues} />

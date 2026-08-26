@@ -43,9 +43,9 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 };
 
 const APPROVAL_STYLE: Record<string, string> = {
-  PENDING: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]",
-  APPROVED: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
-  REJECTED: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]",
+  PENDING: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]",
+  APPROVED: "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]",
+  REJECTED: "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]",
 };
 const APPROVAL_LABEL: Record<string, string> = {
   PENDING: "待审批",
@@ -278,7 +278,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
               {uploading ? "提交中…" : "提交待审批"}
             </button>
             {uploadMsg && (
-              <span className={`text-sm ${uploadMsg.includes("失败") || uploadMsg.includes("必填") ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}`}>
+              <span className={`text-sm ${uploadMsg.includes("失败") || uploadMsg.includes("必填") ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]"}`}>
                 {uploadMsg}
               </span>
             )}
@@ -353,7 +353,7 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                 className="flex-1 min-w-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] font-medium tracking-wide text-[var(--color-accent)]">
+                  <span className="text-[var(--type-label)] font-medium tracking-wide text-[var(--color-accent)]">
                     {REPORT_TYPE_LABELS[r.reportType] ?? r.reportType}
                   </span>
                   {r.orgUnit && (
@@ -372,11 +372,11 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                     <span>· {r.fileOrigName} {r.fileSizeBytes ? `(${fmtBytes(r.fileSizeBytes)})` : ""}</span>
                   )}
                   {parseStatusLabel(r) && <span>· {parseStatusLabel(r)}</span>}
-                  {r.parseWarning && <span className="text-[var(--signal-yellow)]">· {r.parseWarning}</span>}
+                  {r.parseWarning && <span className="text-[var(--signal-yellow-text)]">· {r.parseWarning}</span>}
                 </div>
               </Link>
               <div className="flex shrink-0 items-center gap-2">
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${APPROVAL_STYLE[r.approvalStatus]}`}>
+                <span className={`rounded-full px-2.5 py-0.5 text-[var(--type-label)] font-medium ${APPROVAL_STYLE[r.approvalStatus]}`}>
                   {APPROVAL_LABEL[r.approvalStatus]}
                 </span>
                 {r.approvalStatus === "PENDING" && (
@@ -384,14 +384,14 @@ export function ReportsArchive({ orgUnits }: { orgUnits: OrgUnit[] }) {
                     <button
                       type="button"
                       onClick={() => doApproval(r.id, "APPROVED")}
-                      className="rounded border border-[var(--signal-green)]/25 px-2.5 py-0.5 text-[11px] text-[var(--signal-green)] hover:bg-[var(--signal-green)]/10"
+                      className="rounded border border-[var(--signal-green)]/25 px-2.5 py-0.5 text-[var(--type-label)] text-[var(--signal-green-text)] hover:bg-[var(--signal-green)]/10"
                     >
                       存档
                     </button>
                     <button
                       type="button"
                       onClick={() => doApproval(r.id, "REJECTED")}
-                      className="rounded border border-[var(--signal-red)]/25 px-2.5 py-0.5 text-[11px] text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10"
+                      className="rounded border border-[var(--signal-red)]/25 px-2.5 py-0.5 text-[var(--type-label)] text-[var(--signal-red-text)] hover:bg-[var(--signal-red)]/10"
                     >
                       退回
                     </button>

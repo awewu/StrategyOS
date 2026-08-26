@@ -36,7 +36,7 @@ function LiveBanner({ live }: { live: RehearsalLiveContext }) {
       </div>
       <div>
         <div className="text-caption">HardBlock</div>
-        <div className={live.hardBlock ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}>
+        <div className={live.hardBlock ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]"}>
           {live.hardBlock ?? "无活跃否决"}
         </div>
       </div>

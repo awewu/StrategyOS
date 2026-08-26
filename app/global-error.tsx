@@ -19,7 +19,7 @@ export default function GlobalError({
       <body className="min-h-full bg-[var(--color-bg-deep)] antialiased">
         <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
           <div className="stratos-card stratos-card--padded w-full max-w-lg">
-            <p className="label-xs text-[var(--signal-red)]">StratOS 异常</p>
+            <p className="label-xs text-[var(--signal-red-text)]">StratOS 异常</p>
             <h1 className="mt-2 text-title text-[var(--color-text-primary)]">应用遇到未恢复错误</h1>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
               请刷新页面或返回首页。若问题持续，请检查服务日志与环境配置。

@@ -21,7 +21,7 @@ function StackItemChip({
       <div className="mt-2 flex flex-wrap gap-2 text-xs">
         <span className="rounded bg-black/[0.04] px-2 py-0.5">{status}</span>
         {tag && <span className="font-data text-[var(--color-accent)]">{tag}</span>}
-        <span className={toggle === "on" ? "text-[var(--signal-green)]" : "text-[var(--color-text-muted)]"}>
+        <span className={toggle === "on" ? "text-[var(--signal-green-text)]" : "text-[var(--color-text-muted)]"}>
           FPA {toggle.toUpperCase()}
         </span>
       </div>

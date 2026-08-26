@@ -75,7 +75,7 @@ export function CompetitorTrackEditor({ initial }: { initial: TrackRow[] }) {
               <option value="flat">flat</option>
               <option value="down">down</option>
             </Select>
-            <button type="button" className="text-[var(--signal-red)]" aria-label="删除行" onClick={() => setRows(rows.filter((_, j) => j !== i))}>×</button>
+            <button type="button" className="text-[var(--signal-red-text)]" aria-label="删除行" onClick={() => setRows(rows.filter((_, j) => j !== i))}>×</button>
             <Input fullWidth inputSize="sm" className="sm:col-span-2" placeholder="品牌动向" value={r.brand} onChange={(e) => set(i, { brand: e.target.value })} />
             <Input fullWidth inputSize="sm" className="sm:col-span-2" placeholder="战略判断" value={r.strategy} onChange={(e) => set(i, { strategy: e.target.value })} />
             <Input fullWidth inputSize="sm" className="sm:col-span-5" placeholder="动能备注" value={r.momentumNote} onChange={(e) => set(i, { momentumNote: e.target.value })} />

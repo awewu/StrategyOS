@@ -134,8 +134,8 @@ export function DecodeWorkspace({
         <p
           className={`rounded-lg px-4 py-2 text-sm ${
             msg.tone === "ok"
-              ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
-              : "bg-[var(--signal-red)]/10 text-[var(--signal-red)]"
+              ? "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
+              : "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]"
           }`}
           role="status"
         >

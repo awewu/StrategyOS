@@ -113,8 +113,8 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
     <div className="space-y-5">
       {toast && (
         <div className={`fixed right-6 top-6 z-50 rounded-lg border px-4 py-2 text-sm shadow-lg ${
-          toast.kind === "ok" ? "border-[var(--signal-green)]/30 bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
-            : "border-[var(--signal-red)]/30 bg-[var(--signal-red)]/10 text-[var(--signal-red)]"}`}>
+          toast.kind === "ok" ? "border-[var(--signal-green)]/30 bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
+            : "border-[var(--signal-red)]/30 bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]"}`}>
           {toast.msg}
         </div>
       )}
@@ -155,7 +155,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-data text-xs text-[var(--color-accent)]">{m.code}</span>
                     <span className="text-base font-medium text-[var(--color-text-primary)]">{m.title}</span>
-                    <span className="rounded px-1.5 py-0.5 text-xs" style={{ backgroundColor: MANDATE_STATUS_COLOR[m.status] + "20", color: MANDATE_STATUS_COLOR[m.status] }}>
+                    <span className="rounded px-1.5 py-0.5 text-xs" style={{ backgroundColor: `color-mix(in srgb, ${MANDATE_STATUS_COLOR[m.status]} 12%, white)`, color: `color-mix(in srgb, ${MANDATE_STATUS_COLOR[m.status]} 72%, black)` }}>
                       {MANDATE_STATUS_LABEL[m.status]}
                     </span>
                     {m.theme && <span className="text-caption">· {m.theme}</span>}
@@ -170,7 +170,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                   <button onClick={() => setEditHolding({ mandateId: m.id })}
                     className="rounded px-2 py-1 text-xs text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10">+ 认领记录</button>
                   <button onClick={() => setEditMandate(m)} className="rounded px-2 py-1 text-caption hover:bg-black/[0.04]">改</button>
-                  <button onClick={() => del(`/api/mandate?id=${m.id}`)} className="rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删</button>
+                  <button onClick={() => del(`/api/mandate?id=${m.id}`)} className="rounded px-2 py-1 text-xs text-[var(--signal-red-text)] hover:bg-[var(--signal-red)]/10">删</button>
                 </div>
               </div>
 
@@ -184,7 +184,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-medium text-[var(--color-text-secondary)]">{h.meetingTitle}</span>
                         <span className="text-caption">{MEETING_TYPE_LABEL[h.meetingType]}</span>
-                        <span className="rounded px-1.5 py-0.5 text-[11px]" style={{ backgroundColor: HOLDING_STATUS_COLOR[h.status] + "20", color: HOLDING_STATUS_COLOR[h.status] }}>
+                        <span className="rounded px-1.5 py-0.5 text-[var(--type-label)]" style={{ backgroundColor: `color-mix(in srgb, ${HOLDING_STATUS_COLOR[h.status]} 12%, white)`, color: `color-mix(in srgb, ${HOLDING_STATUS_COLOR[h.status]} 72%, black)` }}>
                           {HOLDING_STATUS_LABEL[h.status]}
                         </span>
                       </div>
@@ -195,11 +195,11 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                       {h.commitment && h.commitment !== "—" && (
                         <div className="mt-0.5 text-xs text-[var(--color-text-secondary)]">承诺: {h.commitment}{h.deadline && ` (截止 ${h.deadline})`}</div>
                       )}
-                      {h.deliveryNote && <div className="mt-0.5 text-xs" style={{ color: h.status === "MISSED" ? "var(--signal-red)" : "var(--color-text-muted)" }}>交账: {h.deliveryNote}</div>}
-                      {h.handoverNote && <div className="mt-0.5 text-xs text-[var(--signal-yellow)]">移交: {h.handoverNote}{h.handoverToName && ` → ${h.handoverToName}`}</div>}
+                      {h.deliveryNote && <div className="mt-0.5 text-xs" style={{ color: h.status === "MISSED" ? "var(--signal-red-text)" : "var(--color-text-muted)" }}>交账: {h.deliveryNote}</div>}
+                      {h.handoverNote && <div className="mt-0.5 text-xs text-[var(--signal-yellow-text)]">移交: {h.handoverNote}{h.handoverToName && ` → ${h.handoverToName}`}</div>}
                       <div className="mt-1 flex gap-2">
-                        <button onClick={() => setEditHolding({ ...h })} className="text-[11px] text-[var(--color-accent)] hover:underline">更新</button>
-                        <button onClick={() => del(`/api/mandate/holding?id=${h.id}`)} className="text-[11px] text-[var(--signal-red)] hover:underline">删</button>
+                        <button onClick={() => setEditHolding({ ...h })} className="text-[var(--type-label)] text-[var(--color-accent)] hover:underline">更新</button>
+                        <button onClick={() => del(`/api/mandate/holding?id=${h.id}`)} className="text-[var(--type-label)] text-[var(--signal-red-text)] hover:underline">删</button>
                       </div>
                     </div>
                   ))}
@@ -219,9 +219,9 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-[var(--color-text-primary)]">{mt.title}</span>
                   <span className="text-caption">{MEETING_TYPE_LABEL[mt.meetingType]} · {mt.period}</span>
-                  <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[11px] text-[var(--color-text-secondary)]">{MEETING_STATUS_LABEL[mt.status]}</span>
-                  {mt.holdingCount > 0 && <span className="text-[11px] text-[var(--color-accent)]">{mt.holdingCount} 条职责认领</span>}
-                  {mt.todos.length > 0 && <span className="text-[11px] text-[var(--color-accent)]">待办 {mt.todos.filter(todo => todo.completed).length}/{mt.todos.length}</span>}
+                  <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-text-secondary)]">{MEETING_STATUS_LABEL[mt.status]}</span>
+                  {mt.holdingCount > 0 && <span className="text-[var(--type-label)] text-[var(--color-accent)]">{mt.holdingCount} 条职责认领</span>}
+                  {mt.todos.length > 0 && <span className="text-[var(--type-label)] text-[var(--color-accent)]">待办 {mt.todos.filter(todo => todo.completed).length}/{mt.todos.length}</span>}
                 </div>
                 {mt.planLabel && <p className="mt-1 text-xs text-[var(--color-accent)]">关联战略: {mt.planLabel}</p>}
                 {mt.participants.length > 0 && <p className="mt-1 text-xs text-[var(--color-text-secondary)]">参会人员: {mt.participants.map(p => p.name).join("、")}</p>}
@@ -230,7 +230,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
               </div>
               <div className="flex shrink-0 gap-1">
                 <button onClick={() => openMeetingEditor(mt)} className="rounded px-2 py-1 text-caption hover:bg-black/[0.04]">改</button>
-                <button onClick={() => del(`/api/meeting?id=${mt.id}`)} className="rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删</button>
+                <button onClick={() => del(`/api/meeting?id=${mt.id}`)} className="rounded px-2 py-1 text-xs text-[var(--signal-red-text)] hover:bg-[var(--signal-red)]/10">删</button>
               </div>
             </div>
           ))}
@@ -263,7 +263,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
           <div className="space-y-3">
             <Input fullWidth inputSize="sm" placeholder="会议标题" value={editMeeting.title ?? ""} onChange={e => setEditMeeting({ ...editMeeting, title: e.target.value })} />
             <div>
-              <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">关联战略 <span className="text-[var(--signal-red)]">*</span></label>
+              <label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">关联战略 <span className="text-[var(--signal-red-text)]">*</span></label>
               <Select fullWidth selectSize="sm" value={editMeeting.planId ?? ""} onChange={e => setEditMeeting({ ...editMeeting, planId: e.target.value || null })}>
                 <option value="">— 选择战略 —</option>
                 {bundle.plans.map(plan => <option key={plan.id} value={plan.id}>{plan.label} · {plan.status}</option>)}
@@ -286,7 +286,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-[var(--color-text-secondary)]">参会人员 <span className="text-[var(--signal-red)]">*</span></label>
+                <label className="text-xs font-medium text-[var(--color-text-secondary)]">参会人员 <span className="text-[var(--signal-red-text)]">*</span></label>
                 <span className="text-caption">已选 {(editMeeting.participantUserIds ?? []).length} 人</span>
               </div>
               {selectedMeetingUsers.length > 0 && (
@@ -361,7 +361,7 @@ export function MandatesClient({ bundle, activePeriod }: { bundle: MandateBundle
                         />
                         <Input type="date" fullWidth inputSize="sm" value={todo.dueDate ?? ""} onChange={e => updateTodo(index, { dueDate: e.target.value || null })} />
                       </div>
-                      <button type="button" onClick={() => removeTodo(index)} className="mt-1 rounded px-2 py-1 text-xs text-[var(--signal-red)] hover:bg-[var(--signal-red)]/10">删除</button>
+                      <button type="button" onClick={() => removeTodo(index)} className="mt-1 rounded px-2 py-1 text-xs text-[var(--signal-red-text)] hover:bg-[var(--signal-red)]/10">删除</button>
                     </div>
                   </div>
                 ))}

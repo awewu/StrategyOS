@@ -14,7 +14,7 @@ function KpiRow({ label, actual, budget, fmt = pct }: {
       <span className="col-span-2 text-[var(--color-text-secondary)]">{label}</span>
       <span className="text-right font-data text-[var(--color-text-primary)] tabular-nums">{fmt(actual)}</span>
       <span className="text-right font-data tabular-nums text-[var(--color-text-muted)]">{fmt(budget)}</span>
-      <span className={`text-right font-data tabular-nums text-xs ${vs >= 0 ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}`}>
+      <span className={`text-right font-data tabular-nums text-xs ${vs >= 0 ? "text-[var(--signal-green-text)]" : "text-[var(--signal-red-text)]"}`}>
         {vs >= 0 ? "+" : ""}{fmt(vs)}
       </span>
     </div>
@@ -42,7 +42,7 @@ export function ReportsPanorama({ fpa, kpis }: { fpa: FpaSummary; kpis: Manageme
             <div className="flex justify-between text-xs mb-1">
               <span className="text-[var(--color-text-secondary)]">{item.label}</span>
               <span className="font-data tabular-nums">
-                <span className={item.value >= 1 ? "text-[var(--signal-green)]" : item.value >= 0.9 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]"}>
+                <span className={item.value >= 1 ? "text-[var(--signal-green-text)]" : item.value >= 0.9 ? "text-[var(--signal-yellow-text)]" : "text-[var(--signal-red-text)]"}>
                   {pct(item.value)}
                 </span>
                 <span className="text-[var(--color-text-muted)] ml-1">· {item.abs}</span>
@@ -61,7 +61,7 @@ export function ReportsPanorama({ fpa, kpis }: { fpa: FpaSummary; kpis: Manageme
 
       {/* KPI table */}
       <div>
-        <div className="grid grid-cols-5 gap-2 pb-1 text-[10px] font-medium tracking-wide text-[var(--color-text-muted)]">
+        <div className="grid grid-cols-5 gap-2 pb-1 text-[var(--type-label)] font-medium tracking-wide text-[var(--color-text-muted)]">
           <span className="col-span-2">指标</span>
           <span className="text-right">实际</span>
           <span className="text-right">预算</span>
@@ -80,9 +80,9 @@ export function ReportsPanorama({ fpa, kpis }: { fpa: FpaSummary; kpis: Manageme
       }`}>
         <span className="text-[var(--color-text-secondary)]">现金 Runway</span>
         <span className={`font-data font-semibold tabular-nums ${
-          fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red)]"
-          : fpa.cashRunwayMonths < 6 ? "text-[var(--signal-yellow)]"
-          : "text-[var(--signal-green)]"
+          fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red-text)]"
+          : fpa.cashRunwayMonths < 6 ? "text-[var(--signal-yellow-text)]"
+          : "text-[var(--signal-green-text)]"
         }`}>{fpa.cashRunwayMonths.toFixed(1)} 个月</span>
       </div>
     </section>

@@ -186,7 +186,7 @@ export function PlanLifecycleBar() {
             </button>
           ) : null}
           {lifecycle.canReopen ? (
-            <button type="button" disabled={busy} onClick={() => void runAction("reopen")} className="stratos-btn px-3 py-1.5 text-xs text-[var(--signal-red)]">
+            <button type="button" disabled={busy} onClick={() => void runAction("reopen")} className="stratos-btn px-3 py-1.5 text-xs text-[var(--signal-red-text)]">
               重新打开
             </button>
           ) : null}

@@ -9,9 +9,9 @@ function pct(v: number | null): string {
 
 function toneFor(v: number | null): string {
   if (v == null) return "var(--color-text-muted)";
-  if (v >= 0) return "var(--signal-green)";
-  if (v >= -0.05) return "var(--signal-yellow)";
-  return "var(--signal-red)";
+  if (v >= 0) return "var(--signal-green-text)";
+  if (v >= -0.05) return "var(--signal-yellow-text)";
+  return "var(--signal-red-text)";
 }
 
 /** 决策复盘卡："当初决了什么 vs 实际落点如何" — GRAI 的 G 和 R */
@@ -64,7 +64,7 @@ export function DecisionReviewPanel({ cards }: { cards: DecisionReviewCard[] }) 
                 <span className="flex-1">{d.title}</span>
                 {d.owner ? <span className="text-caption">{d.owner}</span> : null}
                 {d.deadline ? <span className="text-caption">{d.deadline}</span> : null}
-                <span className="text-xs" style={{ color: d.status === "open" ? "var(--signal-yellow)" : "var(--signal-green)" }}>
+                <span className="text-xs" style={{ color: d.status === "open" ? "var(--signal-yellow-text)" : "var(--signal-green-text)" }}>
                   {d.status === "open" ? "未决/未闭环" : "已决"}
                 </span>
               </div>

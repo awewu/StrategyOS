@@ -160,7 +160,7 @@ export function LedgerImportClient({ sources }: { sources: Source[] }) {
       ) : null}
 
       {error ? (
-        <div className="rounded border border-[var(--signal-red)] px-3 py-2 text-caption text-[var(--signal-red)]">
+        <div className="rounded border border-[var(--signal-red)] px-3 py-2 text-caption text-[var(--signal-red-text)]">
           {error}
         </div>
       ) : null}
@@ -170,7 +170,7 @@ export function LedgerImportClient({ sources }: { sources: Source[] }) {
           className="rounded border px-3 py-2 text-caption"
           style={{
             borderColor: result.status === "failed" ? "var(--signal-red)" : "var(--signal-green)",
-            color: result.status === "failed" ? "var(--signal-red)" : "var(--signal-green)",
+            color: result.status === "failed" ? "var(--signal-red-text)" : "var(--signal-green-text)",
           }}
         >
           {result.status === "imported" ? "✓ " : result.status === "skipped" ? "⏭ " : "✗ "}
@@ -199,7 +199,7 @@ export function LedgerImportClient({ sources }: { sources: Source[] }) {
           {preview.issues.length > 0 ? (
             <ul className="space-y-1">
               {preview.issues.map((i, idx) => (
-                <li key={idx} className="text-caption text-[var(--signal-yellow)]">· {i}</li>
+                <li key={idx} className="text-caption text-[var(--signal-yellow-text)]">· {i}</li>
               ))}
             </ul>
           ) : null}

@@ -52,13 +52,13 @@ export function FootballFieldChart({
       {price !== null && (
         <g>
           <line x1={x(price)} y1={padTop - 2} x2={x(price)} y2={height - padBottom + 4} stroke="var(--signal-green)" strokeWidth={1.5} strokeDasharray="4 3" />
-          <text x={x(price)} y={height - 8} fontSize={9} textAnchor="middle" fill="var(--signal-green)">对价 {price.toLocaleString()}</text>
+          <text x={x(price)} y={height - 8} fontSize={9} textAnchor="middle" fill="var(--signal-green-text)">对价 {price.toLocaleString()}</text>
         </g>
       )}
       {walkAway !== null && (
         <g>
           <line x1={x(walkAway)} y1={padTop - 2} x2={x(walkAway)} y2={height - padBottom + 4} stroke="var(--signal-red)" strokeWidth={1.5} strokeDasharray="4 3" />
-          <text x={x(walkAway)} y={height - 8} fontSize={9} textAnchor="middle" fill="var(--signal-red)">walk-away {walkAway.toLocaleString()}</text>
+          <text x={x(walkAway)} y={height - 8} fontSize={9} textAnchor="middle" fill="var(--signal-red-text)">walk-away {walkAway.toLocaleString()}</text>
         </g>
       )}
     </svg>

@@ -37,7 +37,7 @@ export function BafBar({ fpa }: { fpa: FpaSummary }) {
       title="B·A·F 三段对比"
       dense
       action={
-        <span className={`font-data text-sm ${fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red)]" : "text-[var(--signal-green)]"}`}>
+        <span className={`font-data text-sm ${fpa.cashRunwayMonths < 3 ? "text-[var(--signal-red-text)]" : "text-[var(--signal-green-text)]"}`}>
           现金 runway {fpa.cashRunwayMonths} 月
         </span>
       }

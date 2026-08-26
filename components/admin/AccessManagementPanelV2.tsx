@@ -120,7 +120,7 @@ const SOURCE_LABELS: Record<ChainVerification["source"], string> = {
 
 function IntegrityBadge({ integrity }: { integrity: ChainVerification }) {
   const ok = integrity.ok;
-  const color = ok ? "var(--signal-green)" : "var(--signal-red)";
+  const color = ok ? "var(--signal-green-text)" : "var(--signal-red-text)";
   const label = ok
     ? `链完整 · 已校验 ${integrity.checked} 条（${SOURCE_LABELS[integrity.source]}）`
     : `链异常 · 第 ${(integrity.break?.index ?? 0) + 1} 条 ${integrity.break?.reason ?? ""}`;
@@ -308,7 +308,7 @@ export function AccessManagementPanelV2({
             <h2 className="text-sm font-medium">用户列表</h2>
             <p className="mt-1 text-caption">CEO / CFO 可分配用户角色、组织范围和项目范围；已登录用户需重新登录刷新会话。</p>
           </div>
-          {error && <p className="text-xs text-[var(--signal-red)]">{error}</p>}
+          {error && <p className="text-xs text-[var(--signal-red-text)]">{error}</p>}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">

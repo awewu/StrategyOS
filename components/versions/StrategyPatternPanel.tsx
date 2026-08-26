@@ -8,7 +8,7 @@ export function StrategyPatternPanel({ pattern }: { pattern: StrategyPattern }) 
       </h2>
       <p className="mb-4 font-data text-sm">
         刻意实现率 deliberate_realization_rate:{" "}
-        <span className="text-[var(--signal-red)]">{pattern.deliberateRealizationRate}%</span>
+        <span className="text-[var(--signal-red-text)]">{pattern.deliberateRealizationRate}%</span>
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         <div>

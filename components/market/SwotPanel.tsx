@@ -209,7 +209,7 @@ function SwotQuadrant({ cat, items }: { cat: SwotCategory; items: SwotItem[] }) 
   return (
     <div className="rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-4"
       style={{ borderLeft: `3px solid ${CAT_COLOR[cat]}` }}>
-      <h4 className="mb-2 text-sm font-semibold" style={{ color: CAT_COLOR[cat] }}>
+      <h4 className="mb-2 text-sm font-semibold" style={{ color: `color-mix(in srgb, ${CAT_COLOR[cat]} 72%, black)` }}>
         {SWOT_CATEGORY_LABEL[cat]} <span className="text-[var(--color-text-muted)]">· {items.length}</span>
       </h4>
       {items.length === 0 ? (
@@ -327,7 +327,7 @@ export function SwotPanel({
       <div>
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)]">
           SWOT 盘面
-          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] font-normal text-[var(--color-text-muted)]">
+          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[var(--type-label)] font-normal text-[var(--color-text-muted)]">
             S/W 源：{swotSource ?? "Demo 基线"} · O/T 源：Hermes
           </span>
         </h3>
@@ -343,7 +343,7 @@ export function SwotPanel({
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
             TOWS 战略建议
-            <span className="ml-2 rounded px-1.5 py-0.5 text-[11px]"
+            <span className="ml-2 rounded px-1.5 py-0.5 text-[var(--type-label)]"
               style={{
                 background: engine === "llm" ? "var(--color-accent)" : "var(--surface-border)",
                 color: engine === "llm" ? "white" : "var(--color-text-muted)",
@@ -374,7 +374,7 @@ export function SwotPanel({
                       {r.links.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1.5">
                           {r.links.map((l) => (
-                            <a key={l} href={l} className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-accent)] hover:underline">
+                            <a key={l} href={l} className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-accent)] hover:underline">
                               {l}
                             </a>
                           ))}

@@ -50,9 +50,9 @@ const STATUS_LABEL: Record<Proposal["status"], string> = {
 
 const STATUS_COLOR: Record<Proposal["status"], string> = {
   draft: "var(--color-text-muted)",
-  submitted: "var(--signal-yellow)",
-  approved: "var(--signal-green)",
-  rejected: "var(--signal-red)",
+  submitted: "var(--signal-yellow-text)",
+  approved: "var(--signal-green-text)",
+  rejected: "var(--signal-red-text)",
 };
 
 export type ManualAdjustInitial = {
@@ -210,10 +210,10 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
         </div>
 
         {error ? (
-          <div className="rounded border border-[var(--signal-red)] px-3 py-2 text-caption text-[var(--signal-red)]">{error}</div>
+          <div className="rounded border border-[var(--signal-red)] px-3 py-2 text-caption text-[var(--signal-red-text)]">{error}</div>
         ) : null}
         {msg ? (
-          <div className="rounded border border-[var(--signal-green)] px-3 py-2 text-caption text-[var(--signal-green)]">{msg}</div>
+          <div className="rounded border border-[var(--signal-green)] px-3 py-2 text-caption text-[var(--signal-green-text)]">{msg}</div>
         ) : null}
 
         <div className="stratos-table-wrap max-h-[28rem] overflow-auto">
@@ -253,7 +253,7 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
                       </td>
                     ))}
                     <td className="text-right">
-                      <button type="button" onClick={() => removeRow(r.id)} className="text-caption text-[var(--signal-red)]">删除</button>
+                      <button type="button" onClick={() => removeRow(r.id)} className="text-caption text-[var(--signal-red-text)]">删除</button>
                     </td>
                   </tr>
                 );
@@ -307,7 +307,7 @@ export function ManualAdjustPanel({ initial }: { initial: ManualAdjustInitial })
                     ) : null}
                   </div>
                 </div>
-                {p.decisionNote ? <p className="mt-1 text-caption text-[var(--signal-red)]">退回意见：{p.decisionNote}</p> : null}
+                {p.decisionNote ? <p className="mt-1 text-caption text-[var(--signal-red-text)]">退回意见：{p.decisionNote}</p> : null}
                 {expanded === p.id ? <DiffView ops={p.ops} /> : null}
               </div>
             ))}
@@ -325,7 +325,7 @@ function DiffView({ ops }: { ops: EditOp[] }) {
         if (op.op === "create") {
           return (
             <p key={i} className="text-caption">
-              <span className="text-[var(--signal-green)]">+ 新增</span>{" "}
+              <span className="text-[var(--signal-green-text)]">+ 新增</span>{" "}
               <span className="font-data">{fmtRow(op.after)}</span>
             </p>
           );
@@ -333,7 +333,7 @@ function DiffView({ ops }: { ops: EditOp[] }) {
         if (op.op === "delete") {
           return (
             <p key={i} className="text-caption">
-              <span className="text-[var(--signal-red)]">− 删除</span>{" "}
+              <span className="text-[var(--signal-red-text)]">− 删除</span>{" "}
               <span className="font-data line-through">{fmtRow(op.before)}</span>
             </p>
           );
@@ -341,7 +341,7 @@ function DiffView({ ops }: { ops: EditOp[] }) {
         const changes = Object.keys(op.after).filter((k) => op.before[k] !== op.after[k]);
         return (
           <p key={i} className="text-caption">
-            <span className="text-[var(--signal-yellow)]">~ 改</span>{" "}
+            <span className="text-[var(--signal-yellow-text)]">~ 改</span>{" "}
             {changes.map((k) => (
               <span key={k} className="font-data">
                 {k}: {String(op.before[k] ?? "∅")} → {String(op.after[k] ?? "∅")}{" "}

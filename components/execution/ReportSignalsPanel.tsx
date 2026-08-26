@@ -36,7 +36,7 @@ export function ReportSignalsPanel({ signals }: { signals: ReportSignal[] }) {
                 className={`flex flex-wrap items-start gap-3 rounded-md border ${meta.border} ${meta.bg} px-3 py-2.5`}
               >
                 <span
-                  className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[11px] font-semibold text-white"
+                  className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-[var(--type-label)] font-semibold text-white"
                   style={{ backgroundColor: meta.color }}
                   title={`严重度 ${meta.label}`}
                 >

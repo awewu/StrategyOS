@@ -17,8 +17,8 @@ export function KpiDelta({
   const good = up === higherIsBetter;
   return (
     <span
-      className="font-data text-[11px]"
-      style={{ color: good ? "var(--signal-green)" : "var(--signal-red)" }}
+      className="font-data text-[var(--type-label)]"
+      style={{ color: good ? "var(--signal-green-text)" : "var(--signal-red-text)" }}
     >
       {up ? "▲" : "▼"} {Math.abs(value)}
       {label ? ` · ${label}` : ""}
@@ -47,9 +47,9 @@ export function KpiTile({
 }) {
   const toneClass =
     tone === "green"
-      ? "text-[var(--signal-green)]"
+      ? "text-[var(--signal-green-text)]"
       : tone === "red"
-        ? "text-[var(--signal-red)]"
+        ? "text-[var(--signal-red-text)]"
         : tone === "neutral"
           ? "text-[var(--color-text-primary)]"
           : "text-[var(--color-accent)]";

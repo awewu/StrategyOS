@@ -122,7 +122,7 @@ export function PresentationSetupModal({
                   <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                     {source === "generated" ? "系统生成内容" : attachment?.filename}
                   </p>
-                  <p className={`truncate text-xs ${state?.status === "error" ? "text-[var(--signal-red)]" : "text-[var(--color-text-muted)]"}`}>
+                  <p className={`truncate text-xs ${state?.status === "error" ? "text-[var(--signal-red-text)]" : "text-[var(--color-text-muted)]"}`}>
                     {source === "generated" ? `${generatedSlideCount} 页` : preparationLabel(state)}
                   </p>
                 </div>
@@ -149,7 +149,7 @@ export function PresentationSetupModal({
                 <button
                   type="button"
                   onClick={() => source === "generated" ? toggleGenerated() : attachment && toggleAttachment(attachment)}
-                  className="flex h-8 w-8 items-center justify-center rounded text-[var(--color-text-muted)] hover:bg-black/[0.05] hover:text-[var(--signal-red)]"
+                  className="flex h-8 w-8 items-center justify-center rounded text-[var(--color-text-muted)] hover:bg-black/[0.05] hover:text-[var(--signal-red-text)]"
                   title="移出投屏"
                   aria-label="移出投屏"
                 >
@@ -188,7 +188,7 @@ export function PresentationSetupModal({
                 />
                 {format === "image" ? <FileImage size={17} /> : <FileText size={17} />}
                 <span className="min-w-0 flex-1 truncate" title={attachment.filename}>{attachment.filename}</span>
-                <span className={`max-w-52 truncate text-xs ${state?.status === "error" ? "text-[var(--signal-red)]" : "text-[var(--color-text-muted)]"}`} title={state?.status === "error" ? state.message : undefined}>
+                <span className={`max-w-52 truncate text-xs ${state?.status === "error" ? "text-[var(--signal-red-text)]" : "text-[var(--color-text-muted)]"}`} title={state?.status === "error" ? state.message : undefined}>
                   {supported ? (state ? preparationLabel(state) : format.toUpperCase()) : "暂不支持"}
                 </span>
                 <span className="w-16 text-right text-xs text-[var(--color-text-muted)]">{formatSize(attachment.sizeBytes)}</span>

@@ -93,7 +93,7 @@ export function FiveForcesPanel({
                 <p className="text-caption">{r.plain}</p>
               </div>
               <span
-                className="rounded px-1.5 py-0.5 text-[11px] text-white"
+                className="rounded px-1.5 py-0.5 text-[var(--type-label)] text-white"
                 style={{ background: LEVEL_COLOR[r.threatLevel] }}
               >
                 {LEVEL_LABEL[r.threatLevel]}

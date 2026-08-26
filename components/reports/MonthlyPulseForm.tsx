@@ -175,7 +175,7 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
         />
       </div>
       {dup?.isDuplicate && (
-        <div className="rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/10 px-3 py-2 text-xs text-[var(--signal-yellow)]">
+        <div className="rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/10 px-3 py-2 text-xs text-[var(--signal-yellow-text)]">
           [{dup.level}] {dup.message}
           {dup.matchedReportId && ` · ${dup.matchedReportId}`}
         </div>
@@ -205,7 +205,7 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
             type="button"
             disabled={submitting}
             onClick={() => void submit(true)}
-            className="rounded-lg border border-[var(--signal-yellow)] px-4 py-2 text-xs text-[var(--signal-yellow)] hover:bg-[var(--signal-yellow)]/10 disabled:opacity-50"
+            className="rounded-lg border border-[var(--signal-yellow)] px-4 py-2 text-xs text-[var(--signal-yellow-text)] hover:bg-[var(--signal-yellow)]/10 disabled:opacity-50"
           >
             仍要提交
           </button>
@@ -214,8 +214,8 @@ export function MonthlyPulseForm({ orgUnits }: { orgUnits: OrgUnit[] }) {
           <span
             className={`text-sm ${
               msg.includes("失败") || msg.includes("必填") || msg.includes("选择") || msg.includes("重复")
-                ? "text-[var(--signal-red)]"
-                : "text-[var(--signal-green)]"
+                ? "text-[var(--signal-red-text)]"
+                : "text-[var(--signal-green-text)]"
             }`}
           >
             {msg}

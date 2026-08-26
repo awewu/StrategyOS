@@ -57,7 +57,7 @@ export function SpbpLivePanel({ initialScenarios }: { initialScenarios: Scenario
           type="button"
           disabled={loading}
           onClick={() => applyEvidence("optimistic")}
-          className="rounded border border-[var(--signal-green)]/25 px-3 py-1.5 text-xs text-[var(--signal-green)] hover:bg-[var(--signal-green)]/10 disabled:opacity-50"
+          className="rounded border border-[var(--signal-green)]/25 px-3 py-1.5 text-xs text-[var(--signal-green-text)] hover:bg-[var(--signal-green)]/10 disabled:opacity-50"
         >
           Q2 证据偏乐观
         </button>

@@ -79,7 +79,7 @@ export function HermesPanel({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-title">{agent.name}</h2>
-              <span className="rounded-full bg-[var(--color-accent-dim)] px-2 py-0.5 text-[11px] font-medium tracking-[0.06em] text-[var(--color-accent)]">
+              <span className="rounded-full bg-[var(--color-accent-dim)] px-2 py-0.5 text-[var(--type-label)] font-medium tracking-[0.06em] text-[var(--color-accent)]">
                 常驻 · 持续追踪
               </span>
             </div>
@@ -113,7 +113,7 @@ export function HermesPanel({
       </div>
 
       {error && (
-        <div className="mt-4 rounded-md border border-[var(--signal-red)]/25 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)] p-3 text-sm text-[var(--signal-red)]">
+        <div className="mt-4 rounded-md border border-[var(--signal-red)]/25 bg-[color-mix(in_srgb,var(--signal-red)_6%,white)] p-3 text-sm text-[var(--signal-red-text)]">
           {error}
         </div>
       )}
@@ -138,8 +138,8 @@ export function HermesPanel({
         <div className="mt-4 rounded-md border border-[var(--surface-border)] bg-[var(--surface-raised)] p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="font-medium text-[var(--color-text-primary)]">QC 反幻觉校验</span>
-            <span className="text-[var(--signal-green)]">保留 {curation.kept}</span>
-            <span className="text-[var(--signal-red)]">丢弃 {curation.drops}</span>
+            <span className="text-[var(--signal-green-text)]">保留 {curation.kept}</span>
+            <span className="text-[var(--signal-red-text)]">丢弃 {curation.drops}</span>
             <span className="text-[var(--color-text-muted)]">闭环 {curation.rounds} 轮</span>
             <span className="ml-auto text-[var(--color-text-muted)]">仅保留有原文佐证的信号</span>
           </div>
@@ -147,7 +147,7 @@ export function HermesPanel({
             <ul className="mt-2 space-y-1 border-t border-[var(--surface-border)] pt-2">
               {curation.dropList.slice(0, 6).map((d, i) => (
                 <li key={i} className="text-caption">
-                  <span className="text-[var(--signal-red)]">丢弃</span> · {d.competitor} · {d.title}
+                  <span className="text-[var(--signal-red-text)]">丢弃</span> · {d.competitor} · {d.title}
                   <span className="ml-1 italic">（{d.reason}）</span>
                 </li>
               ))}

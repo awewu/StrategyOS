@@ -13,7 +13,7 @@ type Source = {
 };
 
 const HEALTH_COLOR: Record<string, string> = {
-  active: "var(--signal-green)", stale: "var(--signal-yellow)", empty: "var(--signal-red)",
+  active: "var(--signal-green-text)", stale: "var(--signal-yellow-text)", empty: "var(--signal-red-text)",
 };
 const HEALTH_LABEL: Record<string, string> = { active: "活跃", stale: "过时", empty: "空" };
 
@@ -85,7 +85,7 @@ export function IntelSourcesEditor({ sources: init, saving, post, del }: {
                 <td className="px-3 py-2.5">
                   <div className="flex gap-3">
                     <button onClick={() => startEdit(s)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-                    <button onClick={() => remove(s.id)} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+                    <button onClick={() => remove(s.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
                   </div>
                 </td>
               </tr>

@@ -41,19 +41,19 @@ function VerdictBadge({ verdict }: { verdict: string }) {
   const tone = verdictTone(verdict);
   const cls =
     tone === "green"
-      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]"
+      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]"
       : tone === "yellow"
-        ? "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"
-        : "bg-[var(--signal-red)]/15 text-[var(--signal-red)]";
+        ? "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]"
+        : "bg-[var(--signal-red)]/15 text-[var(--signal-red-text)]";
   const label = verdict === "go" ? "GO" : verdict === "hold" ? "HOLD" : "KILL";
-  return <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${cls}`}>{label}</span>;
+  return <span className={`rounded px-1.5 py-0.5 text-[var(--type-label)] font-semibold ${cls}`}>{label}</span>;
 }
 
 function EvidenceBadge({ level, bar }: { level: number; bar: number }) {
   const ok = level >= bar;
   return (
     <span
-      className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${ok ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-black/[0.06] text-[var(--color-text-muted)]"}`}
+      className={`rounded px-1.5 py-0.5 text-[var(--type-label)] font-medium ${ok ? "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]" : "bg-black/[0.06] text-[var(--color-text-muted)]"}`}
       title={`论证强度 = 证据最短板;门槛 L${bar}`}
     >
       证据 L{level}
@@ -128,11 +128,11 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-[var(--color-text-primary)]">{line.name}</span>
-                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px] text-[var(--color-text-secondary)]">
+                <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-text-secondary)]">
                   {LIFECYCLE_LABEL[line.lifecycleStage] ?? line.lifecycleStage}期
                 </span>
                 {line.dominantProblems.map((p) => (
-                  <span key={p} className="rounded-full bg-[var(--signal-red)]/10 px-2 py-0.5 text-[11px] text-[var(--signal-red)]">
+                  <span key={p} className="rounded-full bg-[var(--signal-red)]/10 px-2 py-0.5 text-[var(--type-label)] text-[var(--signal-red-text)]">
                     {PROBLEM_LABEL[p] ?? p}
                   </span>
                 ))}
@@ -151,10 +151,10 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
             </div>
             {Object.keys(line.fAxisWeights).length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <span className="text-[11px] tracking-wide text-[var(--color-text-muted)]">F 轴权重</span>
+                <span className="text-[var(--type-label)] tracking-wide text-[var(--color-text-muted)]">F 轴权重</span>
                 {Object.entries(line.fAxisWeights).map(([k, w]) => (
                   <div key={k} className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-[var(--color-text-secondary)]">{k}</span>
+                    <span className="text-[var(--type-label)] text-[var(--color-text-secondary)]">{k}</span>
                     <div className="h-1.5 w-16 overflow-hidden rounded-full bg-black/[0.06]">
                       <div className="h-full rounded-full bg-[var(--color-accent)]" style={{ width: `${Math.min(100, Number(w) * 100)}%` }} />
                     </div>
@@ -171,7 +171,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
               return (
                 <div key={stage} className="min-w-[230px] flex-1">
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[11px] font-semibold text-[var(--color-accent)]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[var(--type-label)] font-semibold text-[var(--color-accent)]">
                       {idx + 1}
                     </span>
                     <span className="text-xs font-medium text-[var(--color-text-primary)]">{STAGE_LABEL[stage]}</span>
@@ -199,7 +199,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                           <span>回收 {fmtPayback(bet.paybackYears)}</span>
                           {bet.nextCommitAmount !== null && <span className="text-[var(--color-accent)]">下一笔 {bet.nextCommitAmount.toLocaleString()}</span>}
                           {bet.sourcing.filter((s) => s.decision !== "build").map((s) => (
-                            <span key={s.capability} className="rounded bg-[var(--signal-yellow)]/15 px-1 py-0.5 text-[var(--signal-yellow)]">
+                            <span key={s.capability} className="rounded bg-[var(--signal-yellow)]/15 px-1 py-0.5 text-[var(--signal-yellow-text)]">
                               {s.capability}→{SOURCING_LABEL[s.decision]}
                             </span>
                           ))}
@@ -226,12 +226,12 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                 <div className="mt-1 flex items-center gap-2">
                   <VerdictBadge verdict={detailBet.gate.verdict} />
                   <span className="text-caption">{STAGE_LABEL[detailBet.stageGate]} · {detailBet.horizon}</span>
-                  {detailBet.abandonRight && <span className="text-[11px] text-[var(--signal-green)]">保留放弃权</span>}
+                  {detailBet.abandonRight && <span className="text-[var(--type-label)] text-[var(--signal-green-text)]">保留放弃权</span>}
                 </div>
               </div>
               <div className="flex gap-1.5">
                 <button onClick={() => setEditBet(detailBet)} className="rounded-md border border-[var(--surface-border)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">编辑</button>
-                <button onClick={() => deleteBet(detailBet.id)} className="rounded-md px-2 py-1 text-xs text-[var(--signal-red)]">删除</button>
+                <button onClick={() => deleteBet(detailBet.id)} className="rounded-md px-2 py-1 text-xs text-[var(--signal-red-text)]">删除</button>
               </div>
             </div>
 
@@ -241,7 +241,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
 
             {detailBet.gate.blockers.length > 0 && (
               <div className="mt-3 rounded-lg border border-[var(--signal-red)]/30 bg-[var(--signal-red)]/5 p-3">
-                <div className="text-xs font-medium text-[var(--signal-red)]">Gate 阻断/待办</div>
+                <div className="text-xs font-medium text-[var(--signal-red-text)]">Gate 阻断/待办</div>
                 <ul className="mt-1 space-y-1">
                   {detailBet.gate.blockers.map((b, i) => (
                     <li key={i} className="text-xs text-[var(--color-text-secondary)]">· {b}</li>
@@ -258,13 +258,13 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                     <div key={s.capability} className="flex items-center justify-between rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <span className="text-[var(--color-text-secondary)]">{s.capability}</span>
                       <span className="flex items-center gap-2">
-                        <span className={s.decision === "buy" ? "font-medium text-[var(--signal-yellow)]" : "text-[var(--color-text-primary)]"}>
+                        <span className={s.decision === "buy" ? "font-medium text-[var(--signal-yellow-text)]" : "text-[var(--color-text-primary)]"}>
                           {SOURCING_LABEL[s.decision]} · {s.reason}
                         </span>
                         {s.decision !== "build" && (
                           <a
                             href={`/ma?new=1&dealType=${s.decision === "buy" ? "acquisition" : "jv"}&direction=${encodeURIComponent(s.capability)}&thesis=${encodeURIComponent(`${s.decision === "buy" ? "收购" : "合资"}获取「${s.capability}」能力——${s.reason}(来自创新下注:${detailBet.title})`)}&crux=${encodeURIComponent(detailBet.title)}`}
-                            className="rounded bg-[var(--color-accent)] px-1.5 py-0.5 text-[11px] text-white"
+                            className="rounded bg-[var(--color-accent)] px-1.5 py-0.5 text-[var(--type-label)] text-white"
                           >
                             发起交易 →
                           </a>
@@ -283,15 +283,15 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                   {detailBet.claims.map((c) => (
                     <div key={c.id} className="rounded-md border border-[var(--surface-border)] p-2">
                       <div className="flex items-center gap-2">
-                        <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--color-accent)]">{c.axis}</span>
+                        <span className="rounded bg-[var(--color-accent)]/10 px-1.5 py-0.5 text-[var(--type-label)] font-semibold text-[var(--color-accent)]">{c.axis}</span>
                         <EvidenceBadge level={c.strength} bar={line.gateThresholds.minEvidenceLevel} />
                       </div>
                       <p className="mt-1 text-xs text-[var(--color-text-primary)]">{c.claim}</p>
-                      {c.rebuttal && <p className="mt-0.5 text-[11px] text-[var(--signal-red)]/80">反证:{c.rebuttal}</p>}
+                      {c.rebuttal && <p className="mt-0.5 text-[var(--type-label)] text-[var(--signal-red-text)]/80">反证:{c.rebuttal}</p>}
                       {c.evidence.map((e) => (
                         <p key={e.id} className="mt-0.5 text-caption">
                           {e.effectiveLevel < e.level ? (
-                            <span className="text-[var(--signal-yellow)]">L{e.level}→L{e.effectiveLevel} 未接地(缺物证)</span>
+                            <span className="text-[var(--signal-yellow-text)]">L{e.level}→L{e.effectiveLevel} 未接地(缺物证)</span>
                           ) : (
                             <>L{e.level}</>
                           )}
@@ -311,7 +311,7 @@ export function InnovationClient({ bundle }: { bundle: InnovationBundle }) {
                   {detailBet.assumptions.map((a) => (
                     <div key={a.id} className="flex items-center justify-between rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <span className="text-[var(--color-text-secondary)]">{a.code} · {a.statement}</span>
-                      <span className={a.status === "failed" ? "text-[var(--signal-red)]" : a.status === "validated" ? "text-[var(--signal-green)]" : "text-[var(--signal-yellow)]"}>
+                      <span className={a.status === "failed" ? "text-[var(--signal-red-text)]" : a.status === "validated" ? "text-[var(--signal-green-text)]" : "text-[var(--signal-yellow-text)]"}>
                         {a.status === "failed" ? "已证伪" : a.status === "validated" ? "已验证" : "待证伪"}
                       </span>
                     </div>

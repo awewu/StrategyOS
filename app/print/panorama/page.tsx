@@ -40,7 +40,7 @@ export default async function PanoramaPrintPage({
         ) : deck ? (
           <PanoramaPrintLayout deck={deck} />
         ) : (
-          <div className="bg-white p-8 text-sm text-[var(--signal-red)]">未找到所选战略版本</div>
+          <div className="bg-white p-8 text-sm text-[var(--signal-red-text)]">未找到所选战略版本</div>
         )}
       </div>
     </div>

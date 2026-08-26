@@ -79,7 +79,7 @@ export function DecisionsEditor({
         <span className="text-caption">
           待决事项 {source === "database" ? "· 已自定义" : "· 指挥舱推导"}
         </span>
-        {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}
+        {msg ? <span className="text-xs text-[var(--signal-green-text)]">{msg}</span> : null}
         {editing ? (
           <>
             <button type="button" className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-xs" onClick={() => { setDecisions(initialDecisions); setEditing(false); }}>

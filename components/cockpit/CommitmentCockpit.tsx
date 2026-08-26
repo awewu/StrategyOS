@@ -6,9 +6,9 @@ import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
 type Group = "overdue" | "inflight" | "done";
 
 const STATUS_META: Record<Group, { label: string; color: string; bg: string; border: string }> = {
-  overdue: { label: "逾期", color: "var(--signal-red)", bg: "bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]", border: "border-[var(--signal-red)]/30" },
+  overdue: { label: "逾期", color: "var(--signal-red-text)", bg: "bg-[color-mix(in_srgb,var(--signal-red)_6%,white)]", border: "border-[var(--signal-red)]/30" },
   inflight: { label: "在途", color: "var(--color-accent)", bg: "bg-[color-mix(in_srgb,var(--color-accent)_5%,white)]", border: "border-[var(--surface-border)]" },
-  done: { label: "已完成", color: "var(--signal-green)", bg: "bg-[color-mix(in_srgb,var(--signal-green)_6%,white)]", border: "border-[var(--signal-green)]/25" },
+  done: { label: "已完成", color: "var(--signal-green-text)", bg: "bg-[color-mix(in_srgb,var(--signal-green)_6%,white)]", border: "border-[var(--signal-green)]/25" },
 };
 
 function groupOf(c: CommitmentRecord): Group {
@@ -26,7 +26,7 @@ function CommitmentRow({ c }: { c: CommitmentRecord }) {
       <span className="flex-1">{c.content}</span>
       <span className="w-24 flex-shrink-0 text-caption">对 {c.promiseTo ?? c.department}</span>
       <span className="w-20 flex-shrink-0 text-caption">{c.deadline}</span>
-      {c.daysOverdue ? <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red)]">逾期 {c.daysOverdue}天</span> : <span className="w-16 flex-shrink-0" />}
+      {c.daysOverdue ? <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red-text)]">逾期 {c.daysOverdue}天</span> : <span className="w-16 flex-shrink-0" />}
       {c.linkedKrId ? (
         <span className="text-xs text-[var(--color-accent)]" title="已挂 KR → BSC 脊梁">↳ KR</span>
       ) : c.linkedProjectCode ? (
@@ -84,7 +84,7 @@ export function CommitmentCockpit({
       {/* Row 0 · 逾期硬条 */}
       {overdue.length > 0 ? (
         <div className="rounded-xl border border-[var(--signal-red)]/35 bg-[color-mix(in_srgb,var(--signal-red)_7%,white)] p-4">
-          <p className="text-label text-[var(--signal-red)]">
+          <p className="text-label text-[var(--signal-red-text)]">
             坚守告警 · {overdue.length} 项承诺已逾期{summary.maxDaysOverdue ? ` · 最长 ${summary.maxDaysOverdue} 天` : ""}
           </p>
           <div className="mt-3 space-y-2">
@@ -138,8 +138,8 @@ export function CommitmentCockpit({
                   <tr key={r.owner} className="border-b border-[var(--surface-border)] last:border-0">
                     <td className="px-4 py-2 font-medium">{r.owner}</td>
                     <td className="px-4 py-2 tabular-nums">{r.total}</td>
-                    <td className="px-4 py-2 tabular-nums" style={{ color: r.overdue > 0 ? "var(--signal-red)" : "var(--color-text-muted)" }}>{r.overdue}</td>
-                    <td className="px-4 py-2 tabular-nums" style={{ color: r.rate >= 70 ? "var(--signal-green)" : r.rate >= 50 ? "var(--signal-yellow)" : "var(--signal-red)" }}>{r.rate}%</td>
+                    <td className="px-4 py-2 tabular-nums" style={{ color: r.overdue > 0 ? "var(--signal-red-text)" : "var(--color-text-muted)" }}>{r.overdue}</td>
+                    <td className="px-4 py-2 tabular-nums" style={{ color: r.rate >= 70 ? "var(--signal-green-text)" : r.rate >= 50 ? "var(--signal-yellow-text)" : "var(--signal-red-text)" }}>{r.rate}%</td>
                   </tr>
                 ))}
               </tbody>

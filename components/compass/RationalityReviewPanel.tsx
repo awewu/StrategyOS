@@ -37,9 +37,9 @@ const REC_META: Record<string, { label: string; tone: BadgeTone }> = {
 
 /** 三选一裁决器的语义色 (B1 Segmented 原语落地前的过渡) */
 const REC_COLOR: Record<string, string> = {
-  persevere: "var(--signal-green)",
-  pivot: "var(--signal-yellow)",
-  kill: "var(--signal-red)",
+  persevere: "var(--signal-green-text)",
+  pivot: "var(--signal-yellow-text)",
+  kill: "var(--signal-red-text)",
   mixed: "var(--color-accent)",
 };
 
@@ -152,7 +152,7 @@ export function RationalityReviewPanel() {
               <Card key={row.id}>
                 <CardBody>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded bg-black/[0.04] px-2 py-0.5 text-[11px] text-[var(--color-text-muted)]">
+                  <span className="rounded bg-black/[0.04] px-2 py-0.5 text-[var(--type-label)] text-[var(--color-text-muted)]">
                     {KIND_LABEL[row.targetKind] ?? row.targetKind}{row.targetCode ? ` · ${row.targetCode}` : ""}
                   </span>
                   <span className="text-xs text-[var(--color-text-muted)]">AI 建议</span>
@@ -162,7 +162,7 @@ export function RationalityReviewPanel() {
                       人工裁决 <RecBadge rec={decided} />
                     </span>
                   ) : (
-                    <span className="ml-auto text-xs text-[var(--signal-yellow)]">待人工裁决</span>
+                    <span className="ml-auto text-xs text-[var(--signal-yellow-text)]">待人工裁决</span>
                   )}
                 </div>
 

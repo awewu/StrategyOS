@@ -8,15 +8,15 @@ const IMPACT_STYLE: Record<IntelImpact, string> = {
 };
 
 const IMPACT_BADGE: Record<IntelImpact, string> = {
-  threat: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]",
-  opportunity: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
+  threat: "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]",
+  opportunity: "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]",
   neutral: "bg-black/[0.05] text-[var(--color-text-muted)]",
 };
 
 const VERDICT_BADGE: Record<string, string> = {
-  supported: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]",
-  partial: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]",
-  unsupported: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]",
+  supported: "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]",
+  partial: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]",
+  unsupported: "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]",
 };
 
 const LEAD_TIME_BADGE: Record<string, string> = {
@@ -61,7 +61,7 @@ export function SignalFeed({ signals }: { signals: IntelSignal[] }) {
             {sig.verdict && (
               <div className="mt-2 flex items-start gap-2">
                 <span
-                  className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium ${VERDICT_BADGE[sig.verdict] ?? ""}`}
+                  className={`shrink-0 rounded px-1.5 py-0.5 text-[var(--type-label)] font-medium ${VERDICT_BADGE[sig.verdict] ?? ""}`}
                   title="QC 反幻觉校验：信号须有原文佐证引文"
                 >
                   QC · {VERDICT_LABEL[sig.verdict]}

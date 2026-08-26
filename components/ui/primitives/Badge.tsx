@@ -22,13 +22,13 @@ const TONES: Record<BadgeTone, string> = {
     "text-[var(--color-accent)] border border-transparent " +
     "bg-[color-mix(in_srgb,var(--color-accent)_12%,white)]",
   green:
-    "text-[var(--signal-green)] border border-transparent " +
+    "text-[var(--signal-green-text)] border border-transparent " +
     "bg-[color-mix(in_srgb,var(--signal-green)_12%,white)]",
   yellow:
-    "text-[var(--signal-yellow)] border border-transparent " +
+    "text-[var(--signal-yellow-text)] border border-transparent " +
     "bg-[color-mix(in_srgb,var(--signal-yellow)_14%,white)]",
   red:
-    "text-[var(--signal-red)] border border-transparent " +
+    "text-[var(--signal-red-text)] border border-transparent " +
     "bg-[color-mix(in_srgb,var(--signal-red)_12%,white)]",
   violet:
     "text-[var(--accent-sim)] border border-transparent " +

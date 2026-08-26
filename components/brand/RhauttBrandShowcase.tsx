@@ -32,7 +32,7 @@ export function RhauttBrandShowcase() {
             style={{ background: brand.rhautt.grey }}
           >
             <span className="rhautt-lockup--light">{brand.rhautt.wordmark}</span>
-            <span className="text-[11px] font-medium tracking-[0.2em] text-[var(--color-text-muted)]">
+            <span className="text-[var(--type-label)] font-medium tracking-[0.2em] text-[var(--color-text-muted)]">
               {brand.rhautt.taglineEn}
             </span>
           </div>

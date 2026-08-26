@@ -962,10 +962,10 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
                   <span
                     className={'rounded-full px-2 py-0.5 ' + (
                       status === "SUBMITTED"
-                        ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
+                        ? "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
                         : status === "LOCKED"
                           ? "bg-black/[0.06]"
-                          : "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]"
+                          : "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]"
                     )}
                   >
                     {status === "SUBMITTED" ? "已提交" : status === "LOCKED" ? "已锁定" : "草稿"}
@@ -980,8 +980,8 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
                 <div
                   className={'max-w-full break-words rounded-md px-3 py-2 text-sm shadow-sm ' + (
                     toast.kind === "ok"
-                      ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
-                      : "bg-[var(--signal-red)]/10 text-[var(--signal-red)]"
+                      ? "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
+                      : "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]"
                   )}
                 >
                   {toast.msg}
@@ -1020,7 +1020,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
                     )}
                     {s.label}
                     {s.buHint && !isBuUnit && (
-                      <span className="ml-1 text-[11px] text-[var(--signal-yellow)] opacity-70">BU</span>
+                      <span className="ml-1 text-[var(--type-label)] text-[var(--signal-yellow-text)] opacity-70">BU</span>
                     )}
                   </button>
                 );
@@ -1031,7 +1031,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
             </div>
 
             {/* 时间分层图例：板块顶部色条对应规划视野 */}
-            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[var(--color-text-muted)]">
+            <div className="flex flex-wrap items-center gap-3 text-[var(--type-label)] text-[var(--color-text-muted)]">
               <span>时间层：</span>
               {LAYER_LEGEND.map((k) => (
                 <span key={k} className="inline-flex items-center gap-1">
@@ -1092,7 +1092,7 @@ export function StrategyInputClient({ orgUnits, users, historyVersions, initialP
 
             {/* 校验提示 */}
             {!validation.ok && (
-              <div className="rounded-md border border-[var(--signal-yellow)]/40 bg-[var(--signal-yellow)]/[0.05] px-3 py-2 text-xs text-[var(--signal-yellow)]">
+              <div className="rounded-md border border-[var(--signal-yellow)]/40 bg-[var(--signal-yellow)]/[0.05] px-3 py-2 text-xs text-[var(--signal-yellow-text)]">
                 提交前需完善：{validation.message}
               </div>
             )}
@@ -1484,7 +1484,7 @@ function HistoryVersionPicker({
         className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-[var(--surface-border)] bg-black/[0.03] px-3 py-1.5 text-left text-sm focus:border-[var(--color-accent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span className="min-w-0 truncate">{selected?.label ?? placeholder}</span>
-        <span className="shrink-0 text-[10px] text-[var(--color-text-muted)]">▼</span>
+        <span className="shrink-0 text-[11px] text-[var(--color-text-muted)]">▼</span>
       </button>
 
       {open && !disabled && (
@@ -1519,7 +1519,7 @@ function HistoryVersionPicker({
                 >
                   <span className="min-w-0 truncate">{version.label}</span>
                   {locked ? (
-                    <span className="shrink-0 rounded bg-black/[0.04] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
+                    <span className="shrink-0 rounded bg-black/[0.04] px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-text-muted)]">
                       已锁定
                     </span>
                   ) : null}
@@ -1739,7 +1739,7 @@ function IntentForm({
                 </span>
                 <button
                   onClick={() => onRemove(a.id)}
-                  className="ml-3 text-xs text-[var(--signal-red)] hover:underline"
+                  className="ml-3 text-xs text-[var(--signal-red-text)] hover:underline"
                 >
                   删除
                 </button>
@@ -1905,7 +1905,7 @@ function OwnerPicker({
       />
       {open && (
         <div className="absolute left-0 right-0 z-30 mt-1 max-h-56 min-w-72 overflow-y-auto rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-1 shadow-lg">
-          <div className="px-3 py-1.5 text-[11px] text-[var(--color-text-muted)]">
+          <div className="px-3 py-1.5 text-[var(--type-label)] text-[var(--color-text-muted)]">
             共 {candidates.length} 人
           </div>
           {value && (
@@ -1941,7 +1941,7 @@ function OwnerPicker({
                   <span className="block truncate font-medium text-[var(--color-text-primary)]">{user.name}</span>
                   <span className="block truncate text-[var(--color-text-muted)]">{user.orgUnitName ?? user.email}</span>
                 </span>
-                <span className="shrink-0 rounded bg-black/[0.04] px-1.5 py-0.5 text-[10px] uppercase text-[var(--color-text-muted)]">
+                <span className="shrink-0 rounded bg-black/[0.04] px-1.5 py-0.5 text-[var(--type-label)] uppercase text-[var(--color-text-muted)]">
                   {user.role}
                 </span>
               </button>
@@ -2137,10 +2137,10 @@ function AssumptionsForm({
 
 // ─── SWOT 分析 ────────────────────────────────────────────────────────────────
 const SWOT_META = [
-  { key: "strength" as const, label: "S · 优势", color: "text-[var(--signal-green)]" },
-  { key: "weakness" as const, label: "W · 劣势", color: "text-[var(--signal-red)]" },
+  { key: "strength" as const, label: "S · 优势", color: "text-[var(--signal-green-text)]" },
+  { key: "weakness" as const, label: "W · 劣势", color: "text-[var(--signal-red-text)]" },
   { key: "opportunity" as const, label: "O · 机会", color: "text-[var(--color-accent)]" },
-  { key: "threat" as const, label: "T · 威胁", color: "text-[var(--signal-yellow)]" },
+  { key: "threat" as const, label: "T · 威胁", color: "text-[var(--signal-yellow-text)]" },
 ];
 
 const SWOT_DIMENSIONS = [
@@ -2169,7 +2169,7 @@ function SwotForm({ form, setForm }: { form: PlanForm; setForm: React.Dispatch<R
                     <Textarea textareaSize="xs" tone="subtle" className="min-h-28 flex-1 leading-relaxed" rows={5} value={s.content} onChange={(e) => rows.update(s._idx, "content", e.target.value)} placeholder="输入条目" />
                     <RemoveRowButton onClick={() => rows.remove(s._idx)} />
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
+                  <div className="flex items-center gap-1 text-[var(--type-label)] text-[var(--color-text-muted)]">
                     <span>重要</span>
                     <Select selectSize="xs" tone="subtle" value={s.weight ?? 3} onChange={(e) => rows.update(s._idx, "weight", Number(e.target.value))}>
                       {SWOT_SCALE.map((n) => <option key={n} value={n}>{n}</option>)}
@@ -2373,7 +2373,7 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
                   <button
                     type="button"
                     onClick={() => removeYear(year)}
-                    className="mr-1 grid h-7 w-7 shrink-0 place-items-center text-[var(--color-text-muted)] hover:text-[var(--signal-red)]"
+                    className="mr-1 grid h-7 w-7 shrink-0 place-items-center text-[var(--color-text-muted)] hover:text-[var(--signal-red-text)]"
                     title={`删除 ${year} 年`}
                     aria-label={`删除 ${year} 年`}
                   >
@@ -2422,7 +2422,7 @@ function ProductQuarterlyForm({ form, setForm }: { form: PlanForm; setForm: Reac
           <button type="button" onClick={() => setAddingYear(false)} className="h-9 px-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
             取消
           </button>
-          {yearError && <span className="text-xs text-[var(--signal-red)]">{yearError}</span>}
+          {yearError && <span className="text-xs text-[var(--signal-red-text)]">{yearError}</span>}
         </div>
       )}
 
@@ -2952,7 +2952,7 @@ function RoadmapForm({
                   <button
                     type="button"
                     onClick={() => removeTab(tab.id, index)}
-                    className="shrink-0 rounded px-1 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.05] hover:text-[var(--signal-red)]"
+                    className="shrink-0 rounded px-1 text-xs text-[var(--color-text-muted)] hover:bg-black/[0.05] hover:text-[var(--signal-red-text)]"
                     title="删除该路线图"
                   >
                     ×
@@ -2989,13 +2989,13 @@ function RoadmapForm({
               const colorCls = COLORS.find((c) => c.value === r.color)?.cls ?? COLORS[0].cls;
               return (
                 <div key={index} className="grid items-center mb-1" style={{ gridTemplateColumns: ganttGridColumns }}>
-                  <div className="min-w-0 pr-3 text-[11px] text-[var(--color-text-secondary)]">
+                  <div className="min-w-0 pr-3 text-[var(--type-label)] text-[var(--color-text-secondary)]">
                     <OverflowTooltipText text={`${r.track} · ${r.title}`} />
                   </div>
                   {Array.from({ length: quarters.length }).map((_, ci) => (
                     ci === si
                       ? (
-                        <div key={ci} className={"flex min-h-8 items-center gap-1 rounded px-1 py-0.5 text-[11px] " + colorCls} style={{ gridColumn: `span ${span}` }}>
+                        <div key={ci} className={"flex min-h-8 items-center gap-1 rounded px-1 py-0.5 text-[var(--type-label)] " + colorCls} style={{ gridColumn: `span ${span}` }}>
                           <span className="min-w-0 flex-1 truncate">{r.milestone || r.title}</span>
                           {r.imageAttachmentId ? (
                             <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded bg-white/80">
@@ -3327,7 +3327,7 @@ function OnePagerView({ form, selectedOrg }: { form: PlanForm; selectedOrg: OrgU
           <ul className="space-y-1">
             {criticalAssumptions.length > 0 ? criticalAssumptions.slice(0, 4).map((a, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs">
-                <span className="mt-0.5 text-[var(--signal-yellow)]">⚠</span>
+                <span className="mt-0.5 text-[var(--signal-yellow-text)]">⚠</span>
                 <span>{a.assumption}</span>
               </li>
             )) : form.assumptions.filter((a) => a.assumption.trim()).slice(0, 4).map((a, i) => (

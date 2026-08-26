@@ -169,7 +169,7 @@ export function SpbpScenarioEditor({
         <p
           className={`mt-4 rounded-md border px-3 py-2 text-caption ${
             breachPct >= 50
-              ? "border-[var(--signal-red)]/40 bg-[var(--signal-red)]/[0.08] text-[var(--signal-red)]"
+              ? "border-[var(--signal-red)]/40 bg-[var(--signal-red)]/[0.08] text-[var(--signal-red-text)]"
               : "border-[var(--surface-border)] text-[var(--color-text-muted)]"
           }`}
         >
@@ -217,7 +217,7 @@ export function SpbpScenarioEditor({
                   </div>
                   <div>
                     <div>Runway</div>
-                    <div className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[var(--signal-red)]" : ""}`}>
+                    <div className={`font-data ${sc.fpaImpact.runwayMonths < 3 ? "text-[var(--signal-red-text)]" : ""}`}>
                       {sc.fpaImpact.runwayMonths}月
                     </div>
                   </div>

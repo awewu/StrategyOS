@@ -11,7 +11,7 @@ export function BlindSpotPanel({
   if (blindSpots.length === 0) return null;
   return (
     <section className="rounded-lg border border-[var(--signal-yellow)]/40 bg-[var(--signal-yellow)]/[0.04] p-5">
-      <h2 className="mb-3 text-sm font-medium text-[var(--signal-yellow)]">
+      <h2 className="mb-3 text-sm font-medium text-[var(--signal-yellow-text)]">
         情报盲区 · {blindSpots.length} 处 — 缺失即预警
       </h2>
       <ul className="space-y-1.5">
@@ -30,10 +30,10 @@ export function BlindSpotPanel({
               key={s.id}
               className={`rounded-md px-2 py-1 text-xs ${
                 s.health === "active"
-                  ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
+                  ? "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
                   : s.health === "stale"
-                    ? "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]"
-                    : "bg-[var(--signal-red)]/10 text-[var(--signal-red)]"
+                    ? "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]"
+                    : "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]"
               }`}
             >
               {s.competitor} · {SOURCE_LABEL[s.kind]}

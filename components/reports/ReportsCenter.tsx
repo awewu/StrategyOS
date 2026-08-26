@@ -149,7 +149,7 @@ export function ReportsCenter({
         {showTemplate && (
           <div className="mb-5 grid gap-4 md:grid-cols-2">
             <div className="surface-glass rounded-xl border border-[var(--surface-border)] p-4">
-              <h3 className="text-[11px] font-medium tracking-[0.08em] text-[var(--color-accent)]">
+              <h3 className="text-[var(--type-label)] font-medium tracking-[0.08em] text-[var(--color-accent)]">
                 MON-RPT 结构
               </h3>
               <ul className="mt-3 space-y-1.5 text-sm text-[var(--color-text-muted)]">
@@ -160,7 +160,7 @@ export function ReportsCenter({
             </div>
             <div className="surface-glass rounded-xl border border-[var(--surface-border)] p-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-[11px] font-medium tracking-[0.08em] text-[var(--color-accent)]">
+                <h3 className="text-[var(--type-label)] font-medium tracking-[0.08em] text-[var(--color-accent)]">
                   McKinsey 叙事头模板
                 </h3>
                 <button
@@ -171,14 +171,14 @@ export function ReportsCenter({
                   插入编辑器
                 </button>
               </div>
-              <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+              <pre className="mt-3 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[var(--type-label)] leading-relaxed text-[var(--color-text-muted)]">
                 {mckinseyReportHeaderTemplate}
               </pre>
             </div>
           </div>
         )}
 
-        <label className="block text-[11px] font-medium tracking-[0.08em] text-[var(--color-text-muted)]">
+        <label className="block text-[var(--type-label)] font-medium tracking-[0.08em] text-[var(--color-text-muted)]">
           Report ID
         </label>
         <input
@@ -187,11 +187,11 @@ export function ReportsCenter({
           onChange={(e) => setImportId(e.target.value)}
           placeholder="MON-RPT-SALES-2026-05"
         />
-        <label className="mt-4 block text-[11px] font-medium tracking-[0.08em] text-[var(--color-text-muted)]">
+        <label className="mt-4 block text-[var(--type-label)] font-medium tracking-[0.08em] text-[var(--color-text-muted)]">
           报告正文
         </label>
         <textarea
-          className="mt-2 min-h-[160px] w-full resize-y rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-deep)]/60 px-4 py-3 text-[15px] leading-relaxed outline-none transition-colors focus:border-[var(--color-accent)]/40"
+          className="mt-2 min-h-[160px] w-full resize-y rounded-xl border border-[var(--surface-border)] bg-[var(--color-bg-deep)]/60 px-4 py-3 text-[var(--type-body)] leading-relaxed outline-none transition-colors focus:border-[var(--color-accent)]/40"
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
           placeholder="§S 背景…&#10;§1 本月一句话…&#10;§8 涌现…"
@@ -231,10 +231,10 @@ export function ReportsCenter({
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium tracking-wide ${
+                  className={`rounded-full px-2.5 py-1 text-[var(--type-label)] font-medium tracking-wide ${
                     r.status === "parsed"
-                      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]"
-                      : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"
+                      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]"
+                      : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]"
                   }`}
                 >
                   {r.status === "parsed" ? "已解析" : "待确认"}
@@ -262,7 +262,7 @@ export function ReportsCenter({
               </div>
             )}
             {r.id === "rpt-sheet1-may" && r.status !== "parsed" && (
-              <p className="mt-3 text-xs text-[var(--signal-red)]">
+              <p className="mt-3 text-xs text-[var(--signal-red-text)]">
                 导入后将触发 HealthAssertion（runway &lt; 3 月）并 nudge SPBP 悲观概率
               </p>
             )}
@@ -283,7 +283,7 @@ export function ReportsCenter({
           </ul>
           {parseResult.mckinsey && (
             <div className="mt-4 border-t border-[var(--surface-border)] pt-4">
-              <h4 className="text-[11px] font-medium tracking-[0.08em] text-[var(--color-accent)]">
+              <h4 className="text-[var(--type-label)] font-medium tracking-[0.08em] text-[var(--color-accent)]">
                 McKinsey 章节预览
               </h4>
               <dl className="mt-3 grid gap-3 text-sm md:grid-cols-2">
@@ -316,7 +316,7 @@ export function ReportsCenter({
             </div>
           )}
           {parseResult.assertionTriggers && parseResult.assertionTriggers.length > 0 && (
-            <p className="mt-3 text-xs text-[var(--signal-red)]">
+            <p className="mt-3 text-xs text-[var(--signal-red-text)]">
               触发：{parseResult.assertionTriggers.join(" · ")}
             </p>
           )}

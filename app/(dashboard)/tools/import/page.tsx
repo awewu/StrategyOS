@@ -19,7 +19,7 @@ export default async function SheetImportPage() {
       {fresh.available ? (
         fresh.stale ? (
           <div className="rounded-xl border border-[var(--signal-yellow)]/35 bg-[color-mix(in_srgb,var(--signal-yellow)_7%,white)] p-4 text-sm text-[var(--color-text-secondary)]">
-            <span className="font-medium text-[var(--signal-yellow)]">该导数了：</span>
+            <span className="font-medium text-[var(--signal-yellow-text)]">该导数了：</span>
             当前战略期 {fresh.activePeriod}，总账最新已导入期{" "}
             {fresh.latestLedgerPeriod ?? "无（从未导入）"}
             {fresh.lastImportAt ? ` · 上次导入 ${fresh.lastImportAt}` : ""}

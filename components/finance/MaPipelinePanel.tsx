@@ -43,7 +43,7 @@ export function MaPipelinePanel({ items }: { items: MaPipelineItem[] }) {
                       {item.synergyThesis}
                     </p>
                     {item.integrationMilestone100d && (
-                      <p className="mt-2 border-t border-[var(--surface-border)] pt-2 text-[11px] text-[var(--signal-green)]">
+                      <p className="mt-2 border-t border-[var(--surface-border)] pt-2 text-[var(--type-label)] text-[var(--signal-green-text)]">
                         D100: {item.integrationMilestone100d}
                       </p>
                     )}

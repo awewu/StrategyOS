@@ -22,18 +22,18 @@ const STAGE_HINT: Record<string, string> = {
 const TYPE_TONE: Record<DealType, string> = {
   acquisition: "bg-[var(--color-accent)]/12 text-[var(--color-accent)]",
   merger: "bg-[var(--accent-sim-dim)] text-[var(--accent-sim)]",
-  minority_investment: "bg-[var(--signal-green)]/12 text-[var(--signal-green)]",
-  jv: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]",
+  minority_investment: "bg-[var(--signal-green)]/12 text-[var(--signal-green-text)]",
+  jv: "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]",
 };
 
 function VerdictBadge({ verdict }: { verdict: string }) {
   const cls =
     verdict === "go"
-      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]"
+      ? "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]"
       : verdict === "hold"
-        ? "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"
-        : "bg-[var(--signal-red)]/15 text-[var(--signal-red)]";
-  return <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${cls}`}>{verdict.toUpperCase()}</span>;
+        ? "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]"
+        : "bg-[var(--signal-red)]/15 text-[var(--signal-red-text)]";
+  return <span className={`rounded px-1.5 py-0.5 text-[var(--type-label)] font-semibold ${cls}`}>{verdict.toUpperCase()}</span>;
 }
 
 function pct(v: number): string {
@@ -96,7 +96,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
           return (
             <div key={stage} className="min-w-[210px] flex-1">
               <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[11px] font-semibold text-[var(--color-accent)]">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-accent)]/10 text-[var(--type-label)] font-semibold text-[var(--color-accent)]">
                   {idx + 1}
                 </span>
                 <span className="text-xs font-medium text-[var(--color-text-primary)]">{DEAL_STAGE_LABEL[stage]}</span>
@@ -110,7 +110,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                     className="w-full rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] p-3 text-left transition hover:border-[var(--color-accent)]"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${TYPE_TONE[deal.dealType]}`}>
+                      <span className={`rounded px-1.5 py-0.5 text-[var(--type-label)] font-medium ${TYPE_TONE[deal.dealType]}`}>
                         {DEAL_TYPE_LABEL[deal.dealType]}
                       </span>
                       <VerdictBadge verdict={deal.gate.verdict} />
@@ -120,12 +120,12 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                       <span>{deal.direction}</span>
                       {deal.price !== null && <span>对价 {deal.price.toLocaleString()}</span>}
                       {deal.price !== null && deal.synergyNpvValue > 0 && (
-                        <span className={deal.economics.synergyPctOfPrice > 0.45 ? "text-[var(--signal-yellow)]" : ""}>
+                        <span className={deal.economics.synergyPctOfPrice > 0.45 ? "text-[var(--signal-yellow-text)]" : ""}>
                           协同占 {pct(deal.economics.synergyPctOfPrice)}
                         </span>
                       )}
                       {deal.gate.blockers.length > 0 && (
-                        <span className="text-[var(--signal-red)]">{deal.gate.blockers.length} 项阻断</span>
+                        <span className="text-[var(--signal-red-text)]">{deal.gate.blockers.length} 项阻断</span>
                       )}
                     </div>
                   </button>
@@ -145,23 +145,23 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${TYPE_TONE[detail.dealType]}`}>{DEAL_TYPE_LABEL[detail.dealType]}</span>
+                  <span className={`rounded px-1.5 py-0.5 text-[var(--type-label)] font-medium ${TYPE_TONE[detail.dealType]}`}>{DEAL_TYPE_LABEL[detail.dealType]}</span>
                   <VerdictBadge verdict={detail.gate.verdict} />
                   <span className="text-caption">{DEAL_STAGE_LABEL[detail.stage]}</span>
                 </div>
                 <h3 className="mt-1 text-base font-semibold text-[var(--color-text-primary)]">{detail.name}</h3>
                 <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{detail.thesis}</p>
-                {detail.linkedCrux && <p className="mt-0.5 text-[11px] text-[var(--color-accent)]">⚓ {detail.linkedCrux}</p>}
+                {detail.linkedCrux && <p className="mt-0.5 text-[var(--type-label)] text-[var(--color-accent)]">⚓ {detail.linkedCrux}</p>}
               </div>
               <div className="flex shrink-0 gap-1.5">
                 <button onClick={() => setEditDeal(detail)} className="rounded-md border border-[var(--surface-border)] px-2 py-1 text-xs text-[var(--color-text-secondary)]">编辑</button>
-                <button onClick={() => deleteDeal(detail.id)} className="rounded-md px-2 py-1 text-xs text-[var(--signal-red)]">删除</button>
+                <button onClick={() => deleteDeal(detail.id)} className="rounded-md px-2 py-1 text-xs text-[var(--signal-red-text)]">删除</button>
               </div>
             </div>
 
             {detail.gate.blockers.length > 0 && (
               <div className="mt-3 rounded-lg border border-[var(--signal-red)]/30 bg-[var(--signal-red)]/5 p-3">
-                <div className="text-xs font-medium text-[var(--signal-red)]">Gate 阻断/待办</div>
+                <div className="text-xs font-medium text-[var(--signal-red-text)]">Gate 阻断/待办</div>
                 <ul className="mt-1 space-y-1">
                   {detail.gate.blockers.map((b, i) => <li key={i} className="text-xs text-[var(--color-text-secondary)]">· {b}</li>)}
                 </ul>
@@ -169,7 +169,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
             )}
             {detail.gate.warnings.length > 0 && (
               <div className="mt-2 rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/5 p-2">
-                {detail.gate.warnings.map((w, i) => <p key={i} className="text-[11px] text-[var(--signal-yellow)]">⚠ {w}</p>)}
+                {detail.gate.warnings.map((w, i) => <p key={i} className="text-[var(--type-label)] text-[var(--signal-yellow-text)]">⚠ {w}</p>)}
               </div>
             )}
 
@@ -222,7 +222,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                       </span>
                       <span className="flex items-center gap-2">
                         <span className="text-[var(--color-text-primary)]">{s.runRate.toLocaleString()}/年</span>
-                        <span className={`rounded px-1 py-0.5 text-[11px] ${s.evidenceLevel >= 4 ? "bg-[var(--signal-green)]/15 text-[var(--signal-green)]" : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]"}`}>
+                        <span className={`rounded px-1 py-0.5 text-[var(--type-label)] ${s.evidenceLevel >= 4 ? "bg-[var(--signal-green)]/15 text-[var(--signal-green-text)]" : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]"}`}>
                           L{s.evidenceLevel}
                         </span>
                       </span>
@@ -239,7 +239,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   {detailProfile.requiredFlags.map((rf) => (
                     <div key={rf.key} className="flex items-center justify-between rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <span className="text-[var(--color-text-secondary)]">{rf.label}</span>
-                      <span className={detail.flags[rf.key] ? "text-[var(--signal-green)]" : "text-[var(--signal-red)]"}>
+                      <span className={detail.flags[rf.key] ? "text-[var(--signal-green-text)]" : "text-[var(--signal-red-text)]"}>
                         {detail.flags[rf.key] ? "✓ 已落实" : "✗ 未落实"}
                       </span>
                     </div>
@@ -255,10 +255,10 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   {detail.findings.map((f) => (
                     <div key={f.id} className="rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-[var(--color-text-muted)]">{f.workstream}</span>
+                        <span className="text-[var(--type-label)] text-[var(--color-text-muted)]">{f.workstream}</span>
                         <span className="flex items-center gap-1.5">
-                          {f.dealBreaker && <span className="rounded bg-[var(--signal-red)]/15 px-1 py-0.5 text-[11px] font-semibold text-[var(--signal-red)]">deal-breaker</span>}
-                          <span className={f.status === "closed" ? "text-[var(--signal-green)]" : f.status === "mitigated" ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]"}>
+                          {f.dealBreaker && <span className="rounded bg-[var(--signal-red)]/15 px-1 py-0.5 text-[var(--type-label)] font-semibold text-[var(--signal-red-text)]">deal-breaker</span>}
+                          <span className={f.status === "closed" ? "text-[var(--signal-green-text)]" : f.status === "mitigated" ? "text-[var(--signal-yellow-text)]" : "text-[var(--signal-red-text)]"}>
                             {f.status === "closed" ? "已关" : f.status === "mitigated" ? "已缓解" : "未解"}
                           </span>
                         </span>
@@ -277,7 +277,7 @@ export function MaClient({ bundle, prefill }: { bundle: MaBundle; prefill?: Deal
                   {detail.conditions.map((c) => (
                     <div key={c.id} className="flex items-center justify-between rounded-md bg-black/[0.03] px-2 py-1.5 text-xs">
                       <span className="text-[var(--color-text-secondary)]">{c.item}{c.owner ? ` · ${c.owner}` : ""}</span>
-                      <span className={c.status === "closed" ? "text-[var(--signal-green)]" : "text-[var(--signal-yellow)]"}>
+                      <span className={c.status === "closed" ? "text-[var(--signal-green-text)]" : "text-[var(--signal-yellow-text)]"}>
                         {c.status === "closed" ? "✓ 已关" : `未关${c.dueDate ? ` · ${c.dueDate}` : ""}`}
                       </span>
                     </div>

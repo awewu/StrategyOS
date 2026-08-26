@@ -31,7 +31,7 @@ export function RehearsalSignInPrintLayout({
 
       {intent ? (
         <section className="mb-4 border-l-4 border-[var(--color-accent)] bg-[#f7f8fa] px-4 py-3">
-          <p className="text-[11px] font-medium text-[var(--color-accent)]">战略意图与北极星</p>
+          <p className="text-[var(--type-label)] font-medium text-[var(--color-accent)]">战略意图与北极星</p>
           <h2 className="mt-1 text-lg font-semibold">{intent.title}</h2>
           {intent.lead ? <p className="mt-1 text-sm leading-5 text-[#475569]">{intent.lead}</p> : null}
           {intent.metrics?.length ? (
@@ -49,7 +49,7 @@ export function RehearsalSignInPrintLayout({
           <section key={slide.id} className="break-inside-avoid border border-[#d9dee7] p-3">
             <p className="text-[10px] font-medium text-[var(--color-accent)]">{slide.eyebrow}</p>
             <h2 className="mt-0.5 text-sm font-semibold">{slide.title}</h2>
-            <ul className="mt-1.5 space-y-1 text-[11px] leading-4 text-[#475569]">
+            <ul className="mt-1.5 space-y-1 text-[var(--type-label)] leading-4 text-[#475569]">
               {slide.bullets.slice(0, 4).map((bullet) => <li key={bullet}>· {bullet}</li>)}
             </ul>
           </section>

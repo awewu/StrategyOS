@@ -87,7 +87,7 @@ export default async function BoardPackPage() {
           ✓ 本期上会材料已锁定 · {lock.lockedBy} · {lock.lockedAt.slice(0, 10)} — 口径冻结，签署有效
         </p>
       ) : (
-        <p className="text-caption text-[var(--signal-yellow)]">
+        <p className="text-caption text-[var(--signal-yellow-text)]">
           本期材料尚未锁定 — 数据仍在滚动更新，建议 CEO/CFO 锁定后再行签署
         </p>
       )}
@@ -154,7 +154,7 @@ export default async function BoardPackPage() {
                       <td>
                         <div className="flex flex-wrap items-center gap-2">
                           {sigs.map((s) => (
-                            <span key={s.signedBy} className="text-xs text-[var(--signal-green)]" title={`签署于 ${s.signedAt}`}>
+                            <span key={s.signedBy} className="text-xs text-[var(--signal-green-text)]" title={`签署于 ${s.signedAt}`}>
                               ✓ {s.signedBy.split("@")[0]}
                             </span>
                           ))}
@@ -183,7 +183,7 @@ export default async function BoardPackPage() {
               <li key={m.id} className="flex flex-wrap items-baseline gap-3 text-sm">
                 <span className="text-[var(--color-text-primary)]">{m.title}</span>
                 <span className="text-caption">{m.period} · 归档 {m.uploadedAt}</span>
-                <span className="text-xs" style={{ color: m.approvalStatus === "APPROVED" ? "var(--signal-green)" : "var(--signal-yellow)" }}>
+                <span className="text-xs" style={{ color: m.approvalStatus === "APPROVED" ? "var(--signal-green-text)" : "var(--signal-yellow-text)" }}>
                   {m.approvalStatus === "APPROVED" ? "已审阅" : "待审阅"}
                 </span>
               </li>

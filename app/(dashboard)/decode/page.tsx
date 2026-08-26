@@ -32,7 +32,7 @@ export default async function DecodePage({
       />
       {!strategyApproved ? (
         <div className="rounded-xl border border-[var(--signal-yellow)]/35 bg-[color-mix(in_srgb,var(--signal-yellow)_7%,white)] p-4 text-sm text-[var(--color-text-secondary)]">
-          <span className="font-medium text-[var(--signal-yellow)]">时序提示：</span>
+          <span className="font-medium text-[var(--signal-yellow-text)]">时序提示：</span>
           战略一页纸尚未发布（当前为草案）。解码应基于已批准的战略主张，否则 BSC/OKR 对齐的是移动靶。建议先在{" "}
           <Link href="/strategy/input" className="text-[var(--color-accent)] hover:underline">编制战略</Link>
           {" "}完成发布，再回到本页解码。

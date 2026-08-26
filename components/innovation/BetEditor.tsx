@@ -8,7 +8,7 @@ import { Input, Select } from "@/components/ui/primitives";
 
 const sectionCls = "rounded-lg border border-[var(--surface-border)] p-3";
 const addBtn = "text-xs text-[var(--color-accent)]";
-const delBtn = "rounded px-2 py-1 text-xs text-[var(--signal-red)]";
+const delBtn = "rounded px-2 py-1 text-xs text-[var(--signal-red-text)]";
 
 type EvidenceRow = { level: number; source: string; artifactRef: string; note: string };
 type ClaimRow = { axis: string; claim: string; warrant: string; rebuttal: string; evidence: EvidenceRow[] };
@@ -273,7 +273,7 @@ export function BetEditor({
             ))}
           </div>
 
-          {error && <p className="text-xs text-[var(--signal-red)]">{error}</p>}
+          {error && <p className="text-xs text-[var(--signal-red-text)]">{error}</p>}
 
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)]">取消</button>

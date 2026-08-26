@@ -48,7 +48,7 @@ export function AgentOrchestrationPanel() {
 
       <div className="mb-4 grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
         {STRAT_AGENTS.map((a) => (
-          <div key={a.id} className="rounded border border-[var(--surface-border)] px-2 py-1.5 text-[11px]">
+          <div key={a.id} className="rounded border border-[var(--surface-border)] px-2 py-1.5 text-[var(--type-label)]">
             <span className="text-[var(--accent-sim)]">{a.name}</span>
             <span className="ml-2 text-[var(--color-text-muted)]">{a.role}</span>
           </div>
@@ -61,7 +61,7 @@ export function AgentOrchestrationPanel() {
             <li key={s.agentId} className="flex gap-3 text-xs">
               <span
                 className={`shrink-0 font-data ${
-                  s.status === "skipped" ? "text-[var(--color-text-muted)]" : "text-[var(--signal-green)]"
+                  s.status === "skipped" ? "text-[var(--color-text-muted)]" : "text-[var(--signal-green-text)]"
                 }`}
               >
                 {s.status}

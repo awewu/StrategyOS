@@ -63,13 +63,13 @@ export function SnapshotFreezePanel({ activePeriod }: { activePeriod: string }) 
           type="button"
           disabled={loading}
           onClick={() => handleFreeze(false)}
-          className="rounded border border-[var(--signal-red)]/50 px-4 py-2 text-sm text-[var(--signal-red)] disabled:opacity-50"
+          className="rounded border border-[var(--signal-red)]/50 px-4 py-2 text-sm text-[var(--signal-red-text)] disabled:opacity-50"
         >
           演示否决阻断
         </button>
       </div>
-      {result && <p className="mt-3 text-sm text-[var(--signal-green)]">{result}</p>}
-      {error && <p className="mt-3 text-sm text-[var(--signal-red)]">{error}</p>}
+      {result && <p className="mt-3 text-sm text-[var(--signal-green-text)]">{result}</p>}
+      {error && <p className="mt-3 text-sm text-[var(--signal-red-text)]">{error}</p>}
     </section>
   );
 }

@@ -44,7 +44,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-[13px] [&_svg]:size-4",
+  sm: "h-8 px-3 text-[var(--type-body-sm)] [&_svg]:size-4",
   md: "h-10 px-4 text-sm [&_svg]:size-[18px]",
 };
 

@@ -82,10 +82,10 @@ function canPreviewAttachment(filename: string, mimeType: string): boolean {
 }
 
 const SWOT_META = {
-  strength: { label: "优势 Strength", shortLabel: "S", tint: "bg-[var(--signal-green)]/10 text-[var(--signal-green)]" },
-  weakness: { label: "劣势 Weakness", shortLabel: "W", tint: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]" },
+  strength: { label: "优势 Strength", shortLabel: "S", tint: "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]" },
+  weakness: { label: "劣势 Weakness", shortLabel: "W", tint: "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]" },
   opportunity: { label: "机会 Opportunity", shortLabel: "O", tint: "bg-[var(--color-accent)]/10 text-[var(--color-accent)]" },
-  threat: { label: "威胁 Threat", shortLabel: "T", tint: "bg-[var(--signal-red)]/10 text-[var(--signal-red)]" },
+  threat: { label: "威胁 Threat", shortLabel: "T", tint: "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]" },
 } as const;
 
 const STATUS_LABELS: Record<string, string> = {
@@ -122,10 +122,10 @@ function actionStatusLabel(status: string | null): string {
 function StatusPill({ status }: { status: string }) {
   const cls =
     status === "SUBMITTED"
-      ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]"
+      ? "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]"
       : status === "LOCKED"
         ? "bg-black/[0.06] text-[var(--color-text-secondary)]"
-        : "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow)]";
+        : "bg-[var(--signal-yellow)]/10 text-[var(--signal-yellow-text)]";
   return <span className={`rounded-full px-2 py-0.5 text-xs ${cls}`}>{STATUS_LABELS[status] ?? status}</span>;
 }
 
@@ -202,7 +202,7 @@ function SimpleTable({
   return (
     <div className="stratos-table-wrap max-w-full min-w-0">
       <table
-        className={`stratos-table ${compact ? "table-fixed text-[11px] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal [&_th:first-child]:w-24" : ""}`}
+        className={`stratos-table ${compact ? "table-fixed text-[var(--type-label)] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal [&_th:first-child]:w-24" : ""}`}
         style={{ minWidth: tableMinWidth }}
       >
         <thead>

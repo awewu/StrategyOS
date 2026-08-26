@@ -43,7 +43,7 @@ export function CommitmentSummaryCard({
       ) : (
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="rounded-md bg-black/[0.03] py-2">
-            <div className="font-data text-lg tabular-nums text-[var(--signal-red)]">{s.overdue}</div>
+            <div className="font-data text-lg tabular-nums text-[var(--signal-red-text)]">{s.overdue}</div>
             <div className="text-caption">逾期{s.maxDaysOverdue ? ` · 最长${s.maxDaysOverdue}天` : ""}</div>
           </div>
           <div className="rounded-md bg-black/[0.03] py-2">
@@ -51,7 +51,7 @@ export function CommitmentSummaryCard({
             <div className="text-caption">在途</div>
           </div>
           <div className="rounded-md bg-black/[0.03] py-2">
-            <div className="font-data text-lg tabular-nums text-[var(--signal-green)]">{s.done}</div>
+            <div className="font-data text-lg tabular-nums text-[var(--signal-green-text)]">{s.done}</div>
             <div className="text-caption">已完成</div>
           </div>
         </div>

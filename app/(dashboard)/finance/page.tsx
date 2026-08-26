@@ -116,7 +116,7 @@ async function FinanceContent({
               <Link href="/finance/ledger?tab=budget" className="text-[var(--color-accent)] hover:underline">预算版本 →</Link>
             </p>
           ) : (
-            <p className="text-caption -mt-2 text-[var(--signal-yellow)]">
+            <p className="text-caption -mt-2 text-[var(--signal-yellow-text)]">
               FY{fiscalYear} 尚无已批准预算基准 — B 列口径未受控，去{" "}
               <Link href="/finance/ledger?tab=budget" className="text-[var(--color-accent)] hover:underline">预算版本</Link>
               建立基准

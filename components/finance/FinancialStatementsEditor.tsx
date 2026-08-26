@@ -115,7 +115,7 @@ export function FinancialStatementsEditor({
           三张表 {statementsSource === "database" ? "· 已自定义" : "· FPA 推导"}
           {editing ? " · 行级编辑" : ""}
         </span>
-        {msg ? <span className="text-xs text-[var(--signal-green)]">{msg}</span> : null}
+        {msg ? <span className="text-xs text-[var(--signal-green-text)]">{msg}</span> : null}
         {editing ? (
           <>
             <button type="button" className="stratos-btn stratos-btn--ghost px-3 py-1.5 text-xs" onClick={() => setEditing(false)}>

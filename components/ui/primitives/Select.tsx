@@ -44,7 +44,7 @@ const SHAPES: Record<SelectShape, string> = {
 
 const SIZES: Record<SelectSize, string> = {
   xs: "py-1 pl-2.5 pr-8 text-xs",
-  sm: "h-8 pl-2.5 pr-8 text-[13px]",
+  sm: "h-8 pl-2.5 pr-8 text-[var(--type-body-sm)]",
   md: "h-10 pl-3 pr-9 text-sm",
 };
 

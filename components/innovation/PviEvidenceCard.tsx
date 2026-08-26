@@ -20,7 +20,7 @@ export function PviEvidenceCard({ groups }: { groups: PviBuGroup[] }) {
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold">新品收入证据 · PVI（New Product Vitality）</h3>
-          <p className="mt-0.5 text-[11px] text-[var(--color-text-muted,#888)]">
+          <p className="mt-0.5 text-[var(--type-label)] text-[var(--color-text-muted,#888)]">
             来自 OneStream 总账中台 · 全 Water Division 新品实际销售（$000s）——为「新品收入占比」假设 Hx 提供实际数锚点
           </p>
         </div>

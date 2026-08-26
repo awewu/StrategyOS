@@ -6,8 +6,8 @@ import type { CommitmentRecord } from "@/lib/execution/tension-analysis";
 import { Input, Select, Textarea } from "@/components/ui/primitives";
 
 const STATUS_META = {
-  completed:   { label: "已完成", color: "var(--signal-green)", bg: "bg-[var(--signal-green)]/10",  border: "border-[var(--signal-green)]/25"  },
-  overdue:     { label: "逾期",   color: "var(--signal-red)", bg: "bg-[var(--signal-red)]/10",    border: "border-[var(--signal-red)]/25"    },
+  completed:   { label: "已完成", color: "var(--signal-green-text)", bg: "bg-[var(--signal-green)]/10",  border: "border-[var(--signal-green)]/25"  },
+  overdue:     { label: "逾期",   color: "var(--signal-red-text)", bg: "bg-[var(--signal-red)]/10",    border: "border-[var(--signal-red)]/25"    },
   in_progress: { label: "进行中", color: "var(--color-accent)", bg: "bg-[var(--color-accent)]/10",   border: "border-[var(--color-accent)]/25"   },
   pending:     { label: "待启动", color: "var(--signal-neutral)", bg: "bg-black/[0.04]",       border: "border-[var(--surface-border)]"      },
 } as const;
@@ -45,7 +45,7 @@ function CommitmentModal({ item, onClose, onSaved }: {
 
   return (
     <Modal onClose={onClose} size="lg" title={item.id ? "编辑承诺" : "新增承诺"}>
-        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>}
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">承诺内容 *</label>
@@ -128,7 +128,7 @@ function OwnerHeatmap({ records }: { records: CommitmentRecord[] }) {
                   return (
                     <td key={d} className="px-2 text-center">
                       <span className={`inline-block h-5 w-5 rounded text-xs leading-5 font-medium ${
-                        hasOverdue ? "bg-[var(--signal-red)]/10 text-[var(--signal-red)]" : allDone ? "bg-[var(--signal-green)]/10 text-[var(--signal-green)]" : "bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
+                        hasOverdue ? "bg-[var(--signal-red)]/10 text-[var(--signal-red-text)]" : allDone ? "bg-[var(--signal-green)]/10 text-[var(--signal-green-text)]" : "bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
                       }`}>
                         {cell.length}
                       </span>
@@ -136,7 +136,7 @@ function OwnerHeatmap({ records }: { records: CommitmentRecord[] }) {
                   );
                 })}
                 <td className="py-2 pl-4 text-right">
-                  <span className={overdueRate > 30 ? "text-[var(--signal-red)]" : overdueRate > 0 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-green)]"}>
+                  <span className={overdueRate > 30 ? "text-[var(--signal-red-text)]" : overdueRate > 0 ? "text-[var(--signal-yellow-text)]" : "text-[var(--signal-green-text)]"}>
                     {overdueRate}%
                   </span>
                 </td>
@@ -186,7 +186,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
         </div>
         <div className="flex items-center gap-3 text-xs">
           <span className="text-[var(--color-text-muted)]">兑现率</span>
-          <span className={`font-data text-xl ${fulfillmentRate >= 70 ? "text-[var(--signal-green)]" : fulfillmentRate >= 50 ? "text-[var(--signal-yellow)]" : "text-[var(--signal-red)]"}`}>
+          <span className={`font-data text-xl ${fulfillmentRate >= 70 ? "text-[var(--signal-green-text)]" : fulfillmentRate >= 50 ? "text-[var(--signal-yellow-text)]" : "text-[var(--signal-red-text)]"}`}>
             {fulfillmentRate}%
           </span>
           <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 新增承诺</button>
@@ -216,7 +216,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
       {/* Assumption linkage warning */}
       {assumptionLinked.length > 0 && (
         <div className="rounded-lg border border-[var(--signal-yellow)]/30 bg-[var(--signal-yellow)]/10 p-4">
-          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[var(--signal-yellow)]">
+          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[var(--signal-yellow-text)]">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--signal-yellow)]" />
             承诺逾期 × 假设联动预警
           </div>
@@ -225,7 +225,7 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
               <div key={r.id} className="flex items-start gap-3 text-xs">
                 <span className="text-[var(--color-text-muted)]">{r.owner}</span>
                 <span className="flex-1">{r.content}</span>
-                <span className="text-[var(--signal-yellow)] flex-shrink-0">→ 假设 {r.linkedAssumptionCode} 风险上升</span>
+                <span className="text-[var(--signal-yellow-text)] flex-shrink-0">→ 假设 {r.linkedAssumptionCode} 风险上升</span>
               </div>
             ))}
           </div>
@@ -242,11 +242,11 @@ export function CommitmentLedger({ records }: { records: CommitmentRecord[] }) {
               <span className="flex-1">{r.content}</span>
               <span className="w-20 flex-shrink-0 text-caption">{r.owner}</span>
               <span className="w-20 flex-shrink-0 text-caption">{r.deadline}</span>
-              {r.daysOverdue && <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red)]">逾期 {r.daysOverdue}天</span>}
+              {r.daysOverdue && <span className="w-16 flex-shrink-0 text-xs text-[var(--signal-red-text)]">逾期 {r.daysOverdue}天</span>}
               {r.linkedProjectCode && <span className="text-caption">→ {r.linkedProjectCode}</span>}
               <span className="flex flex-shrink-0 gap-2">
                 <button onClick={() => setEditItem(r)} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-                <button onClick={() => remove(r.id)} className="text-xs text-[var(--signal-red)] hover:underline">删</button>
+                <button onClick={() => remove(r.id)} className="text-xs text-[var(--signal-red-text)] hover:underline">删</button>
               </span>
             </div>
           );

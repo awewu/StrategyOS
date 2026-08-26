@@ -14,16 +14,16 @@ import {
 } from "@/lib/culture/wushi";
 
 const STATUS_COLOR: Record<ReadinessStatus, string> = {
-  ready: "var(--signal-green)",
-  partial: "var(--signal-yellow)",
-  gap: "var(--signal-red)",
+  ready: "var(--signal-green-text)",
+  partial: "var(--signal-yellow-text)",
+  gap: "var(--signal-red-text)",
 };
 
 const VERDICT_COLOR: Record<QijiVerdict, string> = {
-  we_lead: "var(--signal-green)",
+  we_lead: "var(--signal-green-text)",
   tie: "var(--color-text-muted)",
-  rival_lead: "var(--signal-red)",
-  unknown: "var(--signal-yellow)",
+  rival_lead: "var(--signal-red-text)",
+  unknown: "var(--signal-yellow-text)",
 };
 
 export function WushiPanel({ assessment, source }: { assessment: WushiAssessment; source?: "database" | "demo" }) {
@@ -123,14 +123,14 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
                     <select
                       value={f.status}
                       onChange={(e) => updateFactor(f.key, { status: e.target.value as ReadinessStatus })}
-                      className="rounded border border-[var(--surface-border)] bg-[var(--color-bg-base)] px-1.5 py-0.5 text-[11px] text-[var(--color-text-primary)]"
+                      className="rounded border border-[var(--surface-border)] bg-[var(--color-bg-base)] px-1.5 py-0.5 text-[var(--type-label)] text-[var(--color-text-primary)]"
                     >
                       <option value="ready">{READINESS_LABEL.ready}</option>
                       <option value="partial">{READINESS_LABEL.partial}</option>
                       <option value="gap">{READINESS_LABEL.gap}</option>
                     </select>
                   ) : (
-                    <span className="rounded px-1.5 py-0.5 text-[11px]"
+                    <span className="rounded px-1.5 py-0.5 text-[var(--type-label)]"
                       style={{ background: STATUS_COLOR[f.status], color: "white" }}>
                       {READINESS_LABEL[f.status]}
                     </span>
@@ -143,7 +143,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
                     value={f.note ?? ""}
                     placeholder="备注（可编辑）"
                     onChange={(e) => updateFactor(f.key, { note: e.target.value })}
-                    className="mt-1 w-full rounded border border-[var(--surface-border)] bg-[var(--color-bg-base)] px-2 py-1 text-[11px] text-[var(--color-text-primary)]"
+                    className="mt-1 w-full rounded border border-[var(--surface-border)] bg-[var(--color-bg-base)] px-2 py-1 text-[var(--type-label)] text-[var(--color-text-primary)]"
                   />
                 ) : (
                   <>
@@ -152,7 +152,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
                         外部 · 引用 {f.sourceModule}
                       </p>
                     )}
-                    {f.note && <p className="mt-1 text-[11px] text-[var(--signal-red)]">{f.note}</p>}
+                    {f.note && <p className="mt-1 text-[var(--type-label)] text-[var(--signal-red-text)]">{f.note}</p>}
                   </>
                 )}
               </div>
@@ -165,7 +165,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
       <div>
         <div className="mb-2 flex items-center gap-3 text-caption">
           <span className="font-medium text-[var(--color-text-secondary)]">七计 · 敌我对比</span>
-          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[11px]">由 Hermes 信号自动推导</span>
+          <span className="rounded bg-black/[0.05] px-1.5 py-0.5 text-[var(--type-label)]">由 Hermes 信号自动推导</span>
           <span style={{ color: VERDICT_COLOR.we_lead }}>我优 {tally.weLead}</span>
           <span style={{ color: VERDICT_COLOR.rival_lead }}>对手优 {tally.rivalLead}</span>
           <span style={{ color: VERDICT_COLOR.unknown }}>盲区 {tally.unknown}</span>
@@ -181,7 +181,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
                     {q.note && <div className="mt-0.5 text-caption">{q.note}</div>}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <span className="rounded px-1.5 py-0.5 text-[11px] text-white"
+                    <span className="rounded px-1.5 py-0.5 text-[var(--type-label)] text-white"
                       style={{ background: VERDICT_COLOR[q.verdict] }}>
                       {QIJI_VERDICT_LABEL[q.verdict]}
                     </span>
@@ -204,7 +204,7 @@ export function WushiPanel({ assessment, source }: { assessment: WushiAssessment
           <ul className="space-y-1.5">
             {risks.map((r, i) => (
               <li key={i} className="flex items-start gap-2 rounded-lg border border-[var(--surface-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-xs">
-                <span className="mt-0.5 rounded px-1.5 py-0.5 text-[11px] text-white"
+                <span className="mt-0.5 rounded px-1.5 py-0.5 text-[var(--type-label)] text-white"
                   style={{ background: r.severity === "high" ? "var(--signal-red)" : "var(--signal-yellow)" }}>
                   {r.severity === "high" ? "高" : "中"}
                 </span>

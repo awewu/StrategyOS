@@ -138,7 +138,7 @@ export function HealthSignalsEditor({
               <option value="">维度…</option>
               {DIMS.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
             </Select>
-            <button type="button" className="text-[var(--signal-red)]" aria-label="删除行"
+            <button type="button" className="text-[var(--signal-red-text)]" aria-label="删除行"
               onClick={() => setKpis(kpis.filter((_, j) => j !== i))}>×</button>
           </div>
         ))}

@@ -127,7 +127,7 @@ export function NorthStarEditModal({
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
           {validationHint ? (
-            <p className="mr-auto text-caption text-[var(--signal-red)]">{validationHint}</p>
+            <p className="mr-auto text-caption text-[var(--signal-red-text)]">{validationHint}</p>
           ) : null}
           <button type="button" onClick={onClose} className="stratos-btn stratos-btn--ghost">
             取消

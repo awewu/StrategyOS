@@ -129,7 +129,7 @@ export function HoshinEditor({
                   <td className="p-2">
                     <button
                       type="button"
-                      className="text-xs text-[var(--signal-red)] hover:underline"
+                      className="text-xs text-[var(--signal-red-text)] hover:underline"
                       onClick={() => remove(i)}
                     >
                       删

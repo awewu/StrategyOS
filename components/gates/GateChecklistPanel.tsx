@@ -1,9 +1,9 @@
 import type { GateChecklist, GateItem, GateStatus } from "@/lib/gates/checklists";
 
 const STATUS: Record<GateStatus, { label: string; className: string }> = {
-  pass: { label: "是", className: "text-[var(--signal-green)]" },
-  fail: { label: "否", className: "text-[var(--signal-red)]" },
-  partial: { label: "部分", className: "text-[var(--signal-yellow)]" },
+  pass: { label: "是", className: "text-[var(--signal-green-text)]" },
+  fail: { label: "否", className: "text-[var(--signal-red-text)]" },
+  partial: { label: "部分", className: "text-[var(--signal-yellow-text)]" },
 };
 
 function GateItemRow({ item }: { item: GateItem }) {

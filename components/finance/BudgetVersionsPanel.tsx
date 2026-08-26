@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/primitives";
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   draft: { text: "草案", cls: "bg-black/[0.06] text-[var(--color-text-secondary)]" },
-  submitted: { text: "已上报", cls: "bg-[color-mix(in_srgb,var(--signal-yellow)_14%,white)] text-[var(--signal-yellow)]" },
-  approved: { text: "已批准", cls: "bg-[color-mix(in_srgb,var(--signal-green)_14%,white)] text-[var(--signal-green)]" },
-  rejected: { text: "已退回", cls: "bg-[color-mix(in_srgb,var(--signal-red)_14%,white)] text-[var(--signal-red)]" },
+  submitted: { text: "已上报", cls: "bg-[color-mix(in_srgb,var(--signal-yellow)_14%,white)] text-[var(--signal-yellow-text)]" },
+  approved: { text: "已批准", cls: "bg-[color-mix(in_srgb,var(--signal-green)_14%,white)] text-[var(--signal-green-text)]" },
+  rejected: { text: "已退回", cls: "bg-[color-mix(in_srgb,var(--signal-red)_14%,white)] text-[var(--signal-red-text)]" },
 };
 
 const ACTIONS_BY_STATUS: Record<string, { action: BudgetAction; label: string; needNote?: boolean }[]> = {
@@ -110,7 +110,7 @@ export function BudgetVersionsPanel({ initial }: { initial: BudgetVersionView[] 
             创建草案
           </button>
         </div>
-        {error ? <p className="mt-2 text-xs text-[var(--signal-red)]">{error}</p> : null}
+        {error ? <p className="mt-2 text-xs text-[var(--signal-red-text)]">{error}</p> : null}
       </div>
 
       <div className="stratos-card stratos-card--padded">
@@ -138,15 +138,15 @@ export function BudgetVersionsPanel({ initial }: { initial: BudgetVersionView[] 
                     <td className="max-w-[220px] truncate" title={v.notes ?? undefined}>{v.name}</td>
                     <td className="font-mono text-xs">{v.scenarioCode ?? "—"}</td>
                     <td>
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] ${st.cls}`}>{st.text}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[var(--type-label)] ${st.cls}`}>{st.text}</span>
                     </td>
                     <td className="text-xs">
                       {fmt(v.submittedAt)}
-                      {v.submittedBy ? <span className="block text-[10px] text-[var(--color-text-muted,#888)]">{v.submittedBy}</span> : null}
+                      {v.submittedBy ? <span className="block text-[var(--type-label)] text-[var(--color-text-muted,#888)]">{v.submittedBy}</span> : null}
                     </td>
                     <td className="text-xs">
                       {fmt(v.decidedAt)}
-                      {v.decidedBy ? <span className="block text-[10px] text-[var(--color-text-muted,#888)]">{v.decidedBy}</span> : null}
+                      {v.decidedBy ? <span className="block text-[var(--type-label)] text-[var(--color-text-muted,#888)]">{v.decidedBy}</span> : null}
                     </td>
                     <td className="max-w-[160px] truncate text-xs" title={v.decisionNote ?? undefined}>{v.decisionNote ?? "—"}</td>
                     <td className="text-right">
@@ -175,7 +175,7 @@ export function BudgetVersionsPanel({ initial }: { initial: BudgetVersionView[] 
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-[11px] text-[var(--color-text-muted,#888)]">
+        <p className="mt-3 text-[var(--type-label)] text-[var(--color-text-muted,#888)]">
           批准为终态；退回后可修订回草案重新上报。全部流转写入审计日志（预算版本流转）。
         </p>
       </div>

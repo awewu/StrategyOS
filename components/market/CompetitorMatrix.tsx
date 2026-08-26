@@ -4,8 +4,8 @@ import { DIMENSION_LABEL } from "@/lib/market-intel/types";
 const DIMS: IntelDimension[] = ["product", "gtm", "brand", "strategy"];
 
 const MOMENTUM = {
-  up: { label: "↑ 活跃", cls: "text-[var(--signal-red)]" },
-  down: { label: "↓ 收敛", cls: "text-[var(--signal-green)]" },
+  up: { label: "↑ 活跃", cls: "text-[var(--signal-red-text)]" },
+  down: { label: "↓ 收敛", cls: "text-[var(--signal-green-text)]" },
   flat: { label: "→ 平稳", cls: "text-[var(--color-text-muted)]" },
 } as const;
 

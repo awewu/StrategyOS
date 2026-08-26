@@ -84,7 +84,7 @@ export function ReadonlyProductQuarterlyTabs({
       ) : (
         <div className="stratos-table-wrap max-w-full min-w-0">
           <table
-            className="stratos-table table-fixed text-[11px] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal"
+            className="stratos-table table-fixed text-[var(--type-label)] [&_th]:whitespace-normal [&_th]:px-1 [&_td]:px-1 [&_td_span]:whitespace-normal"
             style={{ minWidth: 900 }}
           >
             <thead>

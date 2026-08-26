@@ -9,7 +9,7 @@ import { Input, Select } from "@/components/ui/primitives";
 
 const sectionCls = "rounded-lg border border-[var(--surface-border)] p-3";
 const addBtn = "text-xs text-[var(--color-accent)]";
-const delBtn = "rounded px-2 py-1 text-xs text-[var(--signal-red)]";
+const delBtn = "rounded px-2 py-1 text-xs text-[var(--signal-red-text)]";
 
 const WORKSTREAMS = ["financial", "legal", "tax", "hr", "tech", "commercial", "supply", "esg", "other"];
 const METHODS = [
@@ -308,7 +308,7 @@ export function DealEditor({
                 <Select fullWidth selectSize="sm" value={f.status} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, status: e.target.value } : x))}>
                   <option value="open">未解</option><option value="mitigated">已缓解</option><option value="closed">已关</option>
                 </Select>
-                <label className="flex items-center gap-1 text-[11px] text-[var(--signal-red)]">
+                <label className="flex items-center gap-1 text-[var(--type-label)] text-[var(--signal-red-text)]">
                   <input type="checkbox" checked={f.dealBreaker} onChange={(e) => setFindings((c) => c.map((x, j) => j === i ? { ...x, dealBreaker: e.target.checked } : x))} />
                   breaker
                 </label>
@@ -335,7 +335,7 @@ export function DealEditor({
             ))}
           </div>
 
-          {error && <p className="text-xs text-[var(--signal-red)]">{error}</p>}
+          {error && <p className="text-xs text-[var(--signal-red-text)]">{error}</p>}
 
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className="rounded-md border border-[var(--surface-border)] px-3 py-1.5 text-sm text-[var(--color-text-secondary)]">取消</button>

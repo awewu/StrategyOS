@@ -57,12 +57,12 @@ export function BscCausalChain({ cards }: { cards: Card[] }) {
                 }}
               >
                 {isRoot && (
-                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-red)] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-red)] px-1.5 py-0.5 text-[var(--type-label)] font-semibold text-white">
                     根因
                   </span>
                 )}
                 {propagated && (
-                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-yellow)] px-1.5 py-0.5 text-[11px] font-semibold text-black">
+                  <span className="absolute -top-2 left-3 rounded bg-[var(--signal-yellow)] px-1.5 py-0.5 text-[var(--type-label)] font-semibold text-black">
                     受传导
                   </span>
                 )}
@@ -70,10 +70,10 @@ export function BscCausalChain({ cards }: { cards: Card[] }) {
                   <span className="text-sm font-semibold" style={{ color }}>{c.label}</span>
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: sig }} />
                 </div>
-                <div className="mt-1 text-[0.65rem] tracking-[0.08em]" style={{ color: color + "b0" }}>
+                <div className="mt-1 text-[var(--type-label)] tracking-[0.08em]" style={{ color: color + "b0" }}>
                   {CAUSAL_HINT[c.key]}
                 </div>
-                <p className="mt-2.5 font-data text-[0.72rem] tabular-nums leading-tight text-[var(--color-text-muted)]">
+                <p className="mt-2.5 font-data text-[var(--type-caption)] tabular-nums leading-tight text-[var(--color-text-muted)]">
                   {c.target}
                 </p>
               </div>

@@ -18,8 +18,8 @@ function DeltaBadge({ delta }: { delta: number | null }) {
   const up = delta > 0;
   return (
     <span
-      className="text-[11px] font-data"
-      style={{ color: up ? "var(--signal-green)" : "var(--signal-red)" }}
+      className="text-[var(--type-label)] font-data"
+      style={{ color: up ? "var(--signal-green-text)" : "var(--signal-red-text)" }}
     >
       {up ? "▲" : "▼"} {Math.abs(delta)}
     </span>
@@ -95,7 +95,7 @@ export function RobustTrend({ view }: { view: RobustView }) {
               <div className="mb-2 flex items-baseline justify-between gap-2 border-b border-[var(--surface-border)] pb-1.5">
                 <h4 className="text-xs font-medium text-[var(--color-text-secondary)]">
                   {pillarLabels[pillar]}
-                  <span className="ml-2 text-[11px] font-normal text-[var(--color-text-muted)]">
+                  <span className="ml-2 text-[var(--type-label)] font-normal text-[var(--color-text-muted)]">
                     {dims.length} 维
                   </span>
                 </h4>

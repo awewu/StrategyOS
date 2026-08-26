@@ -29,9 +29,9 @@ const LIGHT_LABEL: Record<TrafficLight, string> = { green: "正常", yellow: "�
 const inp = "w-full rounded-md border border-[var(--surface-border)] bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]";
 
 const PACE_META: Record<Pace, { label: string; color: string }> = {
-  ahead: { label: "超前", color: "var(--signal-green)" },
+  ahead: { label: "超前", color: "var(--signal-green-text)" },
   on_track: { label: "在轨", color: "var(--color-accent)" },
-  behind: { label: "滞后", color: "var(--signal-yellow)" },
+  behind: { label: "滞后", color: "var(--signal-yellow-text)" },
   unknown: { label: "待测", color: "var(--color-text-muted)" },
 };
 
@@ -175,7 +175,7 @@ export function BscTargetsBoard({
           </div>
 
           {err && (
-            <p className="mt-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>
+            <p className="mt-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>
           )}
 
           {!editing && (
@@ -188,10 +188,10 @@ export function BscTargetsBoard({
                       {comparison?.dataSource && (
                         <span
                           className={
-                            "rounded px-1.5 py-0.5 text-[10px] font-normal " +
+                            "rounded px-1.5 py-0.5 text-[var(--type-label)] font-normal " +
                             (comparison.dataSource === "database"
-                              ? "bg-[var(--signal-green)]/12 text-[var(--signal-green)]"
-                              : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow)]")
+                              ? "bg-[var(--signal-green)]/12 text-[var(--signal-green-text)]"
+                              : "bg-[var(--signal-yellow)]/15 text-[var(--signal-yellow-text)]")
                           }
                         >
                           {comparison.dataSource === "database" ? "真实数据" : "演示数据"}
@@ -199,15 +199,15 @@ export function BscTargetsBoard({
                       )}
                     </span>
                     {comparison?.hasBaseline && comparison?.baselineLabel ? (
-                      <span className="text-[11px] text-[var(--color-text-muted)]">目标基线：{comparison.baselineLabel}</span>
+                      <span className="text-[var(--type-label)] text-[var(--color-text-muted)]">目标基线：{comparison.baselineLabel}</span>
                     ) : (
-                      <span className="text-[11px] text-[var(--signal-yellow)]">无已提交/锁定基线 — 战略编制提交后才纳入对比</span>
+                      <span className="text-[var(--type-label)] text-[var(--signal-yellow-text)]">无已提交/锁定基线 — 战略编制提交后才纳入对比</span>
                     )}
                   </div>
 
                   {dimCmp.thresholds.length > 0 && (
                     <div className="space-y-1">
-                      <div className="text-[11px] font-medium text-[var(--signal-red)]">红线 · KPI 经营底线（突破 → 预警 / 叫停 / 绩效）</div>
+                      <div className="text-[var(--type-label)] font-medium text-[var(--signal-red-text)]">红线 · KPI 经营底线（突破 → 预警 / 叫停 / 绩效）</div>
                       {dimCmp.thresholds.map((t, i) => (
                         <div
                           key={i}
@@ -215,21 +215,21 @@ export function BscTargetsBoard({
                         >
                           <TrafficLightDot signal={t.status} />
                           <span className="flex-1 text-[var(--color-text-secondary)]">{t.statement}</span>
-                          {t.breached && <span className="font-semibold text-[var(--signal-red)]">突破·叫停</span>}
+                          {t.breached && <span className="font-semibold text-[var(--signal-red-text)]">突破·叫停</span>}
                         </div>
                       ))}
                     </div>
                   )}
 
                   <div className="space-y-1">
-                    <div className="text-[11px] font-medium text-[var(--color-accent)]">先导 · OKR 战略执行（推进进度，非红线告警）</div>
+                    <div className="text-[var(--type-label)] font-medium text-[var(--color-accent)]">先导 · OKR 战略执行（推进进度，非红线告警）</div>
                     {dimCmp.leading.length === 0 ? (
-                      <p className="text-[11px] text-[var(--color-text-muted)]">锁定基线中本维度暂无 KR。</p>
+                      <p className="text-[var(--type-label)] text-[var(--color-text-muted)]">锁定基线中本维度暂无 KR。</p>
                     ) : (
                       dimCmp.leading.map((l, i) => (
                         <div key={i} className="rounded bg-black/[0.03] px-2 py-1.5 text-xs">
                           <div className="font-medium text-[var(--color-text-secondary)]">{l.keyResult}</div>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-[var(--color-text-muted)]">
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[var(--type-label)] text-[var(--color-text-muted)]">
                             <span>目标 {l.target}</span>
                             <span>实际 {l.actual ?? "—"}</span>
                             {l.attainmentPct != null && <span>达成 {l.attainmentPct}%</span>}
@@ -242,8 +242,8 @@ export function BscTargetsBoard({
 
                   {dimCmp.finance && (
                     <div className="space-y-1">
-                      <div className="text-[11px] font-medium text-[var(--bsc-financial)]">财务实际 · FPA（预算 vs 实际 · 单位 万）</div>
-                      <div className="grid grid-cols-3 gap-2 text-[11px]">
+                      <div className="text-[var(--type-label)] font-medium text-[var(--bsc-financial)]">财务实际 · FPA（预算 vs 实际 · 单位 万）</div>
+                      <div className="grid grid-cols-3 gap-2 text-[var(--type-label)]">
                         <div className="rounded bg-black/[0.03] px-2 py-1.5">
                           <div className="text-[var(--color-text-muted)]">营收</div>
                           <div className="text-[var(--color-text-secondary)]">{dimCmp.finance.revenueActual} / {dimCmp.finance.revenueBudget}</div>

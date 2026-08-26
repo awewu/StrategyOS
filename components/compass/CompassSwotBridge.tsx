@@ -27,7 +27,7 @@ export function CompassSwotBridge({ premises }: { premises: PremiseAudit[] }) {
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div style={{ borderLeft: "3px solid var(--signal-green)" }} className="rounded-lg border border-[var(--surface-border)] p-3">
-          <h4 className="mb-2 text-xs font-semibold" style={{ color: "var(--signal-green)" }}>
+          <h4 className="mb-2 text-xs font-semibold" style={{ color: "var(--signal-green-text)" }}>
             {SWOT_CATEGORY_LABEL.strength} · {strengths.length}
           </h4>
           {strengths.length === 0 ? (
@@ -41,7 +41,7 @@ export function CompassSwotBridge({ premises }: { premises: PremiseAudit[] }) {
           )}
         </div>
         <div style={{ borderLeft: "3px solid var(--signal-red)" }} className="rounded-lg border border-[var(--surface-border)] p-3">
-          <h4 className="mb-2 text-xs font-semibold" style={{ color: "var(--signal-red)" }}>
+          <h4 className="mb-2 text-xs font-semibold" style={{ color: "var(--signal-red-text)" }}>
             {SWOT_CATEGORY_LABEL.weakness} · {weaknesses.length}
           </h4>
           {weaknesses.length === 0 ? (

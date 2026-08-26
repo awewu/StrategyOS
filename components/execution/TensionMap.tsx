@@ -53,7 +53,7 @@ function TensionModal({ item, onClose, onSaved }: {
 
   return (
     <Modal onClose={onClose} size="lg" title={item.id ? "编辑张力" : "新增张力"}>
-        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red)]">{err}</p>}
+        {err && <p className="mb-3 rounded bg-[var(--signal-red)]/10 px-3 py-2 text-sm text-[var(--signal-red-text)]">{err}</p>}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -127,7 +127,7 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
         <span className="text-sm">{item.projectName} ({item.projectCode})</span>
         <div className="ml-auto flex gap-3">
           <button onClick={onEdit} className="text-xs text-[var(--color-accent)] hover:underline">编辑</button>
-          <button onClick={onDelete} className="text-xs text-[var(--signal-red)] hover:underline">删除</button>
+          <button onClick={onDelete} className="text-xs text-[var(--signal-red-text)] hover:underline">删除</button>
         </div>
       </div>
       <div className="space-y-4">
@@ -141,11 +141,11 @@ function TensionDetail({ item, onEdit, onDelete }: { item: TensionItem; onEdit: 
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-md border border-[var(--signal-red)]/25 bg-[var(--signal-red)]/10 p-3">
-            <div className="mb-1 text-xs text-[var(--signal-red)]">× 错误对策</div>
+            <div className="mb-1 text-xs text-[var(--signal-red-text)]">× 错误对策</div>
             <p className="text-caption">{meta.wrongResponse}</p>
           </div>
           <div className="rounded-md border border-[var(--signal-green)]/25 bg-[var(--signal-green)]/10 p-3">
-            <div className="mb-1 text-xs text-[var(--signal-green)]">→ 正确方向</div>
+            <div className="mb-1 text-xs text-[var(--signal-green-text)]">→ 正确方向</div>
             <p className="text-xs">{item.recommendation}</p>
           </div>
         </div>
@@ -198,7 +198,7 @@ export function TensionMap({ tensions }: { tensions: TensionItem[] }) {
               {meta.label} {items.length}
             </span>
           ))}
-          {highCount > 0 && <span className="text-[var(--signal-red)]">{highCount} 项高风险</span>}
+          {highCount > 0 && <span className="text-[var(--signal-red-text)]">{highCount} 项高风险</span>}
           <button onClick={() => setEditItem({})} className="rounded-md bg-[var(--color-accent)] px-2.5 py-1 text-white hover:opacity-90">+ 新增张力</button>
         </div>
       </div>
